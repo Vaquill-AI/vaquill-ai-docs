@@ -1,8 +1,8 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Vaquill API",
-  "description": "Public API for Indian legal research and citation intelligence.",
+  "name": "Vaquill AI",
+  "description": "Documentation and API reference for Indian legal research and citation intelligence.",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -14,6 +14,17 @@
     "href": "https://vaquill.ai"
   },
   "favicon": "/favicon.svg",
+  "seo": {
+    "indexing": "all",
+    "metatags": {
+      "og:site_name": "Vaquill AI Docs",
+      "og:image": "/images/hero-light.png",
+      "og:description": "Documentation and API reference for Indian legal research and citation intelligence.",
+      "og:locale": "en_US",
+      "twitter:card": "summary_large_image",
+      "twitter:site": "@vaquill"
+    }
+  },
   "navigation": {
     "global": {
       "anchors": [
@@ -35,18 +46,31 @@
         "groups": [
           {
             "group": "Getting Started",
+            "icon": "rocket",
             "pages": [
               "introduction",
               "authentication",
               "credits",
               "errors"
             ]
+          },
+          {
+            "group": "App Guides",
+            "icon": "book-open",
+            "pages": [
+              "guides/document-search",
+              "guides/case-law-research",
+              "guides/contract-review",
+              "guides/legal-tools",
+              "guides/matters-workspaces",
+              "guides/citations"
+            ]
           }
         ]
       },
       {
         "tab": "API Reference",
-        "openapi": "https://api.vaquill.ai/external/openapi.json "
+        "openapi": "https://api.vaquill.ai/external/openapi.json"
       }
     ]
   },
@@ -66,7 +90,8 @@
   "api": {
     "openapi": "https://api.vaquill.ai/external/openapi.json",
     "playground": {
-      "display": "interactive"
+      "display": "interactive",
+      "proxy": true
     },
     "mdx": {
       "auth": {
@@ -77,7 +102,8 @@
     },
     "examples": {
       "languages": ["bash", "python", "javascript", "go"],
-      "defaults": "required"
+      "defaults": "required",
+      "prefill": true
     }
   },
   "contextual": {
@@ -89,13 +115,43 @@
       "cursor"
     ]
   },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true
+  },
   "footer": {
     "socials": {
       "x": "https://x.com/vaquill",
       "github": "https://github.com/vaquill",
       "linkedin": "https://linkedin.com/company/vaquill"
-    }
+    },
+    "links": [
+      {
+        "header": "Product",
+        "items": [
+          { "label": "Dashboard", "href": "https://app.vaquill.ai" },
+          { "label": "Pricing", "href": "https://vaquill.ai/#pricing" },
+          { "label": "Blog", "href": "https://vaquill.ai/blog" }
+        ]
+      },
+      {
+        "header": "Developers",
+        "items": [
+          { "label": "API Reference", "href": "/api-reference" },
+          { "label": "Authentication", "href": "/authentication" },
+          { "label": "Credits", "href": "/credits" }
+        ]
+      },
+      {
+        "header": "Legal",
+        "items": [
+          { "label": "Terms of Service", "href": "https://www.vaquill.ai/terms" },
+          { "label": "Privacy Policy", "href": "https://www.vaquill.ai/privacy" }
+        ]
+      }
+    ]
   },
+  "redirects": [],
   "appearance": {
     "default": "light",
     "strict": true

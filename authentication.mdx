@@ -1,0 +1,83 @@
+---
+title: "Authentication"
+description: "Authenticate with the Vaquill API using Bearer tokens"
+---
+
+## API Keys
+
+All API requests require a valid API key passed via the `Authorization` header as a Bearer token.
+
+```bash
+Authorization: Bearer vq_key_your_api_key_here
+```
+
+API keys follow the format `vq_key_...` and are tied to your account.
+
+## Getting Your API Key
+
+<Steps>
+  <Step title="Sign in to your dashboard">
+    Go to [app.vaquill.ai/settings](https://app.vaquill.ai/settings) and sign in to your account.
+  </Step>
+  <Step title="Navigate to API settings">
+    Under your account settings, find the **API Keys** section.
+  </Step>
+  <Step title="Generate a key">
+    Click **Create API Key**, give it a name, and copy the key. You won't be able to see it again after creation.
+  </Step>
+</Steps>
+
+## Making Requests
+
+Include your API key in every request:
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/research/search \
+  -H "Authorization: Bearer vq_key_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "right to privacy fundamental rights"}'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    "https://api.vaquill.ai/api/v1/research/search",
+    headers={
+        "Authorization": "Bearer vq_key_your_api_key_here",
+        "Content-Type": "application/json"
+    },
+    json={"query": "right to privacy fundamental rights"}
+)
+```
+
+```javascript JavaScript
+const response = await fetch("https://api.vaquill.ai/api/v1/research/search", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer vq_key_your_api_key_here",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ query: "right to privacy fundamental rights" })
+});
+```
+
+```go Go
+req, _ := http.NewRequest("POST", "https://api.vaquill.ai/api/v1/research/search", body)
+req.Header.Set("Authorization", "Bearer vq_key_your_api_key_here")
+req.Header.Set("Content-Type", "application/json")
+```
+</CodeGroup>
+
+## Authentication Errors
+
+| Status Code | Meaning |
+|-------------|---------|
+| `401` | Invalid or missing API key |
+| `403` | Insufficient credits for this request |
+| `429` | Rate limit exceeded — slow down |
+
+<Warning>
+  Keep your API key secret. Do not expose it in client-side code, public repositories, or browser requests. If a key is compromised, revoke it immediately from your dashboard and generate a new one.
+</Warning>

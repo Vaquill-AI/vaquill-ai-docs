@@ -1,0 +1,47 @@
+---
+title: "Credits"
+description: "Understand how API credits work and what each endpoint costs"
+---
+
+## How Credits Work
+
+Each API call costs a fixed number of credits depending on the endpoint. New accounts receive **10 free API credits** to get started.
+
+## Credit Costs by Endpoint
+
+| Endpoint | Method | Credits |
+|----------|--------|---------|
+| `/api/v1/research/search` | POST | 1 |
+| `/api/v1/citations/resolve` | POST | 1 |
+| `/api/v1/citations/search` | POST | 1 |
+| `/api/v1/citations/{case_id}` | GET | 2 |
+| `/api/v1/citations/{case_id}/cited-by` | GET | 1 |
+| `/api/v1/citations/{case_id}/citations-of` | GET | 1 |
+
+<Note>
+  Credit costs are fixed per call regardless of result size. A search returning 1 result costs the same as one returning 50.
+</Note>
+
+## Checking Your Balance
+
+Monitor your remaining credits from your [dashboard](https://app.vaquill.ai/settings). When your balance reaches zero, API calls return a `403 Insufficient credits` error.
+
+## Purchasing Credits
+
+Additional credits can be purchased from your dashboard. Vaquill offers several subscription tiers:
+
+| Plan | Included Credits | Best For |
+|------|-----------------|----------|
+| **Free** | 10 | Testing and evaluation |
+| **Starter** | 100/month | Individual developers |
+| **Professional** | 500/month | Small teams and applications |
+| **Business** | 2,000/month | Production applications |
+| **Enterprise** | Custom | High-volume integrations |
+
+<Tip>
+  If you're evaluating the API, the 10 free credits are enough to test every endpoint at least once.
+</Tip>
+
+## Credit Expiration
+
+Monthly credits reset on your billing cycle date. Unused credits do not roll over to the next month.

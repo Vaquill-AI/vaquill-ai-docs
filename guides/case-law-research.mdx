@@ -1,0 +1,78 @@
+---
+title: "Case Law Research"
+description: "Search across 1M+ Indian court cases with Boolean operators and filters"
+---
+
+## Overview
+
+Vaquill gives you access to a comprehensive Indian legal corpus with 1M+ cases from the Supreme Court and all 25 High Courts. Search using natural language, Boolean operators, or citation strings to find relevant precedents.
+
+## Search Methods
+
+### Natural Language Search
+
+Describe what you're looking for in plain English:
+
+> *"Cases where the Supreme Court discussed the right to privacy as a fundamental right"*
+
+Vaquill uses semantic search to find cases that match the meaning of your query, not just keywords.
+
+### Boolean Keyword Search
+
+For precise control over search results, use Boolean operators:
+
+| Operator | Example | Effect |
+|----------|---------|--------|
+| `AND` | `murder AND conviction` | Both terms must appear |
+| `OR` | `Section 302 OR Section 304` | Either term can appear |
+| `NOT` | `appeal NOT dismissed` | Excludes documents with the term |
+| `"..."` | `"beyond reasonable doubt"` | Exact phrase match |
+| `( )` | `(murder OR homicide) AND conviction` | Grouped conditions |
+
+### Citation Search
+
+Search directly by citation string:
+
+> *"(2017) 10 SCC 1"* or *"AIR 2017 SC 4161"*
+
+Vaquill resolves citation strings across formats — SCC, AIR, and INSC — and returns the matching case with full metadata.
+
+## Filtering Results
+
+Narrow your search using filters:
+
+- **Court** — Supreme Court, specific High Courts, or tribunals
+- **Year / Date Range** — Cases from a particular period
+- **Judge** — Cases authored by or involving a specific judge
+- **Citation Format** — Filter by SCC, AIR, or INSC citations
+
+## Understanding Results
+
+Each search result includes:
+
+- **Case title and citation** — Full case name with all known citation strings
+- **Court and date** — Which court decided it and when
+- **Judges** — The bench composition
+- **Relevance score** — How closely it matches your query
+- **Snippet** — Key passage from the judgment matching your search
+
+## Using the API
+
+You can also run case law searches programmatically via the [Research Search](/api-reference) endpoint:
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/research/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "right to privacy fundamental rights",
+    "court": "supreme_court",
+    "year_from": 2015,
+    "year_to": 2024,
+    "limit": 10
+  }'
+```
+
+<Info>
+  Each API search call costs **1 credit**. See [Credits](/credits) for details.
+</Info>

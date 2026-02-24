@@ -1,0 +1,78 @@
+---
+title: "Errors"
+description: "HTTP status codes and error responses from the Vaquill API"
+---
+
+## Error Format
+
+All errors return a JSON response with a `detail` field describing what went wrong:
+
+```json
+{
+  "detail": "Invalid or missing API key."
+}
+```
+
+Validation errors (422) include additional field-level details:
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "query"],
+      "msg": "Field required",
+      "type": "missing"
+    }
+  ]
+}
+```
+
+## Status Codes
+
+| Code | Meaning | What to Do |
+|------|---------|------------|
+| `200` | Success | Request completed successfully |
+| `401` | Unauthorized | Check your API key is correct and included in the `Authorization` header |
+| `403` | Forbidden | Your account has insufficient credits. Purchase more from your [dashboard](https://app.vaquill.ai/settings) |
+| `404` | Not Found | The requested resource (e.g., case ID) does not exist |
+| `422` | Validation Error | Check the request body — a required field is missing or has an invalid format |
+| `429` | Rate Limited | You're sending too many requests. Back off and retry with exponential backoff |
+| `500` | Internal Error | Something went wrong on our end. Retry after a brief delay; contact [support](mailto:contact@vaquill.com) if it persists |
+
+## Rate Limiting
+
+When you hit a rate limit, the API returns a `429` status code. Implement exponential backoff in your client:
+
+```python
+import time
+import requests
+
+def search_with_retry(query, max_retries=3):
+    for attempt in range(max_retries):
+        response = requests.post(
+            "https://api.vaquill.ai/api/v1/research/search",
+            headers={"Authorization": "Bearer vq_key_..."},
+            json={"query": query}
+        )
+        if response.status_code == 429:
+            time.sleep(2 ** attempt)
+            continue
+        return response
+    raise Exception("Max retries exceeded")
+```
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="401: I'm sure my key is correct">
+    Make sure you're using the `Bearer` prefix: `Authorization: Bearer vq_key_...`. The key alone without `Bearer` will be rejected.
+  </Accordion>
+
+  <Accordion title="403: I just purchased credits">
+    Credit purchases may take a few seconds to reflect. Wait a moment and retry. If the issue persists, check your dashboard balance.
+  </Accordion>
+
+  <Accordion title="422: Unexpected validation error">
+    Ensure your `Content-Type` is set to `application/json` and the request body is valid JSON. Check the `loc` field in the error response to identify which field is problematic.
+  </Accordion>
+</AccordionGroup>
