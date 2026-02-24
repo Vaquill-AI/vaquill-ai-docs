@@ -18,7 +18,7 @@
     "indexing": "all",
     "metatags": {
       "og:site_name": "Vaquill AI Docs",
-      "og:image": "/images/hero-light.png",
+      "og:image": "/images/main-ui.jpeg",
       "og:description": "Documentation and API reference for Indian legal research and citation intelligence.",
       "og:locale": "en_US",
       "twitter:card": "summary_large_image",
@@ -31,12 +31,7 @@
         {
           "anchor": "Dashboard",
           "icon": "browser",
-          "href": "https://app.vaquill.ai/settings"
-        },
-        {
-          "anchor": "Blog",
-          "icon": "newspaper",
-          "href": "https://vaquill.ai/blog"
+          "href": "https://app.vaquill.ai"
         }
       ]
     },
@@ -130,8 +125,7 @@
         "header": "Product",
         "items": [
           { "label": "Dashboard", "href": "https://app.vaquill.ai" },
-          { "label": "Pricing", "href": "https://vaquill.ai/#pricing" },
-          { "label": "Blog", "href": "https://vaquill.ai/blog" }
+          { "label": "Pricing", "href": "https://vaquill.ai/#pricing" }
         ]
       },
       {
