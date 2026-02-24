@@ -1,0 +1,103 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Vaquill API",
+  "description": "Public API for Indian legal research and citation intelligence.",
+  "colors": {
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://vaquill.ai"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Dashboard",
+          "icon": "browser",
+          "href": "https://app.vaquill.ai/settings"
+        },
+        {
+          "anchor": "Blog",
+          "icon": "newspaper",
+          "href": "https://vaquill.ai/blog"
+        }
+      ]
+    },
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "authentication",
+              "credits",
+              "errors"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "openapi": "https://api.vaquill.ai/external/openapi.json "
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:contact@vaquill.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://app.vaquill.ai"
+    }
+  },
+  "api": {
+    "openapi": "https://api.vaquill.ai/external/openapi.json",
+    "playground": {
+      "display": "interactive"
+    },
+    "mdx": {
+      "auth": {
+        "method": "bearer",
+        "name": "Authorization"
+      },
+      "server": "https://api.vaquill.ai"
+    },
+    "examples": {
+      "languages": ["bash", "python", "javascript", "go"],
+      "defaults": "required"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor"
+    ]
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/vaquill",
+      "github": "https://github.com/vaquill",
+      "linkedin": "https://linkedin.com/company/vaquill"
+    }
+  },
+  "appearance": {
+    "default": "light",
+    "strict": true
+  }
+}
