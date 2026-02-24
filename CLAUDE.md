@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Mintlify-powered documentation and API reference site for **Vaquill AI** — app guides, API docs, and developer resources for Indian legal research and citation intelligence. This repo contains only the docs configuration, MDX content, and static assets; there is no application code, build step, or test suite.
+Mintlify-powered documentation and API reference site for **Vaquill AI** — app guides, API docs, and developer resources for legal research and citation intelligence. This repo contains only the docs configuration, MDX content, and static assets; there is no application code, build step, or test suite.
 
 ## Related Repos
 
