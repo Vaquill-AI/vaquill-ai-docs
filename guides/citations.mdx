@@ -1,0 +1,96 @@
+---
+title: "Citations"
+description: "Resolve, search, and traverse the Indian legal citation network"
+---
+
+## Overview
+
+Vaquill maintains a comprehensive citation database covering Indian Supreme Court and High Court cases. You can resolve citation strings, look up case details, and traverse the citation network to understand how cases relate to each other.
+
+## Citation Formats
+
+Vaquill supports the major Indian citation formats:
+
+| Format | Example |
+|--------|---------|
+| **SCC** | (2017) 10 SCC 1 |
+| **AIR** | AIR 2017 SC 4161 |
+| **INSC** | 2017 INSC 1 |
+
+Citations are cross-referenced — searching by one format will return all known citation strings for that case.
+
+## Resolving Citations
+
+Paste a citation string and Vaquill will resolve it to the full case record:
+
+> *"(2017) 10 SCC 1"*
+
+Returns: **Justice K.S. Puttaswamy v. Union of India** with full metadata including court, date, bench, and all citation strings.
+
+### Via the API
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/citations/resolve \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"citation": "(2017) 10 SCC 1"}'
+```
+
+## Searching Cases
+
+Search for cases by title, keyword, or topic:
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/citations/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "right to privacy", "limit": 10}'
+```
+
+## Citation Network
+
+Every case in Vaquill's corpus is linked to the cases it cites and the cases that cite it.
+
+### Cases Cited By (Backward Citations)
+
+Find all cases that a particular case cites:
+
+```bash
+curl https://api.vaquill.ai/api/v1/citations/{case_id}/citations-of \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+### Cases That Cite (Forward Citations)
+
+Find all cases that cite a particular case:
+
+```bash
+curl https://api.vaquill.ai/api/v1/citations/{case_id}/cited-by \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+### Citation Freshness
+
+Vaquill tracks how cases have been treated by later decisions:
+
+| Status | Meaning |
+|--------|---------|
+| **Good Law** | Not overruled or questioned — still authoritative |
+| **Overruled** | Explicitly overruled by a later decision |
+| **Distinguished** | Later courts limited its application to different facts |
+| **Questioned** | Later courts expressed doubt but did not overrule |
+
+<Warning>
+  Always verify case freshness before citing in a filing. A case that was good law last year may have been overruled since.
+</Warning>
+
+## Citation Styles
+
+When exporting research, Vaquill supports 100+ citation styles including:
+
+- **Bluebook** (legal standard)
+- **APA**, **MLA**, **Chicago**
+- **OSCOLA** (Oxford standard)
+- Indian legal citation conventions
+
+Select your preferred style from conversation settings or at export time.

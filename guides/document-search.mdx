@@ -1,0 +1,73 @@
+---
+title: "Document Search"
+description: "Upload documents and get AI-powered answers with exact citations"
+---
+
+## Overview
+
+Document Search lets you upload legal documents — contracts, case files, court orders, agreements — and ask questions in natural language. Vaquill reads the document, understands legal context, and returns precise answers with highlighted sources and page references.
+
+## Supported File Formats
+
+Vaquill processes 50+ file formats:
+
+| Category | Formats |
+|----------|---------|
+| Documents | PDF, DOCX, DOC, TXT, RTF, ODT |
+| Spreadsheets | XLSX, XLS, CSV |
+| Presentations | PPTX, PPT |
+| Images | PNG, JPG, TIFF (processed with OCR) |
+| Email | EML, MSG |
+| Archives | ZIP (extracts and processes contents) |
+
+<Tip>
+  Scanned PDFs and images are automatically processed with OCR. Vaquill cleans OCR artifacts to reduce noise and improve answer quality.
+</Tip>
+
+## How to Use
+
+<Steps>
+  <Step title="Start a conversation">
+    Open a new conversation from your [dashboard](https://app.vaquill.ai). You can also work within an existing Matter workspace.
+  </Step>
+  <Step title="Upload documents">
+    Drag and drop one or more files into the conversation. You'll see a progress indicator as each file is processed and indexed.
+  </Step>
+  <Step title="Ask questions">
+    Type your question in natural language. Examples:
+
+    - *"What is the termination clause in this agreement?"*
+    - *"Does this contract have a non-compete provision?"*
+    - *"Summarize the key obligations of the licensee"*
+  </Step>
+  <Step title="Review verified answers">
+    Each response includes source citations pointing to the exact section of your document. Verification badges indicate the confidence level of each claim.
+  </Step>
+</Steps>
+
+## Retrieval Strategies
+
+Vaquill uses multiple retrieval strategies to find the most relevant information:
+
+- **Hybrid Search** — Combines keyword and semantic matching
+- **HyDE** — Hypothetical Document Embeddings for better semantic recall
+- **Multi-Query** — Expands your question into multiple search queries
+- **Multi-Hop** — Chains reasoning across multiple document sections
+
+The system automatically selects the best strategy for your query.
+
+## Conversational Follow-ups
+
+You can ask follow-up questions without re-uploading or re-stating context. Vaquill maintains conversation history and understands references to previous answers:
+
+> **You:** What are the payment terms in this contract?
+>
+> **Vaquill:** The contract specifies net-30 payment terms with a 2% late fee...
+>
+> **You:** Are there any exceptions to that?
+>
+> **Vaquill:** Yes, Section 4.3 provides an exception for force majeure events...
+
+## Google Drive Import
+
+You can also import documents directly from Google Drive without downloading them first. Connect your Google account from dashboard settings.
