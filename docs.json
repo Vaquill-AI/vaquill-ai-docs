@@ -44,21 +44,27 @@
             "icon": "rocket",
             "pages": [
               "introduction",
-              "authentication",
-              "credits",
-              "errors"
-            ]
-          },
-          {
-            "group": "App Guides",
-            "icon": "book-open",
-            "pages": [
               "guides/document-search",
               "guides/case-law-research",
               "guides/contract-review",
-              "guides/legal-tools",
-              "guides/matters-workspaces",
               "guides/citations"
+            ]
+          },
+          {
+            "group": "Features",
+            "icon": "book-open",
+            "pages": [
+              "guides/legal-tools",
+              "guides/matters-workspaces"
+            ]
+          },
+          {
+            "group": "Developers",
+            "icon": "code",
+            "pages": [
+              "authentication",
+              "credits",
+              "errors"
             ]
           }
         ]
