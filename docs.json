@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vaquill AI",
-  "description": "Documentation and API reference for legal research and citation intelligence.",
+  "description": "Documentation and API reference for legal research and citation intelligence",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
