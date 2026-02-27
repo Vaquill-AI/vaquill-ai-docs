@@ -1,0 +1,18 @@
+# Local MCP config
+.mcp.json
+
+# Source screenshots (already copied to images/)
+product ss/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.cursor/
+.vscode/
+*.swp
+
+# Mintlify
+.mintlify/
+node_modules/
