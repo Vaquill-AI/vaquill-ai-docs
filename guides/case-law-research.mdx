@@ -52,7 +52,14 @@ Citation strings are resolved across formats (SCC, AIR, INSC).
 
 ## API
 
-Search programmatically via the [Research Search](/api-reference) endpoint:
+The case law search API lets you embed legal research directly into your product. Common use cases:
+
+- **Contract drafting platforms** that surface relevant precedents during drafting
+- **Practice management tools** with built-in case law lookup
+- **Compliance systems** that cross-reference regulations against case law
+- **Internal legal portals** for enterprise legal teams
+
+### Search Endpoint
 
 ```bash
 curl -X POST https://api.vaquill.ai/api/v1/research/search \
@@ -67,4 +74,4 @@ curl -X POST https://api.vaquill.ai/api/v1/research/search \
   }'
 ```
 
-Each search call costs **1 credit**. See [Credits](/credits).
+Each search call costs **1 credit**. See [Credits](/credits) for pricing and the [API Reference](/api-reference) for all available endpoints and parameters.
