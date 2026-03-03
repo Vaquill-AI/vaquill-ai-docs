@@ -1,11 +1,11 @@
 ---
 title: "Errors"
-description: "HTTP status codes and error responses from the Vaquill API"
+description: "HTTP status codes and error handling"
 ---
 
 ## Error Format
 
-All errors return a JSON response with a `detail` field describing what went wrong:
+Errors return JSON with a `detail` field:
 
 ```json
 {
@@ -13,7 +13,7 @@ All errors return a JSON response with a `detail` field describing what went wro
 }
 ```
 
-Validation errors (422) include additional field-level details:
+Validation errors (422) include field-level details:
 
 ```json
 {
@@ -29,19 +29,19 @@ Validation errors (422) include additional field-level details:
 
 ## Status Codes
 
-| Code | Meaning | What to Do |
-|------|---------|------------|
-| `200` | Success | Request completed successfully |
-| `401` | Unauthorized | Check your API key is correct and included in the `Authorization` header |
-| `403` | Forbidden | Your account has insufficient credits. Purchase more from your [dashboard](https://app.vaquill.ai/settings) |
-| `404` | Not Found | The requested resource (e.g., case ID) does not exist |
-| `422` | Validation Error | Check the request body. A required field is missing or has an invalid format |
-| `429` | Rate Limited | You're sending too many requests. Back off and retry with exponential backoff |
-| `500` | Internal Error | Something went wrong on our end. Retry after a brief delay; contact [support](mailto:contact@vaquill.com) if it persists |
+| Code | Meaning | Action |
+|------|---------|--------|
+| `200` | Success | |
+| `401` | Unauthorized | Check your API key and `Authorization` header |
+| `403` | Forbidden | Insufficient credits. [Purchase more](https://app.vaquill.ai/settings) |
+| `404` | Not Found | Resource does not exist |
+| `422` | Validation Error | Check request body for missing or invalid fields |
+| `429` | Rate Limited | Back off and retry with exponential backoff |
+| `500` | Internal Error | Retry after a brief delay. [Contact support](mailto:contact@vaquill.com) if it persists |
 
 ## Rate Limiting
 
-When you hit a rate limit, the API returns a `429` status code. Implement exponential backoff in your client:
+On `429`, implement exponential backoff:
 
 ```python
 import time
@@ -61,18 +61,18 @@ def search_with_retry(query, max_retries=3):
     raise Exception("Max retries exceeded")
 ```
 
-## Common Issues
+## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="401: I'm sure my key is correct">
-    Make sure you're using the `Bearer` prefix: `Authorization: Bearer vq_key_...`. The key alone without `Bearer` will be rejected.
+  <Accordion title="401 but my key is correct">
+    Include the `Bearer` prefix: `Authorization: Bearer vq_key_...`. The key alone is rejected.
   </Accordion>
 
-  <Accordion title="403: I just purchased credits">
-    Credit purchases may take a few seconds to reflect. Wait a moment and retry. If the issue persists, check your dashboard balance.
+  <Accordion title="403 after purchasing credits">
+    Credit purchases may take a few seconds to reflect. Retry after a moment.
   </Accordion>
 
-  <Accordion title="422: Unexpected validation error">
-    Ensure your `Content-Type` is set to `application/json` and the request body is valid JSON. Check the `loc` field in the error response to identify which field is problematic.
+  <Accordion title="422 validation error">
+    Set `Content-Type: application/json`. Check the `loc` field in the response to find the problematic field.
   </Accordion>
 </AccordionGroup>

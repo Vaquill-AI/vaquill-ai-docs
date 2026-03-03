@@ -1,35 +1,30 @@
 ---
 title: "Authentication"
-description: "Authenticate with the Vaquill API using Bearer tokens"
+description: "API key authentication for the Vaquill API"
 ---
 
 ## API Keys
 
-All API requests require a valid API key passed via the `Authorization` header as a Bearer token.
+All requests require an API key in the `Authorization` header:
 
 ```bash
 Authorization: Bearer vq_key_your_api_key_here
 ```
 
-API keys follow the format `vq_key_...` and are tied to your account.
+Keys use the `vq_key_` prefix and are tied to your account.
 
-## Getting Your API Key
+## Get Your API Key
 
 <Steps>
-  <Step title="Sign in to your dashboard">
-    Go to [app.vaquill.ai/settings](https://app.vaquill.ai/settings) and sign in to your account.
+  <Step title="Sign in">
+    Go to [app.vaquill.ai/settings](https://app.vaquill.ai/settings).
   </Step>
-  <Step title="Navigate to API settings">
-    Under your account settings, find the **API Keys** section.
-  </Step>
-  <Step title="Generate a key">
-    Click **Create API Key**, give it a name, and copy the key. You won't be able to see it again after creation.
+  <Step title="Create a key">
+    Under **API Keys**, click **Create API Key**. Copy the key immediately. It won't be shown again.
   </Step>
 </Steps>
 
-## Making Requests
-
-Include your API key in every request:
+## Example Requests
 
 <CodeGroup>
 ```bash cURL
@@ -70,14 +65,14 @@ req.Header.Set("Content-Type", "application/json")
 ```
 </CodeGroup>
 
-## Authentication Errors
+## Error Codes
 
-| Status Code | Meaning |
-|-------------|---------|
+| Code | Meaning |
+|------|---------|
 | `401` | Invalid or missing API key |
-| `403` | Insufficient credits for this request |
-| `429` | Rate limit exceeded. Slow down |
+| `403` | Insufficient credits |
+| `429` | Rate limit exceeded |
 
 <Warning>
-  Keep your API key secret. Do not expose it in client-side code, public repositories, or browser requests. If a key is compromised, revoke it immediately from your dashboard and generate a new one.
+  Do not expose your API key in client-side code or public repositories. If compromised, revoke it from your dashboard and generate a new one.
 </Warning>

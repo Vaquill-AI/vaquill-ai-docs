@@ -1,73 +1,67 @@
 ---
 title: "Document Search"
-description: "Upload documents and get AI-powered answers with exact citations"
+description: "Upload documents and ask questions with cited answers"
 ---
 
-## Overview
+Upload legal documents and ask questions in plain language. Answers include source citations with exact page references.
 
-Document Search lets you upload legal documents (contracts, case files, court orders, agreements) and ask questions in natural language. Vaquill reads the document, understands legal context, and returns precise answers with highlighted sources and page references.
-
-<Frame caption="Document search with highlighted citations and source references">
-  <img src="/images/ai-search.jpeg" alt="Document Search in Vaquill" style={{ borderRadius: '0.5rem' }} />
+<Frame caption="Document search with source citations and highlights">
+  <img src="/images/ai-search.jpeg" alt="Document Search" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
-## Supported File Formats
-
-Vaquill processes 50+ file formats:
+## Supported Formats
 
 | Category | Formats |
 |----------|---------|
 | Documents | PDF, DOCX, DOC, TXT, RTF, ODT |
 | Spreadsheets | XLSX, XLS, CSV |
 | Presentations | PPTX, PPT |
-| Images | PNG, JPG, TIFF (processed with OCR) |
+| Images | PNG, JPG, TIFF (OCR) |
 | Email | EML, MSG |
-| Archives | ZIP (extracts and processes contents) |
+| Archives | ZIP (extracts contents) |
 
-<Tip>
-  Scanned PDFs and images are automatically processed with OCR. Vaquill cleans OCR artifacts to reduce noise and improve answer quality.
-</Tip>
+Scanned PDFs and images are processed with OCR automatically.
 
 ## How to Use
 
 <Steps>
   <Step title="Start a conversation">
-    Open a new conversation from your [dashboard](https://app.vaquill.ai). You can also work within an existing Matter workspace.
+    Open a new conversation from your [dashboard](https://app.vaquill.ai), or work within an existing Matter.
   </Step>
   <Step title="Upload documents">
-    Drag and drop one or more files into the conversation. You'll see a progress indicator as each file is processed and indexed.
+    Drag and drop one or more files into the conversation.
   </Step>
   <Step title="Ask questions">
-    Type your question in natural language. Examples:
+    Examples:
 
     - *"What is the termination clause in this agreement?"*
     - *"Does this contract have a non-compete provision?"*
     - *"Summarize the key obligations of the licensee"*
   </Step>
-  <Step title="Review verified answers">
-    Each response includes source citations pointing to the exact section of your document. Verification badges indicate the confidence level of each claim.
+  <Step title="Review answers">
+    Each answer includes source citations pointing to the exact section of your document.
   </Step>
 </Steps>
 
 ## Answer Verification
 
-Every response goes through a multi-layer verification system that checks claims against your source documents and the web. Each claim gets a confidence score with matching sources.
+Every answer is verified against your source documents and external sources. Each claim gets a confidence score.
 
-<Frame caption="Response verification with claim-by-claim analysis">
+<Frame caption="Claim-by-claim verification">
   <img src="/images/rag-verification.jpeg" alt="Answer Verification" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
-<Frame caption="Web-based verification cross-referencing external legal sources">
+<Frame caption="Cross-referencing external legal sources">
   <img src="/images/response-verification-web.jpeg" alt="Web Verification" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
-## Conversational Follow-ups
+## Follow-up Questions
 
-You can ask follow-up questions without re-uploading or re-stating context. Vaquill maintains conversation history and understands references to previous answers:
+Ask follow-up questions without re-uploading. Context is preserved across the conversation:
 
 > **You:** What are the payment terms in this contract?
 >
-> **Vaquill:** The contract specifies net-30 payment terms with a 2% late fee...
+> **Vaquill:** Net-30 payment terms with a 2% late fee...
 >
 > **You:** Are there any exceptions to that?
 >
@@ -75,4 +69,4 @@ You can ask follow-up questions without re-uploading or re-stating context. Vaqu
 
 ## Google Drive Import
 
-You can also import documents directly from Google Drive without downloading them first. Connect your Google account from dashboard settings.
+Import documents directly from Google Drive. Connect your Google account from dashboard settings.

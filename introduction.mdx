@@ -1,77 +1,51 @@
 ---
 title: "Introduction"
-description: "AI-powered legal research and citation intelligence"
+description: "Legal research and citation intelligence platform"
 ---
 
 <Frame>
-  <img src="/images/main-ui.jpeg" alt="Vaquill AI - Main Interface" style={{ borderRadius: '0.5rem' }} />
+  <img src="/images/main-ui.jpeg" alt="Vaquill AI" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
 ## What is Vaquill?
 
-Vaquill AI is an intelligent legal research platform built for legal professionals. It combines advanced AI with a comprehensive legal corpus to help you find relevant case law, analyze documents, review contracts, and manage citations, in seconds instead of hours.
+Vaquill is a legal research platform. Upload documents, search 20M+ court cases, review contracts, and manage citations.
 
 <CardGroup cols={2}>
   <Card title="Document Search" icon="magnifying-glass" href="/guides/document-search">
-    Upload documents and ask questions in natural language. Get precise answers with exact citations.
+    Upload documents and ask questions. Get answers with exact source citations.
   </Card>
   <Card title="Case Law Research" icon="scale-balanced" href="/guides/case-law-research">
-    Search across 20M+ court cases with Boolean operators and intelligent search.
+    Search 20M+ cases with Boolean operators, filters, and citation lookup.
   </Card>
   <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
-    Analyze contracts for risks, missing clauses, and compliance issues with clause-by-clause breakdowns.
+    Clause-by-clause analysis with risk ratings, redline suggestions, and compliance checks.
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference">
-    Integrate legal search and citation intelligence directly into your applications.
+    Integrate case search and citation data into your applications.
   </Card>
 </CardGroup>
 
-## The Legal Corpus
-
-Vaquill indexes and maintains a comprehensive legal database:
+## Coverage
 
 - **20M+ cases** across multiple courts and jurisdictions
-- **Citation Formats:** SCC, AIR, INSC, and more
-- **Comprehensive indexing** for precise, full-text search
-
-## Key Capabilities
-
-<AccordionGroup>
-  <Accordion title="Intelligent Document Search" icon="file-magnifying-glass">
-    Upload contracts, case files, or court documents and ask questions in natural language. Vaquill understands legal context and returns precise answers with highlighted sources and exact page references.
-
-    Supports 50+ file formats including PDF, DOCX, XLSX, and scanned documents with OCR.
-  </Accordion>
-
-  <Accordion title="Answer Verification" icon="shield-check">
-    Every AI response goes through a multi-step verification process that cross-references claims against your source documents and external legal sources.
-
-    Each claim gets a confidence score: verified, partially verified, or unverified.
-  </Accordion>
-
-  <Accordion title="15+ Legal Tools" icon="toolbox">
-    A full suite of specialized tools including contract review, NDA triage, risk assessment, compliance checks against 11 regulatory frameworks (GDPR, DPDP Act, HIPAA, and more), document comparison, and redline analysis.
-  </Accordion>
-
-  <Accordion title="Citation Network" icon="diagram-project">
-    Traverse the citation graph to see how cases cite each other. Track case freshness to identify overruled, distinguished, or questioned decisions. Supports 100+ citation styles.
-  </Accordion>
-</AccordionGroup>
+- **Citation formats:** SCC, AIR, INSC, and more
+- **50+ file formats** including PDF, DOCX, scanned documents (OCR)
 
 ## Getting Started
 
 <Steps>
   <Step title="Create an account">
-    Sign up at [app.vaquill.ai](https://app.vaquill.ai) to get started with a free plan that includes 25 monthly messages and 100 pages.
+    Sign up at [app.vaquill.ai](https://app.vaquill.ai). Free plan includes 25 monthly messages and 100 pages.
   </Step>
-  <Step title="Upload your first document">
-    Drag and drop a document into any conversation. Vaquill processes it instantly and makes it searchable.
+  <Step title="Upload a document">
+    Drag and drop a file into any conversation.
   </Step>
-  <Step title="Start researching">
-    Ask questions in natural language, search for case law, or run any of the 15+ legal tools on your documents.
+  <Step title="Ask a question">
+    Type a question in plain language. Each answer includes source citations with page references.
   </Step>
 </Steps>
 
 ## For Developers
 
-If you want to integrate Vaquill's legal research capabilities into your own applications, check out the [API Reference](/api-reference). You'll need an API key. See [Authentication](/authentication) to get started.
+Integrate case search and citations via the REST API. See [Authentication](/authentication) for API keys and the [API Reference](/api-reference) for endpoints.

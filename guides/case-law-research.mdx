@@ -1,68 +1,58 @@
 ---
 title: "Case Law Research"
-description: "Search across 20M+ court cases with Boolean operators and filters"
+description: "Search 20M+ court cases with Boolean operators and filters"
 ---
 
-## Overview
+Search 20M+ cases across multiple courts and jurisdictions using natural language, Boolean operators, or citation strings.
 
-Vaquill gives you access to a comprehensive legal corpus with 20M+ cases across multiple courts and jurisdictions. Search using natural language, Boolean operators, or citation strings to find relevant precedents.
-
-<Frame caption="Boolean keyword search with document viewer and highlighting">
+<Frame caption="Boolean keyword search with document viewer">
   <img src="/images/keyword-research.jpeg" alt="Case Law Research" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
 ## Search Methods
 
-### Natural Language Search
+### Natural Language
 
-Describe what you're looking for in plain English:
+Describe what you're looking for:
 
 > *"Cases where the court discussed the right to privacy as a fundamental right"*
 
-Vaquill uses intelligent search to find cases that match the meaning of your query, not just keywords.
-
-### Boolean Keyword Search
-
-For precise control over search results, use Boolean operators:
+### Boolean Operators
 
 | Operator | Example | Effect |
 |----------|---------|--------|
 | `AND` | `murder AND conviction` | Both terms must appear |
 | `OR` | `Section 302 OR Section 304` | Either term can appear |
-| `NOT` | `appeal NOT dismissed` | Excludes documents with the term |
-| `"..."` | `"beyond reasonable doubt"` | Exact phrase match |
+| `NOT` | `appeal NOT dismissed` | Excludes the term |
+| `"..."` | `"beyond reasonable doubt"` | Exact phrase |
 | `( )` | `(murder OR homicide) AND conviction` | Grouped conditions |
 
-### Citation Search
+### Citation Lookup
 
-Search directly by citation string:
+Search by citation string directly:
 
 > *"(2017) 10 SCC 1"* or *"AIR 2017 SC 4161"*
 
-Vaquill resolves citation strings across formats (SCC, AIR, and INSC) and returns the matching case with full metadata.
+Citation strings are resolved across formats (SCC, AIR, INSC).
 
-## Filtering Results
+## Filters
 
-Narrow your search using filters:
-
-- **Court:** Filter by specific courts or tribunals
+- **Court:** Specific courts or tribunals
 - **Year / Date Range:** Cases from a particular period
-- **Judge:** Cases authored by or involving a specific judge
-- **Citation Format:** Filter by SCC, AIR, or INSC citations
+- **Judge:** Cases by a specific judge
+- **Citation Format:** SCC, AIR, or INSC
 
-## Understanding Results
+## Result Fields
 
-Each search result includes:
+- **Case title and citation:** All known citation strings
+- **Court and date**
+- **Judges:** Bench composition
+- **Relevance score**
+- **Snippet:** Matching passage from the judgment
 
-- **Case title and citation:** Full case name with all known citation strings
-- **Court and date:** Which court decided it and when
-- **Judges:** The bench composition
-- **Relevance score:** How closely it matches your query
-- **Snippet:** Key passage from the judgment matching your search
+## API
 
-## Using the API
-
-You can also run case law searches programmatically via the [Research Search](/api-reference) endpoint:
+Search programmatically via the [Research Search](/api-reference) endpoint:
 
 ```bash
 curl -X POST https://api.vaquill.ai/api/v1/research/search \
@@ -77,6 +67,4 @@ curl -X POST https://api.vaquill.ai/api/v1/research/search \
   }'
 ```
 
-<Info>
-  Each API search call costs **1 credit**. See [Credits](/credits) for details.
-</Info>
+Each search call costs **1 credit**. See [Credits](/credits).
