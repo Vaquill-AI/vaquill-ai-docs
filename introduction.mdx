@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-description: "Legal research and citation intelligence platform"
+description: "Legal research platform and case law API"
 ---
 
 <Frame>
@@ -9,7 +9,7 @@ description: "Legal research and citation intelligence platform"
 
 ## What is Vaquill?
 
-Vaquill is a legal research platform. Upload documents, search 20M+ court cases, review contracts, and manage citations.
+Vaquill is a legal research platform and case law API. Use it directly to search cases, review contracts, and manage citations. Or integrate the API into your own product to add legal research capabilities.
 
 <CardGroup cols={2}>
   <Card title="Document Search" icon="magnifying-glass" href="/guides/document-search">
@@ -22,7 +22,7 @@ Vaquill is a legal research platform. Upload documents, search 20M+ court cases,
     Clause-by-clause analysis with risk ratings, redline suggestions, and compliance checks.
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference">
-    Integrate case search and citation data into your applications.
+    Search cases, resolve citations, and traverse the citation network via REST API.
   </Card>
 </CardGroup>
 
@@ -32,7 +32,34 @@ Vaquill is a legal research platform. Upload documents, search 20M+ court cases,
 - **Citation formats:** SCC, AIR, INSC, and more
 - **50+ file formats** including PDF, DOCX, scanned documents (OCR)
 
+<Info>
+  Jurisdiction coverage is expanding. Additional jurisdictions including US, UK, and EU courts are being added.
+</Info>
+
+## Build with the API
+
+The case law API is designed for teams that need legal data as infrastructure. Search cases, resolve citations, and traverse the citation graph programmatically.
+
+<CardGroup cols={2}>
+  <Card title="Legal Tech Platforms" icon="laptop-code">
+    Embed case law search into contract drafting, CLM, or practice management tools.
+  </Card>
+  <Card title="Enterprise Legal Teams" icon="building">
+    Build internal legal research tools for in-house counsel and compliance workflows.
+  </Card>
+  <Card title="Compliance & RegTech" icon="clipboard-check">
+    Power automated regulatory compliance checks with case law data.
+  </Card>
+  <Card title="Legal Education" icon="graduation-cap">
+    Build searchable case databases for law schools, bar prep, and training platforms.
+  </Card>
+</CardGroup>
+
+See [Authentication](/authentication) for API keys, [Credits](/credits) for pricing, and the [API Reference](/api-reference) for endpoints.
+
 ## Getting Started
+
+### Use the Platform
 
 <Steps>
   <Step title="Create an account">
@@ -46,6 +73,23 @@ Vaquill is a legal research platform. Upload documents, search 20M+ court cases,
   </Step>
 </Steps>
 
-## For Developers
+### Use the API
 
-Integrate case search and citations via the REST API. See [Authentication](/authentication) for API keys and the [API Reference](/api-reference) for endpoints.
+<Steps>
+  <Step title="Get an API key">
+    Generate a key from your [dashboard settings](https://app.vaquill.ai/settings).
+  </Step>
+  <Step title="Make your first request">
+    Search for a case:
+
+    ```bash
+    curl -X POST https://api.vaquill.ai/api/v1/research/search \
+      -H "Authorization: Bearer vq_key_..." \
+      -H "Content-Type: application/json" \
+      -d '{"query": "right to privacy", "limit": 5}'
+    ```
+  </Step>
+  <Step title="Explore the endpoints">
+    Browse the full [API Reference](/api-reference) for case search, citation resolution, and citation network traversal.
+  </Step>
+</Steps>
