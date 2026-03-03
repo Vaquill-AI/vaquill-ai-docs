@@ -1,15 +1,11 @@
 ---
 title: "Citations"
-description: "Resolve, search, and traverse the legal citation network"
+description: "Resolve, search, and traverse the citation network"
 ---
 
-## Overview
+Resolve citation strings, look up case details, and traverse the citation network.
 
-Vaquill maintains a comprehensive citation database covering cases across multiple courts and jurisdictions. You can resolve citation strings, look up case details, and traverse the citation network to understand how cases relate to each other.
-
-## Citation Formats
-
-Vaquill supports major legal citation formats:
+## Formats
 
 | Format | Example |
 |--------|---------|
@@ -17,17 +13,17 @@ Vaquill supports major legal citation formats:
 | **AIR** | AIR 2017 SC 4161 |
 | **INSC** | 2017 INSC 1 |
 
-Citations are cross-referenced. Searching by one format will return all known citation strings for that case.
+Citations are cross-referenced. Searching by one format returns all known citation strings for that case.
 
-## Resolving Citations
+## Resolve a Citation
 
-Paste a citation string and Vaquill will resolve it to the full case record:
+Paste a citation string to get the full case record:
 
 > *"(2017) 10 SCC 1"*
 
-Returns: **K.S. Puttaswamy v. Union of India** with full metadata including court, date, bench, and all citation strings.
+Returns **K.S. Puttaswamy v. Union of India** with court, date, bench, and all citation strings.
 
-### Via the API
+### API
 
 ```bash
 curl -X POST https://api.vaquill.ai/api/v1/citations/resolve \
@@ -36,9 +32,9 @@ curl -X POST https://api.vaquill.ai/api/v1/citations/resolve \
   -d '{"citation": "(2017) 10 SCC 1"}'
 ```
 
-## Searching Cases
+## Search Cases
 
-Search for cases by title, keyword, or topic:
+Search by title, keyword, or topic:
 
 ```bash
 curl -X POST https://api.vaquill.ai/api/v1/citations/search \
@@ -49,52 +45,46 @@ curl -X POST https://api.vaquill.ai/api/v1/citations/search \
 
 ## Citation Network
 
-Every case in Vaquill's corpus is linked to the cases it cites and the cases that cite it.
+Every case is linked to the cases it cites and the cases that cite it.
 
-<Frame caption="Interactive citation graph with tree, map, and radial layouts">
+<Frame caption="Citation graph with tree, map, and radial layouts">
   <img src="/images/citation-graph.jpeg" alt="Citation Graph" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
-### Cases Cited By (Backward Citations)
-
-Find all cases that a particular case cites:
+### Backward Citations (Cases Cited)
 
 ```bash
 curl https://api.vaquill.ai/api/v1/citations/{case_id}/citations-of \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-### Cases That Cite (Forward Citations)
-
-Find all cases that cite a particular case:
+### Forward Citations (Cited By)
 
 ```bash
 curl https://api.vaquill.ai/api/v1/citations/{case_id}/cited-by \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-### Citation Freshness
-
-Vaquill tracks how cases have been treated by later decisions:
+### Freshness
 
 | Status | Meaning |
 |--------|---------|
-| **Good Law** | Not overruled or questioned; still authoritative |
+| **Good Law** | Not overruled or questioned |
 | **Overruled** | Explicitly overruled by a later decision |
-| **Distinguished** | Later courts limited its application to different facts |
-| **Questioned** | Later courts expressed doubt but did not overrule |
+| **Distinguished** | Later courts limited its application |
+| **Questioned** | Later courts expressed doubt |
 
 <Warning>
-  Always verify case freshness before citing in a filing. A case that was good law last year may have been overruled since.
+  Verify case freshness before citing in a filing.
 </Warning>
 
-## Citation Styles
+## Export Styles
 
-When exporting research, Vaquill supports 100+ citation styles including:
+100+ citation styles supported:
 
 - **Bluebook** (legal standard)
 - **APA**, **MLA**, **Chicago**
 - **OSCOLA** (Oxford standard)
-- Regional legal citation conventions
+- Regional conventions
 
-Select your preferred style from conversation settings or at export time.
+Select your style from conversation settings or at export time.

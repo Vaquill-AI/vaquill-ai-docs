@@ -1,13 +1,13 @@
 ---
 title: "Credits"
-description: "Understand how API credits work and what each endpoint costs"
+description: "API credit costs and subscription tiers"
 ---
 
 ## How Credits Work
 
-Each API call costs a fixed number of credits depending on the endpoint. New accounts receive **10 free API credits** to get started.
+Each API call costs a fixed number of credits. New accounts start with **10 free credits**.
 
-## Credit Costs by Endpoint
+## Costs by Endpoint
 
 | Endpoint | Method | Credits |
 |----------|--------|---------|
@@ -18,30 +18,22 @@ Each API call costs a fixed number of credits depending on the endpoint. New acc
 | `/api/v1/citations/{case_id}/cited-by` | GET | 1 |
 | `/api/v1/citations/{case_id}/citations-of` | GET | 1 |
 
-<Note>
-  Credit costs are fixed per call regardless of result size. A search returning 1 result costs the same as one returning 50.
-</Note>
+Credit cost is per call, regardless of result size.
 
 ## Checking Your Balance
 
-Monitor your remaining credits from your [dashboard](https://app.vaquill.ai/settings). When your balance reaches zero, API calls return a `403 Insufficient credits` error.
+View remaining credits in your [dashboard](https://app.vaquill.ai/settings). When credits reach zero, API calls return `403`.
 
-## Purchasing Credits
+## Plans
 
-Additional credits can be purchased from your dashboard. Vaquill offers several subscription tiers:
-
-| Plan | Included Credits | Best For |
-|------|-----------------|----------|
-| **Free** | 10 | Testing and evaluation |
+| Plan | Credits | Best For |
+|------|---------|----------|
+| **Free** | 10 | Evaluation |
 | **Starter** | 100/month | Individual developers |
-| **Professional** | 500/month | Small teams and applications |
-| **Business** | 2,000/month | Production applications |
+| **Professional** | 500/month | Small teams |
+| **Business** | 2,000/month | Production use |
 | **Enterprise** | Custom | High-volume integrations |
 
-<Tip>
-  If you're evaluating the API, the 10 free credits are enough to test every endpoint at least once.
-</Tip>
+## Expiration
 
-## Credit Expiration
-
-Monthly credits reset on your billing cycle date. Unused credits do not roll over to the next month.
+Monthly credits reset on your billing cycle date. Unused credits do not roll over.
