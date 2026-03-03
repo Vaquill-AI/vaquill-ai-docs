@@ -35,7 +35,7 @@ Validation errors (422) include additional field-level details:
 | `401` | Unauthorized | Check your API key is correct and included in the `Authorization` header |
 | `403` | Forbidden | Your account has insufficient credits. Purchase more from your [dashboard](https://app.vaquill.ai/settings) |
 | `404` | Not Found | The requested resource (e.g., case ID) does not exist |
-| `422` | Validation Error | Check the request body — a required field is missing or has an invalid format |
+| `422` | Validation Error | Check the request body. A required field is missing or has an invalid format |
 | `429` | Rate Limited | You're sending too many requests. Back off and retry with exponential backoff |
 | `500` | Internal Error | Something went wrong on our end. Retry after a brief delay; contact [support](mailto:contact@vaquill.com) if it persists |
 
