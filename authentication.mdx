@@ -76,7 +76,7 @@ req.Header.Set("Content-Type", "application/json")
 |-------------|---------|
 | `401` | Invalid or missing API key |
 | `403` | Insufficient credits for this request |
-| `429` | Rate limit exceeded — slow down |
+| `429` | Rate limit exceeded. Slow down |
 
 <Warning>
   Keep your API key secret. Do not expose it in client-side code, public repositories, or browser requests. If a key is compromised, revoke it immediately from your dashboard and generate a new one.
