@@ -5,12 +5,15 @@ description: "Connect Vaquill to Claude, Cursor, VS Code, and other AI tools via
 
 The Vaquill MCP server lets AI assistants access case law search, citation resolution, and the citation network directly. It works with any tool that supports the [Model Context Protocol](https://modelcontextprotocol.io).
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="PyPI" icon="python" href="https://pypi.org/project/vaquill-mcp/">
     `pip install vaquill-mcp`
   </Card>
   <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/vaquill-mcp">
     Source code and issues
+  </Card>
+  <Card title="Docs MCP" icon="book" href="https://vaquill.ai/docs/mcp">
+    Talk to our docs via MCP
   </Card>
 </CardGroup>
 
@@ -58,6 +61,22 @@ Add the following to your MCP configuration file. The config file location depen
 <Info>
   Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/) installed. `uvx` runs the package without a separate install step.
 </Info>
+
+### Docs MCP
+
+You can also add our documentation as an MCP source. This lets your AI assistant answer questions about Vaquill's features, API, and configuration by reading the docs directly.
+
+```json
+{
+  "mcpServers": {
+    "vaquill-docs": {
+      "url": "https://vaquill.ai/docs/mcp"
+    }
+  }
+}
+```
+
+No API key required for the docs MCP.
 
 ## Available Tools
 
