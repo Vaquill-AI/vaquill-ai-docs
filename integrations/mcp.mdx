@@ -1,0 +1,108 @@
+---
+title: "MCP Connector"
+description: "Connect Vaquill to Claude, Cursor, VS Code, and other AI tools via MCP"
+---
+
+The Vaquill MCP server lets AI assistants access case law search, citation resolution, and the citation network directly. It works with any tool that supports the [Model Context Protocol](https://modelcontextprotocol.io).
+
+<CardGroup cols={2}>
+  <Card title="PyPI" icon="python" href="https://pypi.org/project/vaquill-mcp/">
+    `pip install vaquill-mcp`
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/vaquill-mcp">
+    Source code and issues
+  </Card>
+</CardGroup>
+
+## Supported Platforms
+
+- Claude Desktop
+- Claude Code
+- Cursor
+- VS Code (GitHub Copilot)
+- Windsurf
+- Any MCP-compatible client
+
+## Setup
+
+### 1. Get an API key
+
+Generate a key from your [dashboard settings](https://app.vaquill.ai/settings). See [Authentication](/authentication).
+
+### 2. Configure your client
+
+Add the following to your MCP configuration file. The config file location depends on your client:
+
+| Client | Config File |
+|--------|------------|
+| Claude Desktop | `claude_desktop_config.json` |
+| Claude Code | `.claude/mcp.json` or `~/.claude/mcp.json` |
+| Cursor | `.cursor/mcp.json` |
+| VS Code | `.vscode/mcp.json` |
+| Windsurf | `~/.windsurf/mcp.json` |
+
+```json
+{
+  "mcpServers": {
+    "vaquill": {
+      "command": "uvx",
+      "args": ["vaquill-mcp"],
+      "env": {
+        "VAQUILL_API_KEY": "vq_key_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+<Info>
+  Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/) installed. `uvx` runs the package without a separate install step.
+</Info>
+
+## Available Tools
+
+Once connected, your AI assistant can use these tools:
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `ask_legal_question` | Legal Q&A grounded in court judgments. Supports standard and deep analysis modes | 1-2 |
+| `search_legal_cases` | Boolean keyword search with court, year, and country filters | 1 |
+| `quick_search` | Fast search returning top 3-5 results | 0.1 |
+| `resolve_citation` | Convert a citation string (SCC, AIR, INSC) to the canonical case record | 1 |
+| `search_cases_by_citation` | Find cases by citation or case name | 1 |
+| `lookup_case` | Full case details with citation treatment stats | 2 |
+| `get_citation_network` | Traverse citation relationships (1-3 hops) | 1 |
+| `get_pricing` | Check current API credit costs | Free |
+
+## Usage Examples
+
+Once configured, ask your AI assistant directly:
+
+> *"Find cases about negligence in medical malpractice"*
+>
+> *"Resolve citation (2017) 10 SCC 1"*
+>
+> *"Show the citation network for Kesavananda Bharati"*
+>
+> *"What does Section 302 IPC say according to case law?"*
+
+The assistant will call the appropriate Vaquill tool and return results with case citations, court details, and relevant passages.
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `VAQUILL_API_KEY` | Yes | | Your API key |
+| `VAQUILL_BASE_URL` | No | `https://api.vaquill.ai` | API endpoint |
+| `VAQUILL_TIMEOUT` | No | `120` | Request timeout in seconds |
+
+## Development
+
+To run from source:
+
+```bash
+git clone https://github.com/Vaquill-AI/vaquill-mcp.git
+cd vaquill-mcp
+uv sync --all-extras
+VAQUILL_API_KEY=vq_key_... uv run vaquill-mcp
+```

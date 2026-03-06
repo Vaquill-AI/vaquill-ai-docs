@@ -66,6 +66,13 @@
               "credits",
               "errors"
             ]
+          },
+          {
+            "group": "Integrations",
+            "icon": "plug",
+            "pages": [
+              "integrations/mcp"
+            ]
           }
         ]
       },
