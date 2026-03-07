@@ -1,0 +1,6 @@
+{
+  "projectTitle": "Vaquill AI",
+  "description": "Legal research platform and case law API. Search 20M+ cases, resolve citations, and integrate legal data.",
+  "folders": ["."],
+  "excludeFolders": ["logo", "images", "product ss", ".claude", ".mintlify", "node_modules"]
+}
