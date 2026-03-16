@@ -1,0 +1,102 @@
+---
+title: "CourtListener MCP"
+description: "Search US federal and state court opinions, dockets, and PACER data via MCP"
+---
+
+Search US federal and state court opinions, dockets, PACER data, and eCFR federal regulations through the [CourtListener API](https://www.courtlistener.com/api/) — hosted by Vaquill, no setup required.
+
+<CardGroup cols={2}>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/courtlistener-mcp">
+    Source code and self-hosting instructions
+  </Card>
+  <Card title="CourtListener API" icon="scale-balanced" href="https://www.courtlistener.com/api/">
+    Upstream API documentation
+  </Card>
+</CardGroup>
+
+## Hosted Endpoint
+
+Vaquill hosts this server publicly — connect directly without any API key:
+
+| Endpoint | Auth |
+|----------|------|
+| `https://courtlistener-mcp.vaquill.ai/mcp/` | None required |
+
+## Setup
+
+Add to your MCP configuration:
+
+<Tabs>
+  <Tab title="Claude Desktop / Claude Code">
+    Add to `claude_desktop_config.json` or `.claude/mcp.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "courtlistener": {
+          "url": "https://courtlistener-mcp.vaquill.ai/mcp/"
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Cursor">
+    Go to **Settings > MCP** and add:
+
+    - **Type:** `streamableHttp`
+    - **URL:** `https://courtlistener-mcp.vaquill.ai/mcp/`
+  </Tab>
+  <Tab title="Windsurf">
+    Add to your MCP config:
+
+    ```json
+    {
+      "mcpServers": {
+        "courtlistener": {
+          "serverUrl": "https://courtlistener-mcp.vaquill.ai/mcp/"
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Available Tools
+
+19 tools across search, lookup, and citation categories:
+
+| Category | Tools |
+|----------|-------|
+| **Search** | `search_opinions`, `search_dockets`, `search_dockets_with_documents`, `search_recap_documents`, `search_audio`, `search_people` |
+| **Get by ID** | `get_opinion`, `get_docket`, `get_audio`, `get_cluster`, `get_person`, `get_court` |
+| **Citations** | `citation_lookup_citation`, `citation_batch_lookup_citations`, `citation_verify_citation_format`, `citation_parse_citation_with_citeurl`, `citation_extract_citations_from_text`, `citation_enhanced_citation_lookup` |
+| **System** | `status` |
+
+## Usage Examples
+
+Once connected, ask your AI assistant:
+
+> *"Search for Supreme Court opinions on qualified immunity"*
+>
+> *"Look up docket 23-1234 in the Southern District of New York"*
+>
+> *"Find all cases citing Miranda v. Arizona"*
+>
+> *"Verify the citation format 410 U.S. 113"*
+
+## Self-Hosting
+
+To run your own instance:
+
+```bash
+git clone https://github.com/Vaquill-AI/integrations.git
+cd integrations/courtlistener-mcp
+cp .env.example .env  # add your COURT_LISTENER_API_KEY
+docker-compose up -d  # runs on port 8000
+```
+
+Get a free CourtListener API key at [courtlistener.com/api](https://www.courtlistener.com/api/).
+
+<Info>
+  Built with Python (FastMCP). Supports `streamable_http`, `sse`, and `stdio` transports.
+</Info>
