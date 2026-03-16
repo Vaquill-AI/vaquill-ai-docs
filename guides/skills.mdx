@@ -1,0 +1,89 @@
+---
+title: "Skills"
+description: "Curated legal playbooks that guide the AI through structured frameworks for contract review, risk assessment, and more"
+---
+
+Skills are expert legal playbooks that give the AI structured methodologies for specific tasks — contract review, NDA screening, risk assessment, compliance checks, and more. Instead of freeform answers, the AI follows a proven framework with checklists, severity ratings, and domain-specific guidance.
+
+## How to Use Skills
+
+There are two ways to activate a skill:
+
+### Slash Command (Recommended)
+
+Type `/` in the chat input to open the skill menu. Select a skill, then type your question. The skill's framework guides the AI's response.
+
+For example: Type `/`, select **Contract Review**, then paste your contract text or ask about a specific clause.
+
+### Automatic Activation
+
+In [Agent Mode](/guides/agent-mode), the AI can autonomously activate a skill when your question clearly matches one. For example, if you ask "Review this NDA for risks," the agent may activate the NDA Triage skill on its own.
+
+## Built-in Skills
+
+<CardGroup cols={2}>
+  <Card title="Contract Review" icon="file-contract">
+    Clause-by-clause analysis against standard positions. GREEN/YELLOW/RED severity flags with redline suggestions. Covers Indian Contract Act, FEMA, CCI, GST, and Arbitration Act considerations.
+  </Card>
+  <Card title="NDA Triage" icon="shield-check">
+    10-point NDA screening checklist. Classifies as GREEN (approve), YELLOW (negotiate), or RED (escalate) with routing recommendations. Indian Contract Act Section 27 analysis.
+  </Card>
+  <Card title="Risk Assessment" icon="triangle-exclamation">
+    5x5 severity-by-likelihood matrix (scores 1-25). Color-coded risk levels with escalation criteria and mitigation recommendations. Indian regulatory considerations (SEBI, RBI, CCI, MCA).
+  </Card>
+  <Card title="Privacy Compliance" icon="lock">
+    DPDP Act 2023 focused checklist. DPA review, data principal request handling, cross-border transfer assessment, and penalty framework (up to 250 crore).
+  </Card>
+  <Card title="Statute Analysis" icon="book">
+    Systematic interpretation using Indian rules: literal, mischief (Heydon's Rule), purposive, harmonious construction, ejusdem generis, and operator word analysis.
+  </Card>
+  <Card title="Case Brief" icon="gavel">
+    IRAC format (Issue, Rule, Application, Conclusion). Indian citation standards (SCC, AIR, INSC, SCR, SCALE), headnote extraction, ratio decidendi analysis, and bench strength notation.
+  </Card>
+  <Card title="Legal Notice" icon="envelope">
+    Templates for Section 80 CPC notice, Section 138 NI Act cheque bounce notice, consumer complaint notice, and recovery/demand notices. Strict timeline guidance.
+  </Card>
+  <Card title="Contract Redlining" icon="pen">
+    Pure redline mode with exact replacement language. Must-Have/Should-Have/Nice-to-Have priority classification with fallback positions and summary table output.
+  </Card>
+</CardGroup>
+
+## Example Usage
+
+### Contract Review via Slash Command
+
+1. Type `/` and select **Contract Review**
+2. Upload or paste your contract
+3. Ask: "Review this services agreement and flag high-risk clauses"
+4. The AI produces a clause-by-clause analysis with severity ratings and suggested redlines
+
+### Risk Assessment in Agent Mode
+
+With [Agent Mode](/guides/agent-mode) enabled, simply ask:
+
+> *"Assess the legal risks of this proposed joint venture with a Chinese company"*
+
+The AI recognizes this as a risk assessment task, activates the skill, and produces a structured 5x5 risk matrix with regulatory considerations.
+
+### Case Brief from a Judgment
+
+1. Type `/` and select **Case Brief**
+2. Ask: "Brief the judgment in Kesavananda Bharati v. State of Kerala"
+3. The AI produces an IRAC-format brief with proper citations and ratio decidendi
+
+## Skill Types
+
+| Type | Purpose | Examples |
+|------|---------|---------|
+| **Playbook** | Step-by-step methodology | Contract Review, Case Brief, Redlining |
+| **Checklist** | Point-by-point verification | Privacy Compliance |
+| **Analysis Framework** | Structured evaluation matrix | Risk Assessment, Statute Analysis |
+| **Drafting Template** | Guided document creation | Legal Notice |
+| **Triage** | Quick classification and routing | NDA Triage |
+
+## Related
+
+- [Agent Mode](/guides/agent-mode) — Skills are automatically available to the agent
+- [Contract Review](/guides/contract-review) — Detailed guide on contract analysis
+- [Legal Tools](/guides/legal-tools) — Full suite of 15 legal analysis tools
+- [MCP Connector](/integrations/mcp) — Use Vaquill's tools in your AI editor

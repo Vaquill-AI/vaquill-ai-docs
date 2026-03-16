@@ -1,0 +1,96 @@
+---
+title: "Agent Mode"
+description: "Let the AI autonomously search, fetch URLs, read files, and call tools to answer complex legal questions"
+---
+
+Agent Mode gives the AI autonomous control over which tools to use and when. Instead of following a fixed retrieval pipeline, the AI decides what to search, which URLs to read, and what tools to call — iterating up to 5 rounds until it has a complete answer.
+
+## How It Works
+
+In regular chat, your query goes through a fixed RAG pipeline: embed, retrieve, rerank, generate. In Agent Mode, the AI receives a set of tools and autonomously decides the research strategy:
+
+1. You ask a question
+2. The AI analyzes it and calls relevant tools (search documents, web search, fetch a URL, etc.)
+3. It reads the results, identifies gaps, and calls more tools if needed
+4. After up to 5 iterations, it synthesizes a final answer with sources
+
+<Info>
+  When Agent Mode is enabled, Research and Deep Mode are paused. The agent takes over all search autonomously.
+</Info>
+
+## Enable Agent Mode
+
+Click the **Agent** button in the chat toolbar. A toggle turns it on/off, and a dropdown lets you configure individual tools.
+
+Agent Mode is saved per matter — enable it once and it stays on for that workspace.
+
+## Available Tools
+
+Agent Mode gives the AI access to these tools automatically:
+
+| Tool | What It Does | Cost |
+|------|-------------|------|
+| **Web Search** | Searches the web via Exa with jurisdiction filter (IN, US, UK, Global) | Included |
+| **Fetch URL** | Reads any public URL — web pages, PDFs, Office docs, images | Included |
+| **Search Documents** | Re-queries your uploaded matter documents with new search terms | Included |
+| **Search Legal Corpus** | Searches 20M+ Indian SC/HC cases with court and year filters | Included |
+| **Resolve Citation** | Resolves citation strings (SCC, AIR, INSC) to full case details | Included |
+| **Generate Case Brief** | Creates an IRAC case brief from a corpus judgment, optionally saves as DOCX | Paid |
+| **Court Records (eCourts)** | Live search of 24Cr+ eCourts India records — case details, orders, cause lists | Paid (opt-in) |
+
+Additionally, any [MCP server tools](/guides/mcp-client) and [Skills](/guides/skills) you have enabled are also available to the agent.
+
+## Read Any URL
+
+The `fetch_url` tool lets the AI read content from any public URL. It handles:
+
+| Format | How It's Processed |
+|--------|-------------------|
+| **Web pages** (HTML) | Extracted with Trafilatura for clean text |
+| **PDFs** | Parsed with PyMuPDF4LLM (Pro + GNN layout) |
+| **Office docs** (DOCX, XLSX, PPTX) | Full text extraction |
+| **Images** (JPEG, PNG, TIFF, BMP, WebP) | OCR via Tesseract |
+| **Legacy formats** (DOC, XLS, PPT) | Converted and extracted |
+| **Plain text, JSON, XML, CSV** | Read directly |
+
+<Warning>
+  URL fetching is rate-limited to 20 requests per hour. Responses are capped at 5 MB and truncated to 15,000 characters before being sent to the AI.
+</Warning>
+
+## Tool Configuration
+
+Core tools (web search, fetch URL, search documents, corpus search, resolve citation) are always available when Agent Mode is on. Paid tools have individual toggles:
+
+- **Court Records (eCourts)** — Opt-in toggle with per-action pricing (search: INR 0.20, case details: INR 0.50, order summary: INR 2.50, cause list: INR 1.00)
+- **Generate Case Brief** — INR 2.00 per brief (LLM-intensive)
+
+## Limits
+
+| Limit | Value |
+|-------|-------|
+| Max iterations per response | 5 |
+| Max tool calls per iteration | 3 |
+| URL fetch rate limit | 20/hour per user |
+| URL fetch timeout | 10 seconds |
+| URL response size cap | 5 MB |
+| URL text truncation | 15,000 characters |
+| Web search results per call | 5 |
+
+## Example Prompts
+
+Agent Mode shines with multi-step research questions:
+
+> *"Compare the privacy frameworks in DPDP Act 2023 and GDPR, citing specific provisions from both"*
+>
+> *"Read this judgment URL and prepare a case brief: https://example.com/judgment.pdf"*
+>
+> *"Find recent Supreme Court cases on Section 498A and check if any have been overruled"*
+>
+> *"Search for contract termination clauses in my uploaded agreement and compare them against market standard"*
+
+## Related
+
+- [Skills](/guides/skills) — Curated legal playbooks the agent can activate
+- [MCP Client](/guides/mcp-client) — Connect external tools for the agent to use
+- [Document Search](/guides/document-search) — How document retrieval works
+- [Case Law Research](/guides/case-law-research) — Legal corpus search details

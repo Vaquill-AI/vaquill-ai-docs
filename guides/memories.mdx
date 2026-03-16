@@ -1,0 +1,70 @@
+---
+title: "Memories"
+description: "Persistent cross-session memory that learns your preferences and personalizes responses"
+---
+
+Memories automatically learn facts about you from your conversations — your jurisdiction, practice areas, citation preferences, and research context — and use them to personalize future responses across all your chats.
+
+## How It Works
+
+<Steps>
+  <Step title="You chat normally">
+    Ask questions, review documents, research cases — no extra steps needed.
+  </Step>
+  <Step title="Facts are extracted automatically">
+    After each conversation turn, an LLM analyzes the exchange and extracts noteworthy facts (e.g., "User practises criminal law in Delhi" or "User prefers SCC citation format").
+  </Step>
+  <Step title="Memories personalize future responses">
+    Before answering your next question, relevant memories are retrieved via semantic search and silently injected into the AI's context. The AI uses them to give more relevant answers without explicitly saying "I remember."
+  </Step>
+</Steps>
+
+## What Gets Remembered
+
+The extraction is tuned for legal practice context:
+
+- **Jurisdiction focus** — country, state, courts you work with
+- **Practice areas** — criminal, civil, corporate, IP, family, etc.
+- **Citation preferences** — AIR, SCC, SCR, INSC formats
+- **Ongoing research topics** — specific statutes, case names, legal issues
+- **Professional context** — advocate, judge, student, firm type
+- **Language preference**
+- **Identity** — name, firm name
+
+<Info>
+  Memories are extracted automatically — there is no manual "save memory" button. The system learns organically from your conversations.
+</Info>
+
+## Enable Memories
+
+Memories are **opt-in**. Go to **Settings** and toggle the **Memory** switch.
+
+When enabled, you'll see:
+- A list of all saved memories with creation dates
+- A filter to search through your memories
+- Delete buttons for individual memories
+- A **Clear All** button to wipe everything
+
+When disabled, no facts are extracted or used.
+
+## Privacy and Control
+
+- **Fully opt-in** — disabled by default, you choose to enable it
+- **Per-user isolation** — your memories are never shared with other users
+- **Delete anytime** — remove individual memories or clear all at once
+- **Silent personalization** — the AI never says "I remember you said..." — it just gives better answers
+- **Graceful degradation** — if the memory system is down, chat continues normally without personalization
+
+## Limits
+
+| Limit | Value |
+|-------|-------|
+| Max memories per user | 1,000 |
+| Memories used per query | Up to 5 (most relevant) |
+| Memory context budget | 500 tokens max |
+
+## Related
+
+- [Document Search](/guides/document-search) — How the AI answers questions from your documents
+- [Agent Mode](/guides/agent-mode) — Autonomous research mode that also benefits from memories
+- [Matters & Workspaces](/guides/matters-workspaces) — Organize your work by matter

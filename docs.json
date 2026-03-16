@@ -55,6 +55,10 @@
             "group": "Features",
             "icon": "book-open",
             "pages": [
+              "guides/agent-mode",
+              "guides/skills",
+              "guides/memories",
+              "guides/mcp-client",
               "guides/legal-tools",
               "guides/matters-workspaces"
             ]
