@@ -1,0 +1,125 @@
+---
+title: "CanLII MCP"
+description: "Search Canadian court decisions and legislation via MCP"
+---
+
+Search Canadian federal and provincial court decisions and legislation through the [CanLII API](https://www.canlii.org/en/api/) — hosted by Vaquill with bilingual (English/French) support.
+
+<CardGroup cols={2}>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/canlii-mcp">
+    Source code and self-hosting instructions
+  </Card>
+  <Card title="CanLII API" icon="scale-balanced" href="https://www.canlii.org/en/api/">
+    Upstream API documentation
+  </Card>
+</CardGroup>
+
+## Hosted Endpoint
+
+Vaquill hosts this server publicly — requires a Bearer token:
+
+| Endpoint | Auth |
+|----------|------|
+| `https://canlii-mcp.vaquill.ai/mcp` | Bearer token required |
+
+## Setup
+
+Add to your MCP configuration:
+
+<Tabs>
+  <Tab title="Claude Desktop / Claude Code">
+    Add to `claude_desktop_config.json` or `.claude/mcp.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "canlii": {
+          "url": "https://canlii-mcp.vaquill.ai/mcp",
+          "headers": {
+            "Authorization": "Bearer YOUR_TOKEN"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Cursor">
+    Go to **Settings > MCP** and add:
+
+    - **Type:** `streamableHttp`
+    - **URL:** `https://canlii-mcp.vaquill.ai/mcp`
+    - **Headers:** `Authorization: Bearer YOUR_TOKEN`
+  </Tab>
+  <Tab title="Windsurf">
+    Add to your MCP config:
+
+    ```json
+    {
+      "mcpServers": {
+        "canlii": {
+          "serverUrl": "https://canlii-mcp.vaquill.ai/mcp",
+          "headers": {
+            "Authorization": "Bearer YOUR_TOKEN"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Available Tools
+
+7 tools for searching Canadian case law and legislation:
+
+| Tool | Description |
+|------|-------------|
+| `list_case_databases` | List all courts and tribunals |
+| `list_cases` | Browse decisions from a specific court |
+| `get_case` | Case metadata (title, citation, date, keywords) |
+| `get_case_citations` | Citation graph — cited cases, citing cases, cited legislation |
+| `list_legislation_databases` | List all statute/regulation databases |
+| `list_legislation` | Browse statutes from a specific database |
+| `get_legislation` | Legislation metadata |
+
+## Usage Examples
+
+Once connected, ask your AI assistant:
+
+> *"List all Canadian federal courts available"*
+>
+> *"Search for Supreme Court of Canada decisions on charter rights"*
+>
+> *"Get the citation network for R v Jordan 2016 SCC 27"*
+>
+> *"Find legislation related to the Criminal Code"*
+
+## Rate Limits
+
+The CanLII API enforces strict rate limits:
+
+- 1 concurrent request
+- 2 requests per second
+- **5,000 requests per day** (hard cap)
+
+<Warning>
+  The CanLII API returns metadata only — full document text is not available through the API.
+</Warning>
+
+## Self-Hosting
+
+To run your own instance:
+
+```bash
+git clone https://github.com/Vaquill-AI/integrations.git
+cd integrations/canlii-mcp
+cp .env.example .env  # add your CANLII_API key
+docker build -t canlii-mcp .
+docker run -p 3000:3000 --env-file .env canlii-mcp
+```
+
+Apply for a CanLII API key at [canlii.org/en/api](https://www.canlii.org/en/api/).
+
+<Info>
+  Built with TypeScript (MCP SDK + Hono). Supports `streamable_http` and `stdio` transports.
+</Info>

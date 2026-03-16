@@ -72,7 +72,9 @@
             "group": "Integrations",
             "icon": "plug",
             "pages": [
-              "integrations/mcp"
+              "integrations/mcp",
+              "integrations/courtlistener-mcp",
+              "integrations/canlii-mcp"
             ]
           }
         ]
