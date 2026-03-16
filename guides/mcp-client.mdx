@@ -1,0 +1,93 @@
+---
+title: "MCP Client"
+description: "Connect external MCP servers to Vaquill and use their tools directly in chat"
+---
+
+Vaquill's MCP Client lets you connect any [Model Context Protocol](https://modelcontextprotocol.io) server — Notion, GitHub, Slack, databases, or your own custom server — so its tools become available inside Vaquill's AI chat alongside the built-in legal tools.
+
+<Info>
+  This page covers connecting **external** MCP servers **to** Vaquill. If you want to connect **Vaquill's tools** to your AI editor (Claude, Cursor, etc.), see [MCP Connector](/integrations/mcp).
+</Info>
+
+## Built-in Legal MCP Servers
+
+Two legal research servers are available to all users by default — no setup required:
+
+<CardGroup cols={2}>
+  <Card title="CourtListener" icon="scale-balanced" href="/integrations/courtlistener-mcp">
+    US federal and state court opinions, dockets, PACER data, and citations. 19 tools. No auth needed.
+  </Card>
+  <Card title="CanLII" icon="building-columns" href="/integrations/canlii-mcp">
+    Canadian federal and provincial court decisions and legislation. 7 tools. Bilingual (EN/FR).
+  </Card>
+</CardGroup>
+
+These system servers can be toggled on/off individually in **Settings > MCP Servers**.
+
+## Connect Your Own MCP Servers
+
+<Steps>
+  <Step title="Go to Settings">
+    Open **Settings > MCP Servers** in the dashboard.
+  </Step>
+  <Step title="Add a server">
+    Click **Add Server** and provide:
+    - **Name** — a label for the server (e.g., "Notion")
+    - **URL** — the MCP endpoint URL
+    - **Transport** — `streamable_http` (recommended) or `sse`
+    - **Headers** (optional) — authorization headers (encrypted at rest)
+  </Step>
+  <Step title="Sync tools">
+    Click **Sync** to discover the server's available tools. You can preview each tool's description and parameters.
+  </Step>
+  <Step title="Use in chat">
+    Enable [Agent Mode](/guides/agent-mode) in any chat. The server's tools automatically appear in the AI's tool list and can be called autonomously.
+  </Step>
+</Steps>
+
+<Warning>
+  Agent Mode must be enabled for MCP tools to work in chat. The AI calls MCP tools as part of its autonomous tool-calling loop.
+</Warning>
+
+## How It Works
+
+When you chat with Agent Mode enabled:
+
+1. Tools from all your enabled MCP servers are discovered and cached
+2. A **semantic relevance filter** prunes irrelevant tools based on your query (so the AI only sees tools that matter)
+3. The AI decides whether to call an MCP tool, just like it decides to search documents or fetch a URL
+4. Tool results are returned to the AI with safety wrappers to prevent prompt injection
+5. Tools are prefixed with the server name (e.g., `notion__create_page`) to avoid collisions
+
+## Security
+
+- **SSRF protection** — server URLs are validated against private IP ranges, loopback, and reserved addresses
+- **Encrypted headers** — authorization headers are AES-256-GCM encrypted before storage and never returned in API responses
+- **Prompt injection mitigation** — tool results are wrapped with explicit "untrusted data" markers
+- **No tool shadowing** — MCP tools cannot override built-in tools (web search, corpus search, etc.)
+- **Rate limiting** — 100 tool executions per hour, 5 sync requests per minute
+
+## Limits
+
+| Limit | Value |
+|-------|-------|
+| Max servers per user | 10 |
+| Max tools per server | 10 |
+| Max total MCP tools | 15 |
+| Discovery timeout | 10 seconds |
+| Execution timeout | 30 seconds |
+| Tool result size cap | 8,000 characters |
+
+## Transport Protocols
+
+| Protocol | Best For | Overhead |
+|----------|---------|---------|
+| **Streamable HTTP** (recommended) | Most servers, stateless | Near-zero |
+| **SSE** (legacy) | Servers that only support SSE | ~300 KB per call |
+
+## Related
+
+- [Agent Mode](/guides/agent-mode) — Required for MCP tools to work in chat
+- [MCP Connector](/integrations/mcp) — Connect Vaquill's tools to your AI editor
+- [CourtListener MCP](/integrations/courtlistener-mcp) — US court data server
+- [CanLII MCP](/integrations/canlii-mcp) — Canadian legal data server
