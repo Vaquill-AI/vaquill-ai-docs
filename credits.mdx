@@ -1,39 +1,48 @@
 ---
 title: "Credits"
-description: "API credit costs and subscription tiers"
+description: "API credit costs and pricing"
 ---
 
 ## How Credits Work
 
-Each API call costs a fixed number of credits. New accounts start with **10 free credits**.
+Each API call costs a fixed number of credits. **1 credit = $0.01 USD.** New accounts start with **500 free credits ($5)**.
 
 ## Costs by Endpoint
 
-| Endpoint | Method | Credits |
-|----------|--------|---------|
-| `/api/v1/research/search` | POST | 1 |
-| `/api/v1/citations/resolve` | POST | 1 |
-| `/api/v1/citations/search` | POST | 1 |
-| `/api/v1/citations/{case_id}` | GET | 2 |
-| `/api/v1/citations/{case_id}/cited-by` | GET | 1 |
-| `/api/v1/citations/{case_id}/citations-of` | GET | 1 |
+| Endpoint | Method | Credits | Cost |
+|----------|--------|---------|------|
+| `/api/v1/ask` | POST | 5 | $0.05 |
+| `/api/v1/ask` (deep mode) | POST | 20 | $0.20 |
+| `/api/v1/ask/stream` | POST | 5 / 20 | Same as sync |
+| `/api/v1/research/search` (1-20 results) | POST | 1 | $0.01 |
+| `/api/v1/research/search` (21-50 results) | POST | 2 | $0.02 |
+| `/api/v1/research/search` (51-100 results) | POST | 3 | $0.03 |
+| `/api/v1/research/quick` | POST | 1 | $0.01 |
+| `/api/v1/citations/resolve` | GET | 1 | $0.01 |
+| `/api/v1/citations/cases/search` | GET | 1 | $0.01 |
+| `/api/v1/citations/cases/lookup` | GET | 1 | $0.01 |
+| `/api/v1/citations/cases/network` | GET | 2 | $0.02 |
 
 Credit cost is per call, regardless of result size.
 
+## Credit Packs
+
+| Pack | Credits | Price | Bonus |
+|------|---------|-------|-------|
+| **Starter** | 1,000 | $10 | — |
+| **Builder** | 2,500 | $25 | — |
+| **Pro** | 5,500 | $50 | +10% bonus |
+| **Scale** | 25,000 | $200 | +25% bonus |
+
+Custom amounts available at $0.01/credit.
+
 ## Checking Your Balance
 
-View remaining credits in your [dashboard](https://app.vaquill.ai/settings). When credits reach zero, API calls return `403`.
+View remaining credits in your [developer settings](https://app.vaquill.ai/developer?tab=credits). When credits reach zero, API calls return `403`.
 
-## Plans
+## Notes
 
-| Plan | Credits | Best For |
-|------|---------|----------|
-| **Free** | 10 | Evaluation |
-| **Starter** | 100/month | Individual developers |
-| **Professional** | 500/month | Small teams |
-| **Business** | 2,000/month | Production use |
-| **Enterprise** | Custom | High-volume integrations |
-
-## Expiration
-
-Monthly credits reset on your billing cycle date. Unused credits do not roll over.
+- Credits do not expire.
+- Signup bonus: 500 credits ($5) — no credit card required.
+- Indian users are charged in INR at the current conversion rate.
+- Bulk or enterprise pricing available — contact [priyansh@vaquill.ai](mailto:priyansh@vaquill.ai).
