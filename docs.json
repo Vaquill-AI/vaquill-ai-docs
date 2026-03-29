@@ -136,32 +136,57 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/vaquill",
-      "github": "https://github.com/vaquill",
-      "linkedin": "https://linkedin.com/company/vaquill"
+      "linkedin": "https://www.linkedin.com/company/vaquill/",
+      "youtube": "https://www.youtube.com/@vaquill",
+      "slack": "https://join.slack.com/t/vaquillaicommunity/shared_invite/zt-3qxv4mtxg-64mtkVe2PxodDMwKGPfvMQ",
+      "github": "https://github.com/Vaquill-AI"
     },
     "links": [
       {
-        "header": "Product",
+        "header": "Quick Links",
         "items": [
           { "label": "Dashboard", "href": "https://app.vaquill.ai" },
-          { "label": "Pricing", "href": "https://vaquill.ai/#pricing" }
+          { "label": "Pricing", "href": "https://vaquill.ai/#pricing" },
+          { "label": "About", "href": "https://vaquill.ai/about" },
+          { "label": "Contact", "href": "https://vaquill.ai/contact" },
+          { "label": "Brand Assets", "href": "https://vaquill.ai/brand" }
+        ]
+      },
+      {
+        "header": "Features",
+        "items": [
+          { "label": "Agent Mode", "href": "https://vaquill.ai/features/agent-mode" },
+          { "label": "Skills", "href": "https://vaquill.ai/features/skills" },
+          { "label": "Memories", "href": "https://vaquill.ai/features/memories" },
+          { "label": "AI Legal Research", "href": "https://vaquill.ai/features/legal-research" },
+          { "label": "Compliance Check", "href": "https://vaquill.ai/features/compliance-check" },
+          { "label": "Chronology Builder", "href": "https://vaquill.ai/features/chronology-builder" }
         ]
       },
       {
         "header": "Developers",
         "items": [
-          { "label": "API Reference", "href": "/api-reference" },
-          { "label": "Authentication", "href": "/authentication" },
-          { "label": "Credits", "href": "/credits" },
-          { "label": "Postman Collection", "href": "https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-86d6f62d-ef53-4feb-85f4-915ef7a933cb?action=share&creator=52997016" }
+          { "label": "API Reference", "href": "/api-reference/ask/ask-a-legal-question" },
+          { "label": "Postman Collection", "href": "https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-86d6f62d-ef53-4feb-85f4-915ef7a933cb/?action=share&creator=52997016" }
+        ]
+      },
+      {
+        "header": "Use Cases",
+        "items": [
+          { "label": "Litigation Lawyers", "href": "https://vaquill.ai/use-case/litigation-lawyers" },
+          { "label": "Corporate Lawyers", "href": "https://vaquill.ai/use-case/corporate-lawyers" },
+          { "label": "Law Firms", "href": "https://vaquill.ai/use-case/law-firms" },
+          { "label": "Legal Tech Developers", "href": "https://vaquill.ai/use-case/legal-tech-developers" },
+          { "label": "Solo Practitioners", "href": "https://vaquill.ai/use-case/solo-practitioners" }
         ]
       },
       {
         "header": "Legal",
         "items": [
-          { "label": "Terms of Service", "href": "https://www.vaquill.ai/terms" },
-          { "label": "Privacy Policy", "href": "https://www.vaquill.ai/privacy" }
+          { "label": "Privacy Policy", "href": "https://vaquill.ai/privacy" },
+          { "label": "Terms of Service", "href": "https://vaquill.ai/terms" },
+          { "label": "Cookie Policy", "href": "https://vaquill.ai/cookies" },
+          { "label": "Refund Policy", "href": "https://vaquill.ai/refund-policy" }
         ]
       }
     ]
