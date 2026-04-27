@@ -6,7 +6,7 @@ description: "Search Canadian court decisions and legislation via MCP"
 Search Canadian federal and provincial court decisions and legislation through the [CanLII API](https://www.canlii.org/en/api/) — hosted by Vaquill with bilingual (English/French) support.
 
 <CardGroup cols={2}>
-  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/canlii-mcp">
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/canlii-mcp">
     Source code and self-hosting instructions
   </Card>
   <Card title="CanLII API" icon="scale-balanced" href="https://www.canlii.org/en/api/">
@@ -16,11 +16,13 @@ Search Canadian federal and provincial court decisions and legislation through t
 
 ## Hosted Endpoint
 
-Vaquill hosts this server publicly — requires a Bearer token:
+Vaquill hosts this server publicly. The hosted instance is bring-your-own-key — every request needs **two** headers:
 
-| Endpoint | Auth |
-|----------|------|
-| `https://canlii-mcp.vaquill.ai/mcp` | Bearer token required |
+| Endpoint | Headers |
+|----------|---------|
+| `https://canlii-mcp.vaquill.ai/mcp` | `Authorization: Bearer <MCP gate token>` + `X-CanLII-Token: <your CanLII API key>` |
+
+The MCP gate token restricts who can use the hosted server. The `X-CanLII-Token` is forwarded to canlii.org so calls hit *your* CanLII quota, not ours. We never store your key. Apply for a CanLII API key at [canlii.org/en/api](https://www.canlii.org/en/api/).
 
 ## Setup
 
@@ -36,7 +38,8 @@ Add to your MCP configuration:
         "canlii": {
           "url": "https://canlii-mcp.vaquill.ai/mcp",
           "headers": {
-            "Authorization": "Bearer YOUR_TOKEN"
+            "Authorization": "Bearer YOUR_MCP_GATE_TOKEN",
+            "X-CanLII-Token": "YOUR_CANLII_API_KEY"
           }
         }
       }
@@ -48,7 +51,9 @@ Add to your MCP configuration:
 
     - **Type:** `streamableHttp`
     - **URL:** `https://canlii-mcp.vaquill.ai/mcp`
-    - **Headers:** `Authorization: Bearer YOUR_TOKEN`
+    - **Headers:**
+      - `Authorization: Bearer YOUR_MCP_GATE_TOKEN`
+      - `X-CanLII-Token: YOUR_CANLII_API_KEY`
   </Tab>
   <Tab title="Windsurf">
     Add to your MCP config:
@@ -59,7 +64,8 @@ Add to your MCP configuration:
         "canlii": {
           "serverUrl": "https://canlii-mcp.vaquill.ai/mcp",
           "headers": {
-            "Authorization": "Bearer YOUR_TOKEN"
+            "Authorization": "Bearer YOUR_MCP_GATE_TOKEN",
+            "X-CanLII-Token": "YOUR_CANLII_API_KEY"
           }
         }
       }
@@ -111,8 +117,8 @@ The CanLII API enforces strict rate limits:
 To run your own instance:
 
 ```bash
-git clone https://github.com/Vaquill-AI/integrations.git
-cd integrations/canlii-mcp
+git clone https://github.com/Vaquill-AI/canlii-mcp.git
+cd canlii-mcp
 cp .env.example .env  # add your CANLII_API key
 docker build -t canlii-mcp .
 docker run -p 3000:3000 --env-file .env canlii-mcp
