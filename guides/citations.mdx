@@ -7,17 +7,24 @@ Resolve citation strings, look up case details, and traverse the citation networ
 
 ## Formats
 
-| Format | Example |
-|--------|---------|
-| **SCC** | (2017) 10 SCC 1 |
-| **AIR** | AIR 2017 SC 4161 |
-| **INSC** | 2017 INSC 1 |
+The citation engine supports multiple jurisdictions:
+
+| Jurisdiction | Format | Example |
+|-------------|--------|---------|
+| **US** | Bluebook | 410 U.S. 113 (1973) |
+| **India** | SCC | (2017) 10 SCC 1 |
+| **India** | AIR | AIR 2017 SC 4161 |
+| **India** | INSC | 2017 INSC 1 |
 
 Citations are cross-referenced. Searching by one format returns all known citation strings for that case.
 
 ## Resolve a Citation
 
 Paste a citation string to get the full case record:
+
+> *"410 U.S. 113"*
+
+Returns **Roe v. Wade** with court, date, bench, and all citation strings.
 
 > *"(2017) 10 SCC 1"*
 
@@ -29,7 +36,7 @@ Returns **K.S. Puttaswamy v. Union of India** with court, date, bench, and all c
 curl -X POST https://api.vaquill.ai/api/v1/citations/resolve \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
-  -d '{"citation": "(2017) 10 SCC 1"}'
+  -d '{"citation": "410 U.S. 113"}'
 ```
 
 ## Search Cases

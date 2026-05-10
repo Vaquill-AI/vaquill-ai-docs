@@ -91,7 +91,7 @@ Once connected, your AI assistant can use these tools:
 | `ask_legal_question` | Legal Q&A grounded in court judgments. Supports standard and deep analysis modes | 1-2 |
 | `search_legal_cases` | Boolean keyword search with court, year, and country filters | 1 |
 | `quick_search` | Fast search returning top 3-5 results | 0.1 |
-| `resolve_citation` | Convert a citation string (SCC, AIR, INSC) to the canonical case record | 1 |
+| `resolve_citation` | Convert a citation string (Bluebook, SCC, AIR, INSC) to the canonical case record | 1 |
 | `search_cases_by_citation` | Find cases by citation or case name | 1 |
 | `lookup_case` | Full case details with citation treatment stats | 2 |
 | `get_citation_network` | Traverse citation relationships (1-3 hops) | 1 |
@@ -103,11 +103,11 @@ Once configured, ask your AI assistant directly:
 
 > *"Find cases about negligence in medical malpractice"*
 >
-> *"Resolve citation (2017) 10 SCC 1"*
+> *"Resolve citation 410 U.S. 113"*
 >
-> *"Show the citation network for Kesavananda Bharati"*
+> *"Show the citation network for Marbury v. Madison"*
 >
-> *"What does Section 302 IPC say according to case law?"*
+> *"What does case law say about the doctrine of unconscionability in contracts?"*
 
 The assistant will call the appropriate Vaquill tool and return results with case citations, court details, and relevant passages.
 

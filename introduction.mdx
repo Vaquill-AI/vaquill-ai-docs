@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-description: "AI-powered legal research platform and API — search 20M+ cases, review contracts, resolve citations, and build legal tech products"
+description: "AI-powered legal research platform and API — search millions of US, Canadian, and Indian cases, review contracts, resolve citations, and build legal tech products"
 ---
 
 <Frame>
@@ -16,7 +16,7 @@ Vaquill is a legal research platform and case law API. Use it directly to search
     Upload documents and ask questions. Get answers with exact source citations.
   </Card>
   <Card title="Case Law Research" icon="scale-balanced" href="/guides/case-law-research">
-    Search 20M+ cases with Boolean operators, filters, and citation lookup.
+    Search millions of cases across US, Canadian, and Indian courts with Boolean operators, filters, and citation lookup.
   </Card>
   <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
     Clause-by-clause analysis with risk ratings, redline suggestions, and compliance checks.
@@ -40,12 +40,14 @@ Vaquill is a legal research platform and case law API. Use it directly to search
 
 ## Coverage
 
-- **20M+ cases** across multiple courts and jurisdictions
-- **Citation formats:** SCC, AIR, INSC, and more
+- **US federal and state case law** — comprehensive coverage across federal circuits and state courts
+- **Canadian case law** — federal and provincial courts
+- **Indian case law** — 20M+ Supreme Court, High Court, and tribunal decisions
+- **Citation formats:** Bluebook, SCC, AIR, INSC, and more
 - **50+ file formats** including PDF, DOCX, scanned documents (OCR)
 
 <Info>
-  Jurisdiction coverage is expanding. Additional jurisdictions including US, UK, and EU courts are being added.
+  Coverage is continuously expanding across all supported jurisdictions.
 </Info>
 
 ## Build with the API
@@ -98,7 +100,7 @@ See [Authentication](/authentication) for API keys, [Credits](/credits) for pric
     curl -X POST https://api.vaquill.ai/api/v1/research/search \
       -H "Authorization: Bearer vq_key_..." \
       -H "Content-Type: application/json" \
-      -d '{"query": "right to privacy", "limit": 5}'
+      -d '{"query": "qualified immunity excessive force", "limit": 5}'
     ```
   </Step>
   <Step title="Explore the endpoints">

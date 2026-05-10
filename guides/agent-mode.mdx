@@ -33,10 +33,10 @@ Agent Mode gives the AI access to these tools automatically:
 | **Web Search** | Searches the web via Exa with jurisdiction filter (IN, US, UK, Global) | Included |
 | **Fetch URL** | Reads any public URL — web pages, PDFs, Office docs, images | Included |
 | **Search Documents** | Re-queries your uploaded matter documents with new search terms | Included |
-| **Search Legal Corpus** | Searches 20M+ Indian SC/HC cases with court and year filters | Included |
-| **Resolve Citation** | Resolves citation strings (SCC, AIR, INSC) to full case details | Included |
+| **Search Legal Corpus** | Searches millions of US, Canadian, and Indian court cases with court and year filters | Included |
+| **Resolve Citation** | Resolves citation strings (Bluebook, SCC, AIR, INSC) to full case details | Included |
 | **Generate Case Brief** | Creates an IRAC case brief from a corpus judgment, optionally saves as DOCX | Paid |
-| **Court Records (eCourts)** | Live search of 24Cr+ eCourts India records — case details, orders, cause lists | Paid (opt-in) |
+| **Court Records (eCourts)** | Live search of 240M+ Indian eCourts records — case details, orders, cause lists | Paid (opt-in) |
 
 Additionally, any [MCP server tools](/guides/mcp-client) and [Skills](/guides/skills) you have enabled are also available to the agent.
 
@@ -61,8 +61,8 @@ The `fetch_url` tool lets the AI read content from any public URL. It handles:
 
 Core tools (web search, fetch URL, search documents, corpus search, resolve citation) are always available when Agent Mode is on. Paid tools have individual toggles:
 
-- **Court Records (eCourts)** — Opt-in toggle with per-action pricing (search: INR 0.20, case details: INR 0.50, order summary: INR 2.50, cause list: INR 1.00)
-- **Generate Case Brief** — INR 2.00 per brief (LLM-intensive)
+- **Court Records (eCourts)** — Opt-in toggle with per-action pricing (search: $0.002, case details: $0.006, order summary: $0.03, cause list: $0.01)
+- **Generate Case Brief** — $0.02 per brief (LLM-intensive)
 
 ## Limits
 
@@ -80,11 +80,11 @@ Core tools (web search, fetch URL, search documents, corpus search, resolve cita
 
 Agent Mode shines with multi-step research questions:
 
-> *"Compare the privacy frameworks in DPDP Act 2023 and GDPR, citing specific provisions from both"*
+> *"Compare the privacy frameworks in GDPR and CCPA, citing specific provisions from both"*
 >
 > *"Read this judgment URL and prepare a case brief: https://example.com/judgment.pdf"*
 >
-> *"Find recent Supreme Court cases on Section 498A and check if any have been overruled"*
+> *"Find recent Supreme Court cases on arbitration clauses in employment contracts and check if any have been overruled"*
 >
 > *"Search for contract termination clauses in my uploaded agreement and compare them against market standard"*
 
