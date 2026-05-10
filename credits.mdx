@@ -11,9 +11,12 @@ Each API call costs a fixed number of credits. **1 credit = $0.01 USD.** New acc
 
 | Endpoint | Method | Credits | Cost |
 |----------|--------|---------|------|
-| `/api/v1/ask` | POST | 5 | $0.05 |
-| `/api/v1/ask` (deep mode) | POST | 20 | $0.20 |
-| `/api/v1/ask/stream` | POST | 5 / 20 | Same as sync |
+| `/api/v1/ask` | POST | 15 | $0.15 |
+| `/api/v1/ask` (deep mode) | POST | 30 | $0.30 |
+| `/api/v1/ask/stream` | POST | 15 / 30 | Same as sync |
+| `/api/v1/statutes/search` | POST | 4 | $0.04 |
+| `/api/v1/statutes/section` | GET | 2 | $0.02 |
+| `/api/v1/statutes/section/body` | GET | 6 | $0.06 |
 | `/api/v1/research/search` (1-20 results) | POST | 1 | $0.01 |
 | `/api/v1/research/search` (21-50 results) | POST | 2 | $0.02 |
 | `/api/v1/research/search` (51-100 results) | POST | 3 | $0.03 |
@@ -21,7 +24,11 @@ Each API call costs a fixed number of credits. **1 credit = $0.01 USD.** New acc
 | `/api/v1/citations/resolve` | GET | 1 | $0.01 |
 | `/api/v1/citations/cases/search` | GET | 1 | $0.01 |
 | `/api/v1/citations/cases/lookup` | GET | 1 | $0.01 |
-| `/api/v1/citations/cases/network` | GET | 2 | $0.02 |
+| `/api/v1/citations/cases/network` | GET | 5 | $0.05 |
+| `/api/v1/acts/search` | POST | 2 | $0.02 |
+| `/api/v1/acts/{actId}/text` | GET | 3 | $0.03 |
+| `/api/v1/acts/{actId}/amendments` | GET | 5 | $0.05 |
+| `/api/v1/acts/list` | GET | 1 | $0.01 |
 
 Credit cost is per call, regardless of result size.
 
@@ -44,5 +51,5 @@ View remaining credits in your [developer settings](https://app.vaquill.ai/devel
 
 - Credits do not expire.
 - Signup bonus: 500 credits ($5) — no credit card required.
-- Indian users are charged in INR at the current conversion rate.
+- All pricing is in USD.
 - Bulk or enterprise pricing available — contact [priyansh@vaquill.ai](mailto:priyansh@vaquill.ai).

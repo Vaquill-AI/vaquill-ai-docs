@@ -33,7 +33,7 @@ Validation errors (422) include field-level details:
 |------|---------|--------|
 | `200` | Success | |
 | `401` | Unauthorized | Check your API key and `Authorization` header |
-| `403` | Forbidden | Insufficient credits. [Purchase more](https://app.vaquill.ai/settings) |
+| `402` | Payment Required | Insufficient credits. [Purchase more](https://app.vaquill.ai/developer?tab=credits) or upgrade to API Pro |
 | `404` | Not Found | Resource does not exist |
 | `422` | Validation Error | Check request body for missing or invalid fields |
 | `429` | Rate Limited | Back off and retry with exponential backoff |
@@ -68,8 +68,8 @@ def search_with_retry(query, max_retries=3):
     Include the `Bearer` prefix: `Authorization: Bearer vq_key_...`. The key alone is rejected.
   </Accordion>
 
-  <Accordion title="403 after purchasing credits">
-    Credit purchases may take a few seconds to reflect. Retry after a moment.
+  <Accordion title="402 after purchasing credits">
+    Credit purchases may take a few seconds to reflect after Razorpay confirmation. Retry after a moment.
   </Accordion>
 
   <Accordion title="422 validation error">
