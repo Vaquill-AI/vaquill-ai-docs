@@ -1,4 +1,37 @@
 ---
 openapi: GET /api/v1/citations/cases/network
-description: "Get the citation network around a case - which cases it cites and which cite it, with treatment types like followed, distinguished, and overruled."
+description: "Citation graph traversal for US and Indian cases. Returns directed nodes and edges plus depth control, per-edge treatment hints, and a ranking of the most influential subsequent citers."
 ---
+
+## Why this is unique
+
+CourtListener exposes raw `opinions-cited` pairs but no graph API. We
+wrap that into a real graph endpoint:
+
+- **Both directions in one call.** `citing-by` (subsequent citers) AND
+  `cites-to` (authorities the seed relies on).
+- **Depth control.** `depth=1` returns immediate neighbors; `depth=2`
+  expands one more hop with bounded fan-out.
+- **Treatment hints.** Each citing edge carries a `treatment` label
+  derived from the citing context: `positive` (followed / affirmed /
+  relied on), `negative` (overruled / distinguished / criticized),
+  `neutral`, or `unknown`. We classify against the citation window in
+  the citer's opinion, not the whole document.
+- **`topCitedBy` ranking.** The top 5 citing opinions ordered by their
+  own forward-citation count. These are the cases that most carry the
+  seed forward.
+
+## Quick start (US)
+
+```bash
+curl "https://api.vaquill.ai/api/v1/citations/cases/network?clusterId=108713&countryCode=US&depth=1&limit=20" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+`clusterId=108713` is Roe v. Wade. Replace with any cluster ID, or
+pass `citation=410 U.S. 113` and we'll resolve it for you.
+
+## Cost
+
+- Depth 1: 10 credits ($0.10).
+- Depth 2: 25 credits ($0.25).
