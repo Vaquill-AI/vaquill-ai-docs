@@ -92,6 +92,11 @@
   "navbar": {
     "links": [
       {
+        "label": "GitHub",
+        "href": "https://github.com/Vaquill-AI",
+        "icon": "github"
+      },
+      {
         "label": "Support",
         "href": "mailto:contact@vaquill.com"
       }
