@@ -1,0 +1,270 @@
+---
+title: "Embedded Chat Widget"
+sidebarTitle: "Embedded Chat"
+description: "Lean Next.js 15 chat widget with streaming SSE responses, inline citations, and one-env-var Vercel deploy. US-pinned out of the box."
+icon: "bolt"
+keywords: ["embedded chat widget", "next.js legal chat", "vaquill widget", "iframe chat widget", "vercel chat widget", "streaming legal AI", "us legal chat widget"]
+---
+
+A lean, embeddable AI legal research chat built on Next.js 15, TypeScript, and Tailwind CSS. It proxies questions to the Vaquill API, streams the answer word-by-word, and renders structured sources with case names, citations, court details, excerpts, and PDF links. Every request is pinned to `countryCode: "US"` server-side so it is the right pick for US-only deployments.
+
+Source: [github.com/Vaquill-AI/integrations/widget-next](https://github.com/Vaquill-AI/integrations/tree/main/widget-next).
+
+## What you get
+
+- Next.js 15 App Router with standalone build output
+- Word-by-word streaming animation over SSE
+- Inline `[N]` citation links that anchor to the matching source card
+- Structured legal source cards: case name, citation, court, year, disposition, docket, excerpt, relevance score
+- Per-source link priority: Vaquill-hosted statute URLs, then govinfo.gov, then external court PDFs
+- Standard vs Deep RAG mode toggle
+- Light and dark themes via CSS custom properties
+- CORS headers pre-configured for iframe embedding
+- Single env var to deploy
+
+## Prerequisites
+
+- Node.js 18+ ([download](https://nodejs.org/))
+- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/settings/api](https://app.vaquill.ai/settings/api). See [Authentication](/authentication).
+
+## Quickstart
+
+<Steps>
+  <Step title="Clone and install">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/widget-next
+    npm install
+    ```
+  </Step>
+  <Step title="Add your API key">
+    ```bash
+    cp .env.example .env.local
+    ```
+
+    Open `.env.local` and set:
+
+    ```bash
+    VAQUILL_API_KEY=vq_key_your_key_here
+    ```
+  </Step>
+  <Step title="Run the dev server">
+    ```bash
+    npm run dev
+    ```
+
+    Open [http://localhost:3000](http://localhost:3000) and ask a test question.
+  </Step>
+</Steps>
+
+## Configuration
+
+The API key is the only secret. Everything else is hardcoded in `src/config/constants.ts` so embedders edit one file and redeploy.
+
+### Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `VAQUILL_API_KEY` | Yes | Your Vaquill API key (`vq_key_...`) |
+| `NEXT_PUBLIC_DEFAULT_MODE` | No | `standard` or `deep` (defaults to `standard`) |
+| `NEXT_PUBLIC_THEME` | No | `light` or `dark` |
+
+### In-code configuration
+
+Open `src/config/constants.ts`:
+
+```ts
+export const VAQUILL_CONFIG = {
+  apiBaseUrl: "https://api.vaquill.ai/api/v1",
+  defaultMode: "standard" as "standard" | "deep",
+  countryCode: "US" as const,
+};
+
+export const UI_CONFIG = {
+  agentName: "Vaquill Legal Assistant",
+  wordAnimationDelayMs: 25,
+  textareaMaxHeightPx: 200,
+};
+
+export const EXAMPLE_QUESTIONS = [
+  "What is qualified immunity under 42 USC 1983?",
+  "What does FRCP Rule 12(b)(6) require?",
+  "Find Supreme Court cases on First Amendment compelled speech",
+];
+```
+
+<Info>
+  `countryCode: "US"` is enforced server-side in the API route, so even a forked client cannot accidentally widen the jurisdiction.
+</Info>
+
+## API routes
+
+The Next.js app exposes two serverless routes that proxy the Vaquill API:
+
+| Route | Method | Description |
+|---|---|---|
+| `/api/chat` | POST | Proxy to Vaquill `/ask` (non-streaming, US-pinned) |
+| `/api/chat/stream` | POST | Proxy to Vaquill `/ask/stream` (SSE, US-pinned) |
+
+Example request body:
+
+```json
+{
+  "question": "What is qualified immunity under 42 USC 1983?",
+  "mode": "standard",
+  "chatHistory": [
+    { "role": "user", "content": "Previous question" },
+    { "role": "assistant", "content": "Previous answer" }
+  ]
+}
+```
+
+See the full schema in the [Ask API reference](/api-reference/ask/ask-a-legal-question).
+
+## Embedding
+
+The widget can be embedded on any page via an `<iframe>`:
+
+```html
+<iframe
+  src="https://your-widget.vercel.app"
+  width="400"
+  height="600"
+  style="border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2);"
+  title="Vaquill Legal Assistant"
+></iframe>
+```
+
+<CodeGroup>
+
+```jsx React / Next.js
+export default function LegalWidget() {
+  return (
+    <iframe
+      src={process.env.NEXT_PUBLIC_WIDGET_URL}
+      width="400"
+      height="600"
+      style={{ border: 'none', borderRadius: '12px' }}
+      title="Vaquill Legal Assistant"
+    />
+  );
+}
+```
+
+```html WordPress
+<!-- Use the "Insert Headers and Footers" plugin or a Custom HTML block -->
+<iframe
+  src="https://your-widget.vercel.app"
+  width="400"
+  height="600"
+  style="border: none; border-radius: 12px;"
+  title="Vaquill Legal Assistant"
+></iframe>
+```
+
+```liquid Shopify
+<!-- In Online Store > Themes > Edit Code > page.liquid -->
+<iframe
+  src="https://your-widget.vercel.app"
+  width="400"
+  height="600"
+  style="border: none; border-radius: 12px;"
+  title="Vaquill Legal Assistant"
+></iframe>
+```
+
+</CodeGroup>
+
+## Deployment
+
+### Vercel (recommended)
+
+<Steps>
+  <Step title="Install the CLI">
+    ```bash
+    npm i -g vercel
+    ```
+  </Step>
+  <Step title="Deploy">
+    ```bash
+    vercel --prod
+    ```
+  </Step>
+  <Step title="Set the API key">
+    In the Vercel dashboard, open **Project Settings > Environment Variables** and add:
+
+    - `VAQUILL_API_KEY` = `vq_key_your_key_here`
+
+    Redeploy if Vercel did not pick up the variable automatically.
+  </Step>
+</Steps>
+
+You can also use the GitHub integration: push to a repo, import in the Vercel dashboard, set env vars, and every push redeploys.
+
+### Railway
+
+```bash
+npm i -g @railway/cli
+railway login
+railway up
+railway variables set VAQUILL_API_KEY=vq_key_...
+```
+
+### Self-hosted
+
+The build produces a standalone Next.js bundle (`output: "standalone"` in `next.config.js`). Any Node 18+ host works:
+
+```bash
+npm run build
+node .next/standalone/server.js
+```
+
+## Troubleshooting
+
+<Warning>
+  Always check the browser console and server logs first - the proxy surfaces the underlying Vaquill API error verbatim.
+</Warning>
+
+**No response from chat**
+
+- Verify `VAQUILL_API_KEY` is set in `.env.local` (or in your deployment platform).
+- Test the key directly: `curl -H "Authorization: Bearer vq_key_..." https://api.vaquill.ai/api/v1/health`.
+- Check that you have credits at [app.vaquill.ai/billing](https://app.vaquill.ai/billing).
+
+**Module not found errors after upgrading**
+
+```bash
+rm -rf node_modules package-lock.json .next
+npm install
+npm run build
+```
+
+**iframe blocked by parent CSP**
+
+The widget sends permissive CORS headers, but the embedding site's Content-Security-Policy may block iframes. Add the widget origin to the parent's `frame-src` directive.
+
+**Streaming stops mid-response**
+
+Some reverse proxies buffer SSE. If you deploy behind Nginx, disable buffering for the `/api/chat/stream` location:
+
+```nginx
+proxy_buffering off;
+proxy_cache off;
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Docker Widget" icon="docker" href="/integrations/widgets/docker-widget">
+    Self-host with Docker Compose and embed via script tag.
+  </Card>
+  <Card title="Widget Pro" icon="sparkles" href="/integrations/widgets/widget-pro">
+    Adds multi-thread sidebar, voice mode, and gamification.
+  </Card>
+  <Card title="Ask API" icon="message" href="/api-reference/ask/ask-a-legal-question">
+    The endpoint this widget proxies.
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/widget-next">
+    Source code and issue tracker.
+  </Card>
+</CardGroup>

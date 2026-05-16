@@ -1,0 +1,141 @@
+---
+title: "Conversation Sharing"
+description: "Generate a public link to a conversation - share a research thread with a client, co-counsel, or partner with full citations preserved"
+icon: "share-nodes"
+---
+
+Conversation Sharing creates a public link to any conversation. The recipient sees the full thread - your questions, the AI's answers, and every source citation - without needing a Vaquill account. The link is a point-in-time snapshot, so changes after sharing do not affect what they see.
+
+## When To Use It
+
+- Sharing a research thread with co-counsel or a client
+- Sending a partner the full working history behind a memo, not just the conclusion
+- Documenting the research that supported a position for the matter file
+- Onboarding a new associate to a matter by sharing the prior research conversations
+- Showing a client your work product transparently
+
+## What The Recipient Sees
+
+- The full message history of the conversation
+- Every source citation, linked to the source
+- The verification status on each AI response
+- Any thinking steps and tool calls that were exposed
+- The matter context (if you choose to share it)
+
+## What The Recipient Does NOT See
+
+- Your account details
+- Internal user IDs or system messages
+- Model configuration or token costs
+- Other conversations in the matter (only the shared one)
+- Documents in the matter that were not cited in the conversation
+
+## Snapshot Behavior
+
+A shared link is a snapshot, not a live view:
+
+- The conversation is frozen at the moment you generated the link
+- New messages you add to the conversation after sharing do not appear on the shared link
+- You can re-share an updated snapshot at any time (generates a new link)
+- The original link continues to work and points to the original snapshot
+
+## How To Share
+
+<Steps>
+  <Step title="Open the conversation">
+    Navigate to the conversation you want to share inside the matter.
+  </Step>
+  <Step title="Click Share">
+    Hit the **Share** button in the conversation header.
+  </Step>
+  <Step title="Configure options">
+    Set expiry, password protection, and visibility of intermediate reasoning and matter context.
+  </Step>
+  <Step title="Copy the link">
+    Paste it into an email or message - the recipient does not need a Vaquill account.
+  </Step>
+</Steps>
+
+## Share Options
+
+When you generate a share link, you can configure:
+
+- **Expiry** - When the link stops working
+- **Visibility of intermediate reasoning** - Whether the viewer sees the AI's thinking steps and tool calls
+- **Visibility of matter context** - Whether the viewer sees which matter the conversation belongs to
+
+Available options may vary by plan; see your share dialog for the current set.
+
+## Revoking a Link
+
+Open the conversation, click Share, and click **Revoke** on the link you want to disable. The link stops working immediately.
+
+You can see all active share links from any conversation in the Sharing section of your settings, with the option to revoke any of them.
+
+## Privilege Considerations
+
+Sharing a conversation may have privilege implications depending on the recipient:
+
+- **Co-counsel** - Generally privileged communication
+- **Client** - Generally privileged communication
+- **Opposing counsel** - Sharing may waive privilege
+- **Third parties** - Sharing typically waives privilege
+
+The tool does not make privilege calls for you. Treat shared links the same way you would treat any other written communication about the matter.
+
+<Warning>
+  A shared link is a written record. Sharing with opposing counsel, regulators, witnesses, or third parties may waive attorney-client privilege or work-product protection. Set an expiry, use password protection for sensitive matters, and revoke links the moment they are no longer needed.
+</Warning>
+
+## Tips
+
+<Tip>
+  **Set an expiry by default.** 7 or 30 days is usually enough; you can always re-share if needed. Open-ended links accumulate and become a privilege risk over time.
+</Tip>
+
+<Tip>
+  **Use password protection on sensitive matters.** The password is an extra layer of control beyond the link being unguessable - send the password through a separate channel.
+</Tip>
+
+<Tip>
+  **Export the snapshot for the matter file.** Export the conversation as PDF and store it alongside the work product so the research history is preserved even after the link is revoked.
+</Tip>
+
+## Generate a share-ready summary
+
+<Prompt
+  description="**Share Summary** - distill a long research conversation into a cover note for the recipient."
+  icon="share-nodes"
+  iconType="solid"
+  actions={["copy"]}
+>
+Before I share this conversation with [recipient - e.g., co-counsel, the client, the partner], produce a short cover summary the recipient can read first.
+
+Do these steps:
+
+1. State the original research question in one sentence.
+2. Summarize the bottom-line answer in 2-3 sentences.
+3. List the leading authorities relied on, with full citations.
+4. Flag any open questions or follow-ups that were not resolved in the conversation.
+5. Identify any portions of the thread that are **exploratory or preliminary** and should not be relied on as final advice.
+6. Note any privileged or sensitive content the recipient should handle accordingly.
+
+Return: **Question, Bottom Line, Key Authorities, Open Questions, Reliability Caveats.** Keep it to one page.
+</Prompt>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Inline Threading" icon="comments" href="/guides/inline-threading">
+    Share a conversation that includes sub-threads.
+  </Card>
+  <Card title="Matters & Workspaces" icon="folder-open" href="/guides/matters-workspaces">
+    Per-matter sharing controls.
+  </Card>
+  <Card title="Team Workspaces" icon="users" href="/guides/team-workspaces">
+    Sharing within an organization vs. external sharing.
+  </Card>
+  <Card title="Answer Verification" icon="circle-check" href="/guides/answer-verification">
+    Verification badges travel with the shared snapshot so recipients see source confidence.
+  </Card>
+</CardGroup>

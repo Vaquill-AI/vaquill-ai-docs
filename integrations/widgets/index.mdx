@@ -1,0 +1,88 @@
+---
+title: "Widgets"
+sidebarTitle: "Overview"
+description: "Embeddable legal AI chat widgets - single script tag, iframe, or full Next.js deployment with voice mode and conversation history."
+icon: "window"
+keywords: ["legal chat widget", "embed legal AI", "next.js chat widget", "docker chat widget", "vaquill widget"]
+---
+
+Three widget builds, three trade-offs. Pick the one that matches your team's stack and feature ceiling.
+
+<CardGroup cols={3}>
+  <Card title="Embedded Chat Widget" icon="bolt" href="/integrations/widgets/embedded-chat">
+    Next.js 15 + TypeScript. Streaming responses, inline citations, US-pinned. Deploy on Vercel with one env var.
+  </Card>
+  <Card title="Docker Widget" icon="docker" href="/integrations/widgets/docker-widget">
+    Python FastAPI backend + Vite frontend in one container. Floating or inline embed via script tag.
+  </Card>
+  <Card title="Widget Pro" icon="sparkles" href="/integrations/widgets/widget-pro">
+    Multi-thread sidebar, voice mode (TTS + STT), gamification, cross-tab sync, configurable citation viewers.
+  </Card>
+</CardGroup>
+
+## Feature comparison
+
+| Feature | Embedded | Docker | Pro |
+|---|---|---|---|
+| **Framework** | Next.js 15 | FastAPI + Vite | Next.js 15 + React 19 |
+| **Deploy target** | Vercel | Docker Compose | Vercel / Railway |
+| **Streaming responses** | Yes (SSE) | No | Yes (SSE) |
+| **Multi-thread sidebar** | No | No | Yes |
+| **Voice mode (TTS + STT)** | No | No | Yes |
+| **Cross-tab sync** | No | No | Yes |
+| **Inline citation tooltips** | Yes | Yes | Yes |
+| **Embed modes** | iframe | floating, inline | iframe, floating |
+| **Single-file script embed** | No | Yes | Yes |
+| **Jurisdiction** | US-pinned | Configurable | Configurable |
+| **Persistence** | None | None | IndexedDB / localStorage |
+
+## Pick by use case
+
+| If you... | Use |
+|---|---|
+| Want the leanest US-only chat for a marketing site | [Embedded Chat](/integrations/widgets/embedded-chat) |
+| Want a single Docker deploy with floating-button embed | [Docker Widget](/integrations/widgets/docker-widget) |
+| Need a Vaquill-style full experience (history sidebar, voice, gamification) | [Widget Pro](/integrations/widgets/widget-pro) |
+
+## Common embedding patterns
+
+### Floating button (Intercom-style)
+
+A single script tag adds a chat bubble to the bottom-right of every page.
+
+```html
+<script
+  src="https://your-widget-host/embed/script-floating-chatbot.js"
+  data-api-url="https://your-widget-host"
+></script>
+```
+
+### Inline embed
+
+A `<div>` plus a script tag mounts the chat inline.
+
+```html
+<div id="vaquill-widget-embed"></div>
+<script
+  src="https://your-widget-host/embed/script-inline-embed.js"
+  data-api-url="https://your-widget-host"
+  data-height="640px"
+></script>
+```
+
+### iframe
+
+Maximum isolation. Drop into any HTML page or CMS.
+
+```html
+<iframe
+  src="https://your-widget.vercel.app"
+  width="400"
+  height="600"
+  style="border: none; border-radius: 12px;"
+></iframe>
+```
+
+## Source
+
+All widgets live at [github.com/Vaquill-AI/integrations](https://github.com/Vaquill-AI/integrations) - `widget-next/`, `widget/`, and `vaquill-widget-pro/` respectively.

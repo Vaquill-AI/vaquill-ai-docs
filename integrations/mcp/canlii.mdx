@@ -1,0 +1,282 @@
+---
+title: "CanLII MCP Server"
+sidebarTitle: "CanLII MCP"
+description: "Canadian case law and legislation metadata across all federal, provincial, and territorial jurisdictions via MCP. Bring your own CanLII API key."
+icon: "maple-leaf"
+keywords: ["canlii mcp", "canadian case law mcp", "canadian legislation mcp", "claude canadian law", "cursor canlii", "byok mcp", "supreme court of canada mcp"]
+---
+
+The CanLII MCP server gives AI assistants access to the [CanLII](https://www.canlii.org) Canadian legal information API - case law and legislation metadata across all federal, provincial, and territorial jurisdictions, in English and French. Vaquill hosts a public instance with bring-your-own-key (BYOK) auth, so your CanLII token is forwarded on every request and never stored. US-focused teams use this when they need a Canadian comparator for cross-border matters.
+
+<CardGroup cols={3}>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/canlii-mcp">
+    Source code, Docker, Workers entry
+  </Card>
+  <Card title="CanLII API" icon="scale-balanced" href="https://www.canlii.org/en/api/">
+    Upstream API docs
+  </Card>
+  <Card title="Hosted endpoint" icon="cloud" href="https://canlii-mcp.vaquill.ai/mcp">
+    `canlii-mcp.vaquill.ai`
+  </Card>
+</CardGroup>
+
+<Info>
+  Forked from [tomilashy/canlii-mcp](https://github.com/tomilashy/canlii-mcp). The Vaquill fork adds BYOK auth, a `/health` route, and a hosted endpoint. Tools are unchanged.
+</Info>
+
+<Warning>
+  The CanLII API returns **metadata only** - titles, citations, dates, keywords, and citation relationships. Full document text is not available through the API. For full opinions, link out to the canonical CanLII page.
+</Warning>
+
+## Quickstart
+
+<Steps>
+  <Step title="Apply for a CanLII API key">
+    Submit the form at [canlii.org/en/feedback](https://www.canlii.org/en/feedback/feedback.html). Approval typically takes a few business days.
+  </Step>
+  <Step title="Get an MCP gate token">
+    The hosted endpoint is gated by a bearer token to keep load predictable. Email [contact@vaquill.ai](mailto:contact@vaquill.ai) to request access, or self-host (see below) if you would rather skip the gate.
+  </Step>
+  <Step title="Point your client at the hosted endpoint">
+    URL: `https://canlii-mcp.vaquill.ai/mcp`
+
+    Headers:
+    - `Authorization: Bearer <MCP_AUTH_TOKEN>`
+    - `X-CanLII-Token: <your-canlii-key>`
+  </Step>
+  <Step title="Ask your assistant">
+    Try: *"List all federal courts in Canada, then find Supreme Court of Canada decisions on Charter section 7 from 2023."*
+  </Step>
+</Steps>
+
+## Client setup
+
+<CodeGroup>
+```json Claude Desktop / Claude Code
+{
+  "mcpServers": {
+    "canlii": {
+      "url": "https://canlii-mcp.vaquill.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_MCP_TOKEN",
+        "X-CanLII-Token": "YOUR_CANLII_API_KEY"
+      }
+    }
+  }
+}
+```
+
+```json Cursor
+// .cursor/mcp.json
+{
+  "mcpServers": {
+    "canlii": {
+      "url": "https://canlii-mcp.vaquill.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_MCP_TOKEN",
+        "X-CanLII-Token": "YOUR_CANLII_API_KEY"
+      }
+    }
+  }
+}
+```
+
+```json VS Code (Copilot)
+// .vscode/mcp.json
+{
+  "servers": {
+    "canlii": {
+      "type": "http",
+      "url": "https://canlii-mcp.vaquill.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_MCP_TOKEN",
+        "X-CanLII-Token": "YOUR_CANLII_API_KEY"
+      }
+    }
+  }
+}
+```
+
+```json Windsurf
+{
+  "mcpServers": {
+    "canlii": {
+      "serverUrl": "https://canlii-mcp.vaquill.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_MCP_TOKEN",
+        "X-CanLII-Token": "YOUR_CANLII_API_KEY"
+      }
+    }
+  }
+}
+```
+
+```json stdio (npx, self-key)
+{
+  "mcpServers": {
+    "canlii": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@tomilashy/canlii-mcp"],
+      "env": {
+        "CANLII_API": "your_api_key"
+      }
+    }
+  }
+}
+```
+</CodeGroup>
+
+<Tip>
+  Any client that supports MCP streamable HTTP with custom headers works. For stdio-only clients use [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) to proxy the hosted endpoint, or run locally via `npx`.
+</Tip>
+
+## Tools
+
+Seven tools across case law and legislation:
+
+### Case law
+
+| Tool | Description |
+|------|-------------|
+| `list_case_databases` | List all courts and tribunals in the CanLII collection (federal, provincial, territorial) |
+| `list_cases` | Browse decisions from a specific court or tribunal database |
+| `get_case` | Metadata for a single case - title, citation, date, language, keywords |
+| `get_case_citations` | Citation graph - cases cited by, cases citing it, and legislation referenced |
+
+### Legislation
+
+| Tool | Description |
+|------|-------------|
+| `list_legislation_databases` | List all statute and regulation databases |
+| `list_legislation` | Browse statutes or regulations from a specific database |
+| `get_legislation` | Metadata for a single piece of legislation |
+
+## Authentication
+
+| Mode | Header / env | When |
+|------|--------------|------|
+| BYOK (preferred) | `X-CanLII-Token: <key>` | Hosted or shared deployments |
+| Server fallback | `CANLII_API` env var | Self-hosted single-tenant. Required for stdio. |
+| MCP gate | `Authorization: Bearer <MCP_AUTH_TOKEN>` | Restricts who may use the hosted endpoint |
+
+The hosted endpoint requires **both** the bearer gate token and your CanLII key. Calls hit your own CanLII quota, not Vaquill's.
+
+## Self-hosting
+
+Requires Node.js 22+.
+
+### stdio (from source)
+
+```bash
+git clone https://github.com/Vaquill-AI/canlii-mcp.git
+cd canlii-mcp
+npm install
+npm run build
+CANLII_API=your_api_key node dist/index.js
+```
+
+### HTTP server
+
+```bash
+PORT=3000 CANLII_API=your_api_key node dist/index.js --transport http
+# MCP endpoint at http://localhost:3000/mcp
+```
+
+The server runs stateless - each request is self-contained, no session ID or initialize handshake required. Test directly with curl:
+
+```bash
+curl -X POST http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_case_databases","arguments":{"language":"en"}}}'
+```
+
+### Docker
+
+```bash
+docker run \
+  -e CANLII_API=your_api_key \
+  -e MCP_AUTH_TOKEN=your_secret \
+  -p 3000:3000 \
+  ghcr.io/tomilashy/canlii-mcp
+```
+
+Or with Docker Compose:
+
+```yaml
+services:
+  canlii-mcp:
+    image: ghcr.io/tomilashy/canlii-mcp
+    environment:
+      CANLII_API: your_api_key
+      MCP_AUTH_TOKEN: your_secret  # optional
+    ports:
+      - "3000:3000"
+```
+
+### Cloudflare Workers
+
+The repo ships a Workers-compatible entry point (`src/worker.ts`).
+
+```bash
+npx wrangler secret put CANLII_API
+npx wrangler secret put MCP_AUTH_TOKEN   # optional
+npx wrangler deploy
+```
+
+For dashboard / Git-connected deploys, see the [README](https://github.com/Vaquill-AI/canlii-mcp#cloudflare-workers).
+
+## Environment variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `CANLII_API` | Yes (server-side) | - | Your CanLII API key. Not needed when callers send `X-CanLII-Token`. |
+| `PORT` | No | `3000` | HTTP server port (HTTP mode only) |
+| `MCP_AUTH_TOKEN` | No | - | Bearer token for HTTP authentication. If set, all HTTP requests must include `Authorization: Bearer <token>`. If unset, the server runs without auth. |
+
+## Rate limits
+
+The server enforces CanLII's published limits automatically:
+
+- 1 concurrent request
+- 2 requests per second
+- 5,000 requests per day (hard cap)
+
+Requests beyond the daily cap return an error instead of hitting the upstream API.
+
+## Usage examples
+
+Type these to any connected AI assistant:
+
+> *"List all federal courts and tribunals in Canada."*
+>
+> *"Find Supreme Court of Canada decisions on Charter section 7 from 2023."*
+>
+> *"Get the citation network for R v Jordan 2016 SCC 27 - which cases cite it and what legislation does it reference?"*
+
+For US versus Canada comparison work:
+
+> *"For each Charter section 8 case in the last five years, find the closest US Fourth Amendment analogue using the CourtListener MCP."*
+
+> *"Pull the metadata for the federal Criminal Code, then list the most recent amendments."*
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="MCP overview" icon="plug" href="/integrations/mcp">
+    All Vaquill MCP servers at a glance
+  </Card>
+  <Card title="Vaquill MCP" icon="scale-balanced" href="/integrations/mcp/vaquill">
+    Cross-jurisdiction wrapper over the Vaquill API
+  </Card>
+  <Card title="CourtListener MCP" icon="landmark" href="/integrations/mcp/courtlistener">
+    US federal and state case law and eCFR
+  </Card>
+  <Card title="Integrations" icon="grid" href="/integrations">
+    Chatbots, widgets, browser extensions, automation
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How Vaquill handles auth across products
+  </Card>
+</CardGroup>

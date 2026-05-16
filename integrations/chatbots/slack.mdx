@@ -1,0 +1,225 @@
+---
+title: "Slack Bot"
+sidebarTitle: "Slack"
+description: "Drop the Vaquill legal AI into Slack with @mentions, slash commands, DMs, and in-thread context."
+icon: "slack"
+keywords: ["vaquill slack bot", "slack legal ai", "slack rag bot", "slack socket mode", "slack ask bot"]
+---
+
+Bring Vaquill's legal research engine into any Slack workspace. The bot responds to `@mentions`, direct messages, and slash commands, replies in-thread with cited case law and statutes, and supports follow-up questions without re-mentioning the bot. Source code lives at [github.com/Vaquill-AI/integrations/slack-bot](https://github.com/Vaquill-AI/integrations/tree/main/slack-bot).
+
+## Features
+
+- `@mention`, DM, and `/vaquill` slash command surfaces
+- Per-thread conversation memory with configurable timeout
+- Cited sources block (case name, citation, court) and Helpful / Not Helpful feedback buttons
+- Starter-question buttons when the bot is mentioned without a query
+- Per-user and per-channel rate limits (in-memory or Redis-backed)
+- User and channel allowlists / blocklists
+
+## Prerequisites
+
+- Python 3.10+ (or Docker)
+- Slack workspace where you can install custom apps
+- Vaquill API key from [app.vaquill.ai/settings](https://app.vaquill.ai/settings) (starts with `vq_key_`). See [Authentication](/authentication).
+- Optional: Redis for distributed rate limiting across multiple bot instances
+
+## Platform setup
+
+You need a Slack app with bot scopes, event subscriptions, two slash commands, and either Socket Mode or HTTP mode enabled.
+
+<Steps>
+  <Step title="Create the Slack app">
+    Open [api.slack.com/apps](https://api.slack.com/apps), click **Create New App**, choose **From scratch**, name it (e.g. "Vaquill Legal AI"), and select your workspace.
+  </Step>
+  <Step title="Add bot token scopes">
+    Under **OAuth & Permissions > Bot Token Scopes**, add every scope in the table below. Missing scopes cause silent failures.
+
+    | Scope | Why |
+    |---|---|
+    | `app_mentions:read` | Detect `@mentions` of the bot |
+    | `channels:history` | Read public channel messages the bot sees |
+    | `channels:read` | Look up basic channel info |
+    | `chat:write` | Send messages and threaded replies |
+    | `commands` | Register `/vaquill` and `/vaquill-help` |
+    | `groups:history` | Read private channel messages |
+    | `groups:read` | Look up private channel info |
+    | `im:history` | Read direct messages |
+    | `im:read` | Look up DM info |
+    | `im:write` | Open DM conversations |
+    | `users:read` | Filter out bot-to-bot messages |
+  </Step>
+  <Step title="Subscribe to events">
+    Under **Event Subscriptions**, toggle **Enable Events** on and subscribe to: `app_mention`, `message.im`, and optionally `message.channels`. For HTTP mode, set the Request URL to `https://your-domain.com/slack/events`. Skip the URL for Socket Mode.
+  </Step>
+  <Step title="Register slash commands">
+    Create `/vaquill` and `/vaquill-help` under **Slash Commands**. Use `https://your-domain.com/slack/events` as the Request URL for HTTP mode.
+  </Step>
+  <Step title="Enable Socket Mode (recommended for dev)">
+    Under **Socket Mode**, toggle it on. When prompted, create an **App-Level Token** with the `connections:write` scope. Copy the token (starts with `xapp-`) - this is your `SLACK_APP_TOKEN`. Skip this step if you want HTTP mode.
+  </Step>
+  <Step title="Install to workspace and copy credentials">
+    Under **OAuth & Permissions**, click **Install to Workspace**. Copy the **Bot User OAuth Token** (starts with `xoxb-`) as `SLACK_BOT_TOKEN`. Under **Basic Information > App Credentials**, copy the **Signing Secret** as `SLACK_SIGNING_SECRET`.
+  </Step>
+</Steps>
+
+### Socket Mode vs HTTP Mode
+
+The bot auto-detects mode: if `SLACK_APP_TOKEN` is set, it uses Socket Mode. Otherwise it starts an HTTP server on `PORT` (default `3000`).
+
+| | Socket Mode | HTTP Mode |
+|---|---|---|
+| **Transport** | Outbound WebSocket from bot to Slack | Slack POSTs to your server |
+| **Public URL needed?** | No | Yes (HTTPS required) |
+| **Best for** | Local dev, firewalled environments | Production, cloud deployments |
+| **Extra token** | `SLACK_APP_TOKEN` (`xapp-...`) | None |
+| **Setup work** | Toggle Socket Mode in app settings | Set Request URLs on Events, Commands, Interactivity |
+
+<Tip>
+  Use Socket Mode locally to skip ngrok entirely. Switch to HTTP mode in production by removing `SLACK_APP_TOKEN` from the environment.
+</Tip>
+
+## Quickstart
+
+<Steps>
+  <Step title="Clone and install">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/slack-bot
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Configure environment">
+    ```bash
+    cp .env.example .env
+    ```
+
+    Set the minimum required values:
+
+    ```dotenv
+    SLACK_BOT_TOKEN=xoxb-your-bot-token
+    SLACK_SIGNING_SECRET=your-signing-secret
+    SLACK_APP_TOKEN=xapp-your-app-token      # enables Socket Mode
+    VAQUILL_API_KEY=vq_key_your-api-key
+    VAQUILL_COUNTRY_CODE=US
+    ```
+  </Step>
+  <Step title="Run">
+    ```bash
+    python bot.py
+    ```
+
+    Look for `Bot initialised with user ID: U0XXXXXXX`. In Slack, invite the bot to a channel with `/invite @Vaquill`, then try:
+
+    ```
+    @Vaquill What is qualified immunity under 42 USC 1983?
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+The top env vars. See [the repo's `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/slack-bot/.env.example) for the full reference.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `SLACK_BOT_TOKEN` | Yes | - | Bot User OAuth Token (`xoxb-...`) |
+| `SLACK_SIGNING_SECRET` | Yes | - | App signing secret from Basic Information |
+| `SLACK_APP_TOKEN` | No | - | App-level token (`xapp-...`); presence enables Socket Mode |
+| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
+| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | API base URL |
+| `VAQUILL_MODE` | No | `standard` | RAG tier: `standard` or `deep` |
+| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
+| `REDIS_URL` | No | - | Enables distributed rate limiting |
+| `RATE_LIMIT_PER_USER` | No | `20` | Max requests per user per minute |
+| `RATE_LIMIT_PER_CHANNEL` | No | `100` | Max requests per channel per hour |
+| `PORT` | No | `3000` | HTTP server port (HTTP mode only) |
+
+## Commands
+
+| Command | Usage | Description |
+|---|---|---|
+| `/vaquill` | `/vaquill <question>` | Ask a legal question, answer posted in channel |
+| `/vaquill-help` | `/vaquill-help` | Show usage instructions and tips |
+| `@Vaquill <question>` | In any channel the bot is in | Mention the bot to ask a question |
+| DM | Direct message the bot | No `@mention` needed |
+
+Slack requires a response within 3 seconds. The bot sends a "Thinking..." placeholder immediately and edits it once the Vaquill API replies.
+
+## Deployment
+
+### Docker Compose (recommended)
+
+The repo ships a `docker-compose.yml` that bundles the bot with Redis for rate limiting.
+
+```bash
+cp .env.example .env
+# edit .env
+docker compose up -d
+docker compose logs -f bot
+```
+
+### Standalone Docker
+
+```bash
+docker build -t vaquill-slack-bot .
+docker run -d --name vaquill-slack-bot \
+  -e SLACK_BOT_TOKEN="xoxb-..." \
+  -e SLACK_SIGNING_SECRET="..." \
+  -e SLACK_APP_TOKEN="xapp-..." \
+  -e VAQUILL_API_KEY="vq_key_..." \
+  -p 3000:3000 \
+  vaquill-slack-bot
+```
+
+### Cloud hosts
+
+<CardGroup cols={2}>
+  <Card title="Railway" icon="train">
+    Push the repo, set env vars in the Railway dashboard. Railway provisions an HTTPS domain you can paste into Slack's Request URLs.
+  </Card>
+  <Card title="Render" icon="cloud">
+    Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`. Free tier sleeps after 15 minutes - slash commands may time out on cold starts.
+  </Card>
+  <Card title="Fly.io" icon="plane">
+    `fly launch`, then `fly secrets set ...` for each env var, then `fly deploy`.
+  </Card>
+  <Card title="VPS + nginx" icon="server">
+    Reverse-proxy port 3000 behind TLS (Let's Encrypt or Cloudflare). Use Socket Mode to skip the proxy entirely.
+  </Card>
+</CardGroup>
+
+For production, run in HTTP mode (drop `SLACK_APP_TOKEN`) behind HTTPS and update **Event Subscriptions**, **Slash Commands**, and **Interactivity** Request URLs to `https://your-domain.com/slack/events`.
+
+## Troubleshooting
+
+<Warning>
+  Scope changes only take effect after **reinstalling** the app to your workspace. If you see `missing_scope` errors, add the scope and reinstall.
+</Warning>
+
+| Symptom | Fix |
+|---|---|
+| Bot does not respond to `@mentions` | Invite the bot to the channel (`/invite @Vaquill`). Verify `app_mention` is subscribed. Check tokens. |
+| Bot does not respond to DMs | Add `im:history`, `im:read`, `im:write` scopes and reinstall. Subscribe to `message.im`. |
+| "This app responded with an error" on slash commands | Cold-start timeout. Use Socket Mode or a host that keeps the process warm. |
+| 401 from Vaquill API | `VAQUILL_API_KEY` is invalid or expired. Generate a new one from your [dashboard](https://app.vaquill.ai/settings). |
+| Bot replies to its own messages | Confirm `IGNORE_BOT_MESSAGES=true` (default) and that the user ID is logged at startup. |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Discord" icon="discord" href="/integrations/chatbots/discord">
+    Same engine, prefix-command UX.
+  </Card>
+  <Card title="Microsoft Teams" icon="microsoft" href="/integrations/chatbots/microsoft-teams">
+    Adaptive Cards on Azure Bot Framework.
+  </Card>
+  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+    Compare all six platforms.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How Vaquill API keys work.
+  </Card>
+</CardGroup>

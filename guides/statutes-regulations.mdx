@@ -1,0 +1,150 @@
+---
+title: "Statutes & Regulations"
+description: "Search the US Code, Code of Federal Regulations, and all 50 state statutes - with amendment history and how courts have interpreted each section"
+icon: "book"
+---
+
+Statutes & Regulations is a unified search across federal and state law. Pull up any USC section, CFR provision, or state statute and see its full text, every amendment in its history, and how courts have interpreted it - including how interpretations shifted before and after key amendments.
+
+## Coverage
+
+<CardGroup cols={2}>
+  <Card title="United States Code" icon="building-columns">
+    Federal statutory law across all titles, with subsection-level navigation and amendment history.
+  </Card>
+  <Card title="Code of Federal Regulations" icon="scroll">
+    Federal regulations across all titles, cross-referenced to the authorizing statute and implementing agency guidance.
+  </Card>
+  <Card title="State Statutes (all 50)" icon="map-location-dot">
+    Statutory codes for every state, with consistent search and amendment timelines.
+  </Card>
+  <Card title="State Constitutions" icon="landmark-flag">
+    Full text of all 50 state constitutions with article-level navigation.
+  </Card>
+  <Card title="US Constitution" icon="flag-usa">
+    Articles and amendments with historical context and interpretive case law.
+  </Card>
+  <Card title="Court Interpretations" icon="gavel">
+    For every section: the leading cases that have construed it, ranked by directness of interpretation.
+  </Card>
+</CardGroup>
+
+Search by citation, by keyword, or in natural language ("What does federal law say about overtime exemptions for salaried employees?").
+
+## What You See on a Section Page
+
+For any statute or regulation, the section page shows:
+
+- The **current text** of the section, with subsections expandable
+- The **amendment timeline** - every revision the section has gone through, with effective dates
+- **Court Interpretations** - the leading cases that have construed this section
+- A **Before / After split** when the section has been amended substantively, showing how courts read the old version vs. the new
+- Cross-references to **related sections** in the same title and **implementing regulations**
+
+## Amendment Timeline
+
+Every change to a statute is logged with:
+
+- The **effective date** of the amendment
+- A **plain-English summary** of what changed
+- A **diff view** showing exactly which words were added, removed, or substituted
+- The **public law number** or session law citation
+- Whether the change was a substitution, insertion, omission, or technical correction
+
+Use this to answer questions like "What did this section look like in 2018 when my client signed the contract?" or "When did Congress add the safe harbor?"
+
+## Court Interpretations
+
+For each section, the tool surfaces the leading cases that have construed it:
+
+- Cases are ranked by how directly they interpret the section, not just cite it
+- Each case shows a one-line holding tied to the specific subsection
+- Click through to the full opinion in the case law corpus
+- Filter by court (Supreme Court, Circuit, District, State Supreme, State Appellate)
+- Filter by year to see only recent interpretations
+
+## Before / After Amendment Split
+
+When a section has been amended in a way that changed its substance, the page splits the case law into two columns:
+
+- **Before** - Cases that interpreted the prior text
+- **After** - Cases applying the current text
+
+This is critical for matters that span an amendment date. The tool flags cases that may no longer be good law because the statutory text they construed has been replaced.
+
+<Warning>
+  When a statute is amended substantively, pre-amendment case law may still control conduct that occurred before the effective date. Always confirm which version of the statute governs the facts of your matter before relying on an interpretation.
+</Warning>
+
+## Search Modes
+
+| Mode | Best For |
+|------|----------|
+| **Citation lookup** | You have the cite (e.g., "29 USC 207", "12 CFR 226.5", "Cal. Civ. Code 1798.100") |
+| **Keyword search** | You want every section that mentions a term |
+| **Natural language** | You have a question and want the AI to surface the relevant sections |
+| **Topic browse** | You want to scan a title or chapter end-to-end |
+
+## State Coverage
+
+For each state, you get the same depth as federal:
+
+- Full statutory code with amendment history
+- State constitution with article-level navigation
+- State court interpretations of each section
+- Cross-references between state statutes and federal counterparts where applicable
+
+## Tips
+
+<Tip>
+  **Pin to a matter.** Add a section to a matter so it stays one click away while you draft - useful when a brief turns on a specific statutory phrase.
+</Tip>
+
+<Tip>
+  **Cite-check your brief.** Drop a section cite into a brief and the tool verifies the section exists, is in force, and flags any recent amendments before you file.
+</Tip>
+
+<Tip>
+  **Watch the timeline.** When a section changes, any case interpreting the old version may need re-evaluation - the Before / After split surfaces this automatically.
+</Tip>
+
+## Find the right USC sections
+
+<Prompt
+  description="**Statute Finder** - locate every USC and CFR section that governs a fact pattern, with leading interpretive cases."
+  icon="book"
+  iconType="solid"
+  actions={["copy"]}
+>
+Find every federal statute and regulation that governs the following fact pattern.
+
+**Facts:** [Insert your facts - e.g., "A salaried employee classified as exempt under the executive exemption is required to work 60 hours a week without overtime; the employee's primary duties were recently changed to include 70% manual labor."]
+
+Do these steps:
+
+1. Identify the controlling federal statute(s) and the relevant sections (e.g., 29 USC 207, 29 USC 213).
+2. Identify the implementing regulations (e.g., 29 CFR Part 541).
+3. For each section, give the current text of the operative subsection and the effective date of any recent amendment.
+4. Surface the **three leading court interpretations** of each section, including the controlling Supreme Court or Circuit authority.
+5. Apply the law to the facts and identify which sections are likely violated and which create defenses.
+6. Flag any pending regulatory rulemaking, DOL guidance, or recent Supreme Court grants of cert that could change the analysis.
+
+Return: **Governing Authority, Operative Text, Leading Interpretations, Application to Facts, Risk Flags.** Cite every authority with a Vaquill source ID.
+</Prompt>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Case Law Research" icon="gavel" href="/guides/case-law-research">
+    Search the full case law corpus.
+  </Card>
+  <Card title="Citation Graph" icon="diagram-project" href="/guides/citation-graph">
+    See how interpretive cases have been treated since.
+  </Card>
+  <Card title="Document Search" icon="file-magnifying-glass" href="/guides/document-search">
+    Ask questions across your own uploaded documents.
+  </Card>
+  <Card title="Deep Research" icon="magnifying-glass-plus" href="/guides/deep-research">
+    Multi-hop analysis when one section interacts with several others.
+  </Card>
+</CardGroup>

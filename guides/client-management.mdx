@@ -1,0 +1,116 @@
+---
+title: "Client Management"
+description: "Manage client records, link them to matters, and run firm-wide conflict checks"
+icon: "address-book"
+---
+
+Client Management is the firm-level contact book for the people and entities you represent. Each client record links to one or more matters, supports firm-wide conflict checks at intake, and keeps client-level documents and notes separate from individual matter files.
+
+## When To Use It
+
+- Setting up a new client at the start of an engagement
+- Running a conflict check before taking on a new matter
+- Maintaining contact information that is shared across multiple matters for the same client
+- Tracking client-level documents (engagement letters, retainer agreements) separately from matter work
+- Reporting on revenue, matters, and time across all of a client's engagements
+
+## Client Records
+
+Each client record holds:
+
+| Field | Description |
+|------|----------|
+| **Client name** | The legal entity name or individual name |
+| **Type** | Individual, organization, corporation, trust, government entity |
+| **Primary contact** | Name, role, email, phone for the day-to-day contact |
+| **Billing contact** | Separate billing contact if different from primary |
+| **Address** | Mailing address |
+| **Industry / sector** | Optional classification for reporting |
+| **Engagement start date** | When the relationship began |
+| **Notes** | Free-text relationship history |
+
+## Linked Matters
+
+Every matter is associated with a client. From the client record, you can see:
+
+- All active matters for the client
+- Closed matters with completion dates
+- Total matter count and rough activity over time
+- Quick navigation to any matter
+
+A single client can have many matters (litigation, transactional, regulatory). The client record stays consistent across them.
+
+## Conflict Checks
+
+Before opening a new matter for a client (or against one), the firm-wide conflict check surfaces:
+
+- Prior or current matters involving the same client
+- Matters where the client is on the other side of a deal or dispute
+- Related entities (parents, subsidiaries, affiliates) involved in other matters
+- Individual lawyers in the firm who have worked on related matters
+
+Resolve or waive each flag before opening the new matter. Conflict-check results are logged for audit.
+
+<Warning>
+  Conflict checks are only as good as the data behind them. Make sure related entities (parents, subsidiaries, affiliates, joint ventures) are linked to the client record, or the check can miss a real conflict.
+</Warning>
+
+## Client-Scoped Documents
+
+Documents that belong to the client relationship (not a specific matter) live at the client level:
+
+- Engagement letter
+- Retainer agreement
+- General terms with the client
+- Privacy/confidentiality acknowledgments
+- KYC and onboarding documents
+
+These documents are visible across all of the client's matters and are not tied to any single matter file.
+
+## Reporting and Insights
+
+The client record rolls up:
+
+- Total matter count
+- Recent activity
+- Where applicable, billing summary (hours, fees, status of receivables)
+
+This is the partner-level view of the relationship - useful for relationship reviews, year-end planning, and renewal conversations.
+
+## Privacy and Access
+
+- Client records are scoped to the firm (your organization)
+- Within the firm, role-based access controls which members can see which clients
+- Conflict checks run across the entire firm even if a member cannot see the conflicting matter directly - the result tells you a conflict exists without exposing the matter details
+
+<Warning>
+  Importing a third-party contact list into Client Management can pull in personal data. Make sure you have a lawful basis to ingest the data and that the source list is consistent with your firm's privacy policy.
+</Warning>
+
+## Tips
+
+<Tip>
+  **Set up the client before the first matter.** Running the conflict check at the client level catches issues before the matter is created, when it is cheaper to walk away.
+</Tip>
+
+<Tip>
+  **Keep engagement letters at the client level.** They apply across all of the client's matters, so storing them once at the client record avoids duplicates and version drift.
+</Tip>
+
+<Tip>
+  **Use related entities for corporate clients.** Link parents, subsidiaries, and affiliates so conflict checks catch all of them, not just the named entity.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Matters & Workspaces" icon="briefcase" href="/guides/matters-workspaces">
+    The matter level beneath the client.
+  </Card>
+  <Card title="Team Workspaces" icon="users" href="/guides/team-workspaces">
+    Organization-level controls and roles.
+  </Card>
+  <Card title="Company Lookup" icon="building" href="/guides/tools/company-lookup">
+    Pull corporate registry data for a client entity.
+  </Card>
+</CardGroup>

@@ -1,0 +1,233 @@
+---
+title: "Telegram Bot"
+sidebarTitle: "Telegram"
+description: "Vaquill legal AI for Telegram with BotFather setup, markdown-table PNG rendering, and inline source buttons."
+icon: "telegram"
+keywords: ["vaquill telegram bot", "telegram legal ai", "botfather", "telegram rag bot", "telegram ask bot"]
+---
+
+A Telegram bot that answers legal questions via the Vaquill `/ask` API, renders markdown tables as PNG images, and surfaces case-law sources as tappable inline-keyboard buttons. Source code at [github.com/Vaquill-AI/integrations/telegram-bot](https://github.com/Vaquill-AI/integrations/tree/main/telegram-bot).
+
+## Features
+
+- Per-chat conversation history (last N exchanges, configurable)
+- Markdown tables rendered as styled PNG images using Pillow
+- Source citations shown inline and as inline-keyboard buttons that open PDFs
+- Telegram HTML sanitisation with plain-text fallback
+- Automatic chunking of long answers (4096-char limit)
+- Per-user rate limits (per-minute and per-day)
+- Optional user ID allowlist
+
+## Prerequisites
+
+| Requirement | Where to get it |
+|---|---|
+| Python 3.10+ | [python.org](https://www.python.org/downloads/) |
+| Telegram account | [telegram.org](https://telegram.org/) |
+| Telegram Bot Token | [@BotFather](https://t.me/botfather) |
+| Vaquill API key | [app.vaquill.ai](https://app.vaquill.ai) - Settings > API Keys. See [Authentication](/authentication). |
+
+## Platform setup
+
+<Steps>
+  <Step title="Open BotFather">
+    Search for **@BotFather** in Telegram (or open [t.me/botfather](https://t.me/botfather)) and press **Start**.
+  </Step>
+  <Step title="Create the bot">
+    Send `/newbot`. Provide a display name (e.g. `Vaquill Legal AI`), then a username ending in `bot` (e.g. `vaquill_legal_bot`). BotFather replies with your API token - copy it as `TELEGRAM_BOT_TOKEN`.
+  </Step>
+  <Step title="Register slash commands (optional)">
+    Send `/setcommands`, choose your bot, and paste:
+
+    ```
+    start - Start a new conversation
+    help - Show help information
+    examples - Show example questions
+    stats - View your usage statistics
+    clear - Clear conversation history
+    ```
+
+    The bot also sets these on startup, but doing it manually makes them appear before the first run.
+  </Step>
+  <Step title="Description and avatar (optional)">
+    `/setdescription` and `/setabouttext` set the text shown on the bot's profile. `/setuserpic` sets the avatar (use a square image at least 512x512).
+  </Step>
+</Steps>
+
+## Quickstart
+
+Local development uses **polling mode** - no public URL or HTTPS certificate required.
+
+<Steps>
+  <Step title="Clone and install">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/telegram-bot
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Configure">
+    ```bash
+    cp .env.example .env
+    ```
+
+    Fill in the two required values:
+
+    ```env
+    TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+    VAQUILL_API_KEY=vq_key_your-api-key
+    VAQUILL_COUNTRY_CODE=US
+    ```
+  </Step>
+  <Step title="Run">
+    ```bash
+    python bot.py
+    ```
+
+    Look for `INFO - Vaquill Telegram bot starting (mode=standard)`. Open Telegram, search your bot by username, tap **Start**, and ask:
+
+    ```
+    What does FRCP Rule 12(b)(6) require for a motion to dismiss?
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Create a separate test bot via BotFather for development so you do not disturb production users. Each token can only be polled by one process at a time.
+</Tip>
+
+### Polling vs webhook
+
+| Mode | Best for | Public URL? | How to enable |
+|---|---|---|---|
+| **Polling** | Local dev, single instance | No | Default - just run `python bot.py` |
+| **Webhook** | Production, multi-instance | Yes (HTTPS) | Add an HTTP server and call Telegram's `setWebhook` |
+
+To switch to webhook mode, deploy behind HTTPS and register:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://your-domain.example.com/webhook"}'
+```
+
+Verify with `getWebhookInfo`. Switch back to polling any time with `deleteWebhook`.
+
+## Configuration
+
+Top env vars. Full list in the [repo `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/telegram-bot/.env.example).
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `TELEGRAM_BOT_TOKEN` | Yes | - | Token from @BotFather |
+| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
+| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | API base URL |
+| `VAQUILL_MODE` | No | `standard` | `standard` or `deep` |
+| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
+| `RATE_LIMIT_PER_USER_PER_DAY` | No | `100` | Per-user daily limit |
+| `RATE_LIMIT_PER_USER_PER_MINUTE` | No | `5` | Per-user minute limit |
+| `ALLOWED_USERS` | No | - | Comma-separated Telegram user IDs (empty = open) |
+| `MAX_CONVERSATION_HISTORY` | No | `10` | Exchange pairs kept in chat history |
+| `MAX_SOURCES_PER_RESPONSE` | No | `5` | Max source cards per reply |
+| `LOG_LEVEL` | No | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+
+To find your own Telegram user ID, message [@userinfobot](https://t.me/userinfobot).
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `/start` | Welcome message with category buttons; clears conversation history |
+| `/help` | Show available commands and tips |
+| `/examples` | Browse example questions by category as inline buttons |
+| `/stats` | Show messages used today, daily remaining, per-minute limit |
+| `/clear` | Wipe conversation history for the current chat |
+
+Any non-command message is treated as a legal question.
+
+## Deployment
+
+### Docker
+
+The included Dockerfile uses `python:3.11-slim` and installs DejaVu fonts for table-image rendering.
+
+```bash
+docker build -t vaquill-telegram-bot .
+docker run --env-file .env vaquill-telegram-bot
+```
+
+Or with Compose:
+
+```yaml
+services:
+  telegram-bot:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+```
+
+### Cloud hosts
+
+<CardGroup cols={2}>
+  <Card title="Render" icon="cloud">
+    Deploy as a **Background Worker** (not Web Service) - polling does not need an HTTP port. `render.yaml` is included in the repo.
+  </Card>
+  <Card title="Railway" icon="train">
+    `railway init && railway up`. Add `TELEGRAM_BOT_TOKEN` and `VAQUILL_API_KEY` in the Variables tab.
+  </Card>
+  <Card title="VPS + systemd" icon="server">
+    Plain systemd unit with `Restart=always`. No reverse proxy needed.
+  </Card>
+  <Card title="Fly.io" icon="plane">
+    `fly launch`, `fly secrets set ...`, `fly deploy`.
+  </Card>
+</CardGroup>
+
+Example `render.yaml`:
+
+```yaml
+services:
+  - type: worker
+    name: vaquill-telegram-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: VAQUILL_API_KEY
+        sync: false
+      - key: VAQUILL_COUNTRY_CODE
+        value: US
+```
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| Bot does not respond | Confirm the process is running, the token is correct, and only one process is polling that token. |
+| "Unauthorized" / 401 from Vaquill | `VAQUILL_API_KEY` is invalid or expired. Generate a new one. |
+| "Insufficient credits" / 402 | Top up at [app.vaquill.ai](https://app.vaquill.ai). |
+| Rate limit immediately | You hit the per-minute cap. Wait 60 seconds or raise `RATE_LIMIT_PER_USER_PER_MINUTE`. |
+| Tables render as text, not images | Pillow or fonts missing. In Docker the bot installs `fonts-dejavu-core` automatically; on macOS it falls back to Helvetica or the Pillow default. |
+| HTML parse errors in Telegram | The bot catches `BadRequest` and falls back to plain text. No action needed unless it happens on every message. |
+| Webhook set but no replies | Check `getWebhookInfo` for `pending_update_count`. If growing, the endpoint is unreachable. Delete the webhook to go back to polling. |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="WhatsApp" icon="whatsapp" href="/integrations/chatbots/whatsapp">
+    Twilio-based, comparable consumer-messenger surface.
+  </Card>
+  <Card title="Signal" icon="signal-messenger" href="/integrations/chatbots/signal">
+    Privacy-focused alternative.
+  </Card>
+  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+    Compare all six platforms.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How Vaquill API keys work.
+  </Card>
+</CardGroup>

@@ -1,0 +1,288 @@
+---
+title: "CourtListener MCP Server"
+sidebarTitle: "CourtListener MCP"
+description: "US federal and state court opinions, dockets, RECAP filings, PACER data, oral arguments, judges, and eCFR regulations via MCP. Bring your own free CourtListener token."
+icon: "landmark"
+keywords: ["courtlistener mcp", "us case law mcp", "pacer mcp", "recap mcp", "federal court opinions mcp", "ecfr mcp", "claude us law mcp", "free law project mcp", "byok mcp"]
+---
+
+The CourtListener MCP server gives AI assistants direct access to the [CourtListener](https://www.courtlistener.com) legal database - US federal and state court opinions, dockets, RECAP filings, PACER data, oral arguments, and judges - plus the [Electronic Code of Federal Regulations](https://www.ecfr.gov), all through the official CourtListener API v4. Vaquill hosts a public instance with bring-your-own-key (BYOK) auth, so your CourtListener token is forwarded on every request and never stored.
+
+<CardGroup cols={3}>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/courtlistener-mcp">
+    Source code, Docker images, issues
+  </Card>
+  <Card title="CourtListener API" icon="scale-balanced" href="https://www.courtlistener.com/help/api/rest/">
+    Upstream API docs and free key signup
+  </Card>
+  <Card title="Hosted endpoint" icon="cloud" href="https://courtlistener-mcp.vaquill.ai/mcp/">
+    `courtlistener-mcp.vaquill.ai`
+  </Card>
+</CardGroup>
+
+<Info>
+  Forked from [Travis-Prall/court-listener-mcp](https://github.com/Travis-Prall/court-listener-mcp). The Vaquill fork adds a hosted endpoint, BYOK auth, a `/health` route, and production Docker hardening. Tools and search semantics are unchanged.
+</Info>
+
+## Quickstart
+
+<Steps>
+  <Step title="Get a free CourtListener token">
+    Sign up at [courtlistener.com/help/api/rest/](https://www.courtlistener.com/help/api/rest/) and copy your API key. The Free Law Project does not charge for API access.
+  </Step>
+  <Step title="Point your client at the hosted endpoint">
+    URL: `https://courtlistener-mcp.vaquill.ai/mcp/`
+
+    Header: `X-CourtListener-Token: <your-token>`
+  </Step>
+  <Step title="Ask your assistant">
+    Try: *"Search for Supreme Court opinions on qualified immunity from the last two terms."*
+  </Step>
+</Steps>
+
+The hosted server never sees or stores your CourtListener key - it is forwarded on every request to courtlistener.com and your usage hits your own quota.
+
+## Client setup
+
+<CodeGroup>
+```json Claude Desktop / Claude Code
+{
+  "mcpServers": {
+    "courtlistener": {
+      "url": "https://courtlistener-mcp.vaquill.ai/mcp/",
+      "headers": {
+        "X-CourtListener-Token": "YOUR_COURTLISTENER_TOKEN"
+      }
+    }
+  }
+}
+```
+
+```json Cursor
+// .cursor/mcp.json
+{
+  "mcpServers": {
+    "courtlistener": {
+      "url": "https://courtlistener-mcp.vaquill.ai/mcp/",
+      "headers": {
+        "X-CourtListener-Token": "YOUR_COURTLISTENER_TOKEN"
+      }
+    }
+  }
+}
+```
+
+```json VS Code (Copilot)
+// .vscode/mcp.json
+{
+  "servers": {
+    "courtlistener": {
+      "type": "http",
+      "url": "https://courtlistener-mcp.vaquill.ai/mcp/",
+      "headers": {
+        "X-CourtListener-Token": "YOUR_COURTLISTENER_TOKEN"
+      }
+    }
+  }
+}
+```
+
+```json Windsurf
+{
+  "mcpServers": {
+    "courtlistener": {
+      "serverUrl": "https://courtlistener-mcp.vaquill.ai/mcp/",
+      "headers": {
+        "X-CourtListener-Token": "YOUR_COURTLISTENER_TOKEN"
+      }
+    }
+  }
+}
+```
+
+```text Claude Web
+Settings > Connectors > Add custom connector
+URL:    https://courtlistener-mcp.vaquill.ai/mcp/
+Header: X-CourtListener-Token = YOUR_COURTLISTENER_TOKEN
+(Workspace owners only)
+```
+</CodeGroup>
+
+<Tip>
+  Any client that supports MCP streamable HTTP with custom headers works. For stdio-only clients, run the server locally (see [Self-hosting](#self-hosting)) or proxy with [`mcp-remote`](https://www.npmjs.com/package/mcp-remote).
+</Tip>
+
+## Tools
+
+### Search
+
+| Tool | Description |
+|------|-------------|
+| `search_opinions` | Full-text search across court opinions with court, date, judge, and citation filters |
+| `search_dockets` | Search dockets by case name, court, judge, party, or date range |
+| `search_dockets_with_documents` | Same as `search_dockets` but only returns dockets with PACER documents attached |
+| `search_recap_documents` | Search RECAP-archived PACER filings (briefs, motions, orders) |
+| `search_audio` | Oral argument audio recordings |
+| `search_people` | Federal and state judges, with biographical and political data |
+
+### Get by ID
+
+| Tool | Description |
+|------|-------------|
+| `get_opinion` | Full text and metadata for a single opinion |
+| `get_docket` | Full docket record including parties and event timeline |
+| `get_audio` | Oral argument audio file metadata and download URL |
+| `get_court` | Court metadata (jurisdiction, position in hierarchy, dates of operation) |
+| `get_person` | Judge biography, education, appointments, political affiliation |
+| `get_cluster` | Opinion cluster - groups majority, concurrence, and dissent for a single decision |
+
+### Citations
+
+| Tool | Description |
+|------|-------------|
+| `lookup_citation` | Resolve a single citation string to the canonical opinion |
+| `batch_lookup_citations` | Bulk variant - resolve up to 100 citations in one call |
+| `verify_citation_format` | Validate Bluebook citation format without hitting the database |
+| `parse_citation_with_citeurl` | Use the `citeurl` library to parse complex citation strings |
+| `extract_citations_from_text` | Extract all citations from a block of text |
+| `enhanced_citation_lookup` | Combines extraction, parsing, and lookup in a single call |
+
+### eCFR
+
+| Tool | Description |
+|------|-------------|
+| `list_titles` | List all 50 titles of the Code of Federal Regulations |
+| `list_agencies` | List federal agencies with their CFR title assignments |
+| `search_regulations` | Full-text search across the eCFR |
+| `list_all_corrections` | Recent CFR corrections (errata) |
+| `list_corrections_by_title` | Corrections scoped to a single CFR title |
+| `get_search_suggestions` | Autocomplete suggestions for the search bar |
+| `get_search_summary` | Aggregate stats for a search query |
+| `get_title_search_counts` | Hit counts per CFR title for a query |
+| `get_daily_search_counts` | Daily hit-count time series for a query |
+| `get_ancestry` | Hierarchical ancestry for a CFR section (title > chapter > part > section) |
+| `get_title_structure` | Full table of contents for a CFR title |
+| `get_source_xml` | Raw XML source for a CFR section |
+| `get_source_json` | Parsed JSON source for a CFR section |
+
+### System
+
+| Tool | Description |
+|------|-------------|
+| `status` | High-level server status string |
+| `get_api_status` | Detailed CourtListener API connectivity check |
+| `health_check` | Liveness probe (returns `{ "status": "healthy" }`) |
+
+## Authentication
+
+Two modes, in priority order:
+
+1. **Per-request header (BYOK, preferred)** - send the user's CourtListener key on every MCP request:
+   - `X-CourtListener-Token: <key>` (preferred), or
+   - `Authorization: Token <key>` (CourtListener's native scheme - only works if the MCP server itself is not gated by `Authorization`).
+2. **Server env fallback** - set `COURT_LISTENER_API_KEY` on the server. Used when no per-request header is supplied. Leave unset on public instances to force BYOK.
+
+If neither is provided, tools return a `ValueError` with a clear message.
+
+<Warning>
+  The Vaquill-hosted endpoint is BYOK only - calls without `X-CourtListener-Token` (or the `Authorization: Token` fallback) will be rejected. This protects the operator's API quota and keeps usage tied to your CourtListener account.
+</Warning>
+
+## Self-hosting
+
+### Docker
+
+```bash
+git clone https://github.com/Vaquill-AI/courtlistener-mcp.git
+cd courtlistener-mcp
+cp .env.example .env   # optionally set COURT_LISTENER_API_KEY for single-tenant
+docker compose up -d
+# server at http://localhost:8000/mcp/
+```
+
+### Python (uv)
+
+```bash
+uv sync
+uv run python -m app --transport http
+```
+
+### Stdio (local CLI integration)
+
+```bash
+uv run python -m app --transport stdio
+```
+
+Wire stdio into Claude Desktop:
+
+```json
+{
+  "mcpServers": {
+    "courtlistener-local": {
+      "command": "uv",
+      "args": [
+        "run", "--directory", "/abs/path/to/courtlistener-mcp",
+        "python", "-m", "app", "--transport", "stdio"
+      ],
+      "env": { "COURT_LISTENER_API_KEY": "your_token" }
+    }
+  }
+}
+```
+
+## Environment variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `COURT_LISTENER_API_KEY` | Optional* | - | Server-side fallback when no per-request header. Leave unset on public servers to force BYOK. |
+| `COURTLISTENER_BASE_URL` | No | `https://www.courtlistener.com/api/rest/v4/` | Upstream API root |
+| `COURTLISTENER_TIMEOUT` | No | `30` | Per-request timeout in seconds |
+| `MCP_TRANSPORT` | No | `stdio` | `stdio`, `http`, or `sse` |
+| `MCP_PORT` | No | `8000` | HTTP / SSE only |
+| `HOST` | No | `0.0.0.0` | HTTP / SSE only |
+
+\* Required only in single-tenant mode without BYOK.
+
+### Health check
+
+```bash
+curl https://courtlistener-mcp.vaquill.ai/health
+# {"status":"healthy","service":"courtlistener-mcp","version":"..."}
+```
+
+## Usage examples
+
+Type these to any connected AI assistant:
+
+> *"Search for Supreme Court opinions on qualified immunity from the last two terms."*
+>
+> *"Look up docket 23-1234 in the Southern District of New York and list the filings since January."*
+>
+> *"Find all cases citing Miranda v. Arizona and group by circuit."*
+>
+> *"Verify the citation format 410 U.S. 113 and resolve it to the canonical opinion."*
+>
+> *"Extract every citation from this brief, then look each one up:"* (paste text)
+>
+> *"Pull the eCFR text for 17 CFR 240.10b-5 and list any 2024 corrections."*
+>
+> *"Show me Judge Stephen Breyer's biography and the courts he sat on."*
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="MCP overview" icon="plug" href="/integrations/mcp">
+    All Vaquill MCP servers at a glance
+  </Card>
+  <Card title="Vaquill MCP" icon="scale-balanced" href="/integrations/mcp/vaquill">
+    Cross-jurisdiction wrapper over the Vaquill API
+  </Card>
+  <Card title="Integrations" icon="grid" href="/integrations">
+    Chatbots, widgets, browser extensions, automation
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How Vaquill handles auth across products
+  </Card>
+</CardGroup>
+
+CourtListener data is provided by the [Free Law Project](https://free.law/) under their respective terms.

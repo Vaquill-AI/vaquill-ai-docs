@@ -1,55 +1,145 @@
 ---
 title: "Credits"
-description: "API credit costs and pricing"
+description: "API credit costs, pricing, and credit packs"
+icon: "coins"
 ---
 
-## How Credits Work
+Vaquill bills the API in **credits**. One credit = **$0.01 USD**. Every endpoint has a fixed credit cost - per call, regardless of result size - and your balance updates in real time on the [dashboard](https://app.vaquill.ai/settings).
 
-Each API call costs a fixed number of credits. **1 credit = $0.01 USD.** New accounts start with **500 free credits ($5)**.
+<Info>
+  **New accounts start with 500 free credits ($5).** No credit card required. Sign up at [app.vaquill.ai](https://app.vaquill.ai).
+</Info>
 
-## Costs by Endpoint
+## Credit packs
 
-| Endpoint | Method | Credits | Cost |
-|----------|--------|---------|------|
-| `/api/v1/ask` | POST | 15 | $0.15 |
-| `/api/v1/ask` (deep mode) | POST | 30 | $0.30 |
-| `/api/v1/ask/stream` | POST | 15 / 30 | Same as sync |
-| `/api/v1/statutes/search` | POST | 4 | $0.04 |
-| `/api/v1/statutes/section` | GET | 2 | $0.02 |
-| `/api/v1/statutes/section/body` | GET | 6 | $0.06 |
-| `/api/v1/research/search` (1-20 results) | POST | 1 | $0.01 |
-| `/api/v1/research/search` (21-50 results) | POST | 2 | $0.02 |
-| `/api/v1/research/search` (51-100 results) | POST | 3 | $0.03 |
-| `/api/v1/research/quick` | POST | 1 | $0.01 |
-| `/api/v1/citations/resolve` | GET | 1 | $0.01 |
-| `/api/v1/citations/cases/search` | GET | 1 | $0.01 |
-| `/api/v1/citations/cases/lookup` | GET | 1 | $0.01 |
-| `/api/v1/citations/cases/network` | GET | 5 | $0.05 |
-| `/api/v1/acts/search` | POST | 2 | $0.02 |
-| `/api/v1/acts/{actId}/text` | GET | 3 | $0.03 |
-| `/api/v1/acts/{actId}/amendments` | GET | 5 | $0.05 |
-| `/api/v1/acts/list` | GET | 1 | $0.01 |
+Buy in bulk for a built-in bonus. Larger packs unlock larger bonuses.
 
-Credit cost is per call, regardless of result size.
+<CardGroup cols={2}>
+  <Card title="Starter" icon="seedling">
+    **1,000 credits** for **$10**
+    
+    No bonus. Best for testing.
+  </Card>
+  <Card title="Builder" icon="hammer">
+    **2,500 credits** for **$25**
+    
+    No bonus. Best for early dev.
+  </Card>
+  <Card title="Pro" icon="rocket">
+    **5,500 credits** for **$50**
+    
+    +10% bonus credits. Best for production apps.
+  </Card>
+  <Card title="Scale" icon="chart-line">
+    **25,000 credits** for **$200**
+    
+    +25% bonus credits. Best for high-volume teams.
+  </Card>
+</CardGroup>
 
-## Credit Packs
+<Tip>
+  Custom amounts are available at **$0.01 per credit** (no bonus). Enterprise volume pricing and invoicing on request.
+</Tip>
 
-| Pack | Credits | Price | Bonus |
-|------|---------|-------|-------|
-| **Starter** | 1,000 | $10 | - |
-| **Builder** | 2,500 | $25 | - |
-| **Pro** | 5,500 | $50 | +10% bonus |
-| **Scale** | 25,000 | $200 | +25% bonus |
+## Costs by endpoint
 
-Custom amounts available at $0.01/credit.
+Grouped by capability so you can model your application's per-query cost before you build.
 
-## Checking Your Balance
+<AccordionGroup>
+  <Accordion title="Ask (legal Q&A)" icon="comment-question">
+    The flagship endpoint. Routes a question through the full retrieval and generation pipeline and returns a grounded answer with cited sources.
+
+    | Endpoint | Method | Credits | USD |
+    |---|---|---|---|
+    | `/api/v1/ask` | POST | 15 | $0.15 |
+    | `/api/v1/ask` (deep mode) | POST | 30 | $0.30 |
+    | `/api/v1/ask/stream` | POST | 15 / 30 | Same as sync |
+
+    Use `standard` mode for fast single-hop answers; switch to `deep` for multi-hop reasoning across sources.
+  </Accordion>
+
+  <Accordion title="Research and search" icon="magnifying-glass">
+    Boolean and natural-language search over the legal corpus.
+
+    | Endpoint | Method | Credits | USD |
+    |---|---|---|---|
+    | `/api/v1/research/search` (1-20 results) | POST | 1 | $0.01 |
+    | `/api/v1/research/search` (21-50 results) | POST | 2 | $0.02 |
+    | `/api/v1/research/search` (51-100 results) | POST | 3 | $0.03 |
+    | `/api/v1/research/quick` | POST | 1 | $0.01 |
+
+    The quick endpoint returns the top 3-5 results with essentials only.
+  </Accordion>
+
+  <Accordion title="Citations" icon="quote-left">
+    Resolve, look up, search, and traverse the citation network.
+
+    | Endpoint | Method | Credits | USD |
+    |---|---|---|---|
+    | `/api/v1/citations/resolve` | GET | 1 | $0.01 |
+    | `/api/v1/citations/cases/search` | GET | 1 | $0.01 |
+    | `/api/v1/citations/cases/lookup` | GET | 1 | $0.01 |
+    | `/api/v1/citations/cases/network` | GET | 5 | $0.05 |
+
+    Network traversal is the priciest because it walks multiple hops in the citation graph.
+  </Accordion>
+
+  <Accordion title="US statutes (USC + CFR)" icon="landmark">
+    Semantic search over the United States Code and Code of Federal Regulations.
+
+    | Endpoint | Method | Credits | USD |
+    |---|---|---|---|
+    | `/api/v1/statutes/search` | POST | 4 | $0.04 |
+    | `/api/v1/statutes/section` | GET | 2 | $0.02 |
+    | `/api/v1/statutes/section/body` | GET | 6 | $0.06 |
+
+    Section metadata is cheaper than the full section body.
+  </Accordion>
+
+  <Accordion title="Indian acts and legislation" icon="scroll">
+    Indian central and state legislation lookup.
+
+    | Endpoint | Method | Credits | USD |
+    |---|---|---|---|
+    | `/api/v1/acts/list` | GET | 1 | $0.01 |
+    | `/api/v1/acts/search` | POST | 2 | $0.02 |
+    | `/api/v1/acts/{actId}/text` | GET | 3 | $0.03 |
+    | `/api/v1/acts/{actId}/amendments` | GET | 5 | $0.05 |
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  **Optimize cost by choosing the right endpoint.** For a hit-or-miss query, start with `/research/quick` ($0.01) before falling back to `/ask` ($0.15). For citation resolution, the resolve endpoint is 15x cheaper than asking the LLM to do it.
+</Tip>
+
+## Checking your balance
 
 View remaining credits in your [developer settings](https://app.vaquill.ai/developer?tab=credits). When credits reach zero, API calls return `403`.
 
+<Warning>
+  Out-of-credit calls return **`403 Forbidden`**, not `402`. Handle both in your error logic, or top up before you hit zero with auto-recharge in your dashboard.
+</Warning>
+
 ## Notes
 
-- Credits do not expire.
-- Signup bonus: 500 credits ($5) - no credit card required.
-- All pricing is in USD.
-- Bulk or enterprise pricing available - contact [priyansh@vaquill.ai](mailto:priyansh@vaquill.ai).
+- **Credits do not expire** - buy in bulk without worrying about a use-or-lose deadline.
+- **Signup bonus**: 500 credits ($5), no credit card required.
+- **All pricing is in USD**.
+- **Bulk or enterprise pricing** available - contact [priyansh@vaquill.ai](mailto:priyansh@vaquill.ai).
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Generate and rotate API keys.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/errors">
+    HTTP status codes and recovery paths.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/ask/ask-a-legal-question">
+    Every endpoint with parameters and examples.
+  </Card>
+  <Card title="Pricing endpoint" icon="receipt" href="/api-reference/pricing/get-api-credit-pricing">
+    Fetch the live pricing schedule programmatically.
+  </Card>
+</CardGroup>

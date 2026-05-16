@@ -1,0 +1,140 @@
+---
+title: "Compare Documents"
+description: "Redline two versions of a document and export real Word Track Changes - even when the source files are different formats"
+icon: "code-compare"
+---
+
+Compare Documents produces a clean redline between any two versions of a document and exports it as a Word file with native Track Changes - the same revision markers a partner would see if an associate marked it up by hand. The comparison works even when the original and revised versions are in different formats (PDF vs. Word, scanned vs. digital).
+
+## When To Use It
+
+- Reviewing a counterparty's markup of your draft
+- Comparing the executed version of a contract to the last clean draft
+- Checking what changed between two amendments
+- Diffing a regulatory filing against a prior submission
+- Showing a client exactly what counsel changed in a document they sent
+
+## How It Works
+
+<Steps>
+  <Step title="Upload or pick the two versions">
+    Drop the original and revised files in, or select existing documents from your matter.
+  </Step>
+  <Step title="Automatic alignment">
+    The tool aligns the text, accounting for reordering, formatting differences, and OCR artifacts.
+  </Step>
+  <Step title="Change classification">
+    Each change is classified as an insertion, deletion, formatting change, or move.
+  </Step>
+  <Step title="Review or export">
+    Review the redline in the browser side-by-side, or export to Word with native Track Changes.
+  </Step>
+</Steps>
+
+## Cross-Format Comparison
+
+You do not need to convert files before comparing. The tool handles:
+
+| Original | Revised |
+|------|----------|
+| Word (.docx) | Word (.docx) |
+| Word (.docx) | PDF |
+| PDF | PDF |
+| Scanned PDF (image-only) | Word |
+| Image (PNG, JPG, TIFF) | PDF or Word |
+
+Text from scanned documents and images is read automatically before the comparison runs.
+
+<Warning>
+  Scanned and image-only inputs run through OCR before alignment. For pages with heavy handwriting, complex tables, or low scan quality, spot-check the redline against the source - the alignment is only as accurate as the OCR.
+</Warning>
+
+## Comparison Settings
+
+Tunable for the kind of redline you want:
+
+| Setting | What It Does |
+|------|----------|
+| **Ignore case** | Treat "Agreement" and "AGREEMENT" as the same word |
+| **Ignore whitespace** | Skip spacing-only differences between paragraphs |
+| **Ignore numbering** | Suppress changes that are only renumbering of sections |
+| **Ignore formatting** | Skip font, bold, italic, and color changes |
+| **Group by clause** | Roll up word-level changes into clause-level summaries |
+
+Save your settings as a profile so the team uses the same comparison rules across a matter.
+
+## Native Track Changes Export
+
+The exported Word file uses real Track Changes revisions - not annotations, comments, or highlight tricks. When the recipient opens it:
+
+- Accept and Reject buttons work as expected
+- Each revision shows the original author attribution
+- Comments are preserved alongside insertions and deletions
+- Formatting changes appear in the review pane
+
+The document is fully editable in Word, Google Docs, or any other Office-compatible editor.
+
+## AI Change Summary
+
+Above the redline, the tool generates a plain-English summary of what changed:
+
+> *"The counterparty narrowed the indemnification scope to direct damages only, extended the cure period from 15 to 30 days, and added a new mutual non-solicit clause. The limitation of liability cap was raised from 12 months of fees to 24 months."*
+
+Use the summary as the cover note when you forward the redline to a partner or client.
+
+## Side-By-Side Viewer
+
+In the browser, view both documents side-by-side with synchronized scrolling. Each change is highlighted in both panes, with a count of insertions, deletions, and moves at the top.
+
+## Tips
+
+<Tip>
+  **Compare against the executed version.** Keep the signed PDF in the matter and compare every amendment back to it - drift between drafts is one of the most common sources of dispute.
+</Tip>
+
+<Tip>
+  **Use Ignore Numbering on counterparty markups.** Avoids drowning in section-renumbering noise so you can see the substantive changes.
+</Tip>
+
+<Tip>
+  **Combine with Redline Analysis.** For the *why* behind a counterparty's edits, run [Redline Analysis](/guides/tools/redline-analysis) on the same pair after generating the redline here.
+</Tip>
+
+## Summarize material changes
+
+<Prompt
+  description="**Material Change Summary** - executive cover note that flags what actually shifted between two versions."
+  icon="code-compare"
+  iconType="solid"
+  actions={["copy"]}
+>
+Compare the two attached versions of [document name - e.g., the Master Services Agreement] and produce a partner-ready summary of material changes.
+
+Do these steps:
+
+1. Identify every **substantive** change (ignore renumbering, whitespace, and pure formatting).
+2. For each change, classify the impact: **In our favor**, **Against us**, or **Neutral / cleanup**.
+3. Group changes by clause: indemnification, limitation of liability, IP ownership, payment terms, termination, governing law, dispute resolution, confidentiality, and any other clause that moved.
+4. For each in-our-favor or against-us change, quote the before-text and the after-text verbatim and explain the legal consequence in one sentence.
+5. Flag any **deletions** the counterparty silently removed (often more important than the additions).
+6. Flag any **new defined terms** introduced and check that they are used consistently throughout.
+
+Return: **One-paragraph executive summary, Material Changes Table, Watch-Outs, Recommended counter-positions before sign-off.**
+</Prompt>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Clause-level review with playbook-based redlines.
+  </Card>
+  <Card title="Redline Analysis" icon="pen" href="/guides/tools/redline-analysis">
+    Commentary on existing tracked changes.
+  </Card>
+  <Card title="Document Matrix" icon="table" href="/guides/document-matrix">
+    Compare structured fields across many documents at once.
+  </Card>
+  <Card title="Document Search" icon="file-magnifying-glass" href="/guides/document-search">
+    Ask questions across both versions during review.
+  </Card>
+</CardGroup>

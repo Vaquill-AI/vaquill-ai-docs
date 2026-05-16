@@ -1,6 +1,7 @@
 ---
 title: "Document Search"
 description: "Upload documents and ask questions with cited answers"
+icon: "magnifying-glass"
 ---
 
 Upload legal documents and ask questions in plain language. Answers include source citations with exact page references. For autonomous multi-step research across documents, web, and legal databases, try [Agent Mode](/guides/agent-mode).
@@ -11,16 +12,30 @@ Upload legal documents and ask questions in plain language. Answers include sour
 
 ## Supported Formats
 
-| Category | Formats |
-|----------|---------|
-| Documents | PDF, DOCX, DOC, TXT, RTF, ODT |
-| Spreadsheets | XLSX, XLS, CSV |
-| Presentations | PPTX, PPT |
-| Images | PNG, JPG, TIFF (OCR) |
-| Email | EML, MSG |
-| Archives | ZIP (extracts contents) |
+<CardGroup cols={3}>
+  <Card title="Documents" icon="file-lines">
+    PDF, DOCX, DOC, TXT, RTF, ODT
+  </Card>
+  <Card title="Spreadsheets" icon="table">
+    XLSX, XLS, CSV
+  </Card>
+  <Card title="Presentations" icon="file-powerpoint">
+    PPTX, PPT
+  </Card>
+  <Card title="Images (OCR)" icon="image">
+    PNG, JPG, TIFF processed with OCR automatically
+  </Card>
+  <Card title="Email" icon="envelope">
+    EML, MSG with attachments
+  </Card>
+  <Card title="Archives" icon="file-zipper">
+    ZIP files unpacked and indexed
+  </Card>
+</CardGroup>
 
-Scanned PDFs and images are processed with OCR automatically.
+<Tip>
+  Scanned PDFs are detected automatically and routed through OCR. Quality varies with scan resolution - flag low-confidence pages with [Answer Verification](/guides/answer-verification) before relying on them in a filing.
+</Tip>
 
 ## How to Use
 
@@ -69,4 +84,40 @@ Ask follow-up questions without re-uploading. Context is preserved across the co
 
 ## Google Drive Import
 
-Import documents directly from Google Drive. Connect your Google account from dashboard settings.
+Import documents directly from Google Drive. Connect your Google account from dashboard settings. See [Google Drive Import](/guides/google-drive-import) for the full OAuth flow and sync options.
+
+## Ready-to-run prompts
+
+<Prompt
+  description="**Contract Q&A** - ask any question about an uploaded agreement and get sourced answers with page citations."
+  icon="file-contract"
+  iconType="solid"
+  actions={["copy"]}
+>
+I have uploaded a services agreement. Answer these questions, citing the exact section and page for every claim:
+
+1. What is the term and how does termination work? Highlight termination-for-convenience vs termination-for-cause.
+2. What are the payment terms? Net days, late fees, currency, taxes.
+3. List every clause that limits or caps liability, and quote the cap amount.
+4. Is there an indemnity? Who indemnifies whom, for what, and with what carve-outs?
+5. What is the governing law and venue?
+
+End with a one-paragraph practitioner summary: would you flag any of these terms as off-market for a US commercial services deal?
+</Prompt>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Case Law Research" icon="scale-balanced" href="/guides/case-law-research">
+    Search US, Canadian, and Indian court cases by keyword or citation.
+  </Card>
+  <Card title="Agent Mode" icon="robot" href="/guides/agent-mode">
+    Autonomous multi-step research across documents and the web.
+  </Card>
+  <Card title="Document Analyst" icon="file-magnifying-glass" href="/guides/tools/document-analyst">
+    Deeper structured document Q&A with extraction templates.
+  </Card>
+  <Card title="File formats" icon="file" href="/guides/file-formats">
+    Full list of supported formats and OCR behavior.
+  </Card>
+</CardGroup>

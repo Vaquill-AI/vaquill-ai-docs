@@ -1,95 +1,97 @@
 ---
 title: "Legal Tools"
-description: "15+ tools for document analysis, compliance, and research"
+description: "Purpose-built tools for the work lawyers do every day - contract review, NDA triage, risk assessment, redlining, and more"
+icon: "toolbox"
 ---
 
-15+ tools for common legal workflows. Activate from the tools menu or by describing what you need. For structured playbooks (contract review, NDA triage, risk assessment), see [Skills](/guides/skills). For autonomous multi-tool research, see [Agent Mode](/guides/agent-mode).
+Vaquill ships a suite of legal tools - each one purpose-built for a specific workflow that recurs in legal practice. Pick a tool from this overview, or activate one in chat by describing what you need ("triage this NDA", "redline this against our playbook", "compare these two leases").
 
-## Available Tools
+For structured playbooks that combine tools and your firm's standards, see [Skills](/guides/skills). For autonomous multi-tool research, see [Agent Mode](/guides/agent-mode).
 
-### Document Analysis
+## Document Analysis
 
 <CardGroup cols={2}>
   <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
-    Clause-by-clause analysis with risk ratings and redline suggestions. Export to Word with tracked changes.
+    Clause-by-clause review with severity ratings and exportable Word redlines.
   </Card>
-  <Card title="NDA Triage" icon="file-shield">
-    Pass/warn/fail screening. Checks scope, duration, carve-outs, and remedies.
+  <Card title="NDA Triage" icon="file-shield" href="/guides/tools/nda-triage">
+    Fast pass/warn/fail screening with routing recommendations and suggested markups.
   </Card>
-  <Card title="Document Analyst" icon="file-magnifying-glass">
-    Ask any question about an uploaded document. Get sourced answers.
+  <Card title="Document Analyst" icon="file-magnifying-glass" href="/guides/tools/document-analyst">
+    Ask any question about an uploaded document; sourced answers with page citations.
   </Card>
-  <Card title="Contract Debugger" icon="bug">
-    Find internal inconsistencies, clause contradictions, and undefined terms.
-  </Card>
-</CardGroup>
-
-### Risk & Compliance
-
-<CardGroup cols={2}>
-  <Card title="Risk Assessment" icon="triangle-exclamation">
-    5x5 severity-likelihood matrix. Maps each risk to specific clauses.
-  </Card>
-  <Card title="Compliance Check" icon="clipboard-check">
-    Gap analysis against 11 frameworks: GDPR, CCPA, HIPAA, SOX, PCI DSS, and more.
+  <Card title="Contract Debugger" icon="bug" href="/guides/tools/contract-debugger">
+    Find undefined terms, broken cross-references, conflicts, and other structural defects.
   </Card>
 </CardGroup>
 
-### Comparison & Editing
+## Risk & Compliance
 
 <CardGroup cols={2}>
-  <Card title="Compare Documents" icon="code-compare">
-    Side-by-side diff of two versions with impact assessment per change.
+  <Card title="Risk Assessment" icon="triangle-exclamation" href="/guides/tools/risk-assessment">
+    5x5 severity-likelihood matrix with mitigation options and residual scoring.
   </Card>
-  <Card title="Redline Analysis" icon="pen-line">
-    Commentary on existing tracked changes and their significance.
-  </Card>
-  <Card title="Document Table" icon="table">
-    Extract structured data from documents into table format.
+  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+    Gap analysis against eleven regulatory frameworks with drafted remediation language.
   </Card>
 </CardGroup>
 
-### Research & Reference
+## Comparison & Editing
 
 <CardGroup cols={2}>
-  <Card title="AI Judge" icon="gavel">
-    Analyze strengths and weaknesses of legal arguments from multiple perspectives.
+  <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
+    Cross-format redline with native Word Track Changes export and AI change summary.
   </Card>
-  <Card title="Chronology Builder" icon="timeline">
-    Extract dates and events into a chronological timeline.
+  <Card title="Redline Analysis" icon="pen-line" href="/guides/tools/redline-analysis">
+    Commentary on a counterparty's tracked changes - what changed, why, and how to respond.
   </Card>
-  <Card title="Translation" icon="language">
-    Translate legal documents while preserving terminology.
+  <Card title="Document Matrix" icon="table" href="/guides/document-matrix">
+    Spreadsheet-style review of up to 200 documents with source-quoted cells.
   </Card>
 </CardGroup>
 
-### Productivity
+## Research & Reference
 
 <CardGroup cols={2}>
-  <Card title="Canned Responses" icon="reply">
-    Templates for common legal communications.
+  <Card title="Chronology Builder" icon="timeline" href="/guides/chronology-builder">
+    Extract dates and events into a sourced timeline. Timeline and table views.
   </Card>
-  <Card title="Company Lookup" icon="building">
-    Look up company information from corporate registry databases.
+  <Card title="Translation" icon="language" href="/guides/tools/translation">
+    Legal translation that preserves defined terms, citations, and document structure.
   </Card>
-  <Card title="Workflows" icon="diagram-project">
-    Chain multiple tools together for multi-step analysis.
+</CardGroup>
+
+## Productivity
+
+<CardGroup cols={2}>
+  <Card title="Canned Responses" icon="reply" href="/guides/tools/canned-responses">
+    Drafted responses for routine communications - data subject requests, subpoena receipts, vendor inquiries.
+  </Card>
+  <Card title="Company Lookup" icon="building" href="/guides/tools/company-lookup">
+    Corporate registry data for parties on a contract or matter, with conflict-check integration.
   </Card>
 </CardGroup>
 
 ## Activation
 
-Two ways to activate a tool:
+Two ways to activate any tool:
 
-1. **Tools menu:** Click the tools icon in the conversation bar
-2. **Natural language:** Describe what you need
+1. **Tools menu** - Click the tools icon in the conversation bar and pick the tool you want
+2. **Natural language** - Describe what you need and the right tool runs automatically
 
-> *"Triage this NDA"* → NDA Triage
+> *"Triage this NDA"* triggers NDA Triage
 >
-> *"Compare these two versions"* → Compare Documents
+> *"Compare these two versions"* triggers Compare Documents
 >
-> *"Check this against GDPR"* → Compliance Check
+> *"Check this DPA against GDPR"* triggers Compliance Check
+>
+> *"Build a timeline from this folder"* triggers Chronology Builder
 
-<Info>
-  Tool availability depends on your plan. See your [dashboard](https://app.vaquill.ai/settings) for details.
-</Info>
+## Activation by Plan
+
+The full tool suite is included on all paid plans. See the [Subscriptions](/guides/subscriptions) page for details, or your [dashboard](https://app.vaquill.ai/settings) for current usage.
+
+## Related
+
+- [Skills](/guides/skills) - Saved playbooks that combine tools with your firm's standards
+- [Agent Mode](/guides/agent-mode) - Autonomous tool-using research

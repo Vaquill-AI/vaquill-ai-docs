@@ -1,0 +1,242 @@
+---
+title: "Microsoft Teams Bot"
+sidebarTitle: "Microsoft Teams"
+description: "Vaquill legal AI for Microsoft Teams with Adaptive Cards, tenant allowlists, and Azure-native deployment."
+icon: "microsoft"
+keywords: ["vaquill teams bot", "microsoft teams legal ai", "teams azure bot", "adaptive cards legal", "teams rag bot"]
+---
+
+Bring Vaquill into Microsoft Teams via the Bot Framework. The bot replies in personal chats, channels (with `@mention`), and threads with Adaptive Cards that include cited cases, statutes, and PDF links. Source code at [github.com/Vaquill-AI/integrations/ms-teams-bot](https://github.com/Vaquill-AI/integrations/tree/main/ms-teams-bot).
+
+## Features
+
+- AI-powered legal Q&A via Vaquill (`standard` and `deep` modes)
+- Multi-turn conversation with client-side chat history
+- Adaptive Cards with source citations (case name, court, citation, PDF link)
+- Per-user, per-channel, and per-tenant rate limits (Redis or in-memory)
+- Tenant and channel allowlists, user blocklists
+- Slash commands: `/help`, `/clear`, `/status`
+- Thread support with `@mention` in channels
+
+## Prerequisites
+
+| Requirement | Notes |
+|---|---|
+| [Azure account](https://azure.microsoft.com/free/) | Azure Bot resource uses the free F0 tier |
+| Microsoft Teams admin or app sideloading permission | Required to upload the custom app package |
+| Vaquill API key from [app.vaquill.ai/settings](https://app.vaquill.ai/settings) | Starts with `vq_key_`. See [Authentication](/authentication). |
+| Python 3.10+ (or Docker) | 3.12 recommended |
+| ngrok (local dev only) | Tunnels your localhost to a public HTTPS URL |
+| Redis (optional) | For distributed rate limiting |
+
+You need three credentials before you can run the bot: `TEAMS_APP_ID`, `TEAMS_APP_PASSWORD`, and `VAQUILL_API_KEY`.
+
+## Platform setup
+
+<Steps>
+  <Step title="Create an Azure App Registration">
+    In the [Azure Portal](https://portal.azure.com), search for **Microsoft Entra ID > App registrations > + New registration**. Use:
+
+    - **Name**: `vaquill-teams-bot`
+    - **Supported account types**: Single tenant (recommended) or Multi-tenant
+    - **Redirect URI**: leave blank
+
+    Click **Register**. Copy the **Application (client) ID** - this is your `TEAMS_APP_ID`.
+  </Step>
+  <Step title="Create a client secret">
+    In the registration, go to **Certificates & secrets > Client secrets > + New client secret**. Description: `Teams Bot Secret`, Expires: **24 months**. Click **Add** and **immediately copy the Value column** - this is your `TEAMS_APP_PASSWORD`.
+
+    <Warning>
+      Copy the **Value**, not the Secret ID. The Value is shown only once.
+    </Warning>
+  </Step>
+  <Step title="Create the Azure Bot resource">
+    In the Azure Portal, **Create a resource > Azure Bot**. Fill in:
+
+    - **Bot handle**: `vaquill-teams-bot`
+    - **Pricing tier**: **F0 (Free)**
+    - **Microsoft App ID**: paste the ID from Step 1
+
+    Click **Review + Create > Create**.
+  </Step>
+  <Step title="Enable the Teams channel">
+    Open your Azure Bot resource, go to **Channels**, click the **Microsoft Teams** icon, and click **Apply**.
+  </Step>
+  <Step title="Generate your Vaquill API key">
+    Sign in to the [Vaquill dashboard](https://app.vaquill.ai/settings) and generate a key. Save it as `VAQUILL_API_KEY`.
+  </Step>
+</Steps>
+
+## Quickstart
+
+<Steps>
+  <Step title="Clone and install">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/ms-teams-bot
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Configure environment">
+    ```bash
+    cp .env.example .env
+    ```
+
+    Set the minimum required values:
+
+    ```env
+    TEAMS_APP_ID=12345678-1234-1234-1234-123456789abc
+    TEAMS_APP_PASSWORD=abc123~XYZ456.789def-GHI012_JKL345
+    TEAMS_APP_TYPE=MultiTenant
+    VAQUILL_API_KEY=vq_key_your_key_here
+    VAQUILL_COUNTRY_CODE=US
+    ```
+  </Step>
+  <Step title="Run the bot">
+    ```bash
+    python3 app.py
+    ```
+
+    Expected:
+
+    ```
+    INFO - Vaquill client initialized
+    INFO - Rate limiter initialized
+    INFO - Bot initialization complete
+     * Running on http://0.0.0.0:3978
+    ```
+
+    Health check: `curl http://localhost:3978/health`.
+  </Step>
+  <Step title="Expose with ngrok (local dev only)">
+    ```bash
+    ngrok http 3978
+    ```
+
+    Copy the HTTPS URL, append `/api/messages`, and paste into Azure Portal > your Bot > **Configuration > Messaging endpoint**. Click **Apply**.
+
+    <Info>
+      Free ngrok URLs change on restart. You will need to update the messaging endpoint each time.
+    </Info>
+  </Step>
+  <Step title="Install in Teams">
+    Create a `deployment/` folder with `manifest.json` (set `botId` to `TEAMS_APP_ID`), `color.png` (192x192), and `outline.png` (32x32). Zip them:
+
+    ```bash
+    cd deployment
+    zip -r vaquill-bot.zip manifest.json color.png outline.png
+    ```
+
+    In Teams: **Apps > Manage your apps > Upload an app > Upload a custom app**. Select the ZIP.
+
+    Test by DMing the bot or mentioning it in a channel:
+
+    ```
+    @Vaquill Bot What is qualified immunity under 42 USC 1983?
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+Top env vars. See the [repo `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/ms-teams-bot/.env.example) for the full set.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `TEAMS_APP_ID` | Yes | - | Application (client) ID from Azure App Registration |
+| `TEAMS_APP_PASSWORD` | Yes | - | Client secret **Value** from the registration |
+| `TEAMS_APP_TYPE` | No | `MultiTenant` | `SingleTenant` or `MultiTenant` |
+| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
+| `VAQUILL_MODE` | No | `standard` | `standard` or `deep` |
+| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
+| `ALLOWED_TENANTS` | No | - | Comma-separated tenant IDs (production safety) |
+| `RATE_LIMIT_PER_USER` | No | `20` | Per-user limit per minute |
+| `RATE_LIMIT_PER_CHANNEL` | No | `100` | Per-channel limit per hour |
+| `RATE_LIMIT_PER_TENANT` | No | `500` | Per-org limit per hour |
+| `REDIS_URL` | No | - | Optional Redis URL |
+| `PORT` | No | `3978` | HTTP server port |
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `/help` | Show available commands |
+| `/clear` | Clear conversation history for the current chat |
+| `/status` | Show rate-limit usage and bot status |
+| `@Vaquill Bot <question>` | Ask in a channel (mention required) |
+| Personal chat | Send any message - no mention needed |
+
+## Deployment
+
+### Docker
+
+```bash
+docker build -t vaquill-teams-bot .
+docker run -d --name teams-bot -p 3978:3978 --env-file .env vaquill-teams-bot
+docker logs -f teams-bot
+```
+
+### Azure Web App (native)
+
+```bash
+az webapp up \
+  --name vaquill-teams-bot \
+  --resource-group vaquill-rg \
+  --runtime "PYTHON:3.12" \
+  --sku B1
+```
+
+Set environment variables under **Web App > Configuration > Application settings**, then point Azure Bot **Messaging endpoint** at `https://vaquill-teams-bot.azurewebsites.net/api/messages`.
+
+### Other cloud hosts
+
+<CardGroup cols={2}>
+  <Card title="Railway" icon="train">
+    Fork the repo, connect on [railway.app](https://railway.app), add env vars, deploy, copy the URL, update the Azure messaging endpoint.
+  </Card>
+  <Card title="Render" icon="cloud">
+    New Web Service, connect GitHub, set env vars, deploy. Use the `.onrender.com` URL as the messaging endpoint.
+  </Card>
+</CardGroup>
+
+<Tip>
+  Always end the messaging endpoint with `/api/messages` and use HTTPS. HTTP endpoints will be rejected by the Bot Framework.
+</Tip>
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| Bot not responding in Teams | Confirm messaging endpoint ends with `/api/messages`. Confirm the app is installed in Teams. Try personal chat first to isolate channel-permission issues. |
+| Authentication errors | Verify `TEAMS_APP_ID` matches Azure Portal > Bot > Configuration. Regenerate the client secret if expired. Restart the bot after credential changes. |
+| Vaquill API 401 | `VAQUILL_API_KEY` is invalid - generate a new one. |
+| Vaquill API 402 | Insufficient credits - top up at [app.vaquill.ai/settings](https://app.vaquill.ai/settings). |
+| Rate-limit hits | Raise `RATE_LIMIT_PER_USER` / `RATE_LIMIT_PER_CHANNEL`, or set `REDIS_URL` for shared state. |
+
+Test the Vaquill API directly to isolate bot issues:
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/ask \
+  -H "Authorization: Bearer vq_key_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is qualified immunity under 42 USC 1983?"}'
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Slack" icon="slack" href="/integrations/chatbots/slack">
+    Slack workspace equivalent.
+  </Card>
+  <Card title="Discord" icon="discord" href="/integrations/chatbots/discord">
+    Same engine, no Azure required.
+  </Card>
+  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+    Compare all six platforms.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How Vaquill API keys work.
+  </Card>
+</CardGroup>

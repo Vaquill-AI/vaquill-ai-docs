@@ -38,10 +38,11 @@
     },
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "Introduction",
+        "icon": "book",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Get Started",
             "icon": "rocket",
             "pages": [
               "introduction",
@@ -52,15 +53,64 @@
             ]
           },
           {
-            "group": "Features",
-            "icon": "book-open",
+            "group": "AI Research",
+            "icon": "brain",
             "pages": [
               "guides/agent-mode",
+              "guides/deep-research",
+              "guides/retrieval-strategies",
+              "guides/answer-verification",
+              "guides/citation-graph",
+              "guides/statutes-regulations"
+            ]
+          },
+          {
+            "group": "Features",
+            "icon": "sparkles",
+            "pages": [
               "guides/skills",
               "guides/memories",
               "guides/mcp-client",
+              "guides/chronology-builder",
+              "guides/compliance-check",
+              "guides/document-comparison",
+              "guides/document-matrix",
+              "guides/inline-threading",
+              "guides/conversation-sharing"
+            ]
+          },
+          {
+            "group": "Legal Tools",
+            "icon": "toolbox",
+            "pages": [
               "guides/legal-tools",
-              "guides/matters-workspaces"
+              "guides/tools/nda-triage",
+              "guides/tools/risk-assessment",
+              "guides/tools/document-analyst",
+              "guides/tools/contract-debugger",
+              "guides/tools/redline-analysis",
+              "guides/tools/translation",
+              "guides/tools/canned-responses",
+              "guides/tools/company-lookup"
+            ]
+          },
+          {
+            "group": "Workspaces & Team",
+            "icon": "users",
+            "pages": [
+              "guides/matters-workspaces",
+              "guides/client-management",
+              "guides/team-workspaces",
+              "guides/subscriptions"
+            ]
+          },
+          {
+            "group": "Documents & Ingestion",
+            "icon": "file-arrow-up",
+            "pages": [
+              "guides/file-formats",
+              "guides/email-to-rag",
+              "guides/google-drive-import"
             ]
           },
           {
@@ -73,12 +123,70 @@
             ]
           },
           {
-            "group": "Integrations",
+            "group": "Resources",
+            "icon": "compass",
+            "pages": [
+              "changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Integrations",
+        "icon": "plug",
+        "groups": [
+          {
+            "group": "Overview",
             "icon": "plug",
             "pages": [
-              "integrations/mcp",
-              "integrations/courtlistener-mcp",
-              "integrations/canlii-mcp"
+              "integrations/index"
+            ]
+          },
+          {
+            "group": "MCP Servers",
+            "icon": "plug",
+            "pages": [
+              "integrations/mcp/index",
+              "integrations/mcp/vaquill",
+              "integrations/mcp/courtlistener",
+              "integrations/mcp/canlii"
+            ]
+          },
+          {
+            "group": "Chatbots",
+            "icon": "comments",
+            "pages": [
+              "integrations/chatbots/index",
+              "integrations/chatbots/slack",
+              "integrations/chatbots/discord",
+              "integrations/chatbots/microsoft-teams",
+              "integrations/chatbots/telegram",
+              "integrations/chatbots/whatsapp",
+              "integrations/chatbots/signal"
+            ]
+          },
+          {
+            "group": "Widgets",
+            "icon": "window",
+            "pages": [
+              "integrations/widgets/index",
+              "integrations/widgets/embedded-chat",
+              "integrations/widgets/docker-widget",
+              "integrations/widgets/widget-pro"
+            ]
+          },
+          {
+            "group": "Browser",
+            "icon": "puzzle-piece",
+            "pages": [
+              "integrations/browser/chrome"
+            ]
+          },
+          {
+            "group": "Automation",
+            "icon": "gears",
+            "pages": [
+              "integrations/automation/n8n"
             ]
           }
         ]
@@ -98,7 +206,7 @@
       },
       {
         "label": "Support",
-        "href": "mailto:contact@vaquill.com"
+        "href": "mailto:contact@vaquill.ai"
       }
     ],
     "primary": {
@@ -130,10 +238,21 @@
     "options": [
       "copy",
       "view",
+      "assistant",
       "chatgpt",
       "claude",
-      "cursor"
+      "perplexity",
+      "cursor",
+      "vscode",
+      "windsurf",
+      "mcp"
     ]
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "codeblocks": {
+      "theme": "github-dark"
+    }
   },
   "feedback": {
     "thumbsRating": true,
@@ -191,7 +310,20 @@
       }
     ]
   },
-  "redirects": [],
+  "redirects": [
+    {
+      "source": "/integrations/mcp",
+      "destination": "/integrations/mcp/vaquill"
+    },
+    {
+      "source": "/integrations/courtlistener-mcp",
+      "destination": "/integrations/mcp/courtlistener"
+    },
+    {
+      "source": "/integrations/canlii-mcp",
+      "destination": "/integrations/mcp/canlii"
+    }
+  ],
   "appearance": {
     "default": "light",
     "strict": true

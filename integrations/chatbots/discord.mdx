@@ -1,0 +1,215 @@
+---
+title: "Discord Bot"
+sidebarTitle: "Discord"
+description: "Vaquill legal AI for Discord servers with prefix commands, per-channel memory, and source citations."
+icon: "discord"
+keywords: ["vaquill discord bot", "discord legal ai", "discord rag bot", "discord ask bot", "discord legal research"]
+---
+
+Run Vaquill inside any Discord server. Members ask legal questions with `!ask`, the bot replies with cited cases and statutes, and per-channel history keeps follow-ups natural. Source code at [github.com/Vaquill-AI/integrations/discord-bot](https://github.com/Vaquill-AI/integrations/tree/main/discord-bot).
+
+## Features
+
+- `!ask`, `!starters`, `!reset`, `!help` prefix commands (prefix is configurable)
+- Per-channel conversation history (cap configurable, default 20 exchanges)
+- "Show Sources" button on every response reveals cited case law and statutes
+- Long answers paginated with Previous / Next buttons
+- Starter-question buttons via `!starters`
+- Per-user and per-channel rate limits with optional Redis backend
+- Channel and role allowlists
+
+## Prerequisites
+
+- A Discord account with **Manage Server** permission on at least one server
+- Python 3.10+ (or Docker)
+- Vaquill API key (starts with `vq_key_`). See [Authentication](/authentication).
+
+## Platform setup
+
+<Steps>
+  <Step title="Create the application">
+    Open the [Discord Developer Portal](https://discord.com/developers/applications), click **New Application**, name it (e.g. "Vaquill Legal AI"), and click **Create**.
+  </Step>
+  <Step title="Create the bot user and copy the token">
+    In the sidebar, click **Bot**, then **Add Bot > Yes, do it!**. Click **Reset Token**, copy the value, and save it as `DISCORD_BOT_TOKEN`. You cannot view this token again after leaving the page.
+  </Step>
+  <Step title="Enable Message Content Intent (critical)">
+    On the same **Bot** page, scroll to **Privileged Gateway Intents**. Toggle **Message Content Intent** on and click **Save Changes**.
+
+    <Warning>
+      Without Message Content Intent the bot cannot read message text and will silently ignore every command. This is the most common cause of "bot online but does nothing".
+    </Warning>
+  </Step>
+  <Step title="Generate the invite URL">
+    Go to **OAuth2 > URL Generator**.
+
+    Under **Scopes** check:
+    - `bot`
+    - `applications.commands`
+
+    Under **Bot Permissions** check:
+    - Send Messages
+    - Embed Links
+    - Read Message History
+    - Use Slash Commands
+    - Add Reactions
+
+    Copy the generated URL at the bottom of the page.
+  </Step>
+  <Step title="Invite the bot to your server">
+    Paste the URL into your browser, select the target server, click **Authorize**, and pass the CAPTCHA. The bot will appear offline in your members list until you start it.
+  </Step>
+</Steps>
+
+## Quickstart
+
+<Steps>
+  <Step title="Clone and install">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/discord-bot
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Configure">
+    ```bash
+    cp .env.example .env
+    ```
+
+    Fill in:
+
+    ```env
+    DISCORD_BOT_TOKEN=your_discord_bot_token
+    VAQUILL_API_KEY=vq_key_your_api_key_here
+    VAQUILL_COUNTRY_CODE=US
+    ```
+  </Step>
+  <Step title="Run">
+    ```bash
+    python bot.py
+    ```
+
+    On success you will see `VaquillBot has connected to Discord!`. In your server, try:
+
+    ```
+    !ask What does FRCP Rule 12(b)(6) require for a motion to dismiss?
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+Top env vars - see the [repo's `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/discord-bot/.env.example) for the full set.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DISCORD_BOT_TOKEN` | Yes | - | Bot token from the Developer Portal |
+| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
+| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | API base URL |
+| `VAQUILL_MODE` | No | `standard` | `standard` (faster) or `deep` (more thorough) |
+| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
+| `DISCORD_COMMAND_PREFIX` | No | `!` | Command prefix |
+| `RATE_LIMIT_PER_USER` | No | `10` | Per-user limit per window |
+| `RATE_LIMIT_PER_CHANNEL` | No | `30` | Per-channel limit per window |
+| `RATE_LIMIT_WINDOW` | No | `60` | Sliding window in seconds |
+| `ALLOWED_CHANNELS` | No | - | Comma-separated channel IDs (empty = all) |
+| `ALLOWED_ROLES` | No | - | Comma-separated role IDs (empty = all) |
+| `REDIS_URL` | No | - | Optional Redis URL for distributed rate limiting |
+
+## Commands
+
+| Command | Aliases | Description |
+|---|---|---|
+| `!ask <question>` | `!a`, `!q` | Ask a legal question; supports follow-ups via channel history |
+| `!starters` | `!start`, `!questions` | Show starter questions as clickable buttons |
+| `!reset` | - | Clear conversation history for the current channel |
+| `!help` | - | Show the help menu |
+
+## Deployment
+
+### Docker
+
+```bash
+docker build -t vaquill-discord-bot .
+docker run -d --name vaquill-discord-bot --env-file .env vaquill-discord-bot
+docker logs -f vaquill-discord-bot
+```
+
+For Compose, create a minimal `docker-compose.yml`:
+
+```yaml
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+```
+
+Then `docker compose up -d`.
+
+### Cloud hosts
+
+<CardGroup cols={2}>
+  <Card title="Railway" icon="train">
+    `railway init && railway up`. Set `DISCORD_BOT_TOKEN` and `VAQUILL_API_KEY` in the Variables tab.
+  </Card>
+  <Card title="Render" icon="cloud">
+    New Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
+  </Card>
+  <Card title="VPS + systemd" icon="server">
+    Run under a systemd unit with `Restart=always`. The bot does not need an open port.
+  </Card>
+  <Card title="Fly.io" icon="plane">
+    `fly launch`, set secrets, `fly deploy`. Discord uses long-poll so no public URL is required.
+  </Card>
+</CardGroup>
+
+Example systemd unit:
+
+```ini
+[Unit]
+Description=Vaquill Discord Bot
+After=network.target
+
+[Service]
+Type=simple
+User=botuser
+WorkingDirectory=/opt/vaquill-discord-bot
+ExecStart=/opt/vaquill-discord-bot/venv/bin/python bot.py
+EnvironmentFile=/opt/vaquill-discord-bot/.env
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| Bot is offline | Check `DISCORD_BOT_TOKEN`. Confirm `python bot.py` is running. On free cloud tiers, confirm the service is not sleeping. |
+| Bot online but ignores commands | **Enable Message Content Intent** in the Developer Portal and restart. Confirm you are using the correct prefix (default `!`). |
+| "Privileged intent provided is not enabled or whitelisted" on startup | Enable Message Content Intent in the Developer Portal. |
+| "Missing Permissions" error | Re-invite the bot with the URL from the OAuth2 step. Or grant Send Messages / Embed Links / Read Message History on the bot's role. |
+| API errors ("Sorry, I couldn't process your request") | Verify `VAQUILL_API_KEY`. Confirm `VAQUILL_API_URL` is reachable. If using `deep` mode, confirm your plan supports it. |
+| Rate-limit messages too quickly | Raise `RATE_LIMIT_PER_USER` or `RATE_LIMIT_WINDOW` in `.env`. |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Slack" icon="slack" href="/integrations/chatbots/slack">
+    Slash commands and Socket Mode equivalent.
+  </Card>
+  <Card title="Telegram" icon="telegram" href="/integrations/chatbots/telegram">
+    Lightest setup - BotFather only.
+  </Card>
+  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+    Compare all six platforms.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How Vaquill API keys work.
+  </Card>
+</CardGroup>

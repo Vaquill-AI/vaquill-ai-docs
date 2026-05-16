@@ -1,0 +1,135 @@
+---
+title: "Canned Responses"
+description: "Draft routine legal communications - data subject requests, subpoena receipts, vendor inquiries - in the right tone"
+icon: "reply"
+---
+
+Canned Responses drafts the kind of letters and emails that show up in every in-house and law firm inbox: a data subject access request, a subpoena receipt confirmation, a vendor compliance questionnaire, an NDA request from a stranger. Pick the category, set the tone, and get a draft you can edit and send.
+
+## Categories
+
+| Category | Examples |
+|------|----------|
+| **Data Subject Request** | Access, correction, deletion, portability requests under privacy laws |
+| **Discovery Hold** | Litigation hold notices to internal custodians |
+| **Privacy Inquiry** | General privacy questions from customers or regulators |
+| **Vendor Question** | Compliance questionnaires, security reviews, DPA negotiation openers |
+| **NDA Request** | Responses to incoming requests for a mutual NDA |
+| **Subpoena** | Receipt acknowledgments, motions to quash openers, compliance letters |
+| **Insurance** | Notice of claim, coverage inquiries, broker correspondence |
+
+## How To Use It
+
+<Steps>
+  <Step title="Open Canned Responses">
+    Launch the tool from the tools menu.
+  </Step>
+  <Step title="Pick the category">
+    Choose the matching category (DSR, hold notice, subpoena, etc.) so the draft uses the right framework.
+  </Step>
+  <Step title="Paste the incoming communication">
+    Or describe the situation in a sentence or two if you do not have a source email.
+  </Step>
+  <Step title="Pick the tone">
+    Formal, professional, friendly, or empathetic. Tone changes word choice and structure, not substance.
+  </Step>
+  <Step title="Review and edit the draft">
+    Fill in any placeholders the tool could not infer, then send.
+  </Step>
+</Steps>
+
+## Ready-to-run prompt
+
+<Prompt
+  description="**Canned Responses** - draft a routine but defensible response in the right tone with a follow-up checklist."
+  icon="reply"
+  iconType="solid"
+  actions={["copy"]}
+>
+Draft a response to the attached communication using **Canned Responses**.
+
+Do these steps in order:
+
+1. Classify the incoming communication (Data Subject Request, Discovery Hold, Subpoena, Vendor Question, Privacy Inquiry, NDA Request, Insurance, or Other) and quote the operative language that drove the classification.
+2. Identify the controlling statute or rule (e.g., CCPA, GDPR, FRCP 45, state subpoena rules) and the statutory response deadline.
+3. Set the **escalation level** - None / Standard / Urgent / Critical - and justify in one sentence.
+4. Draft the response in **professional** tone, US English. Use placeholders for `[Client Name]`, `[Matter Reference]`, `[Response Deadline]`, and any identity-verification details that need to be filled in.
+5. Include an inline follow-up checklist after the draft: deadlines to calendar, internal stakeholders to notify (IT, HR, security, GC), documents to gather before sending, and any logs or tickets to open.
+6. If the incoming communication contains a statutory clock that has already started (e.g., a CCPA 45-day deadline or a litigation-hold trigger), put the deadline at the top of the response in bold.
+
+End with a one-line recommendation: send as-is, send after partner review, or escalate immediately and do not send.
+</Prompt>
+
+## Tone Options
+
+| Tone | When To Use |
+|------|----------|
+| **Formal** | Regulators, opposing counsel, court correspondence |
+| **Professional** | Standard business communications |
+| **Friendly** | Internal employee communications, friendly vendor relationships |
+| **Empathetic** | Customer-facing privacy requests, complaint responses |
+
+The tone affects word choice, sentence structure, and the opening and closing - but the substantive content stays consistent.
+
+## Escalation Detection
+
+The tool flags whether the incoming communication likely requires escalation:
+
+- **None** - Standard routine response
+- **Standard** - Loop in a senior associate or counsel
+- **Urgent** - Partner or General Counsel attention within 24 hours
+- **Critical** - Immediate escalation; may involve breach response, regulatory enforcement, or litigation hold triggers
+
+The escalation tag appears at the top of the draft so you know whether to send or route up.
+
+## Follow-Up Actions
+
+Each draft comes with a checklist of follow-up actions:
+
+- Calendar reminders for response deadlines
+- Internal notifications to send (IT, HR, security)
+- Documents to gather before responding
+- Logs or tickets to open
+
+For data subject requests, for example, the follow-up list includes verifying identity, scoping the request, and the statutory response deadline.
+
+## Variables and Customization
+
+Drafts use placeholders for the variables you need to fill in:
+
+- `[Client Name]`, `[Matter Reference]`
+- `[Date of Request]`, `[Response Deadline]`
+- `[Custodian List]`, `[Document Categories]`
+
+The tool pre-fills variables when it has the information from the matter or the incoming communication.
+
+## Tips
+
+<Tip>
+**Build a house style.** For high-volume categories like data subject requests and hold notices, save your customized version as a [Skill](/guides/skills) so the next draft matches your firm's voice automatically.
+</Tip>
+
+<Tip>
+**Forward to your matter's email address.** Canned Responses runs on the ingested email automatically, so you can triage from your inbox without leaving your mail client.
+</Tip>
+
+<Warning>
+The follow-up checklist often surfaces a statutory deadline you would otherwise have to look up. Always read the deadline line before you hit send - missing a CCPA 45-day or FRCP 45 compliance window is not recoverable by a polite second email.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Skills" icon="wand-magic-sparkles" href="/guides/skills">
+    Save customized responses as reusable, firm-wide playbooks.
+  </Card>
+  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+    Underlying framework requirements that drive response obligations.
+  </Card>
+  <Card title="Matters & Workspaces" icon="folder-tree" href="/guides/matters-workspaces">
+    Email-to-matter ingestion for incoming requests.
+  </Card>
+  <Card title="Risk Assessment" icon="triangle-exclamation" href="/guides/tools/risk-assessment">
+    Roll critical inbound communications into a structured risk register.
+  </Card>
+</CardGroup>

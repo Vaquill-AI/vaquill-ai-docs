@@ -1,0 +1,243 @@
+---
+title: "Widget Pro"
+sidebarTitle: "Widget Pro"
+description: "Full-featured Next.js chat widget with multi-thread sidebar, voice mode, cross-tab sync, gamification, and configurable citation viewers."
+icon: "sparkles"
+keywords: ["vaquill widget pro", "voice legal chat", "multi thread chat widget", "legal AI sidebar", "TTS legal chat", "STT legal chat", "gamification legal chat"]
+---
+
+The heavyweight Vaquill widget. A Next.js 15 + React 19 chat surface with a persistent conversation sidebar, voice mode (TTS + STT), cross-tab sync via BroadcastChannel, gamification (XP and streaks), and multiple citation display modes. Use this when you want a Vaquill-style full experience embedded in your site rather than the minimal proxy widget.
+
+Source: [github.com/Vaquill-AI/integrations/vaquill-widget-pro](https://github.com/Vaquill-AI/integrations/tree/main/vaquill-widget-pro).
+
+<Info>
+  Need a leaner build? The [Embedded Chat Widget](/integrations/widgets/embedded-chat) ships with about 10 components, US-only focus, streaming SSE, and a single-file embed loader.
+</Info>
+
+## What you get
+
+- **Persistent conversation sidebar** with rename, delete, and search
+- **Voice mode** - microphone input with VAD plus TTS playback
+- **Cross-tab sync** via BroadcastChannel - threads stay consistent across browser tabs
+- **Gamification** - XP, streaks, and engagement progress
+- **Citation display modes** - cards, tabs, accordion, or pills
+- **TTS provider matrix** - OpenAI, ElevenLabs, Edge, Google, StreamElements
+- **Multi-turn `chatHistory`** preserved server-side in a process-local session map
+- **Both embed modes** - floating button and iframe
+- IndexedDB + localStorage fallback for client-side persistence
+
+## Status and caveats
+
+The chat-completion plumbing in `src/lib/ai/vaquill-client.ts` talks to the real Vaquill API (`/ask` and `/ask/stream`) for both streaming and non-streaming paths. A few legacy endpoints from the upstream RAG-widget fork are stubbed and degrade gracefully: per-message feedback persists only to the local session cache, citation-by-id lookup and file uploads throw a clear "not supported" error, and agent-settings return Vaquill-flavoured defaults.
+
+<Warning>
+  The server-side session map lives in process memory. On Vercel cold starts or multi-instance deployments it resets. The React UI's IndexedDB / localStorage is the durable copy, so users do not lose history, but server-side `getConversationMessages` returns empty for a cold instance until at least one turn is sent.
+</Warning>
+
+The `AgentCapability` enum (`fastest-responses`, `optimal-choice`, `advanced-reasoning`, `complex-tasks`) maps onto Vaquill's `mode`: the first two go to `standard`, the latter two go to `deep`.
+
+## Prerequisites
+
+- Node.js 18+
+- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/developer](https://app.vaquill.ai/developer)
+- Optional: an OpenAI API key if you want voice mode (TTS / STT)
+
+## Quickstart
+
+<Steps>
+  <Step title="Clone and install">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/vaquill-widget-pro
+    npm install
+    ```
+  </Step>
+  <Step title="Add your keys">
+    ```bash
+    cp .env.example .env.local
+    ```
+
+    Edit `.env.local` and fill in at minimum:
+
+    ```bash
+    VAQUILL_API_KEY=vq_key_your_key_here
+    USE_VAQUILL=true
+    ```
+  </Step>
+  <Step title="Run the dev server">
+    ```bash
+    npm run dev
+    ```
+
+    Open [http://localhost:3000](http://localhost:3000).
+  </Step>
+</Steps>
+
+## Configuration
+
+The full list lives in `.env.example`. The minimum set:
+
+```bash
+# Required - Vaquill chat backend
+VAQUILL_API_KEY=vq_key_...
+VAQUILL_PROJECT_ID=your_project_id   # legacy field; safe to ignore
+USE_VAQUILL=true
+VAQUILL_STREAM=true
+
+# Optional - voice (set both to enable mic + TTS)
+OPENAI_API_KEY=sk-...
+TTS_PROVIDER=OPENAI   # OPENAI | ELEVENLABS | EDGE | GOOGLE | STREAMELEMENTS
+
+# UI knobs (browser-readable)
+NEXT_PUBLIC_THEME=light
+NEXT_PUBLIC_WIDGET_FLOATING_BUTTON=true
+NEXT_PUBLIC_WIDGET_FLOATING_POSITION=bottom-right
+NEXT_PUBLIC_CITATION_DISPLAY_MODE=cards   # cards | tabs | accordion | pills | all
+```
+
+### Key flags
+
+| Variable | Description |
+|---|---|
+| `VAQUILL_API_KEY` | Your Vaquill key. Required. |
+| `USE_VAQUILL` | Must be `true` to route chat to the Vaquill API. |
+| `VAQUILL_STREAM` | `true` to use SSE streaming, `false` for buffered responses. |
+| `TTS_PROVIDER` | Pick a TTS engine. See the matrix below. |
+| `NEXT_PUBLIC_CITATION_DISPLAY_MODE` | Source layout: `cards`, `tabs`, `accordion`, `pills`, or `all`. |
+
+### TTS providers
+
+| Provider | Quality | Speed | Cost |
+|---|---|---|---|
+| OpenAI | High | Fast | Paid |
+| ElevenLabs | Very High | Medium | Paid |
+| Edge TTS | Good | Fast | Free |
+| Google TTS | Medium | Fast | Free |
+| StreamElements | Medium | Fast | Free |
+
+Switch with `TTS_PROVIDER=...` in `.env.local`.
+
+## Architecture
+
+```text
+src/
+  app/                   # Next.js App Router
+    page.tsx             # main entry
+    layout.tsx           # root layout + theme provider
+    api/                 # serverless routes
+      chat/              # chat / messages / conversations / citations
+      tts/               # text-to-speech
+      agent/             # agent settings + capabilities
+  components/
+    ChatContainer.tsx    # main chat surface
+    ChatHistory/         # multi-thread sidebar
+    gamification/        # XP / streaks / progress
+  hooks/                 # voice, persistence, sync, search hooks
+  lib/
+    ai/                  # Vaquill client + completion plumbing
+    audio/               # TTS providers + VAD wrapper
+    storage/             # IndexedDB + localStorage fallback
+  config/                # centralised config + env parsing
+  styles/                # CSS design tokens
+```
+
+## Embedding
+
+The widget ships a single-file loader you can drop into any site:
+
+```html
+<script>
+  window.vaquillConfig = {
+    serverUrl: 'https://your-deployment.vercel.app',
+    position: 'bottom-right',
+    theme: 'light'
+  };
+</script>
+<script src="https://your-deployment.vercel.app/widget.js" defer></script>
+```
+
+The repo's `examples/` folder has drop-in examples for WordPress, Shopify, React, and plain HTML.
+
+## Deployment
+
+### Vercel (recommended)
+
+```bash
+npm i -g vercel
+vercel
+# then set env vars in the Vercel dashboard
+```
+
+<Tip>
+  When deploying behind a single-instance hobby plan, the in-memory session map survives between requests. For Pro / Enterprise plans with multiple regions, expect the server-side history to be per-instance - the client storage is the source of truth.
+</Tip>
+
+### Railway
+
+```bash
+npm i -g @railway/cli
+railway login
+railway up
+railway variables set VAQUILL_API_KEY=vq_key_...
+```
+
+### Development commands
+
+```bash
+npm run dev      # dev server on :3000
+npm run build    # production build
+npm run start    # run the built bundle
+npm run lint     # eslint
+```
+
+## Troubleshooting
+
+**Voice mode not working**
+
+- Production must be served over HTTPS (browser mic access requires it).
+- Grant the browser microphone permission for the site origin.
+- Verify `OPENAI_API_KEY` is set and `TTS_PROVIDER` is configured.
+- On Safari and iOS, WebM audio is unsupported - the widget falls back to MP4.
+
+**Chat returns nothing**
+
+- Verify `VAQUILL_API_KEY` and `USE_VAQUILL=true`.
+- Open DevTools Network tab and look for the request to `/api/inference` or `/api/inference-stream`.
+- Test the key directly: `curl -H "Authorization: Bearer vq_key_..." https://api.vaquill.ai/api/v1/health`.
+
+**Build errors**
+
+```bash
+rm -rf node_modules .next package-lock.json
+npm install
+npm run build
+```
+
+**History is empty after a redeploy**
+
+This is the cold-start caveat. The client IndexedDB / localStorage retains threads, but the server session map starts empty. Send one new turn in a thread to repopulate it server-side.
+
+## Browser support
+
+| Browser | Support |
+|---|---|
+| Chrome / Edge | Full |
+| Firefox | Full |
+| Safari / iOS | MP4 audio fallback (WebM unsupported); mic requires HTTPS |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Embedded Chat Widget" icon="bolt" href="/integrations/widgets/embedded-chat">
+    Leaner Next.js variant pinned to the US.
+  </Card>
+  <Card title="Docker Widget" icon="docker" href="/integrations/widgets/docker-widget">
+    Self-host with Docker Compose and embed via script tag.
+  </Card>
+  <Card title="Ask API" icon="message" href="/api-reference/ask/ask-a-legal-question">
+    The endpoint this widget proxies.
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/vaquill-widget-pro">
+    Source code and issue tracker.
+  </Card>
+</CardGroup>

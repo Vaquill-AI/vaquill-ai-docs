@@ -1,0 +1,67 @@
+---
+title: "MCP Servers"
+sidebarTitle: "Overview"
+description: "Connect Vaquill's legal corpora to Claude, Cursor, VS Code, Windsurf, and any other MCP client."
+icon: "plug"
+keywords: ["mcp server legal", "claude legal mcp", "cursor legal research", "vs code legal research", "model context protocol legal"]
+---
+
+The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants call external tools. Vaquill publishes three MCP servers covering US, Canadian, and Indian legal data, plus a meta-server for our own corpus.
+
+<CardGroup cols={3}>
+  <Card title="Vaquill MCP" icon="scale-balanced" href="/integrations/mcp/vaquill">
+    Cross-jurisdiction Q&A, search, citation resolution, and the citation network. Backed by the full Vaquill API.
+  </Card>
+  <Card title="CourtListener MCP" icon="landmark" href="/integrations/mcp/courtlistener">
+    US federal + state court opinions, dockets, RECAP filings, PACER, oral arguments, judges, and eCFR. Bring your own CourtListener key.
+  </Card>
+  <Card title="CanLII MCP" icon="maple-leaf" href="/integrations/mcp/canlii">
+    Canadian case law and legislation metadata across all federal, provincial, and territorial jurisdictions. Bring your own CanLII key.
+  </Card>
+</CardGroup>
+
+## Which one should I use?
+
+| If you want... | Use |
+|---|---|
+| One MCP that covers US + India + Canada with Vaquill's RAG | [Vaquill MCP](/integrations/mcp/vaquill) |
+| Direct access to CourtListener's raw search APIs | [CourtListener MCP](/integrations/mcp/courtlistener) |
+| Direct access to CanLII's raw metadata APIs | [CanLII MCP](/integrations/mcp/canlii) |
+
+The Vaquill MCP is the highest-level interface - it abstracts retrieval, ranking, and answer synthesis. The CourtListener and CanLII MCPs are thin pass-throughs over the upstream APIs and are best when you need raw access to filters and fields those APIs expose.
+
+## Supported clients
+
+All three servers work with any MCP-compatible client. Tested with:
+
+- Claude Desktop
+- Claude Code
+- Claude.ai web (Vaquill MCP only - remote MCP support)
+- Cursor
+- VS Code (GitHub Copilot)
+- Windsurf
+- ChatGPT Desktop
+- Continue
+- Any HTTP-MCP or stdio-MCP client
+
+## Hosted vs self-hosted
+
+| Server | Hosted endpoint | Self-host |
+|---|---|---|
+| Vaquill MCP | `https://mcp.vaquill.ai/s/<your-key>` | `uvx vaquill-mcp` |
+| CourtListener MCP | `https://courtlistener-mcp.vaquill.ai/mcp/` | Docker / `uv run` |
+| CanLII MCP | `https://canlii-mcp.vaquill.ai/mcp` | Docker / Node / Cloudflare Workers |
+
+Hosted is the fastest path - paste a URL into your client and start using the tools. Self-hosting gives you control over rate limits, audit logging, and network egress.
+
+## Authentication model
+
+The three servers handle credentials differently:
+
+| Server | What you provide | How |
+|---|---|---|
+| Vaquill MCP | Vaquill API key (`vq_key_...`) | Header (`Authorization: Bearer ...`) or path token |
+| CourtListener MCP | Your own CourtListener token | Per-request header (`X-CourtListener-Token`) - BYOK |
+| CanLII MCP | Your own CanLII API key + MCP gate token | Two headers - BYOK |
+
+BYOK ("bring your own key") means Vaquill never sees or stores your upstream credential. The hosted endpoint forwards your key on every request.

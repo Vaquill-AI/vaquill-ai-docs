@@ -1,0 +1,308 @@
+---
+title: "Vaquill MCP Server"
+sidebarTitle: "Vaquill MCP"
+description: "Cross-jurisdiction legal research MCP for Claude, Cursor, VS Code, and Windsurf. USC + CFR + 50-state law + CourtListener case law, plus 20M+ Indian judgments and 23K+ Indian acts."
+icon: "scale-balanced"
+keywords: ["vaquill mcp", "legal mcp server", "claude legal mcp", "us law mcp", "usc mcp", "cfr mcp", "courtlistener mcp", "cursor legal research", "vs code legal mcp", "indian law mcp"]
+---
+
+The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client - Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf - direct access to the Vaquill legal research API. It covers **US federal and 50-state law** (USC, CFR, state legislation, and CourtListener case law) and also includes 20M+ Indian Supreme Court and High Court judgments plus 23K+ Indian acts. Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
+
+<CardGroup cols={3}>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/vaquill-mcp">
+    Source code and issues
+  </Card>
+  <Card title="PyPI" icon="python" href="https://pypi.org/project/vaquill-mcp/">
+    `uvx vaquill-mcp`
+  </Card>
+  <Card title="Hosted endpoint" icon="cloud" href="https://mcp.vaquill.ai">
+    `https://mcp.vaquill.ai`
+  </Card>
+</CardGroup>
+
+## Quickstart
+
+The fastest path is the hosted remote MCP on Claude.ai web - no install, no local Python, no config files.
+
+<Prompt
+  description="**Install Vaquill MCP in Claude Code** with one paste. Replaces a manual config edit."
+  icon="rocket"
+  iconType="solid"
+  actions={["copy"]}
+>
+Install the Vaquill MCP server in Claude Code using my API key.
+
+1. Run `claude mcp add-json vaquill '{"type":"http","url":"https://mcp.vaquill.ai/s/_","headers":{"Authorization":"Bearer vq_key_REPLACE_ME"}}'` to register the remote MCP.
+2. Confirm the server is wired by running `claude mcp list` and looking for `vaquill`.
+3. Then try a smoke test prompt like *"Use Vaquill to resolve the citation 410 U.S. 113 and summarize the holding in two sentences."*
+
+If anything fails, show me the exact error and the output of `claude mcp list`.
+</Prompt>
+
+
+<Steps>
+  <Step title="Get an API key">
+    Generate a `vq_key_...` token from your [dashboard settings](https://app.vaquill.ai/settings). See [Authentication](/authentication).
+  </Step>
+  <Step title="Open Claude.ai Settings > Integrations">
+    Click **Add a connector** and pick **Custom MCP server**.
+  </Step>
+  <Step title="Paste the URL">
+    Use either the path-token form:
+
+    ```
+    https://mcp.vaquill.ai/s/vq_key_your_key_here
+    ```
+
+    Or, if your client supports auth headers, use the bearer-token form:
+
+    ```
+    URL:   https://mcp.vaquill.ai/s/_
+    Token: vq_key_your_key_here
+    ```
+  </Step>
+  <Step title="Ask a legal question">
+    Try: *"What does 17 CFR 240.10b-5 say about insider trading?"* - Claude will call `ask_legal_question` and return a grounded answer with citations.
+  </Step>
+</Steps>
+
+<Info>
+  Remote MCP connectors are available on Claude Pro, Max, Team, and Enterprise plans.
+</Info>
+
+## Client setup
+
+Pick your client below. All configs accept the same set of environment variables - see [Environment variables](#environment-variables).
+
+<CodeGroup>
+```json Claude Desktop
+// ~/Library/Application Support/Claude/claude_desktop_config.json  (macOS)
+// %APPDATA%\Claude\claude_desktop_config.json                       (Windows)
+{
+  "mcpServers": {
+    "vaquill": {
+      "command": "uvx",
+      "args": ["vaquill-mcp"],
+      "env": {
+        "VAQUILL_API_KEY": "vq_key_your_key_here"
+      }
+    }
+  }
+}
+```
+
+```bash Claude Code (remote)
+claude mcp add-json vaquill '{
+  "type": "http",
+  "url": "https://mcp.vaquill.ai/s/_",
+  "headers": { "Authorization": "Bearer vq_key_your_key_here" }
+}'
+```
+
+```bash Claude Code (local)
+claude mcp add vaquill -- uvx vaquill-mcp
+export VAQUILL_API_KEY=vq_key_your_key_here
+```
+
+```json Cursor
+// Settings > MCP Servers
+{
+  "mcpServers": {
+    "vaquill": {
+      "command": "uvx",
+      "args": ["vaquill-mcp"],
+      "env": {
+        "VAQUILL_API_KEY": "vq_key_your_key_here"
+      }
+    }
+  }
+}
+```
+
+```json VS Code (Copilot)
+// .vscode/settings.json
+{
+  "mcp": {
+    "servers": {
+      "vaquill": {
+        "command": "uvx",
+        "args": ["vaquill-mcp"],
+        "env": {
+          "VAQUILL_API_KEY": "vq_key_your_key_here"
+        }
+      }
+    }
+  }
+}
+```
+
+```json Windsurf
+// ~/.windsurf/settings.json
+{
+  "mcpServers": {
+    "vaquill": {
+      "command": "uvx",
+      "args": ["vaquill-mcp"],
+      "env": {
+        "VAQUILL_API_KEY": "vq_key_your_key_here"
+      }
+    }
+  }
+}
+```
+</CodeGroup>
+
+<Tip>
+  The `uvx` runner requires Python 3.10+ and [uv](https://docs.astral.sh/uv/) on `PATH`. `uvx vaquill-mcp` downloads and executes the package in an isolated env on first run; subsequent runs are instant.
+</Tip>
+
+## Tools
+
+The server exposes 15 tools across four categories. Credit costs match the [pricing schedule](/api-reference/pricing/get-api-credit-pricing) and can be checked live with `get_pricing`.
+
+### Cross-jurisdiction
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `ask_legal_question` | AI-powered legal Q&A. `countryCode='US'` (default) covers USC + CFR + 50-state law + CourtListener case law. `countryCode='IN'` covers Indian judgments and acts. Standard (fast) or deep (multi-hop) modes. | 5 - 20 |
+| `get_pricing` | Get current API credit pricing. No auth required. | Free |
+
+### US law (USC + CFR)
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `search_us_statutes` | Semantic search across the United States Code (USC) and Code of Federal Regulations (CFR). Filter by `corpusType` and `titleNumber`. | 2 |
+| `get_us_statute_section` | Metadata for a specific USC / CFR section by `act_id` - citation, title hierarchy, links. | 1 |
+| `get_us_statute_section_text` | Full HTML and plain text of a USC or CFR section. | 3 |
+
+### Indian case law
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `search_legal_cases` | Boolean keyword search of Indian Supreme Court and High Court judgments. AND / OR / NOT operators, court / year filters. | 1 - 3 |
+| `quick_search` | Compact top 3 - 5 Indian case results with essentials only. | 1 |
+| `resolve_citation` | Resolve any Indian citation format (SCC, AIR, SCR, MANU, SCALE, INSC) to a canonical case record. | 1 |
+| `search_cases_by_citation` | Search Indian cases by citation text or case name with filters. | 1 |
+| `lookup_case` | Full Indian case details with citation treatment stats (followed, overruled, distinguished). | 1 |
+| `get_citation_network` | Traverse the Indian citation graph: 1 - 3 hops, inbound / outbound / both. | 2 |
+
+### Indian acts and legislation
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `search_legislation` | Semantic search across 23,000+ Indian acts, regulations, and state legislation. Filter by category, state, department, year. | 1 |
+| `list_legislation` | Browse Indian acts to discover `act_id` values. Filter by category, state, department, status. | 1 |
+| `get_act_text` | URLs for full text, PDF, and HTML versions of an Indian act. | 1 |
+| `get_amendments` | Complete amendment history for an Indian act (substitutions, insertions, omissions). | 1 |
+
+## Authentication
+
+The Vaquill MCP server authenticates with your Vaquill API key. Three options, in priority order:
+
+1. **Bearer header** (remote): `Authorization: Bearer vq_key_...`
+2. **Path token** (remote): `https://mcp.vaquill.ai/s/vq_key_...` - convenient when your client cannot send custom headers.
+3. **Environment variable** (local): `VAQUILL_API_KEY=vq_key_...` for `uvx` / stdio launches.
+
+Keys are scoped per workspace and revocable from the [dashboard](https://app.vaquill.ai/settings). For the full auth model, request signing, and rotation policy, see [Authentication](/authentication).
+
+<Warning>
+  Treat the path-token URL as a secret - anyone with the URL can spend credits from your account. Prefer the bearer-token form whenever the client supports it.
+</Warning>
+
+## Self-hosting
+
+The MCP server is a thin wrapper around the public Vaquill API, so most users will not need to self-host. Run from source when you want to pin a version, add custom telemetry, or modify tool descriptions.
+
+```bash
+git clone https://github.com/Vaquill-AI/vaquill-mcp.git
+cd vaquill-mcp
+uv sync --all-extras
+
+# Run locally over stdio
+VAQUILL_API_KEY=vq_key_... uv run vaquill-mcp
+
+# Inspect tools interactively
+uv run fastmcp dev src/vaquill_mcp/server.py
+```
+
+The package fetches the OpenAPI spec from `https://api.vaquill.ai` at startup and auto-generates MCP tools with [FastMCP](https://github.com/jlowin/fastmcp). New API endpoints appear as tools automatically without a package upgrade.
+
+## Environment variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `VAQUILL_API_KEY` | Yes | - | Your API key (`vq_key_...`) from [vaquill.ai/settings](https://app.vaquill.ai/settings) |
+| `VAQUILL_BASE_URL` | No | `https://api.vaquill.ai` | API base URL. Override for staging or self-hosted API instances. |
+| `VAQUILL_TIMEOUT` | No | `120` | Per-request timeout in seconds. Increase for deep-mode `ask_legal_question` calls. |
+
+## Usage examples
+
+Type these directly to Claude, Cursor, or any connected assistant.
+
+**US law**
+
+> *"What does 17 CFR 240.10b-5 say about insider trading?"*
+>
+> *"Find USC sections on equal protection under the Fourteenth Amendment."*
+>
+> *"Summarize FRCP Rule 12(b)(6) and recent SDNY case law applying it."* (uses deep mode)
+>
+> *"What are the federal penalties for wire fraud under 18 USC 1343?"*
+>
+> *"Pull the full text of 26 USC 501(c)(3)."*
+
+**Indian law**
+
+> *"Search for Supreme Court cases on Section 302 IPC."*
+>
+> *"Resolve the citation AIR 1978 SC 597."*
+>
+> *"Look up Maneka Gandhi v. Union of India and show treatment stats."*
+>
+> *"Show the citation network around ADM Jabalpur v. Shivkant Shukla."*
+
+### Ready-to-run research prompt
+
+<Prompt
+  description="**Brief a case with treatment stats.** Paste into any Vaquill-connected assistant. Replace the citation."
+  icon="gavel"
+  iconType="solid"
+  actions={["copy"]}
+>
+Use the Vaquill MCP to brief the case *Harlow v. Fitzgerald*, 457 U.S. 800 (1982).
+
+Do these steps in order:
+
+1. Call `resolve_citation` (or the US-equivalent lookup) on `457 U.S. 800` to confirm the canonical case record.
+2. Call `lookup_case` (or `get_opinion` if using CourtListener) to pull the full opinion plus treatment stats.
+3. Produce an IRAC brief: Issue, Rule, Application, Conclusion.
+4. List the three most-cited follow-on opinions and flag any signal that the case has been **distinguished**, **questioned**, or **overruled**.
+5. End with a one-sentence practitioner takeaway for a US litigator drafting a qualified-immunity defense today.
+
+Cite every factual claim back to the Vaquill tool that produced it. If a tool errors, show the error and continue with the next step.
+</Prompt>
+
+
+## Pricing
+
+API calls consume credits at **$0.01 USD per credit**. The `get_pricing` tool returns the live schedule and is free to call. Per-tool costs are listed in the [Tools](#tools) tables above.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="MCP overview" icon="plug" href="/integrations/mcp">
+    All Vaquill MCP servers at a glance
+  </Card>
+  <Card title="Integrations" icon="grid" href="/integrations">
+    Chatbots, widgets, browser extensions, and automation
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    API key setup and rotation
+  </Card>
+  <Card title="Credits and pricing" icon="coin" href="/credits">
+    How metering works
+  </Card>
+  <Card title="Ask a legal question (API)" icon="comment-question" href="/api-reference/ask/ask-a-legal-question">
+    The underlying REST endpoint
+  </Card>
+</CardGroup>

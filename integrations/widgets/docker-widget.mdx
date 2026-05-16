@@ -1,0 +1,317 @@
+---
+title: "Docker Widget"
+sidebarTitle: "Docker Widget"
+description: "Self-hosted FastAPI + Vite chat widget bundled in a single Docker container. Embed with a floating button or inline script tag on any site."
+icon: "docker"
+keywords: ["docker chat widget", "self hosted legal chat", "fastapi chat widget", "vite chat widget", "floating chat widget", "intercom style legal AI", "embed legal AI"]
+---
+
+A self-contained chat widget that bundles a FastAPI backend and a Vite-built frontend into a single Docker container. Drop it onto any server, point a script tag at it, and you get either a floating chatbot (Intercom-style) or an inline embed - no Vercel account, no Node toolchain in production.
+
+Source: [github.com/Vaquill-AI/integrations/widget](https://github.com/Vaquill-AI/integrations/tree/main/widget).
+
+<Info>
+  If you only need a US-only marketing-site widget and prefer Vercel over Docker, the leaner [Embedded Chat Widget](/integrations/widgets/embedded-chat) is a better fit. Pick this one when you want self-hosting, a floating button, or a configurable jurisdiction.
+</Info>
+
+## What you get
+
+- One container: FastAPI backend serves both the JSON API and the built frontend
+- Two embed modes: floating chatbot (bottom-right bubble) or inline `<div>`
+- Single script tag install on the host site - no iframe required
+- Configurable RAG mode, widget title, host port, and CORS origins
+- Structured legal source rendering: case name, citation, court, excerpt, PDF link
+- Health endpoint for Docker / Kubernetes probes
+
+## Prerequisites
+
+**For Docker deployment:**
+
+- Docker 20.10+ and Docker Compose ([download](https://www.docker.com/get-started))
+- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/settings/api](https://app.vaquill.ai/settings/api)
+
+**For local development:**
+
+- Python 3.10+
+- Node.js 18+ and Yarn (`npm install -g yarn`)
+- A Vaquill API key
+
+## Quickstart
+
+<Steps>
+  <Step title="Clone the repo">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/widget
+    ```
+  </Step>
+  <Step title="Set your API key">
+    ```bash
+    cp .env.example .env
+    ```
+
+    Open `.env` and set:
+
+    ```bash
+    VAQUILL_API_KEY=vq_key_your_key_here
+    ```
+  </Step>
+  <Step title="Start with Docker Compose">
+    ```bash
+    docker-compose up -d
+    ```
+  </Step>
+  <Step title="Open the widget">
+    Visit [http://localhost:8000](http://localhost:8000) and ask a test question.
+  </Step>
+</Steps>
+
+### Local development (without Docker)
+
+Run backend and frontend in separate terminals.
+
+<CodeGroup>
+
+```bash Backend (FastAPI)
+cd backend
+pip install -r requirements.txt
+VAQUILL_API_KEY=vq_key_... uvicorn main:app --reload --port 8000
+```
+
+```bash Frontend (Vite)
+cd frontend
+yarn install
+yarn dev
+# proxies /api to http://localhost:8000
+```
+
+</CodeGroup>
+
+Frontend dev server runs at `http://localhost:5173` with hot reload.
+
+## Configuration
+
+All configuration is via the `.env` file:
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `VAQUILL_API_KEY` | Yes | - | Your Vaquill API key (`vq_key_...`) |
+| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | Vaquill API base URL |
+| `WIDGET_MODE` | No | `standard` | Default RAG mode: `standard` or `deep` |
+| `WIDGET_TITLE` | No | `Vaquill Legal AI` | Title shown in the chat header |
+| `HOST_PORT` | No | `8000` | Host port the container is exposed on |
+| `ALLOWED_ORIGINS` | No | `*` | CORS origins (comma-separated, or `*`) |
+
+Example production `.env`:
+
+```bash
+VAQUILL_API_KEY=vq_key_your_key_here
+VAQUILL_API_URL=https://api.vaquill.ai/api/v1
+WIDGET_MODE=standard
+WIDGET_TITLE=Legal Research Assistant
+HOST_PORT=8000
+ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+```
+
+<Tip>
+  In production, always replace `ALLOWED_ORIGINS=*` with an explicit list of domains that should be allowed to embed the widget.
+</Tip>
+
+## Embedding
+
+### Option 1 - Floating chatbot (Intercom-style)
+
+Add one script tag before `</body>` on the host site:
+
+```html
+<script
+  src="https://your-widget-host/embed/script-floating-chatbot.js"
+  data-api-url="https://your-widget-host"
+  data-primary-color="#1a56db"
+></script>
+```
+
+A floating button appears in the bottom-right corner. Clicking it opens a slide-in chat panel.
+
+| Attribute | Default | Description |
+|---|---|---|
+| `data-api-url` | `http://localhost:8000` | Widget backend URL |
+| `data-primary-color` | `#1a56db` | Brand accent colour |
+| `data-button-size` | `60px` | Floating button diameter |
+| `data-chat-width` | `400px` | Panel width on desktop |
+| `data-chat-height` | `600px` | Panel height |
+
+### Option 2 - Inline embed
+
+```html
+<!-- Place this div where you want the chat -->
+<div id="vaquill-widget-embed"></div>
+
+<!-- Then include the script -->
+<script
+  src="https://your-widget-host/embed/script-inline-embed.js"
+  data-api-url="https://your-widget-host"
+  data-height="640px"
+></script>
+```
+
+### Platform recipes
+
+<CodeGroup>
+
+```html WordPress
+<!-- 1. Install the "Insert Headers and Footers" plugin -->
+<!-- 2. Paste in the footer section, then save -->
+<script
+  src="https://your-widget-host/embed/script-floating-chatbot.js"
+  data-api-url="https://your-widget-host"
+></script>
+```
+
+```liquid Shopify
+<!-- In Online Store > Themes > Edit Code > theme.liquid, before </body> -->
+<script
+  src="https://your-widget-host/embed/script-floating-chatbot.js"
+  data-api-url="https://your-widget-host"
+></script>
+```
+
+```html Wix
+<!-- Add a Custom Code element in Settings > Custom Code -->
+<script
+  src="https://your-widget-host/embed/script-floating-chatbot.js"
+  data-api-url="https://your-widget-host"
+></script>
+```
+
+```jsx Next.js
+import { useEffect } from 'react';
+
+export default function MyApp() {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = `${process.env.NEXT_PUBLIC_WIDGET_URL}/embed/script-floating-chatbot.js`;
+    script.setAttribute('data-api-url', process.env.NEXT_PUBLIC_WIDGET_URL);
+    script.defer = true;
+    document.body.appendChild(script);
+    return () => document.body.removeChild(script);
+  }, []);
+
+  return <YourApp />;
+}
+```
+
+</CodeGroup>
+
+The `examples/` folder in the repo has full working test pages for both embed modes.
+
+## Deployment
+
+### Docker Compose (recommended)
+
+```bash
+docker-compose up -d        # start
+docker-compose logs -f      # tail logs
+docker-compose down         # stop
+```
+
+### Behind an Nginx reverse proxy
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### SSL with Let's Encrypt
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d yourdomain.com
+sudo certbot renew --dry-run
+```
+
+<Warning>
+  Modern browsers block mixed content. If your host site is HTTPS, the widget host must be HTTPS too - or the script tag will silently fail to load.
+</Warning>
+
+## API endpoints
+
+The backend exposes:
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/chat` | POST | Send a message, get an answer + sources |
+| `/api/widget/info` | GET | Returns widget display configuration (title, suggested questions) |
+| `/health` | GET | Returns `{"status": "ok"}` for Docker health checks |
+
+Example `/api/chat` request:
+
+```json
+{
+  "message": "What does FRCP Rule 12(b)(6) require?",
+  "chatHistory": [
+    { "role": "user", "content": "What is a motion to dismiss?" },
+    { "role": "assistant", "content": "A motion to dismiss is..." }
+  ],
+  "mode": "standard"
+}
+```
+
+Full schema lives in the [Ask API reference](/api-reference/ask/ask-a-legal-question).
+
+## Troubleshooting
+
+**Widget not loading**
+
+- Run `docker-compose ps` to verify the container is up.
+- Check `HOST_PORT` in `.env` matches the port you are visiting.
+- Tail logs with `docker-compose logs -f`.
+
+**"Failed to fetch" or CORS errors**
+
+- The `data-api-url` in the embed script must match the widget backend URL exactly (including scheme).
+- For testing, set `ALLOWED_ORIGINS=*` and restart the container.
+- In production, set `ALLOWED_ORIGINS` to a comma-separated list of host-site origins.
+
+**No sources in responses**
+
+- Try a more specific legal query (cite a statute or doctrine by name).
+- Verify the API key at [app.vaquill.ai/settings/api](https://app.vaquill.ai/settings/api).
+
+**Docker build fails on ARM64 Macs**
+
+- Ensure Docker Desktop's Rosetta / ARM support is enabled.
+- Check available disk space with `df -h`.
+
+**Health check failing**
+
+- Test connectivity from the container: `docker-compose exec backend curl https://api.vaquill.ai/api/v1/health`.
+- Verify `VAQUILL_API_KEY` and `VAQUILL_API_URL` are correct.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Embedded Chat Widget" icon="bolt" href="/integrations/widgets/embedded-chat">
+    Leaner Next.js variant pinned to the US.
+  </Card>
+  <Card title="Widget Pro" icon="sparkles" href="/integrations/widgets/widget-pro">
+    Multi-thread sidebar, voice mode, gamification.
+  </Card>
+  <Card title="Ask API" icon="message" href="/api-reference/ask/ask-a-legal-question">
+    The endpoint this widget proxies.
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/widget">
+    Source code and issue tracker.
+  </Card>
+</CardGroup>

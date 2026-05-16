@@ -1,0 +1,138 @@
+---
+title: "NDA Triage"
+description: "Fast pass/warn/fail screening of NDAs against a standard checklist"
+icon: "file-shield"
+---
+
+NDA Triage is built for the high-volume reality of in-house and transactional practice: stacks of incoming NDAs that all need a first-pass review before they get to a lawyer. Drop one in and get a pass/warn/fail rating against a ten-point checklist, plus a recommendation for routing.
+
+## When To Use It
+
+<CardGroup cols={2}>
+  <Card title="In-house intake" icon="inbox">
+    Teams receiving NDAs from vendors, customers, and partners on a daily basis.
+  </Card>
+  <Card title="Deal screening" icon="handshake">
+    Deal lawyers running a first pass on NDAs at the start of a transaction.
+  </Card>
+  <Card title="Procurement routing" icon="route">
+    Procurement teams that route legal review based on contract risk.
+  </Card>
+  <Card title="Partner triage" icon="user-tie">
+    Pre-screen before a partner or senior associate decides whether to negotiate.
+  </Card>
+</CardGroup>
+
+## What It Checks
+
+The triage scores each NDA against a ten-point checklist covering the provisions that typically determine whether an NDA is signable as-is. Items reviewed include:
+
+- Definition of Confidential Information (scope, specificity)
+- Term and duration of obligations
+- Permitted disclosures and standard carve-outs
+- Compelled disclosure (subpoena and court order procedures)
+- Return and destruction obligations
+- Residuals clauses
+- Bundled non-compete or non-solicit provisions
+- Governing law and venue
+- Remedies (including injunctive relief)
+- Assignment
+
+Each item is rated Pass / Warn / Fail with a short rationale.
+
+## NDA Type Classification
+
+The tool first classifies the NDA by type, since the right review depends on which side you are on:
+
+<CardGroup cols={3}>
+  <Card title="Mutual" icon="arrows-left-right">
+    Both parties exchange confidential information. Review weights all clauses symmetrically.
+  </Card>
+  <Card title="Unilateral - Disclosing" icon="arrow-up-from-bracket">
+    You are sharing your confidential information. Review weights protective clauses (definition scope, term, remedies) heavily.
+  </Card>
+  <Card title="Unilateral - Receiving" icon="arrow-down-to-bracket">
+    You are receiving the counterparty's confidential information. Review weights residual-knowledge, return-or-destroy, and non-compete reach.
+  </Card>
+</CardGroup>
+
+The triage emphasizes different criteria based on the classification.
+
+## Output
+
+The triage produces a one-page summary you can paste into an email or matter file:
+
+- **Overall rating** - Pass / Warn / Fail
+- **Routing recommendation** - Sign as-is / negotiate / escalate / reject
+- **Key issues** - The two or three items that drove the rating
+- **Suggested markups** - Concrete changes that would move a Warn or Fail to Pass
+- **Estimated negotiation time** - Rough effort to get to executable
+
+## Suggested Markups
+
+For each Warn or Fail item, the tool suggests specific language changes:
+
+- The current clause text
+- The proposed replacement language
+- A one-line explanation of why the change matters
+
+Copy the markups into your draft or use them as the basis for a redline.
+
+## Ready-to-run prompt
+
+<Prompt
+  description="**NDA Triage** - 10-point screen with routing recommendation and copy-paste rationale."
+  icon="shield-check"
+  iconType="solid"
+  actions={["copy"]}
+>
+Run **NDA Triage** on the attached NDA.
+
+First, classify the NDA as Mutual, Unilateral-Disclosing, or Unilateral-Receiving and state which side our client is on.
+
+Then score the agreement against the 10-point screen, marking each Pass / Warn / Fail with a one-sentence rationale:
+
+1. Definition of Confidential Information (scope, exclusions, marking requirement)
+2. Term of confidentiality obligations and survival
+3. Permitted disclosures (advisors, affiliates, legally compelled)
+4. Compelled-disclosure procedure (notice, cooperation, protective order)
+5. Return-or-destroy obligation and certification
+6. Residual-knowledge clause
+7. Non-solicit / non-compete reach
+8. Injunctive relief and equitable remedies
+9. Governing law and venue (flag if not a US state)
+10. Assignment and change-of-control
+
+Output a single overall rating - **PASS** (sign as-is), **WARN** (negotiate listed clauses), or **FAIL** (escalate to senior counsel) - plus a routing recommendation, estimated negotiation effort, and a plain-English paragraph a non-lawyer business owner could understand. For every Warn or Fail clause, include proposed replacement language in a markup-ready format.
+</Prompt>
+
+## Tips
+
+<Tip>
+**Build a playbook.** For high-volume teams, configure the Pass / Warn / Fail thresholds to match your standard playbook and save it as a [Skill](/guides/skills) so every triage is graded against the same bar.
+</Tip>
+
+<Tip>
+**Pair with Compare Documents.** After negotiation, compare the counter against your sent version to confirm only agreed changes were made.
+</Tip>
+
+<Warning>
+The triage is for triage. High-stakes NDAs - M&A, strategic deals, anything tied to a public filing - still warrant a full read by a qualified attorney before signature.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Deep clause-by-clause review with redlines for the NDAs that need more than a triage.
+  </Card>
+  <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
+    Diff two versions of an NDA to confirm only agreed-upon changes were made.
+  </Card>
+  <Card title="Skills" icon="wand-magic-sparkles" href="/guides/skills">
+    Run NDA Triage as part of a saved playbook tuned to your firm's house style.
+  </Card>
+  <Card title="Redline Analysis" icon="pen-line" href="/guides/tools/redline-analysis">
+    Once the counterparty marks up your NDA, read their changes with full commentary.
+  </Card>
+</CardGroup>

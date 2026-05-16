@@ -1,6 +1,7 @@
 ---
 title: "Introduction"
-description: "AI-powered legal research platform and API - search millions of US, Canadian, and Indian cases, review contracts, resolve citations, and build legal tech products"
+description: "AI-powered legal research platform and API - search the US Code, CFR, federal and state case law, review contracts, resolve citations, and build legal tech products"
+icon: "rocket"
 ---
 
 <Frame>
@@ -12,42 +13,51 @@ description: "AI-powered legal research platform and API - search millions of US
 Vaquill is a legal research platform and case law API. Use it directly to search cases, review contracts, and manage citations. Or integrate the API into your own product to add legal research capabilities.
 
 <CardGroup cols={2}>
-  <Card title="Document Search" icon="magnifying-glass" href="/guides/document-search">
-    Upload documents and ask questions. Get answers with exact source citations.
-  </Card>
   <Card title="Case Law Research" icon="scale-balanced" href="/guides/case-law-research">
-    Search millions of cases across US, Canadian, and Indian courts with Boolean operators, filters, and citation lookup.
+    Search federal and state case law - Supreme Court, Circuits, Districts, and state courts - with Boolean operators and citation lookup.
+  </Card>
+  <Card title="Statutes & Regulations" icon="book" href="/guides/statutes-regulations">
+    Search the US Code, CFR, and all 50 state statutes with amendment timelines and court interpretations.
+  </Card>
+  <Card title="Document Search" icon="magnifying-glass" href="/guides/document-search">
+    Upload documents and ask questions in plain English. Every answer is sourced with page-level citations.
   </Card>
   <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
-    Clause-by-clause analysis with risk ratings, redline suggestions, and compliance checks.
+    Clause-by-clause analysis with severity ratings, redline suggestions, and Word Track Changes export.
   </Card>
   <Card title="Agent Mode" icon="robot" href="/guides/agent-mode">
-    Autonomous AI research - searches, reads URLs, fetches files, and calls tools across multiple rounds.
+    Autonomous AI research that searches, reads URLs, fetches files, and chains tools across multiple rounds.
   </Card>
-  <Card title="Skills" icon="wand-magic-sparkles" href="/guides/skills">
-    Curated legal playbooks for contract review, risk assessment, NDA triage, and more.
+  <Card title="Deep Research" icon="magnifying-glass-plus" href="/guides/deep-research">
+    Multi-hop iterative reasoning for cross-document analysis and comparative legal questions.
   </Card>
-  <Card title="Memories" icon="brain" href="/guides/memories">
-    Learns your preferences and personalizes responses across sessions.
+  <Card title="Citation Graph" icon="diagram-project" href="/guides/citation-graph">
+    Interactive precedent map - see who cited what and whether a case is still good law.
   </Card>
-  <Card title="MCP Client" icon="plug" href="/guides/mcp-client">
-    Connect external MCP servers (Notion, GitHub, etc.) and use their tools in chat.
-  </Card>
-  <Card title="API Reference" icon="code" href="/api-reference/ask/ask-a-legal-question">
-    Search cases, resolve citations, and traverse the citation network via REST API.
+  <Card title="Legal Tools" icon="toolbox" href="/guides/legal-tools">
+    NDA triage, compliance check, risk assessment, document compare, AI judge, and more.
   </Card>
 </CardGroup>
 
 ## Coverage
 
-- **US federal and state case law** - comprehensive coverage across federal circuits and state courts
-- **Canadian case law** - federal and provincial courts
-- **Indian case law** - 20M+ Supreme Court, High Court, and tribunal decisions
-- **Citation formats:** Bluebook, SCC, AIR, INSC, and more
-- **50+ file formats** including PDF, DOCX, scanned documents (OCR)
+<CardGroup cols={2}>
+  <Card title="US Federal Law" icon="landmark">
+    United States Code, Code of Federal Regulations, the US Constitution, and federal case law from the Supreme Court through District Courts.
+  </Card>
+  <Card title="State Law" icon="building-columns">
+    Statutory codes and constitutions for all 50 states, plus state appellate and supreme court opinions.
+  </Card>
+  <Card title="International (Optional)" icon="globe">
+    Canadian federal and provincial case law and Indian Supreme Court / High Court decisions available when needed for cross-border work.
+  </Card>
+  <Card title="50+ File Formats" icon="file">
+    PDF, DOCX, scanned and image-only documents (OCR), spreadsheets, presentations, emails, archives.
+  </Card>
+</CardGroup>
 
 <Info>
-  Coverage is continuously expanding across all supported jurisdictions.
+  Coverage is continuously expanding. For specific jurisdictional questions, see the relevant feature documentation or contact support.
 </Info>
 
 ## Build with the API
@@ -73,37 +83,61 @@ See [Authentication](/authentication) for API keys, [Credits](/credits) for pric
 
 ## Getting Started
 
-### Use the Platform
+<Tabs>
+  <Tab title="Use the Platform">
+    <Steps>
+      <Step title="Create an account">
+        Sign up at [app.vaquill.ai](https://app.vaquill.ai). Every new account starts with a 7-day free trial of the full feature set; after that, the subscription is $99 / month.
+      </Step>
+      <Step title="Upload a document">
+        Drag and drop a file - or forward an email - into a matter. Supports 50+ file formats including scanned PDFs.
+      </Step>
+      <Step title="Ask a question">
+        Type a question in plain language. Every answer comes with page-level source citations you can click through to verify.
+      </Step>
+      <Step title="Run a Legal Tool">
+        Activate Contract Review, NDA Triage, Compliance Check, or any of the [Legal Tools](/guides/legal-tools) from the conversation bar.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Use the API">
+    <Steps>
+      <Step title="Get an API key">
+        Generate a key from your [dashboard settings](https://app.vaquill.ai/settings). See [Authentication](/authentication) for details.
+      </Step>
+      <Step title="Make your first request">
+        Search for a case:
 
-<Steps>
-  <Step title="Create an account">
-    Sign up at [app.vaquill.ai](https://app.vaquill.ai). Free plan includes 25 monthly messages and 100 pages.
-  </Step>
-  <Step title="Upload a document">
-    Drag and drop a file into any conversation.
-  </Step>
-  <Step title="Ask a question">
-    Type a question in plain language. Each answer includes source citations with page references.
-  </Step>
-</Steps>
+        ```bash
+        curl -X POST https://api.vaquill.ai/api/v1/research/search \
+          -H "Authorization: Bearer vq_key_..." \
+          -H "Content-Type: application/json" \
+          -d '{"query": "qualified immunity excessive force", "limit": 5}'
+        ```
+      </Step>
+      <Step title="Explore the endpoints">
+        Browse the full [API Reference](/api-reference/ask/ask-a-legal-question) for case search, citation resolution, statute lookup, and citation network traversal.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
 
-### Use the API
+## Frequently Asked
 
-<Steps>
-  <Step title="Get an API key">
-    Generate a key from your [dashboard settings](https://app.vaquill.ai/settings).
-  </Step>
-  <Step title="Make your first request">
-    Search for a case:
-
-    ```bash
-    curl -X POST https://api.vaquill.ai/api/v1/research/search \
-      -H "Authorization: Bearer vq_key_..." \
-      -H "Content-Type: application/json" \
-      -d '{"query": "qualified immunity excessive force", "limit": 5}'
-    ```
-  </Step>
-  <Step title="Explore the endpoints">
-    Browse the full [API Reference](/api-reference/ask/ask-a-legal-question) for case search, citation resolution, and citation network traversal.
-  </Step>
-</Steps>
+<AccordionGroup>
+  <Accordion title="Is my data private?" icon="shield-halved">
+    Yes. Your matters, documents, and conversations are isolated to your organization at the database and search-index level. Documents are encrypted at rest and in transit. See [Team Workspaces](/guides/team-workspaces) for organization-level access controls.
+  </Accordion>
+  <Accordion title="How does Vaquill prevent hallucinations?" icon="circle-check">
+    Every AI response runs through claim-level verification against the actual cited sources before it reaches you. See [Answer Verification](/guides/answer-verification) for the details.
+  </Accordion>
+  <Accordion title="Can I use Vaquill for filings?" icon="gavel">
+    Vaquill is a research and drafting tool, not a substitute for legal judgment. Always verify cited authorities and run a precedent freshness check (see [Citation Graph](/guides/citation-graph)) before filing.
+  </Accordion>
+  <Accordion title="What's the difference between the platform and the API?" icon="code">
+    The platform is the full Vaquill app at [app.vaquill.ai](https://app.vaquill.ai) - chat, matters, legal tools, document management. The API exposes a subset of the platform's capabilities (case search, citation resolution, statute lookup, ask-a-question) for product builders and enterprise teams to embed in their own tools.
+  </Accordion>
+  <Accordion title="How do I get help?" icon="life-ring">
+    Email [contact@vaquill.ai](mailto:contact@vaquill.ai) or join the [community Slack](https://join.slack.com/t/vaquillaicommunity/shared_invite/zt-3qxv4mtxg-64mtkVe2PxodDMwKGPfvMQ).
+  </Accordion>
+</AccordionGroup>

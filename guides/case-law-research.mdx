@@ -1,6 +1,7 @@
 ---
 title: "Case Law Research"
 description: "Search millions of US, Canadian, and Indian court cases with Boolean operators and filters"
+icon: "scale-balanced"
 ---
 
 Search millions of cases across US federal and state courts, Canadian courts, and Indian courts using natural language, Boolean operators, or citation strings.
@@ -37,18 +38,34 @@ Citation strings are resolved across formats - Bluebook for US cases, and Indian
 
 ## Filters
 
-- **Jurisdiction:** US, Canada, or India
-- **Court:** Specific courts or tribunals (e.g., SCOTUS, 9th Circuit, Ontario Superior Court)
-- **Year / Date Range:** Cases from a particular period
-- **Judge:** Cases by a specific judge
+<CardGroup cols={2}>
+  <Card title="Jurisdiction" icon="globe">
+    US, Canada, or India
+  </Card>
+  <Card title="Court" icon="landmark">
+    Specific courts or tribunals (e.g. SCOTUS, 9th Circuit, Ontario Superior Court, Supreme Court of India)
+  </Card>
+  <Card title="Year / Date range" icon="calendar">
+    Cases from a particular period
+  </Card>
+  <Card title="Judge" icon="user-tie">
+    Cases authored or joined by a specific judge
+  </Card>
+</CardGroup>
 
 ## Result Fields
 
-- **Case title and citation:** All known citation strings
+Every search result returns:
+
+- **Case title and citation** - all known citation strings
 - **Court and date**
-- **Judges:** Bench composition
-- **Relevance score**
-- **Snippet:** Matching passage from the judgment
+- **Judges** - bench composition
+- **Relevance score** - 0 to 1, calibrated per query
+- **Snippet** - matching passage from the judgment with the query terms highlighted
+
+<Tip>
+  Filter by **Court** first to cut noise. A query for *"qualified immunity"* against all US courts returns thousands of opinions; the same query scoped to **9th Circuit, 2020-present** is immediately practitioner-ready.
+</Tip>
 
 ## API
 
@@ -74,4 +91,42 @@ curl -X POST https://api.vaquill.ai/api/v1/research/search \
   }'
 ```
 
-Each search call costs **1 credit**. See [Credits](/credits) for pricing and the [API Reference](/api-reference/ask/ask-a-legal-question) for all available endpoints and parameters.
+Each search call costs **1 credit** (1-20 results) and scales up to 3 credits for 51-100 results. See [Credits](/credits) for the full pricing schedule and the [API Reference](/api-reference/research/search-the-legal-corpus) for parameters.
+
+## Ready-to-run prompt
+
+<Prompt
+  description="**Doctrine survey** - find the leading cases on a doctrine, group by circuit, flag splits."
+  icon="scale-balanced"
+  iconType="solid"
+  actions={["copy"]}
+>
+Use Vaquill case law search to do a doctrine survey on **qualified immunity for excessive-force claims under 42 USC 1983**.
+
+Do these steps:
+
+1. Boolean search the US corpus: `"qualified immunity" AND "excessive force" AND "1983"`.
+2. Scope to federal appellate decisions from the last 10 years.
+3. Group results by circuit. For each circuit, list the 2-3 most cited or most recent decisions.
+4. Flag any **circuit split** explicitly - quote the disagreement language from the relevant opinions.
+5. Identify the leading Supreme Court authority and confirm its treatment status (still good law, distinguished, or eroded).
+
+End with a one-paragraph practitioner takeaway suitable for a brief: which circuits are most plaintiff-favorable today, and what is the live question heading to SCOTUS?
+</Prompt>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Citations" icon="quote-left" href="/guides/citations">
+    Resolve, search, and traverse the citation network.
+  </Card>
+  <Card title="Citation Graph" icon="diagram-project" href="/guides/citation-graph">
+    Walk the forward and backward citation graph from any case.
+  </Card>
+  <Card title="Deep Research" icon="brain" href="/guides/deep-research">
+    Multi-hop reasoning when the answer needs more than one search.
+  </Card>
+  <Card title="Agent Mode" icon="robot" href="/guides/agent-mode">
+    Autonomous research across cases, statutes, and the web.
+  </Card>
+</CardGroup>

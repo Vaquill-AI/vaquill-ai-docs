@@ -1,6 +1,7 @@
 ---
 title: "Errors"
 description: "HTTP status codes and error handling"
+icon: "triangle-exclamation"
 ---
 
 ## Error Format
@@ -37,7 +38,7 @@ Validation errors (422) include field-level details:
 | `404` | Not Found | Resource does not exist |
 | `422` | Validation Error | Check request body for missing or invalid fields |
 | `429` | Rate Limited | Back off and retry with exponential backoff |
-| `500` | Internal Error | Retry after a brief delay. [Contact support](mailto:contact@vaquill.com) if it persists |
+| `500` | Internal Error | Retry after a brief delay. [Contact support](mailto:contact@vaquill.ai) if it persists |
 
 ## Rate Limiting
 
@@ -69,7 +70,7 @@ def search_with_retry(query, max_retries=3):
   </Accordion>
 
   <Accordion title="402 after purchasing credits">
-    Credit purchases may take a few seconds to reflect after Razorpay confirmation. Retry after a moment.
+    Credit purchases may take a few seconds to reflect after the payment provider confirms. Retry after a moment.
   </Accordion>
 
   <Accordion title="422 validation error">

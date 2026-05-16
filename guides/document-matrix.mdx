@@ -1,0 +1,173 @@
+---
+title: "Document Matrix"
+description: "Extract the same fields from dozens or hundreds of documents into a single spreadsheet, with every cell sourced"
+icon: "table"
+---
+
+Document Matrix is a spreadsheet-style review for batches of documents. Rows are documents (up to 200 per matrix), columns are the questions you want answered. Each cell returns an extracted value plus the exact quote from the source document that supports it.
+
+## When To Use It
+
+<CardGroup cols={2}>
+  <Card title="M&A diligence" icon="briefcase">
+    Run across dozens of NDAs, MSAs, and ancillary agreements to surface change-of-control, assignment, and termination triggers in hours instead of days.
+  </Card>
+  <Card title="Lease portfolio abstracts" icon="building">
+    Pull rent, term, renewal options, escalations, and assignment rights from an entire commercial portfolio into one workbook.
+  </Card>
+  <Card title="Employment audits" icon="user-tie">
+    Surface non-competes, severance terms, equity vesting, and change-of-control triggers across employee agreements.
+  </Card>
+  <Card title="IP licensing reviews" icon="copyright">
+    Extract licensed IP scope, royalty rates, territory, exclusivity, and termination triggers across a license stack.
+  </Card>
+  <Card title="Discovery review" icon="folder-tree">
+    Pull custodian, date range, and privilege flags across a production to triage what gets full review.
+  </Card>
+  <Card title="Loan portfolio review" icon="building-columns">
+    Extract interest rate, maturity, covenants, and default triggers across a credit book.
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="Create the matrix">
+    Spin up a new matrix and upload your documents, or select existing ones from the matter.
+  </Step>
+  <Step title="Define columns">
+    Pick a template (NDA, MSA, lease, employment, IP license) or write your own questions.
+  </Step>
+  <Step title="Run extraction">
+    The tool extracts each field from each document - each cell carries the answer plus the source quote.
+  </Step>
+  <Step title="Review and edit">
+    Spot-check cells, correct any errors inline, and the tool learns from your edits.
+  </Step>
+  <Step title="Export">
+    Push to .xlsx, a Word memo, or a PDF report for client distribution.
+  </Step>
+</Steps>
+
+## Columns
+
+Each column is a question or extraction prompt. You can mix types:
+
+| Column Type | Returns | Example |
+|------|----------|----------|
+| **Free text** | A short answer | "What is the governing law?" |
+| **Yes / No** | Boolean | "Is there a non-compete?" |
+| **Date** | Parsed date | "What is the effective date?" |
+| **Number / Currency** | Numeric value | "What is the annual fee?" |
+| **List** | Multiple values | "List all named subsidiaries" |
+| **Long text** | Full clause or paragraph | "Quote the assignment clause" |
+
+Mix and match in a single matrix.
+
+## Templates
+
+Pre-built column sets for common review types:
+
+- **NDA Abstract** - Term, scope of confidential information, exceptions, return obligations, governing law
+- **MSA Abstract** - Effective date, term, termination rights, indemnification, limitation of liability, IP ownership
+- **Commercial Lease** - Premises, base rent, escalations, term, renewal options, assignment, sublease
+- **Employment Agreement** - Title, compensation, equity, non-compete, non-solicit, severance, change-of-control
+- **IP License** - Licensed IP, field of use, territory, royalty, exclusivity, term, termination
+
+Start from a template and customize, or build a column set from scratch.
+
+## Source-Backed Cells
+
+Every extracted value links back to the source. Click a cell to see:
+
+- The exact quote from the source document that supports the answer
+- The page number and section reference
+- The surrounding context so you can verify the interpretation
+
+If the extraction is wrong, edit the cell directly - the tool preserves your edit and re-uses it on similar fields.
+
+## Filtering and Sorting
+
+Once the matrix is built, work with it like a spreadsheet:
+
+- **Filter** by any column (e.g., show only contracts with annual fees over $100K)
+- **Sort** by date, value, or document name
+- **Hide columns** that are not relevant to a particular review
+- **Group** by a categorical column (e.g., contract type, counterparty)
+
+## Cost Preview
+
+Before running, the tool shows an estimated cost based on the number of documents and columns. You can also run a column on a single test document first to verify the prompt works before applying it to the full batch.
+
+## Export
+
+- **Spreadsheet (.xlsx)** - Full matrix with source quotes in a separate column or as cell comments
+- **Word memo** - Narrative summary that walks through the matrix findings
+- **PDF report** - Read-only version for client distribution
+
+## Tips
+
+<Tip>
+  **Pilot a column on three documents before running it across 200.** Catching a bad prompt early is much cheaper than re-running a 200-row extraction.
+</Tip>
+
+<Tip>
+  **Use long-text columns sparingly.** They cost more per cell; reserve them for the clauses you actually need verbatim, not for every paragraph.
+</Tip>
+
+<Tip>
+  **Combine with Matters.** Each matter can have multiple matrices for different diligence streams - one for IP, one for material contracts, one for employment.
+</Tip>
+
+## Build a matrix prompt
+
+<Prompt
+  description="**NDA Matrix** - extract the same fields from a batch of NDAs into one workbook with source-backed cells."
+  icon="table"
+  iconType="solid"
+  actions={["copy"]}
+>
+Build a Document Matrix across the [N] NDAs in this folder. For each agreement, extract the following columns:
+
+1. **Counterparty name** (free text)
+2. **Effective date** (date)
+3. **Term length** (free text - e.g., "3 years from effective date")
+4. **Mutual or one-way** (free text)
+5. **Definition of Confidential Information** (long text - quote the operative clause)
+6. **Stated exceptions** (list - independently developed, publicly known, etc.)
+7. **Permitted disclosures** (list - advisors, affiliates, legally compelled)
+8. **Residual knowledge clause present?** (yes / no)
+9. **Non-solicit / non-compete present?** (yes / no, with scope if yes)
+10. **Return-or-destroy obligation** (free text)
+11. **Governing law and venue** (free text)
+12. **Injunctive relief / equitable remedies** (yes / no)
+13. **Survival period after termination** (free text)
+14. **Annual liability cap (USD)** (currency, if any)
+15. **Red flags for our standard playbook** (long text)
+
+Run a 3-document pilot first to validate the prompts. Each cell must include the exact source quote and page number. Export as .xlsx with quotes in cell comments.
+</Prompt>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Document Analyst" icon="file-magnifying-glass" href="/guides/tools/document-analyst">
+    One-off questions about a single document.
+  </Card>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Deep clause-level review with redlines.
+  </Card>
+  <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
+    Redline two versions side-by-side.
+  </Card>
+  <Card title="Chronology Builder" icon="timeline" href="/guides/chronology-builder">
+    Turn the same document set into a sourced timeline.
+  </Card>
+</CardGroup>
+
+## Limits
+
+| Limit | Value |
+|------|------|
+| Documents per matrix | Up to 200 |
+| Matrices per matter | No fixed limit |

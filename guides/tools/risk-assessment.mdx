@@ -1,0 +1,126 @@
+---
+title: "Risk Assessment"
+description: "5x5 severity-likelihood matrix for any legal matter, with mitigation options and escalation guidance"
+icon: "triangle-exclamation"
+---
+
+Risk Assessment produces a structured risk register for a matter, a contract, or a corporate decision. Each risk is plotted on a 5x5 severity-likelihood matrix, mapped back to specific clauses or facts, and paired with mitigation options ranked by effort and effectiveness.
+
+## When To Use It
+
+- Pre-signing review on a high-value contract
+- Litigation case assessment for settlement positioning
+- Pre-IPO or pre-deal diligence
+- Corporate decision memos that need a defensible risk record
+- Regulatory exposure analysis
+
+## Risk Categories
+
+The assessment covers eight categories. The tool picks the relevant subset based on the documents and facts you provide:
+
+- **Contract** - Breach, performance, indemnity, limitation gaps
+- **Regulatory** - Compliance exposure, licensing, reporting obligations
+- **Litigation** - Claims risk, defense strength, damages exposure
+- **IP** - Infringement, ownership, license scope, third-party rights
+- **Data Privacy** - Personal data, cross-border transfers, breach exposure
+- **Employment** - Misclassification, harassment, wage and hour, separation
+- **Corporate** - Governance, fiduciary, change-of-control, securities
+- **Other** - Anything that does not fit the above
+
+## The 5x5 Matrix
+
+<Info>
+Each risk is scored on a 1-5 scale for **severity** (impact if it materializes, from negligible to existential) and a 1-5 scale for **likelihood** (from remote to near certain). The combination places each risk on a 5x5 heat map - the upper-right quadrant is the critical-attention zone, the lower-left is monitor-only. The same matrix is used by the [Risk Assessment Skill](/guides/skills) so scoring stays consistent across matters.
+</Info>
+
+## What You Get For Each Risk
+
+| Element | What It Includes |
+|------|----------|
+| **Risk statement** | One-sentence description in plain English |
+| **Category** | Which of the eight categories it falls in |
+| **Severity / Likelihood** | Scored 1-5 each with reasoning |
+| **Contributing factors** | What makes the risk worse |
+| **Mitigating factors** | What is already in place to reduce it |
+| **Source** | The clause, fact, or document the risk was derived from |
+| **Mitigation options** | Three options ranked by effort and effectiveness |
+| **Residual risk** | The score after the recommended mitigation is applied |
+| **Escalation** | Whether the risk warrants partner, GC, or board involvement |
+
+## Mitigation Options
+
+For each risk, the tool generates three mitigation paths:
+
+- **Low effort / partial mitigation** - What you can do this week
+- **Medium effort / substantial mitigation** - Negotiation or process change
+- **High effort / full mitigation** - Restructure, exit, or full remediation
+
+Each option shows the new residual risk score so you can see the trade-off.
+
+## Ready-to-run prompt
+
+<Prompt
+  description="**Risk Assessment** - structured risk register for a contract, matter, or corporate decision."
+  icon="triangle-exclamation"
+  iconType="solid"
+  actions={["copy"]}
+>
+Run **Risk Assessment** on the attached documents and facts.
+
+For every distinct risk you identify:
+
+1. Write a one-sentence **risk statement** in plain English.
+2. Classify into one of the eight categories: Contract, Regulatory, Litigation, IP, Data Privacy, Employment, Corporate, Other.
+3. Score **severity** (1-5) and **likelihood** (1-5). Justify each score in one sentence and cite the clause, fact, or document the risk was derived from.
+4. List **contributing** and **mitigating** factors already in play.
+5. Propose **three mitigation options** - low-effort partial, medium-effort substantial, and high-effort full - with the residual severity x likelihood score after each.
+6. Set the **escalation** level: associate, partner, GC, or board.
+7. For any risk that cannot be fully eliminated, draft a **monitoring plan** (what to watch, who is responsible, review cadence).
+
+Output a risk register sorted by severity x likelihood (highest first), followed by a one-page executive summary that flags the top three risks, the recommended mitigations, and a go / no-go recommendation a partner can sign off on.
+</Prompt>
+
+## Monitoring Plan
+
+For risks that cannot be fully eliminated, the assessment outputs a monitoring plan:
+
+- What to watch (a metric, an event, a date)
+- Who is responsible
+- The review cadence (quarterly, on event, on milestone)
+
+## Export
+
+- **Word memo** - Full risk register formatted as a partner-ready memo
+- **Spreadsheet** - Tracker format with one row per risk, sortable and filterable
+- **Heat map PDF** - Visual 5x5 matrix for board or executive presentations
+
+## Tips
+
+<Tip>
+**Pair with the source documents.** Run Risk Assessment inside a matter so it can draw on every uploaded contract, complaint, and email, not just the facts you typed into the prompt.
+</Tip>
+
+<Tip>
+**Re-score after mitigation.** Update the assessment as risks are addressed - the residual score becomes the new baseline for the next review.
+</Tip>
+
+<Tip>
+**Sort by the escalation column.** It is the most useful single field for triaging partner attention on a register with more than ten risks.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Clause-level review feeds risk entries straight into the register.
+  </Card>
+  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+    Compliance gaps roll up into the risk view automatically.
+  </Card>
+  <Card title="Redline Analysis" icon="pen-line" href="/guides/tools/redline-analysis">
+    Read a counterparty's markup that drives shifting contract risk.
+  </Card>
+  <Card title="Skills" icon="wand-magic-sparkles" href="/guides/skills">
+    The matching Risk Assessment Skill enforces consistent scoring across teams.
+  </Card>
+</CardGroup>

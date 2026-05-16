@@ -1,6 +1,7 @@
 ---
 title: "Agent Mode"
 description: "Let the AI autonomously search, fetch URLs, read files, and call tools to answer complex legal questions"
+icon: "robot"
 ---
 
 Agent Mode gives the AI autonomous control over which tools to use and when. Instead of following a fixed retrieval pipeline, the AI decides what to search, which URLs to read, and what tools to call - iterating up to 5 rounds until it has a complete answer.
@@ -30,7 +31,7 @@ Agent Mode gives the AI access to these tools automatically:
 
 | Tool | What It Does | Cost |
 |------|-------------|------|
-| **Web Search** | Searches the web via Exa with jurisdiction filter (US, CA, IN, UK, Global) | Included |
+| **Web Search** | Searches the web with jurisdiction filter (US, CA, IN, UK, Global) | Included |
 | **Fetch URL** | Reads any public URL - web pages, PDFs, Office docs, images | Included |
 | **Search Documents** | Re-queries your uploaded matter documents with new search terms | Included |
 | **Search Legal Corpus** | Searches millions of US, Canadian, and Indian court cases with court and year filters | Included |
@@ -46,10 +47,10 @@ The `fetch_url` tool lets the AI read content from any public URL. It handles:
 
 | Format | How It's Processed |
 |--------|-------------------|
-| **Web pages** (HTML) | Extracted with Trafilatura for clean text |
-| **PDFs** | Parsed with PyMuPDF4LLM (Pro + GNN layout) |
+| **Web pages** (HTML) | Main article content extracted, navigation and ads stripped |
+| **PDFs** | Full text extraction with layout awareness for tables and columns |
 | **Office docs** (DOCX, XLSX, PPTX) | Full text extraction |
-| **Images** (JPEG, PNG, TIFF, BMP, WebP) | OCR via Tesseract |
+| **Images** (JPEG, PNG, TIFF, BMP, WebP) | OCR runs automatically |
 | **Legacy formats** (DOC, XLS, PPT) | Converted and extracted |
 | **Plain text, JSON, XML, CSV** | Read directly |
 

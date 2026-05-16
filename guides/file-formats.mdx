@@ -1,0 +1,145 @@
+---
+title: "Supported File Formats"
+description: "Reference list of file formats Vaquill can ingest and search, with notes on OCR and special handling"
+icon: "file"
+---
+
+Vaquill ingests over 50 file formats - the ones that show up in real legal practice. Upload them as-is; the system extracts text, runs OCR where needed, and makes the content searchable across your matter.
+
+<AccordionGroup>
+  <Accordion title="Documents (PDF, Word, RTF, TXT, Markdown, HTML)">
+    | Format | Notes |
+    |------|----------|
+    | **PDF** | Native and image-only; OCR runs automatically on scanned pages |
+    | **DOCX** | Modern Word format; preserves headings and tracked changes metadata |
+    | **DOCM** | Macro-enabled Word; macros are ignored, text is extracted |
+    | **DOC** | Legacy Word; converted before extraction |
+    | **DOT, DOTX** | Word templates |
+    | **RTF** | Rich Text Format |
+    | **TXT** | Plain text |
+    | **MD** | Markdown |
+    | **HTML, HTM** | Web pages and HTML exports |
+  </Accordion>
+  <Accordion title="Spreadsheets (Excel, CSV)">
+    | Format | Notes |
+    |------|----------|
+    | **XLSX** | Modern Excel; all sheets ingested |
+    | **XLSM** | Macro-enabled Excel |
+    | **XLS** | Legacy Excel |
+    | **XLTX, XLTM, XLT** | Excel templates |
+    | **CSV** | Tabular data |
+  </Accordion>
+  <Accordion title="Presentations (PowerPoint)">
+    | Format | Notes |
+    |------|----------|
+    | **PPTX** | Modern PowerPoint; slide content and speaker notes |
+    | **PPTM** | Macro-enabled PowerPoint |
+    | **PPT** | Legacy PowerPoint |
+    | **POT, POTX** | PowerPoint templates |
+  </Accordion>
+  <Accordion title="Images (OCR applied automatically)">
+    | Format | Notes |
+    |------|----------|
+    | **PNG** | OCR runs automatically |
+    | **JPG, JPEG** | OCR runs automatically |
+    | **GIF** | OCR runs on the first frame |
+    | **WebP** | OCR runs automatically |
+    | **TIFF, TIF** | Multi-page TIFFs supported |
+    | **BMP** | OCR runs automatically |
+    | **SVG** | Text elements extracted |
+  </Accordion>
+  <Accordion title="Email (EML, MSG, MBOX, PST)">
+    | Format | Notes |
+    |------|----------|
+    | **EML** | Single message export; attachments ingested separately |
+    | **MSG** | Outlook message format |
+    | **MBOX** | Mailbox archive; all messages ingested |
+    | **PST** | Outlook archive; all folders ingested |
+
+    Attachments within email files are extracted and ingested as separate searchable documents, with a link back to the parent message.
+  </Accordion>
+  <Accordion title="Code and data (source files, JSON, XML)">
+    | Format | Notes |
+    |------|----------|
+    | **PY, JS, TS, JAVA, CPP, GO, RUST** | Source code files; useful for IP and code-review matters |
+    | **JSON, XML** | Structured data |
+  </Accordion>
+  <Accordion title="Archives (ZIP, TAR, RAR, 7Z)">
+    | Format | Notes |
+    |------|----------|
+    | **ZIP** | Contents extracted recursively |
+    | **TAR, TAR.GZ** | Contents extracted recursively |
+    | **RAR** | Contents extracted recursively |
+    | **7Z** | Contents extracted recursively |
+
+    When you upload an archive, the system extracts and ingests each file inside as a separate searchable document. Folder structure is preserved.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  Password-protected files (encrypted PDFs, password-locked archives, protected Office files) cannot be processed automatically. Remove the password before upload, or supply the password via the per-file ingestion options.
+</Warning>
+
+## OCR for Scanned Documents
+
+For image-based files and scanned PDFs:
+
+- OCR runs automatically on upload
+- The resulting text is searchable like any other document
+- The original image is preserved; click any citation to see the highlighted passage on the page
+- Handwritten content is recognized where legible
+- Common OCR artifacts (broken hyphens, mis-recognized characters) are cleaned up automatically
+
+## Size and Page Limits
+
+Upload limits vary by plan - see your [dashboard](https://app.vaquill.ai/settings) or the [Subscriptions](/guides/subscriptions) page for current per-plan caps on file size, page count, and batch size. For very large files or batches, contact support to discuss enterprise ingestion options.
+
+## What Happens After Upload
+
+<Steps>
+  <Step title="Safety scan">
+    The file is scanned for safety. No untrusted code is executed.
+  </Step>
+  <Step title="Text extraction and OCR">
+    Text is extracted; OCR runs on image-based content.
+  </Step>
+  <Step title="Indexing">
+    The document is indexed for search across your matter.
+  </Step>
+  <Step title="Citation detection">
+    Citations within the document are detected and linked to authorities.
+  </Step>
+  <Step title="Ready for analysis">
+    The document is available for analysis in any tool.
+  </Step>
+</Steps>
+
+Upload progress and processing status are visible in the matter document list.
+
+## Tips
+
+<Tip>
+  **Group with archives.** Upload a ZIP of all documents in a discovery production to preserve folder structure.
+</Tip>
+
+<Tip>
+  **Email-to-matter.** Forward EML or MSG files to the matter's unique email address for automatic ingestion (see [Email Ingestion](/guides/email-to-rag)).
+</Tip>
+
+<Tip>
+  **Re-OCR if needed.** If the OCR quality is poor on a scanned document, you can request a re-OCR pass with stricter settings.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Document Search" icon="magnifying-glass" href="/guides/document-search">
+    Search across everything you have uploaded.
+  </Card>
+  <Card title="Email Ingestion" icon="envelope" href="/guides/email-to-rag">
+    Forward emails to ingest documents and attachments.
+  </Card>
+  <Card title="Drive Import" icon="google-drive" href="/guides/google-drive-import">
+    Pull documents directly from Google Drive.
+  </Card>
+</CardGroup>

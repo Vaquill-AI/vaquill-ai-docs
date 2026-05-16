@@ -1,0 +1,148 @@
+---
+title: "Contract Debugger"
+description: "Find internal inconsistencies, contradictions, undefined terms, and broken cross-references in a contract"
+icon: "bug"
+---
+
+Contract Debugger is the QA pass before a contract goes out. It reads the document end-to-end looking for the kinds of problems that are easy to miss on a normal review - terms defined but never used, terms used but never defined, cross-references that point to the wrong section, conflicting provisions, math that does not add up.
+
+## When To Use It
+
+- Final review before sending a draft out
+- After heavy revisions on a contract that has gone through multiple turns
+- Before signing - one last check that nothing was missed
+- Diligence on a contract drafted by counterparty's counsel
+- Cleaning up a template that has drifted over many versions
+
+## What It Catches
+
+| Issue | Example |
+|------|----------|
+| **Undefined terms** | "Affiliate" used in Section 4 but never defined |
+| **Defined but unused** | "Permitted Transferee" defined but never appears outside the definitions |
+| **Conflicting provisions** | Section 8 says term is 3 years; Section 21 says term is 5 years |
+| **Broken cross-references** | "Pursuant to Section 12(b)" but Section 12 has no subsection (b) |
+| **Inconsistent capitalization** | "Confidential Information" vs. "confidential information" used interchangeably |
+| **Numbered list gaps** | Section 4 jumps from (i) to (iii) - is (ii) missing? |
+| **Math errors** | Schedule totals do not match clause references |
+| **Hanging modifiers** | "Subject to the foregoing" - foregoing what? |
+| **Inconsistent defined-term variants** | "Agreement" and "this Agreement" used differently |
+| **Duplicate definitions** | Same term defined twice with different language |
+
+## How It Works
+
+<Steps>
+  <Step title="Upload the contract">
+    Drop in a draft or pick one already in your matter.
+  </Step>
+  <Step title="Open Contract Debugger">
+    Launch the tool from the tools menu.
+  </Step>
+  <Step title="Let the tool run two passes">
+    A structural pass walks definitions, cross-references, and numbering. A semantic pass looks for conflicts, ambiguity, and math errors.
+  </Step>
+  <Step title="Review issues by severity">
+    Critical and High issues should be fixed before send-out. Medium and Low are clean-up items.
+  </Step>
+</Steps>
+
+## Ready-to-run prompt
+
+<Prompt
+  description="**Contract Debugger** - find every structural and semantic defect in a draft before send-out."
+  icon="bug"
+  iconType="solid"
+  actions={["copy"]}
+>
+Run **Contract Debugger** on the attached draft. Treat this as the final QA pass before send-out.
+
+Do both passes:
+
+1. **Structural pass:**
+   - Every defined term used but never defined.
+   - Every defined term defined but never used.
+   - Every cross-reference that points to a section, subsection, schedule, or exhibit that does not exist.
+   - Numbered or lettered list gaps (e.g., (i), (iii) with (ii) missing).
+   - Duplicate definitions with conflicting language.
+   - Inconsistent capitalization of defined terms.
+
+2. **Semantic pass:**
+   - Conflicting provisions (e.g., one clause says term is three years, another says five).
+   - Math errors between schedules and clause references.
+   - Hanging modifiers and dangling cross-references ("subject to the foregoing" with no clear antecedent).
+   - Integration-clause conflicts: provisions that would be overridden by the integration / merger clause but should survive.
+   - Governing-law / venue mismatches across clauses.
+
+For every issue, output: issue type, location (section / page / line), exact quote of the problematic text, suggested fix in markup-ready language, and severity (Critical, High, Medium, Low). Sort by severity, then by section order. End with a one-line go / no-go: is this draft safe to send?
+</Prompt>
+
+## Reading the Output
+
+Each issue includes:
+
+- The **issue type** (e.g., "Undefined term")
+- The **location** in the document (section, page, line)
+- A **quote** of the problematic text
+- A **suggested fix**
+- A **severity** rating (Critical, High, Medium, Low)
+
+### Severity Levels
+
+| Severity | What It Means |
+|------|----------|
+| **Critical** | Could materially change interpretation or invalidate a clause |
+| **High** | Will likely be flagged by counterparty's counsel |
+| **Medium** | Poor drafting; should be fixed for clarity |
+| **Low** | Style and consistency issues |
+
+## Suggested Fixes
+
+For each issue, the tool drafts a specific fix:
+
+- For undefined terms - a proposed definition or a suggested replacement
+- For broken cross-references - the section the reference probably meant to point to
+- For conflicts - a recommendation on which provision should control and language to add to resolve
+
+Apply the fix as a markup, export the corrections as a redline, or drop them into your draft manually.
+
+## Clause Relationship Analysis
+
+Beyond inconsistencies, the tool maps how clauses relate to each other:
+
+- Which provisions reference which others
+- Where dependencies exist (e.g., termination rights tied to specific breach definitions)
+- Clauses that are functionally redundant
+- Provisions that may be overridden by the integration clause but shouldn't be
+
+This view helps when you are restructuring a contract or evaluating the impact of changing one clause.
+
+## Tips
+
+<Tip>
+**Run at both natural checkpoints.** Once before send-out, once before signature. Each pass catches issues introduced in the round of revisions just before it.
+</Tip>
+
+<Tip>
+**Pair with Contract Review.** Debugger catches structural defects; [Contract Review](/guides/contract-review) catches commercial issues. Together they cover both the form and the substance.
+</Tip>
+
+<Warning>
+Especially useful on inherited templates. A template that has drifted across many drafts often has defined terms with multiple definitions, cross-references that point to deleted sections, and integration clauses that quietly nullify what other clauses appear to grant. Run Debugger before you commit to a template as your firm's standard.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Substantive clause-level review against your playbook.
+  </Card>
+  <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
+    Diff two versions of a contract to see exactly what changed.
+  </Card>
+  <Card title="Document Analyst" icon="file-magnifying-glass" href="/guides/tools/document-analyst">
+    Ask ad-hoc questions about a document.
+  </Card>
+  <Card title="Redline Analysis" icon="pen-line" href="/guides/tools/redline-analysis">
+    After Debugger cleans the draft, analyze the counterparty's tracked changes.
+  </Card>
+</CardGroup>

@@ -1,6 +1,7 @@
 ---
 title: "Skills"
 description: "Curated legal playbooks that guide the AI through structured frameworks for contract review, risk assessment, and more"
+icon: "wand-magic-sparkles"
 ---
 
 Skills are expert legal playbooks that give the AI structured methodologies for specific tasks - contract review, NDA screening, risk assessment, compliance checks, and more. Instead of freeform answers, the AI follows a proven framework with checklists, severity ratings, and domain-specific guidance.
@@ -71,6 +72,73 @@ The AI recognizes this as a risk assessment task, activates the skill, and produ
 2. Ask: "Brief the judgment in Marbury v. Madison"
 3. The AI produces an IRAC-format brief with proper citations and ratio decidendi
 
+## Ready-to-run prompts
+
+Copy any of these into your Vaquill chat. They activate the matching Skill automatically.
+
+<Prompt
+  description="**Contract Review** - clause-by-clause severity flags + redlines, exportable to Word."
+  icon="file-contract"
+  iconType="solid"
+  actions={["copy"]}
+>
+Run **Contract Review** on the attached agreement.
+
+For every clause:
+
+1. Classify as GREEN (acceptable), YELLOW (negotiate), or RED (escalate or do not sign).
+2. Note the standard market position and how this clause deviates.
+3. Suggest exact replacement language for any YELLOW or RED clause.
+4. Flag any **missing** clauses that a US counterparty would reasonably expect (indemnity, limitation of liability, governing law, dispute resolution, IP ownership, confidentiality, termination for convenience).
+
+End with a one-page executive summary: top three risks, recommended changes before signature, and a deal-go / deal-no-go recommendation.
+</Prompt>
+
+<Prompt
+  description="**NDA Triage** - 10-point screen + routing recommendation. Use for inbound NDAs at scale."
+  icon="shield-check"
+  iconType="solid"
+  actions={["copy"]}
+>
+Run **NDA Triage** on the attached NDA.
+
+Score the agreement against the 10-point screen:
+
+1. Definition of confidential information (scope, exclusions, marking requirement)
+2. Permitted disclosures (advisors, affiliates, legally compelled)
+3. Term and survival
+4. Non-solicitation / non-compete reach
+5. Return-or-destroy obligation
+6. Residual knowledge clause
+7. Injunctive relief and equitable remedies
+8. Governing law and venue
+9. Mutual vs one-way
+10. Carve-outs (independently developed, publicly known, rightfully received)
+
+Output a single rating - GREEN (approve as-is), YELLOW (negotiate listed clauses), or RED (escalate to senior counsel) - plus a routing recommendation and a paragraph of plain-English justification a non-lawyer business owner could understand.
+</Prompt>
+
+<Prompt
+  description="**Case Brief (IRAC)** - structured judgment summary with citation network and treatment signals."
+  icon="gavel"
+  iconType="solid"
+  actions={["copy"]}
+>
+Run **Case Brief** on this judgment. Pull the full opinion using Vaquill, then produce:
+
+1. **Caption** - case name, citation (Bluebook), court, date, bench composition.
+2. **Procedural posture** - how the case got to this court.
+3. **Issue(s)** - the legal questions actually decided.
+4. **Rule(s)** - the legal principles the court applied or announced.
+5. **Application** - the court's reasoning, with verbatim quotes for any holding language.
+6. **Conclusion** - the disposition and any remedy ordered.
+7. **Ratio decidendi** vs **obiter dicta** - flag explicitly.
+8. **Citation treatment** - is the case still good law? List any opinions that have followed, distinguished, questioned, or overruled it.
+9. **Practitioner takeaway** - one paragraph on how a US litigator would use this case today.
+
+Cite Vaquill source IDs for every factual claim.
+</Prompt>
+
 ## Skill Types
 
 | Type | Purpose | Examples |
@@ -86,4 +154,4 @@ The AI recognizes this as a risk assessment task, activates the skill, and produ
 - [Agent Mode](/guides/agent-mode) - Skills are automatically available to the agent
 - [Contract Review](/guides/contract-review) - Detailed guide on contract analysis
 - [Legal Tools](/guides/legal-tools) - Full suite of 15 legal analysis tools
-- [MCP Connector](/integrations/mcp) - Use Vaquill's tools in your AI editor
+- [Vaquill MCP](/integrations/mcp/vaquill) - Use Vaquill's tools in your AI editor

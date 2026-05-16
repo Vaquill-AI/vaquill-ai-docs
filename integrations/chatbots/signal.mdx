@@ -1,0 +1,221 @@
+---
+title: "Signal Bot"
+sidebarTitle: "Signal"
+description: "Vaquill legal AI on Signal via signal-cli-rest-api - Docker Compose stack with primary or linked-device registration."
+icon: "signal-messenger"
+keywords: ["vaquill signal bot", "signal legal ai", "signal-cli-rest-api", "signalbot", "signal rag bot"]
+---
+
+A Signal messenger bot for Vaquill, built on the unofficial [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) and the [signalbot](https://github.com/signalbot-org/signalbot) Python framework. Two Docker containers - `signal-cli` (handles the Signal protocol) and `signal-bot` (Python app calling Vaquill) - communicate over a local WebSocket. Source code at [github.com/Vaquill-AI/integrations/signal-bot](https://github.com/Vaquill-AI/integrations/tree/main/signal-bot).
+
+<Warning>
+  Signal does not offer an official bot API. This integration uses the unofficial signal-cli project. **Account ban risk** exists if Signal's anti-abuse systems detect bot-like behavior. Keep volume low, use a dedicated phone number, and pin Docker image versions in production.
+</Warning>
+
+## Features
+
+- Plain-text Q&A via the Vaquill `/ask` API
+- Per-chat conversation history
+- Slash-like commands: `help`, `examples`, `stats`, `clear`
+- Runs entirely inside a local Docker network - no public URL required
+
+## Prerequisites
+
+- Docker and Docker Compose
+- A phone number you control for Signal registration (or an existing Signal account you can link as a secondary device)
+- Vaquill API key (`vq_key_...`). See [Authentication](/authentication).
+
+## Platform setup
+
+You need to either register a fresh phone number with Signal, or link the bot as a secondary device on an existing Signal account.
+
+### Option A: Register a fresh number (primary device)
+
+<Steps>
+  <Step title="Start signal-cli">
+    ```bash
+    docker compose up signal-cli -d
+    ```
+  </Step>
+  <Step title="Request a verification code">
+    ```bash
+    curl -X POST "http://localhost:8080/v1/register/+15551234567" \
+      -H "Content-Type: application/json" \
+      -d '{"use_voice": false}'
+    ```
+  </Step>
+  <Step title="Submit the SMS code">
+    ```bash
+    curl -X POST "http://localhost:8080/v1/register/+15551234567/verify/123456"
+    ```
+  </Step>
+</Steps>
+
+### Option B: Link as a secondary device
+
+This keeps your existing Signal phone active and avoids re-registering a number:
+
+```bash
+curl "http://localhost:8080/v1/qrcodelink?device_name=vaquill-bot"
+```
+
+Open the returned URL (or scan the QR), then in your Signal mobile app go to **Settings > Linked Devices > Add a new device** and scan it.
+
+<Info>
+  The registration is tied to the `signal-cli` Docker volume. Back it up - losing the volume means re-registering and a new Signal safety number.
+</Info>
+
+## Quickstart
+
+<Steps>
+  <Step title="Clone">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/signal-bot
+    ```
+  </Step>
+  <Step title="Configure">
+    ```bash
+    cp .env.example .env
+    ```
+
+    Set at minimum:
+
+    ```env
+    SIGNAL_PHONE_NUMBER=+15551234567
+    SIGNAL_API_URL=http://signal-cli:8080
+    VAQUILL_API_KEY=vq_key_your_key_here
+    VAQUILL_COUNTRY_CODE=US
+    ```
+  </Step>
+  <Step title="Run">
+    ```bash
+    docker compose up -d
+    ```
+
+    Or, if signal-cli is already up:
+
+    ```bash
+    docker compose up signal-bot -d
+    ```
+  </Step>
+  <Step title="Verify">
+    ```bash
+    curl http://localhost:8080/v1/about
+    curl http://localhost:8080/v1/accounts
+    ```
+
+    Send yourself a test message:
+
+    ```bash
+    curl -X POST "http://localhost:8080/v2/send" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "message": "Hello from Vaquill!",
+        "number": "+15551234567",
+        "recipients": ["+15559876543"]
+      }'
+    ```
+
+    Then DM the bot's number from another Signal account and ask:
+
+    ```
+    What is qualified immunity under 42 USC 1983?
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `SIGNAL_PHONE_NUMBER` | Yes | - | Registered or linked Signal number, E.164 format |
+| `SIGNAL_API_URL` | Yes | `http://signal-cli:8080` | URL of the signal-cli-rest-api container |
+| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
+| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | API base URL |
+| `VAQUILL_MODE` | No | `standard` | `standard` or `deep` |
+| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
+
+See [`.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/signal-bot/.env.example) for the full list.
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `help` | Show available commands |
+| `examples` | Show example legal questions |
+| `stats` | View usage statistics |
+| `clear` | Clear conversation history |
+| `hi` / `hello` | Start a fresh conversation |
+
+Any other text is treated as a legal question and routed to Vaquill.
+
+## Deployment
+
+### Docker Compose (recommended)
+
+Deploy both services on the same Docker network. The `signal-cli` service needs a persistent volume mounted at `/home/.local/share/signal-cli` to retain the registration.
+
+```yaml
+services:
+  signal-cli:
+    image: bbernhard/signal-cli-rest-api:latest
+    environment:
+      - MODE=json-rpc
+    ports:
+      - "8080:8080"
+    volumes:
+      - signal-cli-data:/home/.local/share/signal-cli
+    restart: unless-stopped
+
+  signal-bot:
+    build: .
+    env_file: .env
+    depends_on:
+      - signal-cli
+    restart: unless-stopped
+
+volumes:
+  signal-cli-data:
+```
+
+### Dokploy / self-hosted
+
+Deploy as two separate applications in the same project:
+
+1. **signal-cli**: Docker image `bbernhard/signal-cli-rest-api`, env `MODE=json-rpc`, persistent volume on `/home/.local/share/signal-cli`.
+2. **signal-bot**: Build from the Dockerfile in `signal-bot/`, env vars from `.env`.
+
+### Risks to plan for
+
+- **No official Signal bot API** - this is an unofficial integration.
+- **Account ban risk** if Signal detects automated behavior. Keep volume low and ideally use a dedicated number.
+- **Protocol breakage** - signal-cli updates can break on Signal protocol changes. Pin image versions (`bbernhard/signal-cli-rest-api:0.92`) in production rather than `latest`.
+- **Volume backups** - the phone-number registration is tied to the persistent volume. Back it up regularly.
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `curl http://localhost:8080/v1/about` fails | `signal-cli` is not running. `docker compose up signal-cli -d`. |
+| Registration verify returns 400 | Wrong or expired code. Request a new code with `/v1/register/<number>`. |
+| Bot does not reply | Confirm `SIGNAL_PHONE_NUMBER` matches the registered number. Check `docker compose logs signal-bot`. |
+| Vaquill 401 | Invalid `VAQUILL_API_KEY`. Generate a fresh one. |
+| Account suddenly unable to send | Possible ban. Reduce volume and consider switching to a fresh number. |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="WhatsApp" icon="whatsapp" href="/integrations/chatbots/whatsapp">
+    The official Business API path.
+  </Card>
+  <Card title="Telegram" icon="telegram" href="/integrations/chatbots/telegram">
+    Lightest setup, no Docker required.
+  </Card>
+  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+    Compare all six platforms.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How Vaquill API keys work.
+  </Card>
+</CardGroup>

@@ -1,6 +1,7 @@
 ---
 title: "Matters & Workspaces"
 description: "Organize work by case, deal, or project"
+icon: "briefcase"
 ---
 
 Matters are workspaces that keep documents, conversations, and research isolated by case, deal, or project.
@@ -24,10 +25,24 @@ Matters are workspaces that keep documents, conversations, and research isolated
 
 ### Features
 
-- **Document isolation:** Documents in one Matter are not visible to other Matters
-- **Client linking:** Associate Matters with clients
-- **Conversation history:** All conversations are preserved and searchable
-- **Export:** Export contents including conversations and analysis results
+<CardGroup cols={2}>
+  <Card title="Document isolation" icon="lock">
+    Documents in one Matter are not visible to other Matters.
+  </Card>
+  <Card title="Client linking" icon="address-book">
+    Associate Matters with a client record so you can see all work for that client in one place.
+  </Card>
+  <Card title="Conversation history" icon="comments">
+    All conversations are preserved and searchable across the Matter.
+  </Card>
+  <Card title="Export" icon="file-export">
+    Export contents including conversations and analysis results.
+  </Card>
+</CardGroup>
+
+<Info>
+  A Matter is the primary unit of isolation in Vaquill. Anything outside the Matter cannot see its documents, chats, or analysis unless it is explicitly shared.
+</Info>
 
 ## Client Management
 
@@ -52,6 +67,10 @@ Role-based access for team workspaces:
 
 Share conversations with team members or generate a public link. Shared conversations include the full thread with citations and tool outputs.
 
+<Warning>
+  Public share links expose the full conversation, including any cited document snippets and tool outputs. Only generate a public link when the underlying material is safe to share outside your organization.
+</Warning>
+
 ### Inline Threading
 
 Start sub-conversations within a main thread to keep discussions organized.
@@ -65,3 +84,24 @@ Start sub-conversations within a main thread to keep discussions organized.
 | Professional | 20 | 10 | 2 GB |
 | Business | 100 | 50 | 10 GB |
 | Enterprise | Unlimited | Unlimited | Custom |
+
+<Warning>
+  Deleting a Matter permanently removes its documents, chats, and analysis results. This action cannot be undone. Export anything you want to keep before deleting.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Client Management" icon="address-book" href="/guides/client-management">
+    Group Matters under client records and run firm-wide conflict checks.
+  </Card>
+  <Card title="Team Workspaces" icon="users" href="/guides/team-workspaces">
+    Roles, access controls, and shared resources for your firm.
+  </Card>
+  <Card title="File Formats" icon="file" href="/guides/file-formats">
+    See every format you can upload into a Matter.
+  </Card>
+  <Card title="Subscriptions" icon="credit-card" href="/guides/subscriptions">
+    Plan tiers, quotas, and what is included.
+  </Card>
+</CardGroup>

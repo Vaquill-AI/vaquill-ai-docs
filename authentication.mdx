@@ -1,6 +1,7 @@
 ---
 title: "Authentication"
 description: "API key authentication for the Vaquill API"
+icon: "key"
 ---
 
 The Vaquill API gives you programmatic access to case law search, citation resolution, and the citation network. Use it to power legal research in your own product or internal tools.
@@ -82,5 +83,26 @@ req.Header.Set("Content-Type", "application/json")
 | `429` | Rate limit exceeded |
 
 <Warning>
-  Do not expose your API key in client-side code or public repositories. If compromised, revoke it from your dashboard and generate a new one.
+  Never expose your API key in client-side code or public repositories. If compromised, revoke it from your [dashboard](https://app.vaquill.ai/settings) and generate a new one immediately.
 </Warning>
+
+<Tip>
+  **Rotate keys on a schedule.** Generate a new key, deploy it to your application, then revoke the old one. Vaquill supports multiple live keys per workspace so you can rotate without downtime.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Credits and pricing" icon="coins" href="/credits">
+    Per-endpoint costs, credit packs, and bulk pricing.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/errors">
+    HTTP status codes and how to recover from each.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/ask/ask-a-legal-question">
+    Every endpoint with parameters, examples, and an interactive playground.
+  </Card>
+  <Card title="Vaquill MCP" icon="plug" href="/integrations/mcp/vaquill">
+    Skip the API and call Vaquill from Claude, Cursor, or any MCP client.
+  </Card>
+</CardGroup>

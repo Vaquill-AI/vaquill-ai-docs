@@ -1,0 +1,277 @@
+---
+title: "WhatsApp Bot"
+sidebarTitle: "WhatsApp"
+description: "Vaquill legal AI on WhatsApp via Twilio - FastAPI server, slash commands, sandbox-to-production path."
+icon: "whatsapp"
+keywords: ["vaquill whatsapp bot", "whatsapp legal ai", "twilio whatsapp bot", "whatsapp rag bot", "whatsapp business api"]
+---
+
+A WhatsApp bot that bridges Twilio to the Vaquill `/ask` API. Users message a WhatsApp number, Twilio forwards to your FastAPI server, the bot calls Vaquill, and the answer (with cited sources) returns asynchronously to avoid Twilio's 15-second timeout. Source code at [github.com/Vaquill-AI/integrations/whatsapp-bot](https://github.com/Vaquill-AI/integrations/tree/main/whatsapp-bot).
+
+## Features
+
+- Two research modes per user (`standard` and `deep`) switchable with `/mode`
+- Per-user conversation history with configurable session timeout
+- Rich slash commands: `/help`, `/examples`, `/stats`, `/mode`, `/language`, `/clear`, `/feedback`, `/about`, `/settings`
+- Per-user rate limits (per-minute, per-hour, per-day)
+- Phone-number allowlists and blocklists
+- Input validation (SQL/XSS/command injection detection, length limits)
+- Multi-language replies (en, es, fr, de, pt, ja, ko, zh, ar, hi)
+- Optional Redis-backed sessions and rate limits
+- Admin endpoints for per-user stats and broadcasts
+
+## Prerequisites
+
+| Requirement | Notes |
+|---|---|
+| Python 3.10+ | 3.12 recommended |
+| Vaquill API key | From [app.vaquill.ai/settings](https://app.vaquill.ai/settings). Starts with `vq_key_`. See [Authentication](/authentication). |
+| Twilio account | Free trial works for the sandbox - it includes $15 in credit |
+| ngrok (local dev only) | Free account at [ngrok.com](https://ngrok.com) to tunnel webhooks |
+| Redis (optional) | Required only for multi-instance or persistent sessions |
+
+## Platform setup
+
+WhatsApp does not allow direct bot integrations - you connect through a Business Solution Provider. Twilio is the simplest path: minutes to set up vs weeks for direct WhatsApp Business API access.
+
+### Sandbox (free, for development)
+
+<Steps>
+  <Step title="Create a Twilio account">
+    Sign up at [twilio.com/try-twilio](https://www.twilio.com/try-twilio). Verify your email and phone. When asked for use case, pick **Developer** or **WhatsApp**.
+  </Step>
+  <Step title="Grab your credentials">
+    From the [Twilio Console](https://console.twilio.com) dashboard, copy:
+
+    - **Account SID** - starts with `AC` (e.g. `ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`)
+    - **Auth Token** - click the eye icon to reveal
+
+    <Warning>
+      The Account SID **must** start with `AC`. Values starting with `US` are not Account SIDs and will return 401.
+    </Warning>
+  </Step>
+  <Step title="Activate the WhatsApp Sandbox">
+    Console > **Messaging > Try it out > Send a WhatsApp message**. You will see a sandbox number (typically `+1 (415) 523-8886`) and a join code like `join brave-tiger`. From your personal WhatsApp, send that exact message to the sandbox number. You should receive *"You are all set!"*.
+
+    The sandbox number becomes your `TWILIO_WHATSAPP_NUMBER`, formatted as `whatsapp:+14155238886`.
+  </Step>
+  <Step title="Configure the webhook">
+    On the same page, under **Sandbox Configuration > When a message comes in**, paste your bot's webhook URL:
+
+    - Local dev: `https://<ngrok-subdomain>.ngrok-free.app/webhook/whatsapp`
+    - Production: `https://your-domain.com/webhook/whatsapp`
+
+    Method: **POST**. Click **Save**.
+  </Step>
+</Steps>
+
+<Info>
+  Sandbox limitations: every user must send `join <keyword>` first; you can only reply within 24 hours of the user's last message; the number is shared with other Twilio sandboxes; not suitable for real customers.
+</Info>
+
+### Production (paid WhatsApp Business sender)
+
+For real customers you need a verified business sender:
+
+1. Upgrade to a paid Twilio account (trial accounts cannot register WhatsApp senders).
+2. Console > **Messaging > Senders > WhatsApp Senders > Register a WhatsApp Sender**.
+3. Register your business with Meta, submit your WhatsApp Business Profile, get a dedicated number, and submit message templates for approval (required for outbound messages outside the 24-hour window).
+4. Verification typically takes **2-5 business days**.
+5. Once approved, set `TWILIO_WHATSAPP_NUMBER` to your new number.
+
+| | Sandbox | Production |
+|---|---|---|
+| **Cost** | Free | ~$15/month + ~$0.005/message |
+| **Phone number** | Twilio's shared number | Your own business number |
+| **User onboarding** | "join `<keyword>`" required | Direct messaging |
+| **Message window** | 24 hours after user message | 24 hours + approved templates |
+| **Setup time** | ~5 minutes | 2-5 business days |
+
+<Warning>
+  The **24-hour customer-service window** is a WhatsApp policy, not a Twilio limit. Outside that window you can only send approved template messages.
+</Warning>
+
+## Quickstart
+
+<Steps>
+  <Step title="Clone and install">
+    ```bash
+    git clone https://github.com/Vaquill-AI/integrations.git
+    cd integrations/whatsapp-bot
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Configure">
+    ```bash
+    cp .env.example .env
+    ```
+
+    Fill in the required values:
+
+    ```env
+    VAQUILL_API_KEY=vq_key_your_key_here
+    VAQUILL_COUNTRY_CODE=US
+    TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+    ```
+  </Step>
+  <Step title="Run the bot">
+    ```bash
+    DEBUG=true python bot.py
+    # or, production:
+    # uvicorn bot:app --host 0.0.0.0 --port 8000
+    ```
+  </Step>
+  <Step title="Tunnel with ngrok (local dev)">
+    In a second terminal:
+
+    ```bash
+    ngrok config add-authtoken YOUR_NGROK_AUTH_TOKEN
+    ngrok http 8000
+    ```
+
+    Copy the HTTPS forwarding URL and update the Twilio sandbox webhook to `https://abc123.ngrok-free.app/webhook/whatsapp`.
+
+    <Info>
+      Free ngrok URLs change every restart - update Twilio each time. For a stable URL, use a paid ngrok plan or deploy to a cloud host.
+    </Info>
+  </Step>
+  <Step title="Test">
+    Send "Hi" to the sandbox number to get a welcome message, then ask:
+
+    ```
+    What does FRCP Rule 12(b)(6) require for a motion to dismiss?
+    ```
+  </Step>
+</Steps>
+
+## Configuration
+
+The most-used env vars. Full list in the [repo `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/whatsapp-bot/.env.example).
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
+| `TWILIO_ACCOUNT_SID` | Yes | - | Twilio Account SID (starts with `AC`) |
+| `TWILIO_AUTH_TOKEN` | Yes | - | Twilio Auth Token |
+| `TWILIO_WHATSAPP_NUMBER` | Yes | - | Sender number with `whatsapp:` prefix |
+| `VAQUILL_MODE` | No | `standard` | Default research mode |
+| `VAQUILL_COUNTRY_CODE` | No | `IN` | Jurisdiction filter, e.g. `US` |
+| `RATE_LIMIT_DAILY` | No | `100` | Per-user daily cap |
+| `RATE_LIMIT_HOUR` | No | `30` | Per-user hourly cap |
+| `RATE_LIMIT_MINUTE` | No | `5` | Per-user minute cap |
+| `REDIS_URL` | No | - | Enables persistent sessions and rate limits |
+| `ALLOWED_NUMBERS` | No | - | Comma-separated phone allowlist |
+| `SESSION_TIMEOUT_MINUTES` | No | `30` | Conversation context expiry |
+| `PORT` | No | `8000` | Server port |
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `/start` | Welcome message with example questions |
+| `/help` | Show all commands |
+| `/examples` | List example questions; `/examples criminal` for a category |
+| `/mode` / `/mode standard` / `/mode deep` | View or switch research mode |
+| `/stats` | Today / hour / total usage for this user |
+| `/language` / `/language en` | View or switch reply language |
+| `/clear` | Clear conversation history |
+| `/feedback <message>` | Send feedback to operators |
+| `/about` | Vaquill info |
+| `/settings` | View current language, mode, and limits |
+
+Any non-slash message is treated as a legal question.
+
+## Deployment
+
+### Docker
+
+```bash
+docker build -t vaquill-whatsapp-bot .
+docker run -p 8000:8000 --env-file .env vaquill-whatsapp-bot
+```
+
+With Compose + Redis:
+
+```yaml
+services:
+  bot:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+volumes:
+  redis-data:
+```
+
+### Cloud hosts
+
+<CardGroup cols={2}>
+  <Card title="Render" icon="cloud">
+    New Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`. Free tier cold-starts in 30-60s - keep warm with an uptime monitor.
+  </Card>
+  <Card title="Railway" icon="train">
+    Auto-detects Python. Add env vars under Variables, get a `.up.railway.app` URL.
+  </Card>
+  <Card title="Fly.io" icon="plane">
+    `fly launch`, `fly secrets set ...`, `fly deploy`. Global low-latency regions.
+  </Card>
+  <Card title="VPS" icon="server">
+    Run uvicorn behind nginx + Let's Encrypt for TLS.
+  </Card>
+</CardGroup>
+
+After deploying, set the Twilio webhook to `https://your-domain.com/webhook/whatsapp` (POST).
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| No response at all | Confirm bot and ngrok are running. Confirm webhook URL ends with `/webhook/whatsapp` and method is POST. |
+| Twilio 401 | Account SID must start with `AC`. Re-check `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`. |
+| ngrok URL changed | Free ngrok rotates URLs on restart. Update Twilio after each restart, or use a paid plan / cloud host. |
+| Messages arrive but no reply | Check bot logs for `insufficient_credits` (top up at [app.vaquill.ai/settings](https://app.vaquill.ai/settings)), `401` (invalid Vaquill key), or rate-limit hits. |
+| "You are not authorized" | `ALLOWED_NUMBERS` is set and excludes this caller, or the number is in `BLOCKED_NUMBERS`. |
+| Sandbox session expired | Resend `join <keyword>` to the sandbox number. |
+| Slow replies | Switch from `deep` to `standard` with `/mode standard`. Deep mode uses 35 retrieval techniques and is intentionally slower. |
+| `21608 Recipient not in sandbox` | User must send the sandbox join code first. |
+
+Quick connectivity test:
+
+```bash
+curl http://localhost:8000/health
+
+curl -X POST http://localhost:8000/webhook/whatsapp \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "From=whatsapp:+15551234567&Body=Hello&MessageSid=test123"
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Telegram" icon="telegram" href="/integrations/chatbots/telegram">
+    No business-verification overhead.
+  </Card>
+  <Card title="Signal" icon="signal-messenger" href="/integrations/chatbots/signal">
+    Privacy-first messenger alternative.
+  </Card>
+  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+    Compare all six platforms.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How Vaquill API keys work.
+  </Card>
+</CardGroup>
