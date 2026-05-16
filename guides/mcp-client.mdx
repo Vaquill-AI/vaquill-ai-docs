@@ -3,7 +3,7 @@ title: "MCP Client"
 description: "Connect external MCP servers to Vaquill and use their tools directly in chat"
 ---
 
-Vaquill's MCP Client lets you connect any [Model Context Protocol](https://modelcontextprotocol.io) server — Notion, GitHub, Slack, databases, or your own custom server — so its tools become available inside Vaquill's AI chat alongside the built-in legal tools.
+Vaquill's MCP Client lets you connect any [Model Context Protocol](https://modelcontextprotocol.io) server - Notion, GitHub, Slack, databases, or your own custom server - so its tools become available inside Vaquill's AI chat alongside the built-in legal tools.
 
 <Info>
   This page covers connecting **external** MCP servers **to** Vaquill. If you want to connect **Vaquill's tools** to your AI editor (Claude, Cursor, etc.), see [MCP Connector](/integrations/mcp).
@@ -11,7 +11,7 @@ Vaquill's MCP Client lets you connect any [Model Context Protocol](https://model
 
 ## Built-in Legal MCP Servers
 
-Two legal research servers are available to all users by default — no setup required:
+Two legal research servers are available to all users by default - no setup required:
 
 <CardGroup cols={2}>
   <Card title="CourtListener" icon="scale-balanced" href="/integrations/courtlistener-mcp">
@@ -32,10 +32,10 @@ These system servers can be toggled on/off individually in **Settings > MCP Serv
   </Step>
   <Step title="Add a server">
     Click **Add Server** and provide:
-    - **Name** — a label for the server (e.g., "Notion")
-    - **URL** — the MCP endpoint URL
-    - **Transport** — `streamable_http` (recommended) or `sse`
-    - **Headers** (optional) — authorization headers (encrypted at rest)
+    - **Name** - a label for the server (e.g., "Notion")
+    - **URL** - the MCP endpoint URL
+    - **Transport** - `streamable_http` (recommended) or `sse`
+    - **Headers** (optional) - authorization headers (encrypted at rest)
   </Step>
   <Step title="Sync tools">
     Click **Sync** to discover the server's available tools. You can preview each tool's description and parameters.
@@ -61,11 +61,11 @@ When you chat with Agent Mode enabled:
 
 ## Security
 
-- **SSRF protection** — server URLs are validated against private IP ranges, loopback, and reserved addresses
-- **Encrypted headers** — authorization headers are AES-256-GCM encrypted before storage and never returned in API responses
-- **Prompt injection mitigation** — tool results are wrapped with explicit "untrusted data" markers
-- **No tool shadowing** — MCP tools cannot override built-in tools (web search, corpus search, etc.)
-- **Rate limiting** — 100 tool executions per hour, 5 sync requests per minute
+- **SSRF protection** - server URLs are validated against private IP ranges, loopback, and reserved addresses
+- **Encrypted headers** - authorization headers are AES-256-GCM encrypted before storage and never returned in API responses
+- **Prompt injection mitigation** - tool results are wrapped with explicit "untrusted data" markers
+- **No tool shadowing** - MCP tools cannot override built-in tools (web search, corpus search, etc.)
+- **Rate limiting** - 100 tool executions per hour, 5 sync requests per minute
 
 ## Limits
 
@@ -87,7 +87,7 @@ When you chat with Agent Mode enabled:
 
 ## Related
 
-- [Agent Mode](/guides/agent-mode) — Required for MCP tools to work in chat
-- [MCP Connector](/integrations/mcp) — Connect Vaquill's tools to your AI editor
-- [CourtListener MCP](/integrations/courtlistener-mcp) — US court data server
-- [CanLII MCP](/integrations/canlii-mcp) — Canadian legal data server
+- [Agent Mode](/guides/agent-mode) - Required for MCP tools to work in chat
+- [MCP Connector](/integrations/mcp) - Connect Vaquill's tools to your AI editor
+- [CourtListener MCP](/integrations/courtlistener-mcp) - US court data server
+- [CanLII MCP](/integrations/canlii-mcp) - Canadian legal data server

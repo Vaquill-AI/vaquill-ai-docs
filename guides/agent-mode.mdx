@@ -3,7 +3,7 @@ title: "Agent Mode"
 description: "Let the AI autonomously search, fetch URLs, read files, and call tools to answer complex legal questions"
 ---
 
-Agent Mode gives the AI autonomous control over which tools to use and when. Instead of following a fixed retrieval pipeline, the AI decides what to search, which URLs to read, and what tools to call — iterating up to 5 rounds until it has a complete answer.
+Agent Mode gives the AI autonomous control over which tools to use and when. Instead of following a fixed retrieval pipeline, the AI decides what to search, which URLs to read, and what tools to call - iterating up to 5 rounds until it has a complete answer.
 
 ## How It Works
 
@@ -22,7 +22,7 @@ In regular chat, your query goes through a fixed RAG pipeline: embed, retrieve, 
 
 Click the **Agent** button in the chat toolbar. A toggle turns it on/off, and a dropdown lets you configure individual tools.
 
-Agent Mode is saved per matter — enable it once and it stays on for that workspace.
+Agent Mode is saved per matter - enable it once and it stays on for that workspace.
 
 ## Available Tools
 
@@ -31,12 +31,12 @@ Agent Mode gives the AI access to these tools automatically:
 | Tool | What It Does | Cost |
 |------|-------------|------|
 | **Web Search** | Searches the web via Exa with jurisdiction filter (US, CA, IN, UK, Global) | Included |
-| **Fetch URL** | Reads any public URL — web pages, PDFs, Office docs, images | Included |
+| **Fetch URL** | Reads any public URL - web pages, PDFs, Office docs, images | Included |
 | **Search Documents** | Re-queries your uploaded matter documents with new search terms | Included |
 | **Search Legal Corpus** | Searches millions of US, Canadian, and Indian court cases with court and year filters | Included |
 | **Resolve Citation** | Resolves citation strings (Bluebook, SCC, AIR, INSC) to full case details | Included |
 | **Generate Case Brief** | Creates an IRAC case brief from a corpus judgment, optionally saves as DOCX | Paid |
-| **Court Records (eCourts)** | Live search of 240M+ Indian eCourts records — case details, orders, cause lists | Paid (opt-in) |
+| **Court Records (eCourts)** | Live search of 240M+ Indian eCourts records - case details, orders, cause lists | Paid (opt-in) |
 
 Additionally, any [MCP server tools](/guides/mcp-client) and [Skills](/guides/skills) you have enabled are also available to the agent.
 
@@ -61,8 +61,8 @@ The `fetch_url` tool lets the AI read content from any public URL. It handles:
 
 Core tools (web search, fetch URL, search documents, corpus search, resolve citation) are always available when Agent Mode is on. Paid tools have individual toggles:
 
-- **Court Records (eCourts)** — Opt-in toggle with per-action pricing (search: $0.002, case details: $0.006, order summary: $0.03, cause list: $0.01)
-- **Generate Case Brief** — $0.02 per brief (LLM-intensive)
+- **Court Records (eCourts)** - Opt-in toggle with per-action pricing (search: $0.002, case details: $0.006, order summary: $0.03, cause list: $0.01)
+- **Generate Case Brief** - $0.02 per brief (LLM-intensive)
 
 ## Limits
 
@@ -90,7 +90,7 @@ Agent Mode shines with multi-step research questions:
 
 ## Related
 
-- [Skills](/guides/skills) — Curated legal playbooks the agent can activate
-- [MCP Client](/guides/mcp-client) — Connect external tools for the agent to use
-- [Document Search](/guides/document-search) — How document retrieval works
-- [Case Law Research](/guides/case-law-research) — Legal corpus search details
+- [Skills](/guides/skills) - Curated legal playbooks the agent can activate
+- [MCP Client](/guides/mcp-client) - Connect external tools for the agent to use
+- [Document Search](/guides/document-search) - How document retrieval works
+- [Case Law Research](/guides/case-law-research) - Legal corpus search details
