@@ -46,6 +46,7 @@
             "icon": "rocket",
             "pages": [
               "introduction",
+              "data-sources",
               "guides/document-search",
               "guides/case-law-research",
               "guides/contract-review",

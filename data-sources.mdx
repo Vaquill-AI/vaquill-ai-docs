@@ -1,0 +1,100 @@
+---
+title: "Data Sources & Attribution"
+description: "The open data partners that power Vaquill, including the Free Law Project's CourtListener for US case law"
+icon: "scale-balanced"
+---
+
+Vaquill's research API and platform are built on a mix of authoritative open-data sources, public-domain government publications, and Vaquill's own indexing, ranking, and AI layer. This page credits every upstream source so you know exactly where the data comes from and how to support the projects that keep it free.
+
+<Note>
+  **Featured partner: CourtListener (Free Law Project).** All US case law surfaced through Vaquill (search, lookup, citation graph, agent mode, US drafting verification) is sourced from CourtListener. If Vaquill is useful to you, please consider [donating to the Free Law Project](https://free.law/donate/) — the open data ecosystem only exists because they keep it alive.
+</Note>
+
+## United States
+
+### CourtListener (Free Law Project)
+
+<CardGroup cols={2}>
+  <Card title="CourtListener" icon="landmark" href="https://www.courtlistener.com/">
+    Federal and state opinions, dockets, RECAP / PACER documents, oral arguments, judges.
+  </Card>
+  <Card title="Free Law Project" icon="building-columns" href="https://free.law/">
+    US 501(c)(3) non-profit, founded 2010. Mission: open access to court data.
+  </Card>
+  <Card title="Donate" icon="heart" href="https://free.law/donate/">
+    Tax-deductible in the US. The most direct way to keep this data free.
+  </Card>
+  <Card title="RECAP browser extension" icon="puzzle-piece" href="https://free.law/recap">
+    Install this to contribute back every time you use PACER.
+  </Card>
+</CardGroup>
+
+The Free Law Project is a US 501(c)(3) non-profit that has spent over a decade making US court data open, structured, and free. Their flagship product, [CourtListener](https://www.courtlistener.com/), indexes over 10 million opinions from federal and state courts dating back to the 18th century, hosts tens of millions of PACER documents through the [RECAP archive](https://free.law/recap), and publishes the [open API](https://www.courtlistener.com/help/api/rest/) that a meaningful portion of US legal tech, including Vaquill's US case-law layer, is built on.
+
+**What Vaquill uses from CourtListener:**
+
+- Opinion text, syllabus, headnotes, and metadata for federal and state cases
+- Citation pairs (case A cites case B), which Vaquill enriches into a graph with treatment flags
+- Docket metadata
+- Cluster IDs and reporter citations for case lookup and resolution
+- PDF URLs for primary-source viewing
+
+**What Vaquill adds on top:**
+
+- AI question-answering grounded in retrieved opinions, with claim-level verification
+- A citation graph with treatment classification (followed, distinguished, criticized, overruled) and `topCitedBy` ranking
+- Cross-corpus retrieval that combines case law with statutes, regulations, and state codes
+- A US-statute corpus (USC, CFR, 50-state codes, federal rules) sourced separately from authoritative open publishers
+
+Vaquill is **not** affiliated with the Free Law Project. We are one of many products built on top of CourtListener and we encourage all of them, ourselves included, to support the non-profit that makes this data available.
+
+### US government open data
+
+The US statute corpus on Vaquill (USC, CFR, 50-state codes, federal rules, state rules, Federal Register / Executive Orders) is sourced from authoritative open publishers:
+
+<CardGroup cols={2}>
+  <Card title="GovInfo (US GPO)" icon="building-flag" href="https://www.govinfo.gov/">
+    Authoritative source for the United States Code and Code of Federal Regulations.
+  </Card>
+  <Card title="Cornell LII" icon="university" href="https://www.law.cornell.edu/">
+    The Legal Information Institute at Cornell Law School — free HTML versions of US law since 1992.
+  </Card>
+  <Card title="Electronic CFR" icon="scroll" href="https://www.ecfr.gov/">
+    Daily-updated authoritative regulations, published by the Office of the Federal Register.
+  </Card>
+  <Card title="State legislatures" icon="map" href="https://www.congress.gov/state-legislature-websites">
+    50 state statute codes sourced from each state's official publication.
+  </Card>
+</CardGroup>
+
+## India
+
+Indian case law and acts are sourced from the official judgment portals of the Supreme Court of India and India's High Courts, and from [indiacode.nic.in](https://www.indiacode.nic.in/) for central legislation.
+
+## Canada
+
+Canadian case law and legislation are surfaced via the [CanLII](https://www.canlii.org/) API (bring-your-own-key for the public MCP endpoint).
+
+## How to support open legal data
+
+Most of what makes Vaquill possible is upstream. The open legal-data ecosystem runs on grants, donations, and volunteer time. If you build with Vaquill, the most direct way to give back is to donate to the projects whose data you rely on:
+
+<CardGroup cols={2}>
+  <Card title="Donate to Free Law Project" icon="heart" href="https://free.law/donate/">
+    Tax-deductible US 501(c)(3) non-profit. Supports CourtListener and RECAP.
+  </Card>
+  <Card title="Support Cornell LII" icon="heart" href="https://www.law.cornell.edu/donors">
+    Cornell Law School's Legal Information Institute.
+  </Card>
+</CardGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Credits & pricing" icon="coins" href="/credits">
+    API credit costs by endpoint.
+  </Card>
+  <Card title="CourtListener MCP" icon="plug" href="/integrations/mcp/courtlistener">
+    Use CourtListener directly from Claude, Cursor, or VS Code with BYOK.
+  </Card>
+</CardGroup>
