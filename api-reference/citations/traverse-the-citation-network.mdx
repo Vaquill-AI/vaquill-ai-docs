@@ -1,11 +1,11 @@
 ---
 openapi: GET /api/v1/citations/cases/network
-description: "Citation graph traversal for US and Indian cases. Returns directed nodes and edges plus depth control, per-edge treatment hints, and a ranking of the most influential subsequent citers."
+description: "Citation graph traversal for US cases. Returns directed nodes and edges plus depth control, per-edge treatment hints, and a ranking of the most influential subsequent citers."
 ---
 
 ## What this endpoint does
 
-For US cases, citation data is sourced from [CourtListener](https://www.courtlistener.com/) (a service of the [Free Law Project](https://free.law/) - a US 501(c)(3) non-profit). CourtListener publishes the underlying `opinions-cited` pairs as structured data; Vaquill builds a directed-graph endpoint on top of that data with treatment classification and ranking:
+Vaquill builds a directed-graph endpoint on top of US case citation data with treatment classification and ranking:
 
 - **Both directions in one call.** `citing-by` (subsequent citers) AND
   `cites-to` (authorities the seed relies on).
@@ -19,8 +19,6 @@ For US cases, citation data is sourced from [CourtListener](https://www.courtlis
 - **`topCitedBy` ranking.** The top 5 citing opinions ordered by their
   own forward-citation count. These are the cases that most carry the
   seed forward.
-
-The graph endpoint includes a `source_attribution` block crediting CourtListener / Free Law Project; please surface that to your end users and [consider donating](https://free.law/donate/) if you build on this data.
 
 ## Quick start (US)
 

@@ -31,13 +31,12 @@ Agent Mode gives the AI access to these tools automatically:
 
 | Tool | What It Does | Cost |
 |------|-------------|------|
-| **Web Search** | Searches the web with jurisdiction filter (US, CA, IN, UK, Global) | Included |
+| **Web Search** | Searches the web with jurisdiction filter (US, UK, Global) | Included |
 | **Fetch URL** | Reads any public URL - web pages, PDFs, Office docs, images | Included |
 | **Search Documents** | Re-queries your uploaded matter documents with new search terms | Included |
-| **Search Legal Corpus** | Searches millions of US, Canadian, and Indian court cases with court and year filters | Included |
-| **Resolve Citation** | Resolves citation strings (Bluebook, SCC, AIR, INSC) to full case details | Included |
+| **Search Legal Corpus** | Searches millions of US court cases with court and year filters | Included |
+| **Resolve Citation** | Resolves citation strings (Bluebook) to full case details | Included |
 | **Generate Case Brief** | Creates an IRAC case brief from a corpus judgment, optionally saves as DOCX | Paid |
-| **Court Records (eCourts)** | Live search of 240M+ Indian eCourts records - case details, orders, cause lists | Paid (opt-in) |
 
 Additionally, any [MCP server tools](/guides/mcp-client) and [Skills](/guides/skills) you have enabled are also available to the agent.
 
@@ -62,7 +61,6 @@ The `fetch_url` tool lets the AI read content from any public URL. It handles:
 
 Core tools (web search, fetch URL, search documents, corpus search, resolve citation) are always available when Agent Mode is on. Paid tools have individual toggles:
 
-- **Court Records (eCourts)** - Opt-in toggle with per-action pricing (search: $0.002, case details: $0.006, order summary: $0.03, cause list: $0.01)
 - **Generate Case Brief** - $0.02 per brief (LLM-intensive)
 
 ## Limits

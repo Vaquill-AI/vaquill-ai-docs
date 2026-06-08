@@ -96,16 +96,6 @@ Grouped by capability so you can model your application's per-query cost before 
     Section metadata is cheaper than the full section body.
   </Accordion>
 
-  <Accordion title="Indian acts and legislation" icon="scroll">
-    Indian central and state legislation lookup.
-
-    | Endpoint | Method | Credits | USD |
-    |---|---|---|---|
-    | `/api/v1/acts/list` | GET | 1 | $0.01 |
-    | `/api/v1/acts/search` | POST | 2 | $0.02 |
-    | `/api/v1/acts/{actId}/text` | GET | 3 | $0.03 |
-    | `/api/v1/acts/{actId}/amendments` | GET | 5 | $0.05 |
-  </Accordion>
 </AccordionGroup>
 
 <Tip>
@@ -127,12 +117,6 @@ View remaining credits in your [developer settings](https://app.vaquill.ai/devel
 - **All pricing is in USD**.
 - **Bulk or enterprise pricing** available - contact [priyansh@vaquill.ai](mailto:priyansh@vaquill.ai).
 
-## Where the data comes from
-
-US case law on Vaquill is powered by [CourtListener](https://www.courtlistener.com/), a service of the [Free Law Project](https://free.law/) - a US 501(c)(3) non-profit. Their open data makes Vaquill's US case-law layer possible. If you build on the Vaquill API, please consider [donating to Free Law Project](https://free.law/donate/) - the open legal-data ecosystem only exists because they keep it alive.
-
-See [Data Sources & Attribution](/data-sources) for the full list of upstream sources.
-
 ## Related
 
 <CardGroup cols={2}>
@@ -149,6 +133,6 @@ See [Data Sources & Attribution](/data-sources) for the full list of upstream so
     Fetch the live pricing schedule programmatically.
   </Card>
   <Card title="Data sources" icon="scale-balanced" href="/data-sources">
-    Open data partners (CourtListener / Free Law Project) and how to support them.
+    Overview of the legal data Vaquill indexes.
   </Card>
 </CardGroup>

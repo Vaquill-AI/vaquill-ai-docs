@@ -1,22 +1,22 @@
 ---
 title: "MCP Servers"
 sidebarTitle: "Overview"
-description: "Connect Vaquill's legal corpora to Claude, Cursor, VS Code, Windsurf, and any other MCP client."
+description: "Connect Vaquill's US legal corpus to Claude, Cursor, VS Code, Windsurf, and any other MCP client."
 icon: "plug"
 keywords: ["mcp server legal", "claude legal mcp", "cursor legal research", "vs code legal research", "model context protocol legal"]
 ---
 
-The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants call external tools. Vaquill publishes three MCP servers covering US, Canadian, and Indian legal data, plus a meta-server for our own corpus.
+The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants call external tools. The Vaquill MCP is the primary server for US legal research, backed by the full Vaquill API. Two additional third-party MCPs (CourtListener and CanLII) are documented here as optional user-connected integrations - you bring your own key and connect them directly.
 
 <CardGroup cols={3}>
   <Card title="Vaquill MCP" icon="scale-balanced" href="/integrations/mcp/vaquill">
-    Cross-jurisdiction Q&A, search, citation resolution, and the citation network. Backed by the full Vaquill API.
+    US legal Q&A, search, citation resolution, and the citation network. Backed by the full Vaquill API.
   </Card>
   <Card title="CourtListener MCP" icon="landmark" href="/integrations/mcp/courtlistener">
-    US federal + state court opinions, dockets, RECAP filings, PACER, oral arguments, judges, and eCFR. Bring your own CourtListener key.
+    Third-party integration. US federal + state court opinions, dockets, RECAP filings, PACER, oral arguments, judges, and eCFR. Bring your own CourtListener key.
   </Card>
   <Card title="CanLII MCP" icon="maple-leaf" href="/integrations/mcp/canlii">
-    Canadian case law and legislation metadata across all federal, provincial, and territorial jurisdictions. Bring your own CanLII key.
+    Third-party integration. Case law and legislation metadata from CanLII. Bring your own CanLII key.
   </Card>
 </CardGroup>
 
@@ -24,15 +24,15 @@ The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants
 
 | If you want... | Use |
 |---|---|
-| One MCP that covers US + India + Canada with Vaquill's RAG | [Vaquill MCP](/integrations/mcp/vaquill) |
+| US legal research with Vaquill's RAG | [Vaquill MCP](/integrations/mcp/vaquill) |
 | Direct, unmediated access to the CourtListener API surface | [CourtListener MCP](/integrations/mcp/courtlistener) |
 | Direct, unmediated access to the CanLII API surface | [CanLII MCP](/integrations/mcp/canlii) |
 
-The Vaquill MCP is the highest-level interface - it adds retrieval, ranking, and answer synthesis on top of upstream sources. The CourtListener and CanLII MCPs forward your request directly to the upstream API so you get the full feature surface that each provider publishes (every filter, every field, every endpoint). Use the upstream MCPs when you want exact, unmediated access to what the source publishes; use Vaquill MCP when you want an AI-grounded answer or a cross-jurisdiction interface. CourtListener is operated by the [Free Law Project](https://free.law/) - a US 501(c)(3) non-profit; please consider [supporting their work](https://free.law/donate/).
+The Vaquill MCP is the highest-level interface for US legal research - it adds retrieval, ranking, and answer synthesis on top of Vaquill's corpus. The CourtListener and CanLII MCPs are user-connected third-party integrations that forward your request directly to the upstream API so you get the full feature surface that each provider publishes (every filter, every field, every endpoint). Use those upstream MCPs when you want exact, unmediated access to what the source publishes; use Vaquill MCP when you want an AI-grounded answer over Vaquill's corpus.
 
 ## Supported clients
 
-All three servers work with any MCP-compatible client. Tested with:
+All servers work with any MCP-compatible client. Tested with:
 
 - Claude Desktop
 - Claude Code
@@ -56,7 +56,7 @@ Hosted is the fastest path - paste a URL into your client and start using the to
 
 ## Authentication model
 
-The three servers handle credentials differently:
+The servers handle credentials differently:
 
 | Server | What you provide | How |
 |---|---|---|

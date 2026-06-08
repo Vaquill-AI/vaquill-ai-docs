@@ -10,7 +10,7 @@ A running log of meaningful changes to the Vaquill platform, API, and docs. For 
 
 <Update label="May 2026" description="Integrations relaunch" tags={["Docs", "Integrations"]}>
   - New **Integrations** tab covering MCP servers, chatbots, widgets, browser extensions, and automation templates.
-  - Three first-party MCP servers documented end-to-end: **Vaquill MCP** (cross-jurisdiction), **CourtListener MCP** (US federal + state case law), **CanLII MCP** (Canadian case law and legislation).
+  - First-party MCP server documented end-to-end: **Vaquill MCP**.
   - Six chatbot integrations: **Slack**, **Discord**, **Microsoft Teams**, **Telegram**, **WhatsApp**, **Signal** - each with platform setup, deployment recipes, and troubleshooting.
   - Three widget builds: **Embedded Chat** (Next.js, US-pinned), **Docker Widget** (FastAPI + Vite, floating or inline), **Widget Pro** (multi-thread sidebar, voice mode, gamification).
   - **Chrome Extension** and **n8n / Make.com** templates for browser-based research and Google Sheets automation.
@@ -19,9 +19,8 @@ A running log of meaningful changes to the Vaquill platform, API, and docs. For 
 
 <Update label="May 2026" description="US-first positioning" tags={["Docs", "Product"]}>
   - Documentation now leads with US coverage across every page. Citation formats default to Bluebook; examples use US statutes and case law (`42 USC 1983`, `FRCP 12(b)(6)`, `Marbury v. Madison`).
-  - Jurisdiction coverage section in [Introduction](/introduction) updated: US federal and state case law (primary), Canadian case law, Indian case law (20M+ judgments + 23K+ acts).
-  - All pricing standardized to USD. Removed INR references from credit and pricing pages.
-  - Agent Mode jurisdiction filter reordered: `US, CA, IN, UK, Global`.
+  - Jurisdiction coverage section in [Introduction](/introduction) updated: US federal and state case law.
+  - All pricing standardized to USD.
 </Update>
 
 <Update label="May 2026" description="Citation network depth and treatment" tags={["API"]}>
@@ -34,8 +33,7 @@ A running log of meaningful changes to the Vaquill platform, API, and docs. For 
   - Error codes consolidated across the platform - see [Errors](/errors).
 </Update>
 
-<Update label="April 2026" description="Dedicated MCP repos with BYOK auth" tags={["Integrations", "Breaking"]}>
-  - **CourtListener MCP** and **CanLII MCP** moved into their own GitHub repos with bring-your-own-key auth. The hosted endpoints forward your upstream key on every request and never store it.
+<Update label="April 2026" description="Dedicated MCP repo" tags={["Integrations"]}>
   - **Vaquill MCP** ([vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp)) covers the full Vaquill corpus from any MCP-compatible client.
 </Update>
 
