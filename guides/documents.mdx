@@ -1,0 +1,121 @@
+---
+title: "Documents"
+description: "Your central library: tag, filter by matter, organize into folders, and run bulk actions on every file"
+icon: "folder-open"
+---
+
+The document library is where every file you upload lives. Each document is tagged by type, searchable, filterable by matter, and organized into folders. Select one or many and run bulk actions: chat, tag, move, copy, preview, or delete. It is the workspace that ties uploads to the matters they belong to.
+
+<Frame caption="The document library: tagged cards, matter filter, and the bulk-action bar">
+  <img src="/images/documents.png" alt="Vaquill document library showing tagged cards for CONTRACT, JUDGMENT, ARTICLE, and OTHER, a Matter filter, a Cards or list view toggle, and a bulk-action bar with Select All, Chat, Delete, Add Tags, Move to Matter, Move to Folder, Copy to Matter, Preview, and Clear" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+## The library
+
+Documents appear as cards (or as a list, your choice via the **Cards / list** toggle). Each card shows the file name and a type tag so you can scan a folder at a glance. Per-card actions let you **Preview** a file or jump straight into **Chat** with it. Upload new files from the top of the page; they land in the library and are ready to tag, file, and search.
+
+## Tagging
+
+Every document carries a type tag that classifies it:
+
+<CardGroup cols={2}>
+  <Card title="CONTRACT" icon="file-contract">
+    Agreements, NDAs, MSAs, leases, and other executed or draft contracts.
+  </Card>
+  <Card title="JUDGMENT" icon="gavel">
+    Court opinions, orders, and judgments.
+  </Card>
+  <Card title="ARTICLE" icon="newspaper">
+    Articles, memos, and reference material.
+  </Card>
+  <Card title="OTHER" icon="file">
+    Anything that does not fit the above.
+  </Card>
+</CardGroup>
+
+Tags are not fixed at upload. Select one or more documents and use **Add Tags** to classify them yourself, so you can keep a mixed folder organized by type.
+
+## Filter by matter
+
+Use the matter filter to scope the library to a single matter (for example, *Matter: Priyansh vs Experiment*). The header shows the active filter and a count of matching documents, and **Clear all** drops the filter to see everything again. Combine the filter with the search box to find a specific file inside a busy matter.
+
+## Folders
+
+Folders give you a second axis of organization alongside matters. File documents into folders to group them however your practice works (by client, by deal stage, by document type) and switch folders from the sidebar. A document can live in a folder and still belong to a matter, so the two systems stack rather than compete.
+
+## Bulk actions
+
+Select multiple documents (or use **Select All**) to act on them at once. The bulk-action bar exposes:
+
+<CardGroup cols={2}>
+  <Card title="Chat" icon="comments">
+    Open a conversation grounded in every selected document.
+  </Card>
+  <Card title="Add Tags" icon="tags">
+    Apply a type tag to the whole selection.
+  </Card>
+  <Card title="Move to Matter" icon="briefcase">
+    Reassign the selection to a different matter.
+  </Card>
+  <Card title="Move to Folder" icon="folder-tree">
+    File the selection into a folder.
+  </Card>
+  <Card title="Copy to Matter" icon="copy">
+    Place a copy in another matter without removing the original.
+  </Card>
+  <Card title="Preview" icon="eye">
+    Open the selected file to read it inline.
+  </Card>
+  <Card title="Delete" icon="trash">
+    Remove the selection from the library.
+  </Card>
+  <Card title="Clear" icon="xmark">
+    Drop the current selection and exit bulk mode.
+  </Card>
+</CardGroup>
+
+## Chat with documents
+
+**Chat** turns any selection into a sourced conversation. Pick one document for a focused read, or several to ask across a set, then ask questions in plain language and get answers cited back to the source. Single-document chat is the fast way to interrogate one file; multi-document chat is the way to ask one question across a folder.
+
+<Tip>
+  Chatting across a tightly scoped selection (say, the five contracts in one matter) gives sharper answers than chatting across the whole library. Filter and select first, then chat.
+</Tip>
+
+## Preview
+
+**Preview** opens a document in place so you can read it without leaving the library or downloading it. Use it to confirm you have the right file before you tag it, move it, or pull it into a chat.
+
+## Moving and copying to matters
+
+Documents and matters are linked but not locked together:
+
+<Steps>
+  <Step title="Select the documents">
+    Tick the cards you want to act on, or use Select All.
+  </Step>
+  <Step title="Move or copy">
+    Use **Move to Matter** to reassign the files, or **Copy to Matter** to leave the originals in place and drop a copy elsewhere.
+  </Step>
+  <Step title="Confirm in the new matter">
+    The files appear under the target matter, ready for review, chat, or a workflow run.
+  </Step>
+</Steps>
+
+<Note>
+  **Move** relocates a document, **Copy** duplicates it. Use Copy when the same file is relevant to two matters and you do not want a change in one to affect the other.
+</Note>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Document Search" icon="magnifying-glass" href="/guides/document-search">
+    Ask questions across your documents and get cited answers.
+  </Card>
+  <Card title="Matters & Workspaces" icon="briefcase" href="/guides/matters-workspaces">
+    Organize documents, chats, and drafts around a single matter.
+  </Card>
+  <Card title="File formats" icon="file" href="/guides/file-formats">
+    Full list of supported upload formats and OCR behavior.
+  </Card>
+</CardGroup>

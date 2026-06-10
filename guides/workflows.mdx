@@ -1,0 +1,111 @@
+---
+title: "Workflows"
+description: "Chain Vaquill steps into a repeatable, multi-step pipeline you run on any matter"
+icon: "diagram-project"
+---
+
+A workflow is an ordered list of named steps. Each step produces structured output that the next step can read, so you can wire research, extraction, analysis, drafting, and export into one pipeline and run it on any matter with a single click. Build one once, run it every week.
+
+<Frame caption="The Workflow builder: an ordered step chain plus the step-type palette">
+  <img src="/images/workflow.png" alt="Vaquill workflow builder showing the chain Document I/O, Retrieval, Extraction, Verification, Output, with step-type cards and Add first step, Open the guide, and start from a template buttons" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+## What a workflow is
+
+Think of a workflow as a chain. A common one looks like **Document I/O → Retrieval → Extraction → Verification → Output**. The first step picks the documents the workflow should read, the next pulls relevant passages, the next extracts structured fields, the next checks that every claim is grounded, and the last pushes the result to a matter or a download.
+
+Every step has a defined input and output, so a downstream step reads an earlier step's output directly. You wire the connection once; you never hand-edit references. Skip, reorder, branch, or loop any of these.
+
+## Step categories
+
+Steps come from eight categories. Each category groups step types that do a similar kind of work.
+
+<CardGroup cols={2}>
+  <Card title="Document I/O" icon="folder-open">
+    Pick which documents the workflow should read, save outputs back to a matter, or wait for an upload to finish ingesting.
+  </Card>
+  <Card title="Retrieval" icon="magnifying-glass">
+    Pull relevant passages from your documents, search US case law, look up a federal or state statute, or search the web.
+  </Card>
+  <Card title="Extraction" icon="list-check">
+    Pull structured fields (parties, dates, obligations) out of free text, or extract a chronology of events.
+  </Card>
+  <Card title="Analysis" icon="chart-simple">
+    Compare, score, or reason about extracted data: run a matrix, compare two documents, run a compliance gap check, score against benchmarks, or synthesize across a document set.
+  </Card>
+  <Card title="Verification" icon="circle-check">
+    Check that every AI claim is grounded in the source text. No fabricated authorities.
+  </Card>
+  <Card title="Drafting" icon="pen-nib">
+    Generate new legal text: clauses, notices, emails, and summaries, jurisdiction-aware.
+  </Card>
+  <Card title="Routing & Logic" icon="code-branch">
+    Branch on a condition, loop a step over every document, or hand off to a constrained agent.
+  </Card>
+  <Card title="Output" icon="file-export">
+    Push the final result to a matter, send an email, or stage a DOCX or XLSX download.
+  </Card>
+</CardGroup>
+
+There are 23 step types across these eight categories. Every step is a typed building block with its own config form, so the builder always knows what a step needs and what it returns.
+
+## Three ways to start
+
+<Steps>
+  <Step title="Start from a template">
+    Pick one of eight published starter templates and run it as-is, or fork a copy to customize. Fastest path when a starter matches your job.
+  </Step>
+  <Step title="Build your own">
+    Open the visual builder, click **Add first step**, and chain any of the 23 step types into your own pipeline. Each step's config form is rendered from its schema, with pickers for documents, matters, and upstream outputs.
+  </Step>
+  <Step title="Describe it in plain English">
+    Type a sentence like *"Review these vendor NDAs, flag off-market terms, and draft a summary memo,"* and Vaquill plans the steps, fills the configs, wires the references, and lands you in the builder with a ready-to-edit draft.
+  </Step>
+</Steps>
+
+<Tip>
+  Plain-English generation is grounded in the live step registry, not a freeform agent. The planner can only pick real step types, and the generated workflow runs through the same validator a hand-built one does, so what you get back is a workflow you can actually run.
+</Tip>
+
+## Starter templates
+
+Each template is a published, ready-to-run workflow you can launch against any matter. Fork a copy to customize without touching the original.
+
+- **Quick Case-Law Memo** searches US case law, drafts the memo, verifies citations, exports DOCX.
+- **Demand-Letter Skeleton** searches supporting case law, drafts a demand letter, verifies citations, exports DOCX.
+- **Document Triage** summarizes one matter document and exports the summary. Fast read when a new file lands.
+- **Statute Cite Check** looks up a federal statute and verifies citations across an uploaded document.
+- **Daily Citation Audit** searches a question across matter documents, summarizes, and verifies any citations. A defensible scan for fabricated authorities.
+- **NDA Bulk Review** waits for ingestion, runs a per-NDA matrix, then synthesizes outliers across the portfolio.
+- **MSA Risk Score** scores an uploaded MSA against market-standard benchmarks (liability cap, IP indemnity, auto-renewal) with an overall risk tier.
+- **Summarize Each Document** fans out a summary across every picked document in parallel. Swap the inner step to score, audit, or extract.
+
+## Branch, loop, and hand off to an agent
+
+A workflow is not just a straight line. Three step types let you handle real-world variation:
+
+- **Conditional branch** reads a previous step's output, evaluates an operator (equals, greater than, contains), and routes to a true or false branch.
+- **Loop over documents** takes a list and a configured inner step, then fans that inner step out across every picked document in parallel and reduces the results.
+- **Agentic step** opens a constrained tool loop for the AI with explicit tools, a max-iterations cap, and an output schema. Use it when the next move depends on what the last step actually returned.
+
+<Note>
+  A built-in validator checks step types, configs, references, branch targets, and nested loop configs before you can launch. Broken references or branches pointing upstream show up as a flag on the field, so you catch mistakes in the builder, not mid-run.
+</Note>
+
+## Run on any matter
+
+Workflows are decoupled from any single matter. Launch a run against the matter you want, and the matter-scoped pickers thread through every step. Test Run executes the workflow end to end but short-circuits side-effect steps (save to matter, send email) so you can rehearse without writing anything. When a run is live, watch each step tick through in real time with its inputs, outputs, latency, and any errors, and cancel at any point.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Agent Mode" icon="robot" href="/guides/agent-mode">
+    One-shot autonomous research that picks its own tools. Workflows are the repeatable version.
+  </Card>
+  <Card title="Document Matrix" icon="table" href="/guides/document-matrix">
+    The matrix step, run on its own across a batch of documents.
+  </Card>
+  <Card title="Drafting" icon="pen-nib" href="/guides/drafting">
+    The drafting step, used interactively to write a single document.
+  </Card>
+</CardGroup>

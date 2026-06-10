@@ -6,6 +6,10 @@ icon: "robot"
 
 Agent Mode gives the AI autonomous control over which tools to use and when. Instead of following a fixed retrieval pipeline, the AI decides what to search, which URLs to read, and what tools to call - iterating up to 5 rounds until it has a complete answer.
 
+<Frame caption="The Agent toggle turns on autonomous multi-step research, with per-source controls for Web Search, Matter Documents, US Case Law, and Deep Web Research">
+  <img src="/images/research-1.png" alt="Vaquill chat with the Agent toggle enabled: a cited answer, a Statutes, Web, and Keywords sources panel, and a source-control popover for Web Search, Matter Documents, US Case Law, and Deep Web Research" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
 ## How It Works
 
 In regular chat, your query goes through a fixed RAG pipeline: embed, retrieve, rerank, generate. In Agent Mode, the AI receives a set of tools and autonomously decides the research strategy:

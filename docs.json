@@ -19,7 +19,7 @@
     "metatags": {
       "canonical": "https://vaquill.ai/docs",
       "og:site_name": "Vaquill AI Docs",
-      "og:image": "/images/main-ui.jpeg",
+      "og:image": "/images/research-1.png",
       "og:description": "Legal research platform and case law API. Search US federal and state case law, look up statutes, resolve citations, and integrate legal data into your product.",
       "og:locale": "en_US",
       "twitter:card": "summary_large_image",
@@ -76,6 +76,9 @@
               "guides/compliance-check",
               "guides/document-comparison",
               "guides/document-matrix",
+              "guides/workflows",
+              "guides/drafting",
+              "guides/playbooks",
               "guides/inline-threading",
               "guides/conversation-sharing"
             ]
@@ -109,6 +112,7 @@
             "group": "Documents & Ingestion",
             "icon": "file-arrow-up",
             "pages": [
+              "guides/documents",
               "guides/file-formats",
               "guides/email-to-rag",
               "guides/google-drive-import"

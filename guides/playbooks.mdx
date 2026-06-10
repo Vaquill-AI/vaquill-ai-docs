@@ -1,0 +1,94 @@
+---
+title: "Playbooks"
+description: "Encode your preferred clause language, fallback positions, and escalation triggers, then draft and review against them"
+icon: "clipboard-list"
+---
+
+A playbook encodes your team's preferred clause language, fallback positions, and escalation triggers. Once it exists, drafting and review use the active playbook as the source of truth for what good looks like, so every document is measured against your standard instead of a generic one.
+
+<Frame caption="The Negotiation Playbooks intro, showing what you can do with a playbook today">
+  <img src="/images/playbooks.png" alt="Vaquill Negotiation Playbooks screen describing import from a contract, link vetted clauses, multi-round redlines, and per-section compliance scoring on every draft" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+## What a playbook encodes
+
+A playbook is your house position, written down once and applied everywhere:
+
+- **Preferred clause language** is the wording you want to see for each section.
+- **Fallback positions** are the alternatives you will accept when the preferred language is off the table.
+- **Escalation triggers** are the conditions that should pull a senior reviewer in rather than auto-accept.
+
+With those three layers in place, every draft and every review can tell you not just what a clause says, but whether it matches what you want.
+
+## Import from a contract
+
+You do not have to build a playbook from a blank page. Start from a contract you already trust.
+
+<Steps>
+  <Step title="Upload or paste">
+    Bring in a .docx file or paste the contract text.
+  </Step>
+  <Step title="Classify each clause">
+    Vaquill classifies every clause by type (indemnity, limitation of liability, term, assignment, and so on).
+  </Step>
+  <Step title="Infer preferred positions">
+    For each classified clause, it infers the preferred position so you have a starting playbook to review line by line.
+  </Step>
+</Steps>
+
+Review the inferred positions, adjust anything that does not match your house standard, and the playbook is ready to use.
+
+## Link vetted clauses
+
+Rather than paraphrasing a clause every time, link vetted language directly. Pick a clause from your library or create one inline. When a clause is linked, drafting drops in that exact language for the section instead of generating a paraphrase, so your approved wording lands verbatim.
+
+<Tip>
+  Build a small library of your most-negotiated clauses (indemnity, liability cap, IP ownership, governing law) and link them into your playbooks. Update the clause once and every playbook that links it stays current.
+</Tip>
+
+## Multi-round redlines
+
+Playbooks plug into [Contract Review](/guides/contract-review) for back-and-forth negotiation. Paste the version you sent and the counterparty's response, and Vaquill computes a real diff between the two, then proposes the minimal edits needed to move the counterparty's draft back toward your fallback. Repeat each round so you always negotiate from your playbook rather than from scratch.
+
+## Per-section compliance scoring
+
+When you generate a draft with a playbook attached, the editor shows a per-section verdict so you can see compliance at a glance:
+
+<CardGroup cols={3}>
+  <Card title="Preferred" icon="circle-check">
+    The section matches your preferred language. Nothing to do.
+  </Card>
+  <Card title="Fallback" icon="circle-half-stroke">
+    The section sits at an acceptable fallback position. Review if you want to push for preferred.
+  </Card>
+  <Card title="Needs attention" icon="triangle-exclamation">
+    The section is off-playbook or hits an escalation trigger. Look here first.
+  </Card>
+</CardGroup>
+
+The scoring focuses your attention on the sections that matter, so partner review goes straight to the **Needs attention** clauses instead of re-reading the whole document.
+
+## Using a playbook in drafting and review
+
+The same playbook works across both surfaces:
+
+- In [Drafting](/guides/drafting), attach a playbook so new drafts use your preferred language from the start and surface per-section verdicts as you write.
+- In [Contract Review](/guides/contract-review), run an inbound contract against the playbook to flag every clause that deviates and propose redlines toward your fallback.
+
+<Note>
+  A playbook is the active source of truth only while it is attached. Switch playbooks per matter or per client when your standard positions differ, for example a stricter playbook for vendor agreements than for partner deals.
+</Note>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Drafting" icon="pen-nib" href="/guides/drafting">
+    Generate jurisdiction-aware drafts that use your playbook language.
+  </Card>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Score and redline inbound contracts against your playbook.
+  </Card>
+  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+    Gap-check a document against a standard or regulatory framework.
+  </Card>
+</CardGroup>
