@@ -17,7 +17,7 @@
   "seo": {
     "indexing": "all",
     "metatags": {
-      "canonical": "https://vaquill.ai/docs",
+      "canonical": "https://www.vaquill.ai/docs",
       "og:site_name": "Vaquill AI Docs",
       "og:image": "/images/research-1.png",
       "og:description": "Legal research platform and case law API. Search US federal and state case law, look up statutes, resolve citations, and integrate legal data into your product.",
