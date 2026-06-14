@@ -5,35 +5,46 @@ icon: "rocket"
 ---
 
 <Frame caption="A cited answer with a right-hand sources panel and per-source controls">
-  <img src="/images/research-1.png" alt="Vaquill legal research chat: a cited answer alongside a Statutes, Web, and Keywords sources panel, with controls for Web Search, Matter Documents, US Case Law, and Deep Web Research and an Agent toggle" style={{ borderRadius: '0.5rem' }} />
+  <img
+    src="/images/research-1.png"
+    alt="Vaquill legal research chat: a cited answer alongside a Statutes, Web, and Keywords sources panel, with controls for Web Search, Matter Documents, US Case Law, and Deep Web Research and an Agent toggle"
+    style={{ borderRadius: '0.5rem' }}
+  />
 </Frame>
 
 ## What is Vaquill?
 
-Vaquill is a legal research platform and case law API. Use it directly to search cases, review contracts, and manage citations. Or integrate the API into your own product to add legal research capabilities.
+Vaquill is a legal research platform and case law API. Use it directly to search cases, review contracts, and manage citations.  Or integrate the API into your own product to add legal research capabilities.
 
 <CardGroup cols={2}>
   <Card title="Case Law Research" icon="scale-balanced" href="/guides/case-law-research">
     Search federal and state case law - Supreme Court, Circuits, Districts, and state courts - with Boolean operators and citation lookup.
   </Card>
+
   <Card title="Statutes & Regulations" icon="book" href="/guides/statutes-regulations">
     Search the US Code, CFR, and all 50 state statutes with amendment timelines and court interpretations.
   </Card>
+
   <Card title="Document Search" icon="magnifying-glass" href="/guides/document-search">
     Upload documents and ask questions in plain English. Every answer is sourced with page-level citations.
   </Card>
+
   <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
     Clause-by-clause analysis with severity ratings, redline suggestions, and Word Track Changes export.
   </Card>
+
   <Card title="Agent Mode" icon="robot" href="/guides/agent-mode">
     Autonomous AI research that searches, reads URLs, fetches files, and chains tools across multiple rounds.
   </Card>
+
   <Card title="Deep Research" icon="magnifying-glass-plus" href="/guides/deep-research">
     Multi-hop iterative reasoning for cross-document analysis and comparative legal questions.
   </Card>
+
   <Card title="Citation Graph" icon="diagram-project" href="/guides/citation-graph">
     Interactive precedent map - see who cited what and whether a case is still good law.
   </Card>
+
   <Card title="Legal Tools" icon="toolbox" href="/guides/legal-tools">
     NDA triage, compliance check, risk assessment, document compare, AI judge, and more.
   </Card>
@@ -45,12 +56,15 @@ Vaquill is a legal research platform and case law API. Use it directly to search
   <Card title="US Federal Law" icon="landmark">
     United States Code, Code of Federal Regulations, the US Constitution, and federal case law from the Supreme Court through District Courts.
   </Card>
+
   <Card title="State Law" icon="building-columns">
     Statutory codes and constitutions for all 50 states, plus state appellate and supreme court opinions.
   </Card>
+
   <Card title="Court Coverage Breadth" icon="gavel">
     Supreme Court, all 13 federal Circuits, every federal District Court, and appellate and supreme courts across all 50 states.
   </Card>
+
   <Card title="50+ File Formats" icon="file">
     PDF, DOCX, scanned and image-only documents (OCR), spreadsheets, presentations, emails, archives.
   </Card>
@@ -68,12 +82,15 @@ The case law API is designed for teams that need legal data as infrastructure. S
   <Card title="Legal Tech Platforms" icon="laptop-code">
     Embed case law search into contract drafting, CLM, or practice management tools.
   </Card>
+
   <Card title="Enterprise Legal Teams" icon="building">
     Build internal legal research tools for in-house counsel and compliance workflows.
   </Card>
+
   <Card title="Compliance & RegTech" icon="clipboard-check">
     Power automated regulatory compliance checks with case law data.
   </Card>
+
   <Card title="Legal Education" icon="graduation-cap">
     Build searchable case databases for law schools, bar prep, and training platforms.
   </Card>
@@ -87,10 +104,10 @@ See [Authentication](/authentication) for API keys, [Credits](/credits) for pric
   <Tab title="Use the Platform">
     <Steps>
       <Step title="Create an account">
-        Sign up at [app.vaquill.ai](https://app.vaquill.ai). Every new account starts with a 7-day free trial of the full feature set; after that, the subscription is $99 / month.
+        Sign up at [app.vaquill.ai](https://app.vaquill.ai). Every new account starts with a 7-day free trial of the full feature set; after that, the subscription is \$99 / month.
       </Step>
       <Step title="Upload a document">
-        Drag and drop a file - or forward an email - into a matter. Supports 50+ file formats including scanned PDFs.
+        Drag and drop a file - or forward an email - into a matter. Supports 50\+ file formats including scanned PDFs.
       </Step>
       <Step title="Ask a question">
         Type a question in plain language. Every answer comes with page-level source citations you can click through to verify.
@@ -128,15 +145,19 @@ See [Authentication](/authentication) for API keys, [Credits](/credits) for pric
   <Accordion title="Is my data private?" icon="shield-halved">
     Yes. Your matters, documents, and conversations are isolated to your organization at the database and search-index level. Documents are encrypted at rest and in transit. See [Team Workspaces](/guides/team-workspaces) for organization-level access controls.
   </Accordion>
+
   <Accordion title="How does Vaquill prevent hallucinations?" icon="circle-check">
     Every AI response runs through claim-level verification against the actual cited sources before it reaches you. See [Answer Verification](/guides/answer-verification) for the details.
   </Accordion>
+
   <Accordion title="Can I use Vaquill for filings?" icon="gavel">
     Vaquill is a research and drafting tool, not a substitute for legal judgment. Always verify cited authorities and run a precedent freshness check (see [Citation Graph](/guides/citation-graph)) before filing.
   </Accordion>
+
   <Accordion title="What's the difference between the platform and the API?" icon="code">
     The platform is the full Vaquill app at [app.vaquill.ai](https://app.vaquill.ai) - chat, matters, legal tools, document management. The API exposes a subset of the platform's capabilities (case search, citation resolution, statute lookup, ask-a-question) for product builders and enterprise teams to embed in their own tools.
   </Accordion>
+
   <Accordion title="How do I get help?" icon="life-ring">
     Email [contact@vaquill.ai](mailto:contact@vaquill.ai) or join the [community Slack](https://join.slack.com/t/vaquillaicommunity/shared_invite/zt-3qxv4mtxg-64mtkVe2PxodDMwKGPfvMQ).
   </Accordion>
