@@ -1,0 +1,141 @@
+---
+title: "Coverage"
+description: "Exactly which US jurisdictions and corpus types Vaquill has ingested, with live section counts"
+icon: "map-location-dot"
+---
+
+This page lists the US legal data actually ingested into Vaquill's `statutes_us`
+corpus, jurisdiction by jurisdiction. Statute counts are queryable live from
+`GET /statutes/states`; the per-corpus matrix below is a snapshot.
+
+<Info>
+  **Snapshot date: 2026-06-14.** Statute coverage is always live via
+  `/statutes/states` and `/statutes/codes`. Regulations, constitutions, and
+  court rules are an expanding set, refreshed periodically.
+</Info>
+
+## At a glance
+
+<CardGroup cols={2}>
+  <Card title="State statutes" icon="building-columns">
+    **51 jurisdictions** (49 of 50 states + DC + Puerto Rico), **1.78M+ sections**. Only Indiana is not yet ingested.
+  </Card>
+  <Card title="Federal" icon="landmark">
+    USC (54,855 sections), CFR (219,403), US Constitution, Federal Rules of Procedure, and Executive Actions (daily refresh).
+  </Card>
+  <Card title="State regulations" icon="scroll">
+    **9 states**, **157K+ rules**, with effective dates, statutory authority, and amendment history captured.
+  </Card>
+  <Card title="State constitutions and court rules" icon="gavel">
+    **41 jurisdictions** with constitutions (~6K sections) and **7 states** with court rules (~8.9K rules).
+  </Card>
+</CardGroup>
+
+Every section is indexed for hybrid semantic + keyword search and mirrored in
+multiple formats (HTML, PDF, XML, plain text, DOCX) where the source provides
+them.
+
+## Federal
+
+| Corpus | Sections | Refresh |
+|---|---|---|
+| United States Code (USC) | 54,855 | Periodic |
+| Code of Federal Regulations (CFR) | 219,403 | Periodic |
+| US Constitution | 74 | Monitored |
+| Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP) | 297 | Monitored |
+| Executive Actions (Federal Register Presidential Documents) | 3,567 | Daily |
+
+## State and territory matrix
+
+Counts are ingested sections. A dash means that corpus type is not yet ingested
+for that jurisdiction. Sorted by statute volume.
+
+| Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
+|---|---|---|---|---|
+| Mississippi | 184,561 | - | 304 | - |
+| New Jersey | 158,892 | - | 12 | - |
+| Texas | 126,055 | - | - | - |
+| Washington | 89,005 | 50,898 | 191 | - |
+| New York | 52,902 | - | 21 | - |
+| Georgia | 51,933 | - | 79 | - |
+| Alabama | 50,710 | - | - | - |
+| Nevada | 50,320 | - | 1 | 1,355 |
+| Maryland | 44,181 | 12,729 | 24 | 1,220 |
+| Colorado | 43,725 | - | 397 | - |
+| Oklahoma | 42,549 | - | 337 | - |
+| Oregon | 41,037 | - | 1 | - |
+| Minnesota | 37,764 | 15,391 | 138 | 958 |
+| Massachusetts | 36,434 | - | 5 | - |
+| Florida | 34,386 | - | 188 | - |
+| Ohio | 33,188 | 18,891 | 217 | - |
+| South Carolina | 33,059 | 6,496 | 265 | - |
+| Montana | 33,028 | - | 193 | - |
+| North Carolina | 32,778 | - | 154 | - |
+| Maine | 31,719 | - | - | - |
+| North Dakota | 30,898 | - | - | - |
+| West Virginia | 30,388 | - | 5 | - |
+| California | 29,948 | - | 295 | 640 |
+| Nebraska | 28,695 | - | 244 | - |
+| Kansas | 28,146 | - | 16 | - |
+| New Hampshire | 27,850 | - | 2 | - |
+| Arizona | 26,893 | - | 323 | 2,128 |
+| Utah | 26,602 | - | - | - |
+| Vermont | 26,427 | - | 22 | - |
+| New Mexico | 25,886 | - | 59 | - |
+| Delaware | 25,113 | - | 196 | - |
+| Illinois | 24,756 | - | 168 | 839 |
+| Kentucky | 24,462 | 3,992 | 146 | - |
+| Pennsylvania | 23,031 | - | 186 | 1,722 |
+| Rhode Island | 22,875 | - | - | - |
+| Connecticut | 21,797 | - | 34 | - |
+| Hawaii | 21,628 | - | 169 | - |
+| District of Columbia (territory) | 21,088 | - | - | - |
+| Michigan | 20,703 | - | 307 | - |
+| Alaska | 19,397 | - | 44 | - |
+| South Dakota | 12,978 | - | 29 | - |
+| Tennessee | 12,769 | - | 148 | - |
+| Wyoming | 11,522 | - | 314 | - |
+| Louisiana | 11,170 | - | 56 | - |
+| Virginia | 7,463 | 22,268 | 140 | - |
+| Iowa | 7,228 | - | - | - |
+| Puerto Rico (territory) | 2,922 | - | - | - |
+| Idaho | 2,227 | 8,551 | 240 | - |
+| Wisconsin | 819 | 17,830 | 15 | - |
+| Missouri | 459 | - | 337 | - |
+| Arkansas | 72 | - | - | - |
+| Indiana | - | - | - | - |
+
+<Note>
+  Some jurisdictions are partial and actively expanding. Arkansas, Missouri,
+  Idaho, Virginia, and Wisconsin have thin statute coverage today but are
+  prioritized for backfill, and Indiana is queued for ingestion. Regulations,
+  constitutions, and court rules roll out state by state. Always check
+  `/statutes/states` for the current statute counts.
+</Note>
+
+## How to query a jurisdiction
+
+```bash
+# Live coverage with current section counts
+curl https://api.vaquill.ai/api/v1/statutes/states \
+  -H "Authorization: Bearer vq_key_..."
+
+# Statutory codes for one state (e.g. Mississippi)
+curl "https://api.vaquill.ai/api/v1/statutes/codes?state=ms" \
+  -H "Authorization: Bearer vq_key_..."
+
+# Search within a state
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "landlord retaliation", "corpusType": "STATE", "state": "ms"}'
+```
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api-reference/ask/ask-a-legal-question">
+    Every endpoint with parameters and examples.
+  </Card>
+  <Card title="Data sources" icon="scale-balanced" href="/data-sources">
+    What powers the corpus and what Vaquill adds on top.
+  </Card>
+</CardGroup>
