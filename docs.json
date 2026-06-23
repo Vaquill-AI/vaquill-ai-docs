@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vaquill AI",
-  "description": "Legal research platform and case law API. Search US federal and state case law, look up statutes, resolve citations, and integrate legal data into your product.",
+  "description": "Legal AI suite for in-house counsel, with a US statutes API. Look up the US Code, the CFR, and all 50 state statute codes, and integrate statute data into your product.",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -20,7 +20,7 @@
       "canonical": "https://www.vaquill.ai/docs",
       "og:site_name": "Vaquill AI Docs",
       "og:image": "/images/research-1.png",
-      "og:description": "Legal research platform and case law API. Search US federal and state case law, look up statutes, resolve citations, and integrate legal data into your product.",
+      "og:description": "Legal AI suite for in-house counsel, with a US statutes API. Look up the US Code, the CFR, and all 50 state statute codes, and integrate statute data into your product.",
       "og:locale": "en_US",
       "twitter:card": "summary_large_image",
       "twitter:site": "@vaquillai"
@@ -46,48 +46,25 @@
             "icon": "rocket",
             "pages": [
               "introduction",
-              "data-sources",
-              "coverage",
-              "guides/document-search",
-              "guides/case-law-research",
+              "coverage"
+            ]
+          },
+          {
+            "group": "Contracts & Drafting",
+            "icon": "file-contract",
+            "pages": [
               "guides/contract-review",
-              "guides/citations"
-            ]
-          },
-          {
-            "group": "AI Research",
-            "icon": "brain",
-            "pages": [
-              "guides/agent-mode",
-              "guides/deep-research",
-              "guides/retrieval-strategies",
-              "guides/answer-verification",
-              "guides/citation-graph",
-              "guides/statutes-regulations"
-            ]
-          },
-          {
-            "group": "Features",
-            "icon": "sparkles",
-            "pages": [
-              "guides/skills",
-              "guides/memories",
-              "guides/mcp-client",
-              "guides/chronology-builder",
-              "guides/compliance-check",
-              "guides/document-comparison",
-              "guides/document-matrix",
-              "guides/workflows",
               "guides/drafting",
               "guides/playbooks",
-              "guides/inline-threading",
-              "guides/conversation-sharing"
+              "guides/document-comparison",
+              "guides/document-matrix"
             ]
           },
           {
-            "group": "Legal Tools",
+            "group": "Compliance & Legal Tools",
             "icon": "toolbox",
             "pages": [
+              "guides/compliance-check",
               "guides/legal-tools",
               "guides/tools/nda-triage",
               "guides/tools/risk-assessment",
@@ -100,12 +77,13 @@
             ]
           },
           {
-            "group": "Workspaces & Team",
+            "group": "Matters & Workspaces",
             "icon": "users",
             "pages": [
               "guides/matters-workspaces",
               "guides/client-management",
               "guides/team-workspaces",
+              "guides/chronology-builder",
               "guides/subscriptions"
             ]
           },
@@ -113,10 +91,37 @@
             "group": "Documents & Ingestion",
             "icon": "file-arrow-up",
             "pages": [
+              "guides/document-search",
               "guides/documents",
               "guides/file-formats",
               "guides/email-to-rag",
               "guides/google-drive-import"
+            ]
+          },
+          {
+            "group": "Personalization & Workflows",
+            "icon": "sparkles",
+            "pages": [
+              "guides/skills",
+              "guides/memories",
+              "guides/workflows",
+              "guides/mcp-client",
+              "guides/inline-threading",
+              "guides/conversation-sharing"
+            ]
+          },
+          {
+            "group": "Research",
+            "icon": "brain",
+            "pages": [
+              "guides/case-law-research",
+              "guides/statutes-regulations",
+              "guides/citations",
+              "guides/citation-graph",
+              "guides/agent-mode",
+              "guides/deep-research",
+              "guides/retrieval-strategies",
+              "guides/answer-verification"
             ]
           },
           {
