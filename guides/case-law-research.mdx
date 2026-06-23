@@ -67,32 +67,6 @@ Every search result returns:
   Filter by **Court** first to cut noise. A query for *"qualified immunity"* against all US courts returns thousands of opinions; the same query scoped to **9th Circuit, 2020-present** is immediately practitioner-ready.
 </Tip>
 
-## API
-
-The case law search API lets you embed legal research directly into your product. Common use cases:
-
-- **Contract drafting platforms** that surface relevant precedents during drafting
-- **Practice management tools** with built-in case law lookup
-- **Compliance systems** that cross-reference regulations against case law
-- **Internal legal portals** for enterprise legal teams
-
-### Search Endpoint
-
-```bash
-curl -X POST https://api.vaquill.ai/api/v1/research/search \
-  -H "Authorization: Bearer vq_key_..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "qualified immunity excessive force",
-    "court": "supreme_court",
-    "year_from": 2015,
-    "year_to": 2024,
-    "limit": 10
-  }'
-```
-
-Each search call costs **1 credit** (1-20 results) and scales up to 3 credits for 51-100 results. See [Credits](/credits) for the full pricing schedule and the [API Reference](/api-reference/research/search-the-legal-corpus) for parameters.
-
 ## Ready-to-run prompt
 
 <Prompt

@@ -1,12 +1,12 @@
 ---
 title: "Chrome Extension"
 sidebarTitle: "Chrome"
-description: "AI-powered legal research assistant as a Manifest V3 Chrome extension. Calls the Vaquill API directly with the user's own API key - no proxy server required."
+description: "Statute search assistant as a Manifest V3 Chrome extension. Calls the Vaquill API directly with the user's own API key - no proxy server required."
 icon: "chrome"
-keywords: ["vaquill chrome extension", "legal research chrome extension", "chrome extension legal AI", "browser legal research", "manifest v3 legal extension", "edge brave legal extension"]
+keywords: ["vaquill chrome extension", "statute search chrome extension", "chrome extension legal AI", "browser statute search", "manifest v3 legal extension", "edge brave legal extension"]
 ---
 
-A Manifest V3 Chrome extension that puts Vaquill's legal research in any browser tab. The popup calls `api.vaquill.ai` directly using the user's own API key - no proxy server, no backend to run, no infrastructure to maintain. Works in any Chromium-based browser (Chrome, Edge, Brave, Arc, Opera).
+A Manifest V3 Chrome extension that puts Vaquill's statute search in any browser tab. The popup calls `api.vaquill.ai` directly using the user's own API key - no proxy server, no backend to run, no infrastructure to maintain. Works in any Chromium-based browser (Chrome, Edge, Brave, Arc, Opera). The public API covers US statutes only: the US Code, the CFR, all 50 state statute codes, the U.S. Constitution, the Federal Rules, and Executive Orders.
 
 Source: [github.com/Vaquill-AI/integrations/chrome-extension](https://github.com/Vaquill-AI/integrations/tree/main/chrome-extension).
 
@@ -15,9 +15,7 @@ Source: [github.com/Vaquill-AI/integrations/chrome-extension](https://github.com
 - Manifest V3, service-worker based
 - Direct calls to `api.vaquill.ai` - no middleware
 - BYOK (bring your own key): each user configures their own API key in the Options page
-- Structured legal source cards: case name, citation, court, year, excerpt, relevance score, PDF link
-- Conversation context preserved across messages within the popup session
-- `standard` and `deep` RAG modes selectable in Options
+- Structured statute source cards: title or code, section number, jurisdiction, heading, excerpt
 - Vanilla JavaScript, no build step - edit and reload
 
 ## Prerequisites
@@ -43,11 +41,11 @@ Source: [github.com/Vaquill-AI/integrations/chrome-extension](https://github.com
   <Step title="Configure your API key">
     1. Right-click the Vaquill icon in the toolbar and choose **Options** (or click the gear icon inside the popup)
     2. Paste your API key (`vq_key_...`)
-    3. Choose defaults: **Mode** (`standard` or `deep`) and **Jurisdiction**
+    3. Choose a default **Jurisdiction**
     4. Click **Save**
   </Step>
   <Step title="Test">
-    Click the extension icon and try a question like *"What is qualified immunity under 42 USC 1983?"* or *"What does FRCP Rule 12(b)(6) require?"* Expand a source card to see citation, court, excerpt, and the PDF link.
+    Click the extension icon and try a search like *"42 USC 1983"* or *"FRCP Rule 12"*. Expand a source card to see the section number, jurisdiction, heading, and excerpt.
   </Step>
 </Steps>
 
@@ -60,16 +58,14 @@ Edit `extension/js/config.js`:
 | Setting | Description |
 |---|---|
 | `API_URL` | Vaquill API base URL (default: `https://api.vaquill.ai`) |
-| `DEFAULT_MODE` | Default RAG mode: `standard` or `deep` |
-| `MAX_SOURCES` | Maximum number of sources returned per query |
-| `SUGGESTED_QUESTIONS` | Array of starter questions shown on the welcome screen |
+| `MAX_SOURCES` | Maximum number of statute sections returned per query |
+| `SUGGESTED_QUESTIONS` | Array of starter searches shown on the welcome screen |
 
 ### Per-user settings (stored in `chrome.storage.local`)
 
 | Setting | Description |
 |---|---|
 | API Key | The user's Vaquill API key, entered via the Options page |
-| Mode | `standard` or `deep` |
 | Jurisdiction | Preferred jurisdiction for search context |
 
 <Info>
@@ -81,7 +77,7 @@ Edit `extension/js/config.js`:
 The extension calls a single endpoint:
 
 ```
-POST https://api.vaquill.ai/api/v1/ask
+POST https://api.vaquill.ai/api/v1/statutes/search
 Authorization: Bearer vq_key_...
 Content-Type: application/json
 ```
@@ -90,18 +86,12 @@ Request body:
 
 ```json
 {
-  "question": "What is qualified immunity under 42 USC 1983?",
-  "mode": "standard",
-  "sources": true,
-  "maxSources": 5,
-  "chatHistory": [
-    { "role": "user", "content": "previous question" },
-    { "role": "assistant", "content": "previous answer" }
-  ]
+  "query": "42 USC 1983",
+  "limit": 5
 }
 ```
 
-Full schema in the [Ask API reference](/api-reference/ask/ask-a-legal-question).
+Full schema in the [Statute search API reference](/api-reference/statutes/search-us-statutes).
 
 ## Project layout
 
@@ -115,8 +105,8 @@ extension/
   js/
     config.js            API URL, defaults, suggested questions
     session.js           Storage manager (API key, chat history)
-    background.js        Service worker - calls POST /api/v1/ask
-    popup.js             Chat UI logic, source rendering
+    background.js        Service worker - calls POST /api/v1/statutes/search
+    popup.js             Search UI logic, source rendering
     markdown.js          Lightweight markdown-to-HTML renderer
     options.js           Settings page logic
 ```
@@ -129,8 +119,8 @@ Edit `extension/manifest.json`:
 
 ```json
 {
-  "name": "Vaquill Legal Assistant",
-  "description": "AI-powered legal research assistant with case citations and source documents",
+  "name": "Vaquill Statute Search",
+  "description": "Statute search assistant for US Code, CFR, and all 50 state statute codes",
   "version": "1.0.0"
 }
 ```
@@ -220,8 +210,8 @@ zip -r vaquill-extension.zip . -x "*.DS_Store" "*.git*"
     Click **New Item** and upload `vaquill-extension.zip`.
   </Step>
   <Step title="Fill out the listing">
-    - **Name**: Vaquill Legal Assistant
-    - **Summary**: AI legal research assistant with case citations (132 chars max)
+    - **Name**: Vaquill Statute Search
+    - **Summary**: Statute search assistant for US Code, CFR, and 50 states (132 chars max)
     - **Description**: Full feature description
     - **Category**: Productivity
     - **Language**: English
@@ -256,7 +246,7 @@ The extension uses vanilla JavaScript with no build step. Edit files directly, t
 
 **No sources in responses**
 
-- Try a more specific legal query (cite a statute or doctrine by name).
+- Try a more specific query (cite a statute by title and section number).
 - Verify `MAX_SOURCES` is greater than 0 in `config.js`.
 
 **Content Security Policy errors**
@@ -273,7 +263,7 @@ The extension uses vanilla JavaScript with no build step. Edit files directly, t
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Ask API" icon="message" href="/api-reference/ask/ask-a-legal-question">
+  <Card title="Statute search API" icon="message" href="/api-reference/statutes/search-us-statutes">
     The endpoint this extension calls.
   </Card>
   <Card title="Authentication" icon="key" href="/authentication">

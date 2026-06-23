@@ -6,11 +6,11 @@ icon: "plug"
 keywords: ["vaquill integrations", "legal AI integrations", "slack legal bot", "discord legal bot", "whatsapp legal bot", "chrome extension legal AI", "mcp server legal", "n8n legal research"]
 ---
 
-Put Vaquill wherever your team already works - Claude, Slack, a marketing site, a Google Sheet. Every integration is open-source, self-hostable, and calls the same [Vaquill API](/api-reference/ask/ask-a-legal-question) under the hood.
+Put Vaquill wherever your team already works - Claude, Slack, a marketing site, a Google Sheet. Every integration is open-source, self-hostable, and calls the same [Vaquill statutes API](/api-reference/statutes/search-us-statutes) under the hood.
 
 <CardGroup cols={2}>
   <Card title="MCP Servers" icon="plug" href="/integrations/mcp">
-    Plug Vaquill's full US legal corpus into Claude, Cursor, VS Code, or any MCP client.
+    Plug Vaquill's full US statute corpus (US Code, CFR, all 50 state codes) into Claude, Cursor, VS Code, or any MCP client.
   </Card>
   <Card title="Chatbots" icon="comments" href="/integrations/chatbots">
     Legal Q&A in Slack, Discord, Microsoft Teams, Telegram, WhatsApp, or Signal with thread memory and cited sources.
@@ -33,8 +33,7 @@ Put Vaquill wherever your team already works - Claude, Slack, a marketing site, 
 
 | If you want to... | Use |
 |---|---|
-| Ask legal questions from Claude / Cursor / VS Code | [Vaquill MCP](/integrations/mcp/vaquill) |
-| Connect a third-party MCP for direct CourtListener API access | [CourtListener MCP](/integrations/mcp/courtlistener) |
+| Search US statutes from Claude / Cursor / VS Code | [Vaquill MCP](/integrations/mcp/vaquill) |
 | Add legal Q&A to your Slack workspace | [Slack bot](/integrations/chatbots/slack) |
 | Add legal Q&A to your Discord server | [Discord bot](/integrations/chatbots/discord) |
 | Add legal Q&A to Microsoft Teams | [Microsoft Teams bot](/integrations/chatbots/microsoft-teams) |
@@ -49,14 +48,14 @@ Put Vaquill wherever your team already works - Claude, Slack, a marketing site, 
 
 ## Common architecture
 
-Every integration is a thin wrapper: take input from the surface (Slack message, browser popup, webhook), call `POST /api/v1/ask`, render the answer with cited sources.
+Every integration is a thin wrapper: take input from the surface (Slack message, browser popup, webhook), call the statutes search endpoint, render the matching statute sections.
 
 ```mermaid
 flowchart LR
     A["**User surface**<br/>Slack, Discord, Teams,<br/>browser, webhook"] --> B["**Integration runtime**<br/>Python / Node / Edge"]
-    B -->|"POST /api/v1/ask<br/>+ chatHistory"| C["**Vaquill API**"]
-    C --> D["**RAG pipeline**<br/>retrieve · rerank · synthesize"]
-    D -.->|"answer<br/>+ cited sources"| B
+    B -->|"POST /api/v1/statutes/search"| C["**Vaquill statutes API**"]
+    C --> D["**Statute retrieval**<br/>US Code · CFR · 50 state codes"]
+    D -.->|"matching sections"| B
     B -.-> A
 
     style A fill:#dcfce7,stroke:#16a34a,color:#15803d
@@ -71,8 +70,8 @@ One API key (`vq_key_...`) from your [dashboard](https://app.vaquill.ai/settings
 To add a surface we do not ship (Outlook, Notion, a CRM, an internal portal):
 
 1. Generate a key in your [dashboard](https://app.vaquill.ai/settings).
-2. `POST /api/v1/ask` with `{ "question": "..." }` and `Authorization: Bearer vq_key_...`.
-3. Render `data.answer`; iterate `data.sources` for citations (case name, court, citation, PDF link).
-4. Maintain `chatHistory` client-side for multi-turn threads.
+2. `POST /api/v1/statutes/search` with `{ "query": "..." }` and `Authorization: Bearer vq_key_...`.
+3. Render the returned statute sections (title, code, section number, text).
+4. Pass filters (jurisdiction, code) to narrow results.
 
 See [Authentication](/authentication) for key setup and [Errors](/errors) for status-code handling.

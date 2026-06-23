@@ -46,46 +46,8 @@ Buy in bulk for a built-in bonus. Larger packs unlock larger bonuses.
 Grouped by capability so you can model your application's per-query cost before you build.
 
 <AccordionGroup>
-  <Accordion title="Ask (legal Q&A)" icon="comment-question">
-    The flagship endpoint. Routes a question through the full retrieval and generation pipeline and returns a grounded answer with cited sources.
-
-    | Endpoint | Method | Credits | USD |
-    |---|---|---|---|
-    | `/api/v1/ask` | POST | 15 | $0.15 |
-    | `/api/v1/ask` (deep mode) | POST | 30 | $0.30 |
-    | `/api/v1/ask/stream` | POST | 15 / 30 | Same as sync |
-
-    Use `standard` mode for fast single-hop answers; switch to `deep` for multi-hop reasoning across sources.
-  </Accordion>
-
-  <Accordion title="Research and search" icon="magnifying-glass">
-    Boolean and natural-language search over the legal corpus.
-
-    | Endpoint | Method | Credits | USD |
-    |---|---|---|---|
-    | `/api/v1/research/search` (1-20 results) | POST | 1 | $0.01 |
-    | `/api/v1/research/search` (21-50 results) | POST | 2 | $0.02 |
-    | `/api/v1/research/search` (51-100 results) | POST | 3 | $0.03 |
-    | `/api/v1/research/quick` | POST | 1 | $0.01 |
-
-    The quick endpoint returns the top 3-5 results with essentials only.
-  </Accordion>
-
-  <Accordion title="Citations" icon="quote-left">
-    Resolve, look up, search, and traverse the citation network.
-
-    | Endpoint | Method | Credits | USD |
-    |---|---|---|---|
-    | `/api/v1/citations/resolve` | GET | 1 | $0.01 |
-    | `/api/v1/citations/cases/search` | GET | 1 | $0.01 |
-    | `/api/v1/citations/cases/lookup` | GET | 1 | $0.01 |
-    | `/api/v1/citations/cases/network` | GET | 5 | $0.05 |
-
-    Network traversal is the priciest because it walks multiple hops in the citation graph.
-  </Accordion>
-
   <Accordion title="US statutes (USC + CFR)" icon="landmark">
-    Semantic search over the United States Code and Code of Federal Regulations.
+    Semantic search over the United States Code and the Code of Federal Regulations, plus all 50 state statute codes, the U.S. Constitution, the Federal Rules, and Executive Orders.
 
     | Endpoint | Method | Credits | USD |
     |---|---|---|---|
@@ -99,7 +61,7 @@ Grouped by capability so you can model your application's per-query cost before 
 </AccordionGroup>
 
 <Tip>
-  **Optimize cost by choosing the right endpoint.** For a hit-or-miss query, start with `/research/quick` ($0.01) before falling back to `/ask` ($0.15). For citation resolution, the resolve endpoint is 15x cheaper than asking the LLM to do it.
+  **Optimize cost by choosing the right endpoint.** Fetch section metadata ($0.02) before pulling the full section body ($0.06) when you only need titles and identifiers.
 </Tip>
 
 ## Checking your balance
@@ -126,7 +88,7 @@ View remaining credits in your [developer settings](https://app.vaquill.ai/devel
   <Card title="Errors" icon="triangle-exclamation" href="/errors">
     HTTP status codes and recovery paths.
   </Card>
-  <Card title="API Reference" icon="code" href="/api-reference/ask/ask-a-legal-question">
+  <Card title="API Reference" icon="code" href="/api-reference/statutes/search-us-statutes">
     Every endpoint with parameters and examples.
   </Card>
   <Card title="Pricing endpoint" icon="receipt" href="/api-reference/pricing/get-api-credit-pricing">

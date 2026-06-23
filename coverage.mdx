@@ -11,7 +11,7 @@ corpus, jurisdiction by jurisdiction. Statute counts are queryable live from
 <Info>
   **Snapshot date: 2026-06-14.** Statute coverage is always live via
   `/statutes/states` and `/statutes/codes`. Regulations, constitutions, and
-  court rules are an expanding set, refreshed periodically.
+  court rules are an expanding set, refreshed monthly.
 </Info>
 
 ## At a glance
@@ -21,7 +21,7 @@ corpus, jurisdiction by jurisdiction. Statute counts are queryable live from
     **51 jurisdictions** (49 of 50 states + DC + Puerto Rico), **1.78M+ sections**. Only Indiana is not yet ingested.
   </Card>
   <Card title="Federal" icon="landmark">
-    USC (54,855 sections), CFR (219,403), US Constitution, Federal Rules of Procedure, and Executive Actions (daily refresh).
+    USC (54,855 sections), CFR (218,932), US Constitution, Federal Rules of Procedure, and Executive Orders (monthly refresh).
   </Card>
   <Card title="State regulations" icon="scroll">
     **9 states**, **157K+ rules**, with effective dates, statutory authority, and amendment history captured.
@@ -39,11 +39,11 @@ them.
 
 | Corpus | Sections | Refresh |
 |---|---|---|
-| United States Code (USC) | 54,855 | Periodic |
-| Code of Federal Regulations (CFR) | 219,403 | Periodic |
-| US Constitution | 74 | Monitored |
-| Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP) | 297 | Monitored |
-| Executive Actions (Federal Register Presidential Documents) | 3,567 | Daily |
+| United States Code (USC) | 54,855 | Monthly |
+| Code of Federal Regulations (CFR) | 218,932 | Monthly |
+| US Constitution | 74 | Monthly |
+| Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP) | 297 | Monthly |
+| Executive Orders (Federal Register Presidential Documents) | 3,567 | Monthly |
 
 ## State and territory matrix
 
@@ -132,7 +132,7 @@ curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
 ```
 
 <CardGroup cols={2}>
-  <Card title="API Reference" icon="code" href="/api-reference/ask/ask-a-legal-question">
+  <Card title="API Reference" icon="code" href="/api-reference/statutes/search-us-statutes">
     Every endpoint with parameters and examples.
   </Card>
   <Card title="Data sources" icon="scale-balanced" href="/data-sources">

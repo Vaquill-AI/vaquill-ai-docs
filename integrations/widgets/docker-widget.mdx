@@ -19,8 +19,8 @@ Source: [github.com/Vaquill-AI/integrations/widget](https://github.com/Vaquill-A
 - One container: FastAPI backend serves both the JSON API and the built frontend
 - Two embed modes: floating chatbot (bottom-right bubble) or inline `<div>`
 - Single script tag install on the host site - no iframe required
-- Configurable RAG mode, widget title, host port, and CORS origins
-- Structured legal source rendering: case name, citation, court, excerpt, PDF link
+- Configurable widget title, host port, and CORS origins
+- Structured statute source rendering: title, section, code, jurisdiction, excerpt, link
 - Health endpoint for Docker / Kubernetes probes
 
 ## Prerequisites
@@ -97,7 +97,7 @@ All configuration is via the `.env` file:
 |---|---|---|---|
 | `VAQUILL_API_KEY` | Yes | - | Your Vaquill API key (`vq_key_...`) |
 | `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | Vaquill API base URL |
-| `WIDGET_MODE` | No | `standard` | Default RAG mode: `standard` or `deep` |
+| `WIDGET_MODE` | No | `standard` | Default search mode: `standard` |
 | `WIDGET_TITLE` | No | `Vaquill Legal AI` | Title shown in the chat header |
 | `HOST_PORT` | No | `8000` | Host port the container is exposed on |
 | `ALLOWED_ORIGINS` | No | `*` | CORS origins (comma-separated, or `*`) |
@@ -251,7 +251,7 @@ The backend exposes:
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/chat` | POST | Send a message, get an answer + sources |
+| `/api/chat` | POST | Send a message, get a statute-grounded answer + sources |
 | `/api/widget/info` | GET | Returns widget display configuration (title, suggested questions) |
 | `/health` | GET | Returns `{"status": "ok"}` for Docker health checks |
 
@@ -268,7 +268,7 @@ Example `/api/chat` request:
 }
 ```
 
-Full schema lives in the [Ask API reference](/api-reference/ask/ask-a-legal-question).
+Full schema lives in the [Statutes API reference](/api-reference/statutes/search-us-statutes).
 
 ## Troubleshooting
 
@@ -308,8 +308,8 @@ Full schema lives in the [Ask API reference](/api-reference/ask/ask-a-legal-ques
   <Card title="Widget Pro" icon="sparkles" href="/integrations/widgets/widget-pro">
     Multi-thread sidebar, voice mode, gamification.
   </Card>
-  <Card title="Ask API" icon="message" href="/api-reference/ask/ask-a-legal-question">
-    The endpoint this widget proxies.
+  <Card title="Statutes API" icon="message" href="/api-reference/statutes/search-us-statutes">
+    The statutes endpoint this widget proxies.
   </Card>
   <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/widget">
     Source code and issue tracker.

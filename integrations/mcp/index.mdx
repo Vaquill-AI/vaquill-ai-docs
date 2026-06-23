@@ -1,42 +1,32 @@
 ---
 title: "MCP Servers"
 sidebarTitle: "Overview"
-description: "Connect Vaquill's US legal corpus to Claude, Cursor, VS Code, Windsurf, and any other MCP client."
+description: "Connect Vaquill's US statute corpus to Claude, Cursor, VS Code, Windsurf, and any other MCP client."
 icon: "plug"
 keywords: ["mcp server legal", "claude legal mcp", "cursor legal research", "vs code legal research", "model context protocol legal"]
 ---
 
-The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants call external tools. The Vaquill MCP is the primary server for US legal research, backed by the full Vaquill API. Two additional third-party MCPs (CourtListener and CanLII) are documented here as optional user-connected integrations - you bring your own key and connect them directly.
+The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants call external tools. The Vaquill MCP exposes Vaquill's US statute corpus: the US Code, the CFR, all 50 state statute codes, the U.S. Constitution, the Federal Rules, and Executive Orders.
 
-<CardGroup cols={3}>
+<CardGroup cols={1}>
   <Card title="Vaquill MCP" icon="scale-balanced" href="/integrations/mcp/vaquill">
-    US legal Q&A, search, citation resolution, and the citation network. Backed by the full Vaquill API.
-  </Card>
-  <Card title="CourtListener MCP" icon="landmark" href="/integrations/mcp/courtlistener">
-    Third-party integration. US federal + state court opinions, dockets, RECAP filings, PACER, oral arguments, judges, and eCFR. Bring your own CourtListener key.
-  </Card>
-  <Card title="CanLII MCP" icon="maple-leaf" href="/integrations/mcp/canlii">
-    Third-party integration. Case law and legislation metadata from CanLII. Bring your own CanLII key.
+    Search and retrieve US statutes: the US Code, the CFR, all 50 state codes, the U.S. Constitution, the Federal Rules, and Executive Orders. Backed by the Vaquill statutes API.
   </Card>
 </CardGroup>
 
-## Which one should I use?
+## What it covers
 
-| If you want... | Use |
-|---|---|
-| US legal research with Vaquill's RAG | [Vaquill MCP](/integrations/mcp/vaquill) |
-| Direct, unmediated access to the CourtListener API surface | [CourtListener MCP](/integrations/mcp/courtlistener) |
-| Direct, unmediated access to the CanLII API surface | [CanLII MCP](/integrations/mcp/canlii) |
+The Vaquill MCP serves Vaquill's statute corpus: 273,787 federal sections (US Code 54,855 sections across 53 titles, CFR 218,932 sections across 49 titles) plus roughly 1.3M state sections, for 1.6M+ statute sections total. Corpus is the 2024 edition and refreshes monthly.
 
-The Vaquill MCP is the highest-level interface for US legal research - it adds retrieval, ranking, and answer synthesis on top of Vaquill's corpus. The CourtListener and CanLII MCPs are user-connected third-party integrations that forward your request directly to the upstream API so you get the full feature surface that each provider publishes (every filter, every field, every endpoint). Use those upstream MCPs when you want exact, unmediated access to what the source publishes; use Vaquill MCP when you want an AI-grounded answer over Vaquill's corpus.
+Use the Vaquill MCP when you want your AI assistant to search and pull statute text by citation, code, and section across federal and all 50 state codes.
 
 ## Supported clients
 
-All servers work with any MCP-compatible client. Tested with:
+The server works with any MCP-compatible client. Tested with:
 
 - Claude Desktop
 - Claude Code
-- Claude.ai web (Vaquill MCP only - remote MCP support)
+- Claude.ai web (remote MCP support)
 - Cursor
 - VS Code (GitHub Copilot)
 - Windsurf
@@ -49,19 +39,11 @@ All servers work with any MCP-compatible client. Tested with:
 | Server | Hosted endpoint | Self-host |
 |---|---|---|
 | Vaquill MCP | `https://mcp.vaquill.ai/s/<your-key>` | `uvx vaquill-mcp` |
-| CourtListener MCP | `https://courtlistener-mcp.vaquill.ai/mcp/` | Docker / `uv run` |
-| CanLII MCP | `https://canlii-mcp.vaquill.ai/mcp` | Docker / Node / Cloudflare Workers |
 
-Hosted is the fastest path - paste a URL into your client and start using the tools. Self-hosting gives you control over rate limits, audit logging, and network egress.
+Hosted is the fastest path: paste a URL into your client and start using the tools. Self-hosting gives you control over rate limits, audit logging, and network egress.
 
 ## Authentication model
-
-The servers handle credentials differently:
 
 | Server | What you provide | How |
 |---|---|---|
 | Vaquill MCP | Vaquill API key (`vq_key_...`) | Header (`Authorization: Bearer ...`) or path token |
-| CourtListener MCP | Your own CourtListener token | Per-request header (`X-CourtListener-Token`) - BYOK |
-| CanLII MCP | Your own CanLII API key + MCP gate token | Two headers - BYOK |
-
-BYOK ("bring your own key") means Vaquill never sees or stores your upstream credential. The hosted endpoint forwards your key on every request.

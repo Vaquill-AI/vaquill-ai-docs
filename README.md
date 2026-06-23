@@ -1,6 +1,6 @@
 # Vaquill AI Docs
 
-Documentation and API reference for [Vaquill AI](https://vaquill.ai) — legal research platform and case law API.
+Documentation and API reference for [Vaquill AI](https://vaquill.ai), a legal research platform with a statutes API covering the US Code, the CFR, and all 50 state statute codes.
 
 **Docs:** [vaquill.ai/docs](https://vaquill.ai/docs)
 

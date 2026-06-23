@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-description: "AI-powered legal research platform and API - search the US Code, CFR, federal and state case law, review contracts, resolve citations, and build legal tech products"
+description: "AI-powered legal research platform with a statutes API - research case law in the app, search the US Code, CFR, and all 50 state codes, review contracts, and build legal tech products"
 icon: "rocket"
 ---
 
@@ -14,7 +14,7 @@ icon: "rocket"
 
 ## What is Vaquill?
 
-Vaquill is a legal research platform and case law API. Use it directly to search cases, review contracts, and manage citations.  Or integrate the API into your own product to add legal research capabilities.
+Vaquill is a legal research platform with a statutes API. Use the app to research case law, review contracts, and manage citations. Or integrate the statutes API into your own product to add US Code, CFR, and 50-state statute search.
 
 <CardGroup cols={2}>
   <Card title="Case Law Research" icon="scale-balanced" href="/guides/case-law-research">
@@ -76,11 +76,11 @@ Vaquill is a legal research platform and case law API. Use it directly to search
 
 ## Build with the API
 
-The case law API is designed for teams that need legal data as infrastructure. Search cases, resolve citations, and traverse the citation graph programmatically.
+The statutes API is designed for teams that need legal data as infrastructure. Search the US Code, the CFR, and all 50 state statute codes programmatically (1.6M+ statute sections, refreshed monthly).
 
 <CardGroup cols={2}>
   <Card title="Legal Tech Platforms" icon="laptop-code">
-    Embed case law search into contract drafting, CLM, or practice management tools.
+    Embed statute search into contract drafting, CLM, or practice management tools.
   </Card>
 
   <Card title="Enterprise Legal Teams" icon="building">
@@ -88,15 +88,15 @@ The case law API is designed for teams that need legal data as infrastructure. S
   </Card>
 
   <Card title="Compliance & RegTech" icon="clipboard-check">
-    Power automated regulatory compliance checks with case law data.
+    Power automated regulatory compliance checks with US Code and CFR data.
   </Card>
 
   <Card title="Legal Education" icon="graduation-cap">
-    Build searchable case databases for law schools, bar prep, and training platforms.
+    Build searchable statute databases for law schools, bar prep, and training platforms.
   </Card>
 </CardGroup>
 
-See [Authentication](/authentication) for API keys, [Credits](/credits) for pricing, and the [API Reference](/api-reference/ask/ask-a-legal-question) for endpoints.
+See [Authentication](/authentication) for API keys, [Credits](/credits) for pricing, and the [API Reference](/api-reference/statutes/search-us-statutes) for endpoints.
 
 ## Getting Started
 
@@ -123,17 +123,17 @@ See [Authentication](/authentication) for API keys, [Credits](/credits) for pric
         Generate a key from your [dashboard settings](https://app.vaquill.ai/settings). See [Authentication](/authentication) for details.
       </Step>
       <Step title="Make your first request">
-        Search for a case:
+        Search statutes:
 
         ```bash
-        curl -X POST https://api.vaquill.ai/api/v1/research/search \
+        curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
           -H "Authorization: Bearer vq_key_..." \
           -H "Content-Type: application/json" \
-          -d '{"query": "qualified immunity excessive force", "limit": 5}'
+          -d '{"query": "fair use copyright", "limit": 5}'
         ```
       </Step>
       <Step title="Explore the endpoints">
-        Browse the full [API Reference](/api-reference/ask/ask-a-legal-question) for case search, citation resolution, statute lookup, and citation network traversal.
+        Browse the full [API Reference](/api-reference/statutes/search-us-statutes) for statute search, section lookup, and amendment timelines across the US Code, CFR, and all 50 state codes.
       </Step>
     </Steps>
   </Tab>
@@ -155,7 +155,7 @@ See [Authentication](/authentication) for API keys, [Credits](/credits) for pric
   </Accordion>
 
   <Accordion title="What's the difference between the platform and the API?" icon="code">
-    The platform is the full Vaquill app at [app.vaquill.ai](https://app.vaquill.ai) - chat, matters, legal tools, document management. The API exposes a subset of the platform's capabilities (case search, citation resolution, statute lookup, ask-a-question) for product builders and enterprise teams to embed in their own tools.
+    The platform is the full Vaquill app at [app.vaquill.ai](https://app.vaquill.ai) - chat, case law research, matters, legal tools, document management. The API is statutes-only: it exposes statute search, section lookup, and amendment timelines across the US Code, CFR, and all 50 state codes for product builders and enterprise teams to embed in their own tools.
   </Accordion>
 
   <Accordion title="How do I get help?" icon="life-ring">

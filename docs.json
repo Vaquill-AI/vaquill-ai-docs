@@ -153,9 +153,7 @@
             "icon": "plug",
             "pages": [
               "integrations/mcp/index",
-              "integrations/mcp/vaquill",
-              "integrations/mcp/courtlistener",
-              "integrations/mcp/canlii"
+              "integrations/mcp/vaquill"
             ]
           },
           {
@@ -280,7 +278,7 @@
           { "label": "About", "href": "https://vaquill.ai/about" },
           { "label": "Contact", "href": "https://vaquill.ai/contact" },
           { "label": "Brand Assets", "href": "https://vaquill.ai/brand" },
-          { "label": "API Reference", "href": "/api-reference/ask/ask-a-legal-question" },
+          { "label": "API Reference", "href": "/api-reference/statutes/search-us-statutes" },
           { "label": "Postman Collection", "href": "https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-86d6f62d-ef53-4feb-85f4-915ef7a933cb/?action=share&creator=52997016" }
         ]
       },
@@ -320,14 +318,6 @@
     {
       "source": "/integrations/mcp",
       "destination": "/integrations/mcp/vaquill"
-    },
-    {
-      "source": "/integrations/courtlistener-mcp",
-      "destination": "/integrations/mcp/courtlistener"
-    },
-    {
-      "source": "/integrations/canlii-mcp",
-      "destination": "/integrations/mcp/canlii"
     }
   ],
   "appearance": {

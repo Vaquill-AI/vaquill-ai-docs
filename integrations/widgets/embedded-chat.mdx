@@ -6,7 +6,7 @@ icon: "bolt"
 keywords: ["embedded chat widget", "next.js legal chat", "vaquill widget", "iframe chat widget", "vercel chat widget", "streaming legal AI", "us legal chat widget"]
 ---
 
-A lean, embeddable AI legal research chat built on Next.js 15, TypeScript, and Tailwind CSS. It proxies questions to the Vaquill API, streams the answer word-by-word, and renders structured sources with case names, citations, court details, excerpts, and PDF links. Every request is pinned to `countryCode: "US"` server-side so it is the right pick for US-only deployments.
+A lean, embeddable statute-search chat built on Next.js 15, TypeScript, and Tailwind CSS. It proxies questions to the Vaquill statutes API, streams matches word-by-word, and renders structured statute sources with section titles, citations, code and title details, excerpts, and source links. Every request is pinned to `countryCode: "US"` server-side so it is the right pick for US-only deployments.
 
 Source: [github.com/Vaquill-AI/integrations/widget-next](https://github.com/Vaquill-AI/integrations/tree/main/widget-next).
 
@@ -15,9 +15,9 @@ Source: [github.com/Vaquill-AI/integrations/widget-next](https://github.com/Vaqu
 - Next.js 15 App Router with standalone build output
 - Word-by-word streaming animation over SSE
 - Inline `[N]` citation links that anchor to the matching source card
-- Structured legal source cards: case name, citation, court, year, disposition, docket, excerpt, relevance score
-- Per-source link priority: Vaquill-hosted statute URLs, then govinfo.gov, then external court PDFs
-- Standard vs Deep RAG mode toggle
+- Structured statute source cards: section title, citation, code, title, jurisdiction, excerpt, relevance score
+- Per-source link priority: Vaquill-hosted statute URLs, then govinfo.gov
+- Standard vs Deep search mode toggle
 - Light and dark themes via CSS custom properties
 - CORS headers pre-configured for iframe embedding
 - Single env var to deploy
@@ -89,7 +89,7 @@ export const UI_CONFIG = {
 export const EXAMPLE_QUESTIONS = [
   "What is qualified immunity under 42 USC 1983?",
   "What does FRCP Rule 12(b)(6) require?",
-  "Find Supreme Court cases on First Amendment compelled speech",
+  "Which CFR sections govern OSHA recordkeeping?",
 ];
 ```
 
@@ -103,8 +103,8 @@ The Next.js app exposes two serverless routes that proxy the Vaquill API:
 
 | Route | Method | Description |
 |---|---|---|
-| `/api/chat` | POST | Proxy to Vaquill `/ask` (non-streaming, US-pinned) |
-| `/api/chat/stream` | POST | Proxy to Vaquill `/ask/stream` (SSE, US-pinned) |
+| `/api/chat` | POST | Proxy to Vaquill statutes search (non-streaming, US-pinned) |
+| `/api/chat/stream` | POST | Proxy to Vaquill statutes search (SSE, US-pinned) |
 
 Example request body:
 
@@ -119,7 +119,7 @@ Example request body:
 }
 ```
 
-See the full schema in the [Ask API reference](/api-reference/ask/ask-a-legal-question).
+See the full schema in the [Statutes Search API reference](/api-reference/statutes/search-us-statutes).
 
 ## Embedding
 
@@ -222,7 +222,7 @@ node .next/standalone/server.js
 ## Troubleshooting
 
 <Warning>
-  Always check the browser console and server logs first - the proxy surfaces the underlying Vaquill API error verbatim.
+  Always check the browser console and server logs first. The proxy surfaces the underlying Vaquill API error verbatim.
 </Warning>
 
 **No response from chat**
@@ -261,7 +261,7 @@ proxy_cache off;
   <Card title="Widget Pro" icon="sparkles" href="/integrations/widgets/widget-pro">
     Adds multi-thread sidebar, voice mode, and gamification.
   </Card>
-  <Card title="Ask API" icon="message" href="/api-reference/ask/ask-a-legal-question">
+  <Card title="Statutes Search API" icon="message" href="/api-reference/statutes/search-us-statutes">
     The endpoint this widget proxies.
   </Card>
   <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/widget-next">

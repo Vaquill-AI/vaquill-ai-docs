@@ -1,18 +1,18 @@
 ---
 title: "Microsoft Teams Bot"
 sidebarTitle: "Microsoft Teams"
-description: "Vaquill legal AI for Microsoft Teams with Adaptive Cards, tenant allowlists, and Azure-native deployment."
+description: "Vaquill statute search for Microsoft Teams with Adaptive Cards, tenant allowlists, and Azure-native deployment."
 icon: "microsoft"
 keywords: ["vaquill teams bot", "microsoft teams legal ai", "teams azure bot", "adaptive cards legal", "teams rag bot"]
 ---
 
-Bring Vaquill into Microsoft Teams via the Bot Framework. The bot replies in personal chats, channels (with `@mention`), and threads with Adaptive Cards that include cited cases, statutes, and PDF links. Source code at [github.com/Vaquill-AI/integrations/ms-teams-bot](https://github.com/Vaquill-AI/integrations/tree/main/ms-teams-bot).
+Bring Vaquill into Microsoft Teams via the Bot Framework. The bot replies in personal chats, channels (with `@mention`), and threads with Adaptive Cards that include cited statute sections and source links. Source code at [github.com/Vaquill-AI/integrations/ms-teams-bot](https://github.com/Vaquill-AI/integrations/tree/main/ms-teams-bot).
 
 ## Features
 
-- AI-powered legal Q&A via Vaquill (`standard` and `deep` modes)
+- Statute search via the Vaquill API (US Code, CFR, all 50 state codes)
 - Multi-turn conversation with client-side chat history
-- Adaptive Cards with source citations (case name, court, citation, PDF link)
+- Adaptive Cards with source citations (code, title, section, source link)
 - Per-user, per-channel, and per-tenant rate limits (Redis or in-memory)
 - Tenant and channel allowlists, user blocklists
 - Slash commands: `/help`, `/clear`, `/status`
@@ -218,10 +218,10 @@ Set environment variables under **Web App > Configuration > Application settings
 Test the Vaquill API directly to isolate bot issues:
 
 ```bash
-curl -X POST https://api.vaquill.ai/api/v1/ask \
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
   -H "Authorization: Bearer vq_key_your_key" \
   -H "Content-Type: application/json" \
-  -d '{"question": "What is qualified immunity under 42 USC 1983?"}'
+  -d '{"query": "civil action for deprivation of rights", "country_code": "US"}'
 ```
 
 ## Related

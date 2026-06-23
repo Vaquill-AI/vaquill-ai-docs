@@ -1,12 +1,14 @@
 ---
 title: "Data Sources"
-description: "Overview of the US legal data that powers Vaquill's research API and platform"
+description: "Overview of the US legal data that powers Vaquill's statutes API and platform"
 icon: "scale-balanced"
 ---
 
 Vaquill is built on a broad corpus of authoritative US legal data, layered with Vaquill's own indexing, ranking, and AI pipeline. This page gives a high-level view of what's covered so you know exactly what you can search, cite, and build on.
 
-## US case law
+## US case law (in the Vaquill app)
+
+Case law research is a feature of the Vaquill product, not the public API. Inside the app you can search and read across 8M+ US court opinions:
 
 <CardGroup cols={2}>
   <Card title="Supreme Court of the United States" icon="landmark">
@@ -23,17 +25,19 @@ Vaquill is built on a broad corpus of authoritative US legal data, layered with 
   </Card>
 </CardGroup>
 
-## US statutes and regulations
+## US statutes and regulations (API and MCP)
+
+The public REST API and the Vaquill MCP server are statutes-only. They cover the US Code, the CFR, all 50 state statute codes, the U.S. Constitution, the Federal Rules, and Executive Orders: 1.6M+ statute sections in total (273,787 federal sections plus ~1.3M state sections), 2024 edition, refreshed monthly.
 
 <CardGroup cols={2}>
   <Card title="United States Code" icon="book">
-    All 54 titles of the USC, semantically indexed and searchable at the section level.
+    All 53 titles of the USC (54,855 sections), semantically indexed and searchable at the section level.
   </Card>
   <Card title="Code of Federal Regulations" icon="scroll">
-    The full CFR with daily-updated regulatory text and cross-references.
+    The full CFR, all 49 titles (218,932 sections), with regulatory text and cross-references, refreshed monthly.
   </Card>
   <Card title="State statutory codes" icon="map" href="/coverage">
-    Statutory codes for 49 of the 50 states plus DC and Puerto Rico, from each jurisdiction's official publication. See [Coverage](/coverage) for the exact per-state breakdown.
+    Statutory codes for all 50 states plus DC and Puerto Rico, from each jurisdiction's official publication. See [Coverage](/coverage) for the exact per-state breakdown.
   </Card>
   <Card title="Federal rules" icon="clipboard-list">
     Federal Rules of Civil Procedure, Criminal Procedure, Evidence, Appellate Procedure, and Bankruptcy Procedure.
@@ -42,9 +46,9 @@ Vaquill is built on a broad corpus of authoritative US legal data, layered with 
 
 ## What Vaquill adds on top
 
-- AI question-answering grounded in retrieved opinions and statutes, with claim-level verification.
-- A citation graph with treatment classification (followed, distinguished, criticized, overruled) and top-citer aggregation.
-- Cross-corpus retrieval that combines case law with statutes, regulations, and state codes in a single query.
+- In the app: AI question-answering grounded in retrieved opinions and statutes, with claim-level verification.
+- In the app: a citation graph with treatment classification (followed, distinguished, criticized, overruled) and top-citer aggregation.
+- In the app: cross-corpus retrieval that combines case law with statutes, regulations, and state codes in a single query.
 - Boolean and natural-language search tuned for legal phrasing, with Bluebook-style citation parsing and normalization.
 
 ## Related
@@ -53,7 +57,7 @@ Vaquill is built on a broad corpus of authoritative US legal data, layered with 
   <Card title="Credits and pricing" icon="coins" href="/credits">
     API credit costs by endpoint.
   </Card>
-  <Card title="API Reference" icon="code" href="/api-reference/ask/ask-a-legal-question">
-    Every endpoint with parameters and examples.
+  <Card title="API Reference" icon="code" href="/api-reference/statutes/search-us-statutes">
+    Every statutes endpoint with parameters and examples.
   </Card>
 </CardGroup>

@@ -1,15 +1,15 @@
 ---
 title: "n8n and Make.com"
 sidebarTitle: "n8n / Make.com"
-description: "Pre-built n8n and Make.com templates that read questions from a Google Sheet, call the Vaquill /ask API, and write answers + sources back."
+description: "Pre-built n8n and Make.com templates that read statute queries from a Google Sheet, call the Vaquill statutes search API, and write matching sections back."
 icon: "gears"
-keywords: ["n8n legal research", "make.com legal automation", "google sheets legal AI", "batch legal research", "n8n vaquill", "legal automation workflow", "legal research pipeline"]
+keywords: ["n8n legal research", "make.com legal automation", "google sheets legal AI", "batch statute search", "n8n vaquill", "legal automation workflow", "statute lookup pipeline"]
 ---
 
-Automate batch legal research with a Google Sheet on one side and the Vaquill `/ask` API on the other. This integration ships two pre-built templates - one for [n8n](https://n8n.io) (open-source, self-hostable) and one for [Make.com](https://make.com) (cloud, no-code) - that implement the same flow.
+Automate batch statute lookups with a Google Sheet on one side and the Vaquill statutes search API on the other. This integration ships two pre-built templates - one for [n8n](https://n8n.io) (open-source, self-hostable) and one for [Make.com](https://make.com) (cloud, no-code) - that implement the same flow.
 
 ```
-Google Sheet (questions) -> Vaquill /ask API -> Google Sheet (answers + sources)
+Google Sheet (queries) -> Vaquill statutes search API -> Google Sheet (matching sections)
 ```
 
 Source: [github.com/Vaquill-AI/integrations/n8n](https://github.com/Vaquill-AI/integrations/tree/main/n8n).
@@ -18,18 +18,18 @@ Source: [github.com/Vaquill-AI/integrations/n8n](https://github.com/Vaquill-AI/i
 
 - **`n8n-workflow.json`** - drop into any n8n instance
 - **`make-blueprint.json`** - drop into any Make.com scenario
-- Trigger on new rows in a Google Sheet, write answers + sources back automatically
+- Trigger on new rows in a Google Sheet, write matching statute sections back automatically
 - Automatic retry on 429 / 5xx, graceful stop on 402 (insufficient credits)
-- Switch between `standard` and `deep` mode per row by editing the request body
-- Support for `chatHistory` to chain follow-up questions
+- Scope each query by jurisdiction (US Code, CFR, or any of the 50 state codes) by editing the request body
+- Page through results for broad queries
 
 ### Use cases
 
-- **Batch legal research** - drop 50 questions into a sheet, get answers with cited sources in minutes
-- **Automated Q&A pipelines** - connect a form to Vaquill for instant responses
-- **Case-law monitoring** - schedule periodic queries about evolving legal topics
-- **Due-diligence checklists** - process compliance questions in bulk
-- **Client-intake triage** - route incoming questions through Vaquill, then forward results to your team
+- **Batch statute search** - drop 50 queries into a sheet, get matching US Code, CFR, and state sections in minutes
+- **Automated lookup pipelines** - connect a form to Vaquill for instant statute citations
+- **Regulatory monitoring** - schedule periodic queries against the monthly-refreshed statute corpus
+- **Due-diligence checklists** - process compliance lookups in bulk
+- **Client-intake triage** - route incoming statute questions through Vaquill, then forward results to your team
 
 ## Prerequisites
 
@@ -44,22 +44,22 @@ Create a Google Sheet with these column headers in row 1:
 
 | A | B | C | D | E |
 |---|---|---|---|---|
-| question | answer | sources | mode | status |
+| query | results | citations | jurisdiction | status |
 
-Put your questions in column A. Leave B-E empty - the automation fills them in.
+Put your queries in column A. Leave B-E empty - the automation fills them in.
 
 Example rows:
 
-| question | answer | sources | mode | status |
+| query | results | citations | jurisdiction | status |
 |---|---|---|---|---|
-| What is qualified immunity under 42 USC 1983? | *(filled by Vaquill)* | | | |
-| What does FRCP Rule 12(b)(6) require? | *(filled by Vaquill)* | | | |
-| Find Supreme Court cases on First Amendment compelled speech | *(filled by Vaquill)* | | | |
+| civil action for deprivation of rights | *(filled by Vaquill)* | | | |
+| motion to dismiss for failure to state a claim | *(filled by Vaquill)* | | | |
+| overtime exemption for executive employees | *(filled by Vaquill)* | | | |
 
 ## Vaquill API reference
 
 ```
-POST https://api.vaquill.ai/api/v1/ask
+POST https://api.vaquill.ai/api/v1/statutes/search
 Authorization: Bearer vq_key_YOUR_API_KEY
 Content-Type: application/json
 ```
@@ -68,31 +68,30 @@ Request body:
 
 ```json
 {
-  "question": "What is qualified immunity under 42 USC 1983?",
-  "mode": "standard",
-  "sources": ["corpus"],
-  "chatHistory": []
+  "query": "civil action for deprivation of rights",
+  "jurisdiction": "us",
+  "limit": 10
 }
 ```
 
 | Field | Type | Description |
 |---|---|---|
-| `question` | string | The legal question to research |
-| `mode` | string | `"standard"` (fast) or `"deep"` (thorough multi-hop reasoning) |
-| `sources` | array | `["corpus"]` for case law, `["documents"]` for your uploaded docs, or both |
-| `chatHistory` | array | Previous Q&A pairs for follow-ups (empty for standalone queries) |
+| `query` | string | The statute search query |
+| `jurisdiction` | string | `"us"` for federal (US Code, CFR), or a state code (e.g. `"ca"`, `"ny"`) |
+| `limit` | integer | Maximum sections to return (page through larger result sets) |
 
 Successful response (200):
 
 ```json
 {
   "data": {
-    "answer": "Qualified immunity is a defense available to government officials...",
-    "sources": [
-      { "title": "Harlow v. Fitzgerald (1982)", "court": "Supreme Court of the United States" }
-    ],
-    "questionInterpreted": "qualified immunity 42 USC 1983",
-    "mode": "standard"
+    "results": [
+      {
+        "citation": "42 U.S.C. 1983",
+        "title": "Civil action for deprivation of rights",
+        "code": "United States Code"
+      }
+    ]
   },
   "meta": {
     "creditsUsed": 1,
@@ -123,13 +122,13 @@ See the [Errors reference](/errors) for the full list.
     4. Upload `n8n-workflow.json` from the repo
   </Step>
   <Step title="Add the Google Sheets credential">
-    1. Click the **New Question Added** node
+    1. Click the **New Query Added** node
     2. Under **Credential to connect with**, click **Create New Credential**
     3. Select **Google Sheets OAuth2 API**
     4. Complete the OAuth flow and save
   </Step>
   <Step title="Add the Vaquill API key credential">
-    1. Click the **Vaquill Ask API** node
+    1. Click the **Vaquill Statutes Search** node
     2. Under **Credential to connect with**, click **Create New Credential**
     3. Select **Header Auth**
     4. Set:
@@ -138,12 +137,12 @@ See the [Errors reference](/errors) for the full list.
     5. Save
   </Step>
   <Step title="Point at your sheet">
-    On the **New Question Added**, **Write Answer to Sheet**, and **Write Error to Sheet** nodes, select your spreadsheet and sheet (e.g. `Sheet1`) from the dropdowns.
+    On the **New Query Added**, **Write Answer to Sheet**, and **Write Error to Sheet** nodes, select your spreadsheet and sheet (e.g. `Sheet1`) from the dropdowns.
   </Step>
   <Step title="Test and activate">
-    1. Add a test question to column A of your sheet
+    1. Add a test query to column A of your sheet
     2. Click **Test Workflow**
-    3. Verify the answer appears in column B
+    3. Verify the matching sections appear in column B
     4. Toggle the workflow to **Active** for automatic processing
   </Step>
 </Steps>
@@ -151,7 +150,7 @@ See the [Errors reference](/errors) for the full list.
 ### Workflow shape
 
 ```
-[New Question Added] -> [Filter Unanswered] -> [Vaquill Ask API] -> [Extract Response] -> [Write Answer]
+[New Query Added] -> [Filter Unanswered] -> [Vaquill Statutes Search] -> [Extract Response] -> [Write Results]
                                                      |
                                                  (on error)
                                                      |
@@ -164,10 +163,10 @@ See the [Errors reference](/errors) for the full list.
 
 | Node | Purpose |
 |---|---|
-| **New Question Added** | Triggers on new rows in the Google Sheet |
+| **New Query Added** | Triggers on new rows in the Google Sheet |
 | **Filter Unanswered** | Skips rows that already have an answer |
-| **Vaquill Ask API** | Calls `/ask`; retries automatically on 429 / 5xx |
-| **Extract Response Fields** | Pulls `answer`, `sources`, `mode` from the JSON response |
+| **Vaquill Statutes Search** | Calls `/statutes/search`; retries automatically on 429 / 5xx |
+| **Extract Response Fields** | Pulls `results`, `citation`, `code` from the JSON response |
 | **Write Answer to Sheet** | Updates the original row with results |
 | **Insufficient Credits?** | On 402, stops the workflow; on other errors, marks the row as `error` |
 
@@ -190,7 +189,7 @@ See the [Errors reference](/errors) for the full list.
     4. Select your spreadsheet and sheet, and set **Table Contains Headers** to **Yes**
   </Step>
   <Step title="Add your Vaquill API key">
-    1. Click the second module (**Call Vaquill /ask API**)
+    1. Click the second module (**Call Vaquill statutes search API**)
     2. Find the **Authorization** header
     3. Replace `YOUR_VAQUILL_API_KEY` with your actual key:
 
@@ -199,12 +198,12 @@ See the [Errors reference](/errors) for the full list.
        ```
   </Step>
   <Step title="Wire the writer">
-    1. Click the third module (**Write Answer Back**)
+    1. Click the third module (**Write Results Back**)
     2. Verify the Google Sheets connection and select the same spreadsheet / sheet
     3. The response mapping is pre-configured:
-       - Column B (answer): `{{2.data.data.answer}}`
-       - Column C (sources): joined source titles
-       - Column D (mode): `{{2.data.data.mode}}`
+       - Column B (results): joined section titles
+       - Column C (citations): joined citations
+       - Column D (jurisdiction): `{{2.data.jurisdiction}}`
        - Column E (status): `processed`
   </Step>
   <Step title="Test and schedule">
@@ -216,35 +215,24 @@ See the [Errors reference](/errors) for the full list.
 
 ## Configuration
 
-### Switch to deep mode
+### Scope by jurisdiction
 
-Change the request body `mode` field from `"standard"` to `"deep"` for questions that need multi-hop reasoning across multiple cases. Deep mode uses a more capable model and additional retrieval strategies but costs more credits.
+Change the request body `jurisdiction` field to target a specific code: `"us"` covers federal sources (the US Code and the CFR), and any state code (e.g. `"ca"`, `"ny"`, `"tx"`) restricts the search to that state's statutes. The corpus spans all 50 states, the US Code (54,855 sections across 53 titles), and the CFR (218,932 sections across 49 titles).
 
-### Follow-up questions with chatHistory
+### Page through large result sets
 
-To chain questions in the same thread, pass previous exchanges in `chatHistory`:
+For broad queries, raise the `limit` field and page through results:
 
 ```json
 {
-  "question": "What did the court say about the burden of proof?",
-  "mode": "standard",
-  "sources": ["corpus"],
-  "chatHistory": [
-    {
-      "role": "user",
-      "content": "What is qualified immunity under 42 USC 1983?"
-    },
-    {
-      "role": "assistant",
-      "content": "Qualified immunity is a defense available to government officials..."
-    }
-  ]
+  "query": "overtime exemption for executive employees",
+  "jurisdiction": "us",
+  "limit": 25,
+  "offset": 0
 }
 ```
 
-### Search your own documents
-
-Set `sources` to `["documents"]` to search only your uploaded documents, or `["corpus", "documents"]` to search both case law and your uploads.
+Increase `offset` in steps of `limit` to fetch subsequent pages.
 
 ### Rate-limit handling
 
@@ -256,7 +244,7 @@ Set `sources` to `["documents"]` to search only your uploaded documents, or `["c
 Both templates compose with the rest of n8n / Make.com:
 
 ```
-Google Sheets -> Vaquill /ask -> Write Answer
+Google Sheets -> Vaquill statutes search -> Write Results
                                     |
                                     +-> Slack notification
                                     +-> Email summary
@@ -277,7 +265,7 @@ Either way, the same `n8n-workflow.json` import works.
 
 ### Make.com tiers
 
-Make.com is cloud-only. The free tier covers ~1,000 operations per month, which is enough for small batches. Paid plans scale up. Make.com counts each HTTP module call and each sheet row read / written, so a single Vaquill query typically consumes 3 operations (read row, call API, write row).
+Make.com is cloud-only. The free tier covers ~1,000 operations per month, which is enough for small batches. Paid plans scale up. Make.com counts each HTTP module call and each sheet row read / written, so a single Vaquill search typically consumes 3 operations (read row, call API, write row).
 
 <Tip>
   For large nightly batches, n8n is usually more economical because pricing is per workflow execution, not per node operation.
@@ -290,14 +278,14 @@ Make.com is cloud-only. The free tier covers ~1,000 operations per month, which 
 | 401 Unauthorized | Invalid or missing API key | Verify the key starts with `vq_key_` and the `Bearer ` prefix is included |
 | 402 Payment Required | No credits remaining | Top up at [app.vaquill.ai/billing](https://app.vaquill.ai/billing) |
 | 429 Too Many Requests | Rate limit hit | Add delays between requests; the n8n template retries automatically |
-| Empty answer | Question too vague or out of scope | Rephrase; check that `sources` is set correctly |
+| Empty results | Query too vague or out of scope | Rephrase; check that `jurisdiction` is set correctly |
 | Google Sheets auth error | OAuth token expired | Re-authenticate the Google Sheets connection |
 | Workflow not triggering | Trigger not activated | In n8n, toggle the workflow to **Active**; in Make.com, click **Schedule** |
 
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Ask API" icon="message" href="/api-reference/ask/ask-a-legal-question">
+  <Card title="Statutes Search API" icon="magnifying-glass" href="/api-reference/statutes/search-us-statutes">
     The endpoint these templates call.
   </Card>
   <Card title="Authentication" icon="key" href="/authentication">

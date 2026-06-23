@@ -4,7 +4,7 @@ description: "API key authentication for the Vaquill API"
 icon: "key"
 ---
 
-The Vaquill API gives you programmatic access to case law search, citation resolution, and the citation network. Use it to power legal research in your own product or internal tools.
+The Vaquill API gives you programmatic access to US statutes: the US Code, the CFR, all 50 state statute codes, the U.S. Constitution, the Federal Rules, and Executive Orders. Use it to power statute lookup and search in your own product or internal tools.
 
 ## API Keys
 
@@ -37,38 +37,38 @@ Import the public collection to start testing endpoints immediately:
 
 <CodeGroup>
 ```bash cURL
-curl -X POST https://api.vaquill.ai/api/v1/research/search \
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
   -H "Authorization: Bearer vq_key_your_api_key_here" \
   -H "Content-Type: application/json" \
-  -d '{"query": "right to privacy fundamental rights"}'
+  -d '{"query": "data breach notification"}'
 ```
 
 ```python Python
 import requests
 
 response = requests.post(
-    "https://api.vaquill.ai/api/v1/research/search",
+    "https://api.vaquill.ai/api/v1/statutes/search",
     headers={
         "Authorization": "Bearer vq_key_your_api_key_here",
         "Content-Type": "application/json"
     },
-    json={"query": "right to privacy fundamental rights"}
+    json={"query": "data breach notification"}
 )
 ```
 
 ```javascript JavaScript
-const response = await fetch("https://api.vaquill.ai/api/v1/research/search", {
+const response = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
   method: "POST",
   headers: {
     "Authorization": "Bearer vq_key_your_api_key_here",
     "Content-Type": "application/json"
   },
-  body: JSON.stringify({ query: "right to privacy fundamental rights" })
+  body: JSON.stringify({ query: "data breach notification" })
 });
 ```
 
 ```go Go
-req, _ := http.NewRequest("POST", "https://api.vaquill.ai/api/v1/research/search", body)
+req, _ := http.NewRequest("POST", "https://api.vaquill.ai/api/v1/statutes/search", body)
 req.Header.Set("Authorization", "Bearer vq_key_your_api_key_here")
 req.Header.Set("Content-Type", "application/json")
 ```
@@ -99,7 +99,7 @@ req.Header.Set("Content-Type", "application/json")
   <Card title="Errors" icon="triangle-exclamation" href="/errors">
     HTTP status codes and how to recover from each.
   </Card>
-  <Card title="API Reference" icon="code" href="/api-reference/ask/ask-a-legal-question">
+  <Card title="API Reference" icon="code" href="/api-reference/statutes/search-us-statutes">
     Every endpoint with parameters, examples, and an interactive playground.
   </Card>
   <Card title="Vaquill MCP" icon="plug" href="/integrations/mcp/vaquill">
