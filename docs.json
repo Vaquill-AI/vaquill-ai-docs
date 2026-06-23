@@ -71,9 +71,7 @@
               "guides/tools/document-analyst",
               "guides/tools/contract-debugger",
               "guides/tools/redline-analysis",
-              "guides/tools/translation",
-              "guides/tools/canned-responses",
-              "guides/tools/company-lookup"
+              "guides/tools/canned-responses"
             ]
           },
           {
