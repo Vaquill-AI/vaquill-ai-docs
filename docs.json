@@ -268,7 +268,6 @@
         "header": "Quick Links",
         "items": [
           { "label": "Dashboard", "href": "https://app.vaquill.ai" },
-          { "label": "Pricing", "href": "https://vaquill.ai/#pricing" },
           { "label": "About", "href": "https://vaquill.ai/about" },
           { "label": "Contact", "href": "https://vaquill.ai/contact" },
           { "label": "Brand Assets", "href": "https://vaquill.ai/brand" },
