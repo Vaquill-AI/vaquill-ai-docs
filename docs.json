@@ -309,10 +309,17 @@
     ]
   },
   "redirects": [
-    {
-      "source": "/integrations/mcp",
-      "destination": "/integrations/mcp/vaquill"
-    }
+    { "source": "/integrations/mcp", "destination": "/integrations/mcp/vaquill" },
+    { "source": "/api-reference/pricing/get-api-credit-pricing", "destination": "/api-reference/statutes/search-us-statutes" },
+    { "source": "/api-reference/citations/:slug*", "destination": "/api-reference/statutes/search-us-statutes" },
+    { "source": "/api-reference/ask/:slug*", "destination": "/api-reference/statutes/search-us-statutes" },
+    { "source": "/data-sources", "destination": "/coverage" },
+    { "source": "/credits", "destination": "/authentication" },
+    { "source": "/changelog", "destination": "/introduction" },
+    { "source": "/guides/subscriptions", "destination": "/guides/team-workspaces" },
+    { "source": "/guides/retrieval-strategies", "destination": "/guides/case-law-research" },
+    { "source": "/guides/tools/translation", "destination": "/guides/legal-tools" },
+    { "source": "/guides/tools/company-lookup", "destination": "/guides/legal-tools" }
   ],
   "appearance": {
     "default": "light",
