@@ -23,7 +23,7 @@ is a snapshot.
 
 <CardGroup cols={2}>
   <Card title="State statutes" icon="building-columns">
-    **51 jurisdictions** (49 of 50 states + DC + Puerto Rico), **1.69M+ sections**. Only Indiana is not yet ingested. Queryable via the statutes API.
+    **52 jurisdictions** (all 50 states + DC + Puerto Rico), **1.77M+ sections**. Queryable via the statutes API.
   </Card>
   <Card title="Federal law" icon="landmark">
     US Code (54,855), CFR (219,745), Federal Register rules (121,214), Executive Orders (3,593), agency guidance (2,509), Federal Rules of Procedure (526), US Constitution (74). Queryable via the statutes API.
@@ -75,6 +75,7 @@ for that jurisdiction. Sorted by statute volume.
 | California | 161,226 | - | 295 | 640 |
 | Mississippi | 158,688 | - | 304 | - |
 | Texas | 122,535 | - | 402 | - |
+| Indiana | 83,148 | - | 52 | - |
 | Washington | 78,400 | 51,282 | 159 | - |
 | Illinois | 72,163 | - | 168 | 422 |
 | New Jersey | 55,910 | - | 11 | - |
@@ -123,12 +124,11 @@ for that jurisdiction. Sorted by statute volume.
 | Puerto Rico (territory) | 2,909 | - | - | - |
 | Wisconsin | 812 | 17,823 | 14 | - |
 | Arkansas | 46 | - | 236 | - |
-| Indiana | - | - | 52 | - |
 
 <Note>
-  Some jurisdictions are partial and actively expanding. Arkansas and Wisconsin
-  have thin statute coverage today but are prioritized for backfill, and Indiana
-  statutes are queued for ingestion.
+  All 50 states plus DC and Puerto Rico now have statute coverage. A few remain
+  partial and are actively expanding: Arkansas and Wisconsin have thin statute
+  coverage today but are prioritized for backfill.
   Regulations, constitutions, and court rules roll out state by state. Call
   `/statutes/coverage` for the live per-corpusType matrix, or `/statutes/states`
   for headline statute counts.
