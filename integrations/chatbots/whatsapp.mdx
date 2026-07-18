@@ -25,7 +25,7 @@ A WhatsApp bot that bridges Twilio to the Vaquill `/ask` API. Users message a Wh
 | Requirement | Notes |
 |---|---|
 | Python 3.10+ | 3.12 recommended |
-| Vaquill API key | From [app.vaquill.ai/settings](https://app.vaquill.ai/settings). Starts with `vq_key_`. See [Authentication](/authentication). |
+| Vaquill API key | From [app.vaquill.ai/settings](https://app.vaquill.ai/settings). Starts with `vq_key_`. See [Authentication](/api-guide/authentication). |
 | Twilio account | Free trial works for the sandbox - it includes $15 in credit |
 | ngrok (local dev only) | Free account at [ngrok.com](https://ngrok.com) to tunnel webhooks |
 | Redis (optional) | Required only for multi-instance or persistent sessions |
@@ -271,7 +271,7 @@ curl -X POST http://localhost:8000/webhook/whatsapp \
   <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
     Compare all six platforms.
   </Card>
-  <Card title="Authentication" icon="key" href="/authentication">
+  <Card title="Authentication" icon="key" href="/api-guide/authentication">
     How Vaquill API keys work.
   </Card>
 </CardGroup>

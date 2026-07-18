@@ -42,7 +42,7 @@ If anything fails, show me the exact error and the output of `claude mcp list`.
 
 <Steps>
   <Step title="Get an API key">
-    Generate a `vq_key_...` token from your [dashboard settings](https://app.vaquill.ai/settings). See [Authentication](/authentication).
+    Generate a `vq_key_...` token from your [dashboard settings](https://app.vaquill.ai/settings). See [Authentication](/api-guide/authentication).
   </Step>
   <Step title="Open Claude.ai Settings > Integrations">
     Click **Add a connector** and pick **Custom MCP server**.
@@ -191,7 +191,7 @@ The Vaquill MCP server authenticates with your Vaquill API key. Three options, i
 2. **Path token** (remote): `https://mcp.vaquill.ai/s/vq_key_...` - convenient when your client cannot send custom headers.
 3. **Environment variable** (local): `VAQUILL_API_KEY=vq_key_...` for `uvx` / stdio launches.
 
-Keys are scoped per workspace and revocable from the [dashboard](https://app.vaquill.ai/settings). For the full auth model, request signing, and rotation policy, see [Authentication](/authentication).
+Keys are scoped per workspace and revocable from the [dashboard](https://app.vaquill.ai/settings). For the full auth model, request signing, and rotation policy, see [Authentication](/api-guide/authentication).
 
 <Warning>
   Treat the path-token URL as a secret - anyone with the URL can spend credits from your account. Prefer the bearer-token form whenever the client supports it.
@@ -268,7 +268,7 @@ Cite every factual claim back to the Vaquill tool that produced it. If a tool er
   <Card title="Integrations" icon="grid" href="/integrations">
     Chatbots, widgets, browser extensions, and automation
   </Card>
-  <Card title="Authentication" icon="key" href="/authentication">
+  <Card title="Authentication" icon="key" href="/api-guide/authentication">
     API key setup and rotation
   </Card>
   <Card title="Search US statutes (API)" icon="magnifying-glass" href="/api-reference/statutes/search-us-statutes">

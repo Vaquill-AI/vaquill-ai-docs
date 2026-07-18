@@ -119,15 +119,6 @@
               "guides/deep-research",
               "guides/answer-verification"
             ]
-          },
-          {
-            "group": "Developers",
-            "icon": "code",
-            "pages": [
-              "authentication",
-              "errors",
-              "coverage"
-            ]
           }
         ]
       },
@@ -190,6 +181,27 @@
         ]
       },
       {
+        "tab": "API Guide",
+        "icon": "code",
+        "groups": [
+          {
+            "group": "Guide",
+            "icon": "book-open",
+            "pages": [
+              "api-guide/authentication",
+              "api-guide/errors"
+            ]
+          },
+          {
+            "group": "Data",
+            "icon": "database",
+            "pages": [
+              "api-guide/coverage"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API Reference",
         "openapi": "https://api.vaquill.ai/external/openapi.json"
       }
@@ -227,7 +239,12 @@
       "server": "https://api.vaquill.ai"
     },
     "examples": {
-      "languages": ["bash", "python", "javascript", "go"],
+      "languages": [
+        "bash",
+        "python",
+        "javascript",
+        "go"
+      ],
       "defaults": "required",
       "prefill": true
     }
@@ -267,59 +284,170 @@
       {
         "header": "Quick Links",
         "items": [
-          { "label": "Dashboard", "href": "https://app.vaquill.ai" },
-          { "label": "Pricing", "href": "https://vaquill.ai/pricing" },
-          { "label": "About", "href": "https://vaquill.ai/about" },
-          { "label": "Contact", "href": "https://vaquill.ai/contact" },
-          { "label": "Brand Assets", "href": "https://vaquill.ai/brand" },
-          { "label": "API Reference", "href": "/api-reference/statutes/search-us-statutes" },
-          { "label": "Postman Collection", "href": "https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-86d6f62d-ef53-4feb-85f4-915ef7a933cb/?action=share&creator=52997016" }
+          {
+            "label": "Dashboard",
+            "href": "https://app.vaquill.ai"
+          },
+          {
+            "label": "Pricing",
+            "href": "https://vaquill.ai/pricing"
+          },
+          {
+            "label": "About",
+            "href": "https://vaquill.ai/about"
+          },
+          {
+            "label": "Contact",
+            "href": "https://vaquill.ai/contact"
+          },
+          {
+            "label": "Brand Assets",
+            "href": "https://vaquill.ai/brand"
+          },
+          {
+            "label": "API Reference",
+            "href": "/api-reference/statutes/search-us-statutes"
+          },
+          {
+            "label": "Postman Collection",
+            "href": "https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-86d6f62d-ef53-4feb-85f4-915ef7a933cb/?action=share&creator=52997016"
+          }
         ]
       },
       {
         "header": "Features",
         "items": [
-          { "label": "Agent Mode", "href": "https://vaquill.ai/features/agent-mode" },
-          { "label": "Skills", "href": "https://vaquill.ai/features/skills" },
-          { "label": "Memories", "href": "https://vaquill.ai/features/memories" },
-          { "label": "AI Legal Research", "href": "https://vaquill.ai/features/legal-research" },
-          { "label": "Compliance Check", "href": "https://vaquill.ai/features/compliance-check" },
-          { "label": "Chronology Builder", "href": "https://vaquill.ai/features/chronology-builder" }
+          {
+            "label": "Agent Mode",
+            "href": "https://vaquill.ai/features/agent-mode"
+          },
+          {
+            "label": "Skills",
+            "href": "https://vaquill.ai/features/skills"
+          },
+          {
+            "label": "Memories",
+            "href": "https://vaquill.ai/features/memories"
+          },
+          {
+            "label": "AI Legal Research",
+            "href": "https://vaquill.ai/features/legal-research"
+          },
+          {
+            "label": "Compliance Check",
+            "href": "https://vaquill.ai/features/compliance-check"
+          },
+          {
+            "label": "Chronology Builder",
+            "href": "https://vaquill.ai/features/chronology-builder"
+          }
         ]
       },
       {
         "header": "Use Cases",
         "items": [
-          { "label": "Litigation Lawyers", "href": "https://vaquill.ai/use-case/litigation-lawyers" },
-          { "label": "Corporate Lawyers", "href": "https://vaquill.ai/use-case/corporate-lawyers" },
-          { "label": "Law Firms", "href": "https://vaquill.ai/use-case/law-firms" },
-          { "label": "Legal Tech Developers", "href": "https://vaquill.ai/use-case/legal-tech-developers" },
-          { "label": "Solo Practitioners", "href": "https://vaquill.ai/use-case/solo-practitioners" }
+          {
+            "label": "Litigation Lawyers",
+            "href": "https://vaquill.ai/use-case/litigation-lawyers"
+          },
+          {
+            "label": "Corporate Lawyers",
+            "href": "https://vaquill.ai/use-case/corporate-lawyers"
+          },
+          {
+            "label": "Law Firms",
+            "href": "https://vaquill.ai/use-case/law-firms"
+          },
+          {
+            "label": "Legal Tech Developers",
+            "href": "https://vaquill.ai/use-case/legal-tech-developers"
+          },
+          {
+            "label": "Solo Practitioners",
+            "href": "https://vaquill.ai/use-case/solo-practitioners"
+          }
         ]
       },
       {
         "header": "Legal",
         "items": [
-          { "label": "Privacy Policy", "href": "https://vaquill.ai/privacy" },
-          { "label": "Terms of Service", "href": "https://vaquill.ai/terms" },
-          { "label": "Cookie Policy", "href": "https://vaquill.ai/cookies" },
-          { "label": "Refund Policy", "href": "https://vaquill.ai/refund-policy" }
+          {
+            "label": "Privacy Policy",
+            "href": "https://vaquill.ai/privacy"
+          },
+          {
+            "label": "Terms of Service",
+            "href": "https://vaquill.ai/terms"
+          },
+          {
+            "label": "Cookie Policy",
+            "href": "https://vaquill.ai/cookies"
+          },
+          {
+            "label": "Refund Policy",
+            "href": "https://vaquill.ai/refund-policy"
+          }
         ]
       }
     ]
   },
   "redirects": [
-    { "source": "/integrations/mcp", "destination": "/integrations/mcp/vaquill" },
-    { "source": "/api-reference/pricing/get-api-credit-pricing", "destination": "/api-reference/statutes/search-us-statutes" },
-    { "source": "/api-reference/citations/:slug*", "destination": "/api-reference/statutes/search-us-statutes" },
-    { "source": "/api-reference/ask/:slug*", "destination": "/api-reference/statutes/search-us-statutes" },
-    { "source": "/data-sources", "destination": "/coverage" },
-    { "source": "/credits", "destination": "/authentication" },
-    { "source": "/changelog", "destination": "/introduction" },
-    { "source": "/guides/subscriptions", "destination": "/guides/team-workspaces" },
-    { "source": "/guides/retrieval-strategies", "destination": "/guides/case-law-research" },
-    { "source": "/guides/tools/translation", "destination": "/guides/legal-tools" },
-    { "source": "/guides/tools/company-lookup", "destination": "/guides/legal-tools" }
+    {
+      "source": "/integrations/mcp",
+      "destination": "/integrations/mcp/vaquill"
+    },
+    {
+      "source": "/api-reference/pricing/get-api-credit-pricing",
+      "destination": "/api-reference/statutes/search-us-statutes"
+    },
+    {
+      "source": "/api-reference/citations/:slug*",
+      "destination": "/api-reference/statutes/search-us-statutes"
+    },
+    {
+      "source": "/api-reference/ask/:slug*",
+      "destination": "/api-reference/statutes/search-us-statutes"
+    },
+    {
+      "source": "/data-sources",
+      "destination": "/api-guide/coverage"
+    },
+    {
+      "source": "/credits",
+      "destination": "/api-guide/authentication"
+    },
+    {
+      "source": "/changelog",
+      "destination": "/introduction"
+    },
+    {
+      "source": "/guides/subscriptions",
+      "destination": "/guides/team-workspaces"
+    },
+    {
+      "source": "/guides/retrieval-strategies",
+      "destination": "/guides/case-law-research"
+    },
+    {
+      "source": "/guides/tools/translation",
+      "destination": "/guides/legal-tools"
+    },
+    {
+      "source": "/guides/tools/company-lookup",
+      "destination": "/guides/legal-tools"
+    },
+    {
+      "source": "/authentication",
+      "destination": "/api-guide/authentication"
+    },
+    {
+      "source": "/errors",
+      "destination": "/api-guide/errors"
+    },
+    {
+      "source": "/coverage",
+      "destination": "/api-guide/coverage"
+    }
   ],
   "appearance": {
     "default": "light",

@@ -4,36 +4,53 @@ description: "Exactly which US jurisdictions and corpus types the Vaquill statut
 icon: "map-location-dot"
 ---
 
-This page lists the US legal data actually ingested into Vaquill's `statutes_us`
-corpus, jurisdiction by jurisdiction. Statute counts are queryable live from
-`GET /statutes/states`; the per-corpus matrix below is a snapshot.
+This page lists the US legal data Vaquill has ingested, by corpus type and by
+jurisdiction. Vaquill covers the full stack of US primary law, not just statutes:
+federal law, state statutes, state constitutions, court rules, state regulations,
+and case law. The **statutes API** (`/statutes/*`) serves the statute and federal
+code data; case law and the other corpora are available in the platform. Statute
+counts are queryable live from `GET /statutes/states`; the per-corpus matrix below
+is a snapshot.
 
 <Info>
   **Snapshot date: 2026-07-18.** Statute coverage is always live via
-  `/statutes/states` and `/statutes/codes`. Regulations, constitutions, and
-  court rules are an expanding set, refreshed weekly.
+  `/statutes/states` and `/statutes/codes`. Regulations, constitutions, court
+  rules, and case law are an expanding set, refreshed weekly.
 </Info>
 
-## At a glance
+## What's in the corpus
 
 <CardGroup cols={2}>
   <Card title="State statutes" icon="building-columns">
-    **51 jurisdictions** (49 of 50 states + DC + Puerto Rico), **1.62M+ sections**. Only Indiana is not yet ingested.
+    **51 jurisdictions** (49 of 50 states + DC + Puerto Rico), **1.62M+ sections**. Only Indiana is not yet ingested. Queryable via the statutes API.
   </Card>
-  <Card title="Federal" icon="landmark">
-    USC (54,855 sections), CFR (219,745), Federal Register agency rules (121,214), US Constitution, Federal Rules of Procedure, agency guidance, and Executive Orders. Refreshed weekly.
+  <Card title="Federal law" icon="landmark">
+    US Code (54,855), CFR (219,745), Federal Register rules (121,214), Executive Orders (3,593), agency guidance (2,509), Federal Rules of Procedure (526), US Constitution (74). Queryable via the statutes API.
   </Card>
-  <Card title="State regulations" icon="scroll">
-    **12 states**, **176K+ rules**, with effective dates, statutory authority, and amendment history captured.
+  <Card title="State constitutions" icon="scroll">
+    **50 jurisdictions**, ~7.6K sections, with article/section structure and clickable citations.
   </Card>
-  <Card title="State constitutions and court rules" icon="gavel">
-    **50 jurisdictions** with constitutions (~7.6K sections) and **7 states** with court rules (~8K rules).
+  <Card title="Court rules" icon="gavel">
+    **7 states**, ~8K rules (civil, criminal, appellate, and local), refreshed weekly.
+  </Card>
+  <Card title="State regulations" icon="clipboard-list">
+    **12 states**, **176K+ rules**, with effective dates, statutory authority, and amendment history.
+  </Card>
+  <Card title="Case law" icon="scale-balanced">
+    Federal opinions from the Supreme Court through the District Courts (all 13 Circuits), plus state appellate and supreme court opinions across all 50 states, with inline citation resolution. Available in the platform.
   </Card>
 </CardGroup>
 
 Every section is indexed for hybrid semantic + keyword search and mirrored in
 multiple formats (HTML, PDF, XML, plain text, DOCX) where the source provides
 them.
+
+<Card title="Open source: Vaquill-AI/open-us-law" icon="github" href="https://github.com/Vaquill-AI/open-us-law">
+  The ingestion pipeline behind this corpus - the bulk-source parsers, scrapers,
+  and the JSONL schema for US statutes, regulations, court rules, and federal law -
+  is open source under a permissive license. Build your own copy of the corpus, or
+  contribute a source.
+</Card>
 
 ## Federal
 
@@ -137,7 +154,7 @@ curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
   <Card title="API Reference" icon="code" href="/api-reference/statutes/search-us-statutes">
     Every endpoint with parameters and examples.
   </Card>
-  <Card title="Data sources" icon="scale-balanced" href="/coverage">
-    What powers the corpus and what Vaquill adds on top.
+  <Card title="Open source pipeline" icon="github" href="https://github.com/Vaquill-AI/open-us-law">
+    The scrapers and bulk-source parsers behind this corpus, on GitHub.
   </Card>
 </CardGroup>

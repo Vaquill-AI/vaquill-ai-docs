@@ -34,7 +34,7 @@ Source: [github.com/Vaquill-AI/integrations/n8n](https://github.com/Vaquill-AI/i
 ## Prerequisites
 
 1. **Vaquill account** - sign up at [app.vaquill.ai](https://app.vaquill.ai)
-2. **Vaquill API key** (`vq_key_...`) - generate in Settings > API Keys. See [Authentication](/authentication).
+2. **Vaquill API key** (`vq_key_...`) - generate in Settings > API Keys. See [Authentication](/api-guide/authentication).
 3. **Google account** - for Google Sheets access
 4. **n8n instance** (cloud or self-hosted) **or** a **Make.com account**
 
@@ -108,7 +108,7 @@ Error responses:
 | 402 | Insufficient credits | Top up at [app.vaquill.ai/billing](https://app.vaquill.ai/billing) |
 | 429 | Rate limit exceeded | Wait and retry (the templates handle this automatically) |
 
-See the [Errors reference](/errors) for the full list.
+See the [Errors reference](/api-guide/errors) for the full list.
 
 ## Option 1: n8n
 
@@ -288,7 +288,7 @@ Make.com is cloud-only. The free tier covers ~1,000 operations per month, which 
   <Card title="Statutes Search API" icon="magnifying-glass" href="/api-reference/statutes/search-us-statutes">
     The endpoint these templates call.
   </Card>
-  <Card title="Authentication" icon="key" href="/authentication">
+  <Card title="Authentication" icon="key" href="/api-guide/authentication">
     Generate and rotate API keys.
   </Card>
   <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/integrations/tree/main/n8n">
