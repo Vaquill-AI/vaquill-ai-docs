@@ -10,7 +10,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
 
 <Steps>
   <Step title="Get an API key">
-    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Copy it once, it will not be shown again. See [Authentication](/api-guide/authentication) for details. New accounts get a 500 credit signup bonus (\$5).
+    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Copy it once, it will not be shown again. See [Authentication](/api-guide/authentication) for details.
   </Step>
 
   <Step title="Make your first search">
@@ -90,8 +90,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
       "offset": 0,
       "hasMore": true,
       "query": "civil rights deprivation under color of law",
-      "processingTimeMs": 412.6,
-      "creditsConsumed": 4
+      "processingTimeMs": 412.6
     }
     ```
 
@@ -157,12 +156,12 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     </CodeGroup>
 
     <Tip>
-      The body endpoint returns `html` and `plain` text plus an `available` flag and a `source`. You are charged only when text is returned. A 404 or unavailable section is refunded.
+      The body endpoint returns `html` and `plain` text plus an `available` flag and a `source`.
     </Tip>
   </Step>
 
   <Step title="Discover coverage">
-    The corpus grows weekly. Call the free `GET /statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data. Pass one of those tokens back into `/statutes/search`.
+    The corpus grows weekly. Call `GET /statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data. Pass one of those tokens back into `/statutes/search`.
 
     <CodeGroup>
     ```bash cURL
@@ -205,9 +204,6 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
 <CardGroup cols={2}>
   <Card title="Pagination" icon="list-ol" href="/api-guide/pagination">
     Page through search results with `limit`, `offset`, and `hasMore`.
-  </Card>
-  <Card title="Credits & pricing" icon="coins" href="/api-guide/credits">
-    Understand what each call costs and how refunds work.
   </Card>
   <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
     Per-plan limits and how to back off on a 429.

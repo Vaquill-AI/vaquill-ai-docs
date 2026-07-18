@@ -8,17 +8,16 @@ The Vaquill Developer API is the deepest US statutes and regulations API. Search
 
 ## Endpoints at a glance
 
-Every path is prefixed with `/api/v1`. Search and retrieval endpoints cost credits (1 credit = \$0.01). Discovery endpoints are free.
+Every path is prefixed with `/api/v1`.
 
-| Method | Path | Purpose | Credits |
-|--------|------|---------|---------|
-| `POST` | `/statutes/search` | Hybrid keyword + semantic search across the corpus | 4 |
-| `GET` | `/statutes/section/{actId}` | Section metadata by `actId` | 2 |
-| `GET` | `/statutes/section/{actId}/body` | Full section text (HTML + plain) | 6 |
-| `GET` | `/statutes/states` | Coverage summary by jurisdiction | Free |
-| `GET` | `/statutes/codes?state=XX` | Statutory codes ingested for one state | Free |
-| `GET` | `/statutes/coverage` | Full coverage matrix + corpus legend | Free |
-| `GET` | `/api-credits/pricing` | Credit cost per endpoint (no auth) | Free |
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/statutes/search` | Hybrid keyword + semantic search across the corpus |
+| `GET` | `/statutes/section/{actId}` | Section metadata by `actId` |
+| `GET` | `/statutes/section/{actId}/body` | Full section text (HTML + plain) |
+| `GET` | `/statutes/states` | Coverage summary by jurisdiction |
+| `GET` | `/statutes/codes?state=XX` | Statutory codes ingested for one state |
+| `GET` | `/statutes/coverage` | Full coverage matrix + corpus legend |
 
 <Note>
   Coverage expands weekly. Call `/statutes/coverage` at runtime to see exactly what is queryable rather than hardcoding jurisdiction counts.
@@ -61,8 +60,5 @@ Vaquill complements your existing legal research tools. It is built to ground an
 <CardGroup cols={2}>
   <Card title="Coverage" icon="table" href="/api-guide/coverage">
     The jurisdiction matrix in human-readable form.
-  </Card>
-  <Card title="Credits & pricing" icon="coins" href="/api-guide/credits">
-    What each call costs and how credits work.
   </Card>
 </CardGroup>

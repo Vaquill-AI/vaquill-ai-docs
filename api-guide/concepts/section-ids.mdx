@@ -31,11 +31,11 @@ it, and pass it back unchanged.
   </Step>
   <Step title="Fetch section metadata">
     `GET /statutes/section/{actId}` returns the full result object for that one
-    section (citation, hierarchy, source URLs). Costs 2 credits.
+    section (citation, hierarchy, source URLs).
   </Step>
   <Step title="Fetch full text">
-    `GET /statutes/section/{actId}/body` returns the section's full text. Costs
-    6 credits, charged only when text is returned.
+    `GET /statutes/section/{actId}/body` returns the section's full text.
+    Returned only when text is available.
   </Step>
 </Steps>
 
@@ -157,9 +157,9 @@ console.log(body.available ? body.plain.slice(0, 500) : "text unavailable");
 </CodeGroup>
 
 <Tip>
-  A `404` on either section endpoint is refunded, and the `/body` endpoint is
-  charged only when text actually comes back. Check `available` before reading
-  `html` or `plain`.
+  A `404` on either section endpoint means no section was found, and the `/body`
+  endpoint returns text only when it is available. Check `available` before
+  reading `html` or `plain`.
 </Tip>
 
 ## Related

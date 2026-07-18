@@ -54,7 +54,7 @@ A few habits keep grounded answers accurate and cheap.
 
 <AccordionGroup>
   <Accordion title="Scope retrieval to the right corpusType" icon="filter">
-    Searching the entire corpus for a question that only a state penal code can answer wastes credits and pulls in noise that competes for the model's attention. Pass the narrowest `corpusType` that fits (for example `USC` for federal statutes, or `STATE` with `state: "ca"` for California codes). If you are unsure which corpora a jurisdiction has, call the free `GET /statutes/coverage` and read the `corpora` keys before you search. See [Coverage](/api-guide/coverage).
+    Searching the entire corpus for a question that only a state penal code can answer pulls in noise that competes for the model's attention. Pass the narrowest `corpusType` that fits (for example `USC` for federal statutes, or `STATE` with `state: "ca"` for California codes). If you are unsure which corpora a jurisdiction has, call `GET /statutes/coverage` and read the `corpora` keys before you search. See [Coverage](/api-guide/coverage).
   </Accordion>
 
   <Accordion title="Keep the retrieved text verbatim" icon="quote-left">

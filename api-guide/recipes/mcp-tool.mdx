@@ -6,7 +6,7 @@ icon: "plug"
 
 Grounding an AI agent in authoritative legal text is one of the most common uses of this API. There are two ways to do it: connect an MCP-compatible client to the hosted Vaquill MCP server, or wrap the REST API as a tool your own agent can call. Both return citations and source links, so answers stay grounded in official government text.
 
-**Endpoints used:** `POST /statutes/search` (4 credits) for the custom-tool path. The hosted server path needs no direct REST calls from you.
+**Endpoints used:** `POST /statutes/search` for the custom-tool path. The hosted server path needs no direct REST calls from you.
 
 ## Path A: Hosted Vaquill MCP server
 
@@ -137,7 +137,7 @@ When you are building your own tool-calling agent, define a `search_statutes` fu
 </Steps>
 
 <Tip>
-  For heavy agent traffic, cache the free `/statutes/coverage` response and reuse it to steer `corpusType` and `state` on tool calls. That narrows searches and avoids spending credits on jurisdictions with no data.
+  For heavy agent traffic, cache the `/statutes/coverage` response and reuse it to steer `corpusType` and `state` on tool calls. That narrows searches and avoids searching jurisdictions with no data.
 </Tip>
 
 ## Related

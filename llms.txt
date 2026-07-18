@@ -2,7 +2,7 @@
 
 > Vaquill is a legal AI suite for in-house counsel, plus a US statutes and regulations Developer API. The API lets you search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance. Every result carries a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into products.
 
-Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authenticate every request with an API key: `Authorization: Bearer vq_key_...`. Credits are 1 credit = $0.01 USD; discovery endpoints are free. The API serves US statutes and regulations only (case law and India are not part of the Developer API).
+Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authenticate every request with an API key: `Authorization: Bearer vq_key_...`. The API serves US statutes and regulations only (case law and India are not part of the Developer API).
 
 ## API: Get Started
 
@@ -21,7 +21,6 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 - [Pagination](https://www.vaquill.ai/docs/api-guide/pagination): The limit and offset parameters and the hasMore flag on search.
 - [Rate Limits](https://www.vaquill.ai/docs/api-guide/rate-limits): Per-key, per-plan limits, 429 handling, and backoff.
-- [Credits and Pricing](https://www.vaquill.ai/docs/api-guide/credits): The credit model, per-endpoint costs, and the pricing endpoint.
 - [Errors](https://www.vaquill.ai/docs/api-guide/errors): Status codes and how to recover from each.
 - [Best Practices](https://www.vaquill.ai/docs/api-guide/best-practices): Scoping, caching coverage, retries, and using discovery before search.
 

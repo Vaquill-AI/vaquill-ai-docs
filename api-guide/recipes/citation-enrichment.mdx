@@ -6,7 +6,7 @@ icon: "database"
 
 If you keep a list of topics or rough citations, you can ground each one against authoritative text. This recipe walks a batch of inputs, searches each one, takes the best match, and attaches the canonical citation, an excerpt, and the official government source URL back onto your record. It paces requests to respect the rate limit and backs off on a `429`.
 
-**Endpoints used:** `POST /statutes/search` (4 credits per call). Optionally `GET /statutes/section/{actId}/body` (6 credits) when you want full text rather than the excerpt.
+**Endpoints used:** `POST /statutes/search`. Optionally `GET /statutes/section/{actId}/body` when you want full text rather than the excerpt.
 
 <Warning>
   The base plan allows 30 requests per minute per key. Space your calls and honor the `Retry-After` header on a `429` so a large batch does not get throttled. See [Rate limits](/api-guide/errors).
@@ -26,7 +26,7 @@ If you keep a list of topics or rough citations, you can ground each one against
   </Step>
 
   <Step title="Search with rate-limit-aware pacing">
-    Wrap the search call so it sleeps between requests to stay under the per-minute cap, and retries with a backoff when the API returns `429`. Failed searches (for example a `404`) are refunded, so a miss costs nothing.
+    Wrap the search call so it sleeps between requests to stay under the per-minute cap, and retries with a backoff when the API returns `429`. Failed searches (for example a `404`) return no match.
 
     ```python Python
     import time
@@ -118,7 +118,7 @@ If you keep a list of topics or rough citations, you can ground each one against
   </Step>
 
   <Step title="Optionally attach full text">
-    When you need the whole section rather than the excerpt, take the `actId` from a match and call the body endpoint. It charges only when text is returned.
+    When you need the whole section rather than the excerpt, take the `actId` from a match and call the body endpoint. It returns text only when it is available.
 
     <CodeGroup>
     ```bash cURL

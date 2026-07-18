@@ -6,15 +6,15 @@ icon: "scale-balanced"
 
 Many legal questions are really the same question asked of many jurisdictions: how does each state handle security deposits, non-competes, or breach notice? This recipe runs one query with `corpusType=STATE` across a list of `state` codes, keeps the top section per state, and assembles a comparison table of state to citation to excerpt and source link.
 
-**Endpoints used:** `GET /statutes/coverage` (free) to pick states, then `POST /statutes/search` (4 credits per call).
+**Endpoints used:** `GET /statutes/coverage` to pick states, then `POST /statutes/search`.
 
 <Tip>
-  Call `/statutes/coverage` first and keep only the states that actually carry the `STATE` corpus. That way you never spend a search credit on a jurisdiction that has no data to return.
+  Call `/statutes/coverage` first and keep only the states that actually carry the `STATE` corpus. That way you never run a search against a jurisdiction that has no data to return.
 </Tip>
 
 <Steps>
   <Step title="Pick states that have the corpus">
-    Read the free coverage matrix and collect the codes of `state` jurisdictions whose `corpora` includes the corpus you want to compare (here, `STATE`).
+    Read the coverage matrix and collect the codes of `state` jurisdictions whose `corpora` includes the corpus you want to compare (here, `STATE`).
 
     ```python Python
     import requests
@@ -81,8 +81,7 @@ Many legal questions are really the same question asked of many jurisdictions: h
         }
       ],
       "total": 3,
-      "hasMore": false,
-      "creditsConsumed": 4
+      "hasMore": false
     }
     ```
   </Step>
@@ -155,7 +154,7 @@ Many legal questions are really the same question asked of many jurisdictions: h
 
 <CardGroup cols={2}>
   <Card title="Monitor corpus coverage" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
-    Poll the free coverage endpoint and diff snapshots over time.
+    Poll the coverage endpoint and diff snapshots over time.
   </Card>
   <Card title="Enrich a citation database" icon="database" href="/api-guide/recipes/citation-enrichment">
     Attach canonical citations, excerpts, and source links to a batch of topics.

@@ -223,11 +223,11 @@ if __name__ == "__main__":
     with `USC` or `CFR` and can pin the title further. Scoping keeps a same-numbered
     section in the wrong corpus from ranking first.
   </Accordion>
-  <Accordion title="404 on the body is refunded" icon="rotate-left">
+  <Accordion title="404 on the body" icon="rotate-left">
     If `GET /statutes/section/{actId}/body` cannot return text, it responds with
-    `available: false` (or a 404 that is credit-refunded). Treat that as
-    unresolved-with-metadata: you have a confirmed `actId` and citation, but no
-    authoritative text to quote yet.
+    `available: false` (or a 404). Treat that as unresolved-with-metadata: you
+    have a confirmed `actId` and citation, but no authoritative text to quote
+    yet.
   </Accordion>
 </AccordionGroup>
 

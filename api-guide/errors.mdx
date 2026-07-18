@@ -34,7 +34,7 @@ Validation errors (422) include field-level details:
 |------|---------|--------|
 | `200` | Success | |
 | `401` | Unauthorized | Check your API key and `Authorization` header |
-| `402` | Payment Required | Insufficient credits. [Purchase more](https://app.vaquill.ai/developer?tab=credits) or upgrade to API Pro |
+| `402` | Payment Required | Check your account dashboard. |
 | `404` | Not Found | Resource does not exist |
 | `422` | Validation Error | Check request body for missing or invalid fields |
 | `429` | Rate Limited | Back off and retry with exponential backoff |
@@ -46,8 +46,8 @@ Limits are enforced per API key and scale with your plan. Every `429` response i
 
 | Plan | Per minute | Per hour | Per day |
 |------|-----------|----------|---------|
-| API ($199/mo) | 30 | 500 | 2,000 |
-| API Business ($1,000/mo) | 150 | 2,500 | 10,000 |
+| API | 30 | 500 | 2,000 |
+| API Business | 150 | 2,500 | 10,000 |
 
 On `429`, implement exponential backoff:
 
@@ -74,10 +74,6 @@ def search_with_retry(query, max_retries=3):
 <AccordionGroup>
   <Accordion title="401 but my key is correct">
     Include the `Bearer` prefix: `Authorization: Bearer vq_key_...`. The key alone is rejected.
-  </Accordion>
-
-  <Accordion title="402 after purchasing credits">
-    Credit purchases may take a few seconds to reflect after the payment provider confirms. Retry after a moment.
   </Accordion>
 
   <Accordion title="422 validation error">

@@ -1,6 +1,6 @@
 ---
 title: "Best Practices"
-description: "Get better results, spend fewer credits, and build resilient integrations"
+description: "Get better results and build resilient integrations"
 icon: "circle-check"
 ---
 
@@ -16,7 +16,7 @@ Pass `corpusType` (and `state` for state-scoped corpora) on `POST /statutes/sear
 
 ## Discover before you search
 
-Call the free `GET /statutes/coverage` first to learn what is queryable. Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids guessing a token that has no data for that state and wasting a search credit on an empty result.
+Call `GET /statutes/coverage` first to learn what is queryable. Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids guessing a token that has no data for that state and wasting a call on an empty result.
 
 <Tip>
   Use `GET /statutes/codes?state=XX` to see the individual statutory codes (Penal, Civil, and so on) ingested for a state, and their section counts, when you want to explain a state's structure to a user.
@@ -24,16 +24,16 @@ Call the free `GET /statutes/coverage` first to learn what is queryable. Read a 
 
 ## Cache coverage
 
-Coverage grows weekly, not hourly. Cache the responses of `/statutes/coverage`, `/statutes/states`, and `/statutes/codes` for hours or a day rather than calling them on every request. They cost 0 credits but still count against your [rate limits](/api-guide/rate-limits).
+Coverage grows weekly, not hourly. Cache the responses of `/statutes/coverage`, `/statutes/states`, and `/statutes/codes` for hours or a day rather than calling them on every request. They still count against your [rate limits](/api-guide/rate-limits).
 
 ## Store the actId values you care about
 
-The `actId` (for example `USC_T42_C21_S1983`) is the stable handle for a section. Once a search surfaces a section your product depends on, store its `actId` and go straight to `GET /statutes/section/{actId}` or `.../body` on later runs. That skips the 4 credit search entirely.
+The `actId` (for example `USC_T42_C21_S1983`) is the stable handle for a section. Once a search surfaces a section your product depends on, store its `actId` and go straight to `GET /statutes/section/{actId}` or `.../body` on later runs. That skips the search entirely.
 
 ## Retry on 429, handle 402
 
 - On `429`, respect the `Retry-After` header and use exponential backoff. See [Rate limits](/api-guide/rate-limits).
-- On `402`, stop, surface a clear message, top up or upgrade, then retry. See [Credits](/api-guide/credits).
+- On `402`, stop, surface a clear message, resolve it in your account dashboard, then retry.
 - Both are expected in production. Build for them rather than treating them as fatal.
 
 ## Treat relevanceScore as a within-response rank

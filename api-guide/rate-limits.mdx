@@ -4,17 +4,17 @@ description: "Per-plan request limits and how to back off on a 429"
 icon: "gauge-high"
 ---
 
-Rate limits are enforced per API key and scale with your plan. They are independent of your credit balance: a call can succeed on credits and still be rate limited if you exceed your per-minute, per-hour, or per-day ceiling.
+Rate limits are enforced per API key and cap your request volume. If you exceed your per-minute, per-hour, or per-day ceiling, the call is rate limited.
 
 ## Limits by plan
 
 | Plan | Per minute | Per hour | Per day |
 |------|-----------|----------|---------|
-| API (\$199/mo) | 30 | 500 | 2,000 |
-| API Business (\$1,000/mo) | 150 | 2,500 | 10,000 |
+| API | 30 | 500 | 2,000 |
+| API Business | 150 | 2,500 | 10,000 |
 
 <Note>
-  Discovery endpoints (`/statutes/states`, `/statutes/codes`, `/statutes/coverage`) cost 0 credits but still count against these rate limits. Cache their responses rather than calling them on every request.
+  Discovery endpoints (`/statutes/states`, `/statutes/codes`, `/statutes/coverage`) still count against these rate limits. Cache their responses rather than calling them on every request.
 </Note>
 
 ## Handling a 429
@@ -87,8 +87,5 @@ const data = await searchWithRetry({ query: "data breach notification" });
 <CardGroup cols={2}>
   <Card title="Errors" icon="triangle-exclamation" href="/api-guide/errors">
     Every status code and how to recover from it.
-  </Card>
-  <Card title="Credits & pricing" icon="coins" href="/api-guide/credits">
-    Limits cap request volume, credits cover cost. Both matter.
   </Card>
 </CardGroup>

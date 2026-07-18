@@ -1,15 +1,15 @@
 ---
 title: "Monitor corpus coverage and changes"
-description: "Poll the free coverage endpoint on a schedule and diff snapshots to detect new or expanded corpora"
+description: "Poll the coverage endpoint on a schedule and diff snapshots to detect new or expanded corpora"
 icon: "chart-line"
 ---
 
-The corpus grows every week. This recipe polls the free `GET /statutes/coverage` endpoint on a schedule, saves a snapshot of each jurisdiction's `corpora` counts, and diffs it against the previous snapshot so you can react when a jurisdiction gains a new corpus (for example a state adding regulations) or an existing corpus expands.
+The corpus grows every week. This recipe polls the `GET /statutes/coverage` endpoint on a schedule, saves a snapshot of each jurisdiction's `corpora` counts, and diffs it against the previous snapshot so you can react when a jurisdiction gains a new corpus (for example a state adding regulations) or an existing corpus expands.
 
-**Endpoints used:** `GET /statutes/coverage` (free).
+**Endpoints used:** `GET /statutes/coverage`.
 
 <Note>
-  `/statutes/coverage` costs 0 credits. It is authenticated and rate limited, so run it on a sensible cadence (daily or weekly is plenty) rather than in a tight loop.
+  `/statutes/coverage` is authenticated and rate limited, so run it on a sensible cadence (daily or weekly is plenty) rather than in a tight loop.
 </Note>
 
 <Steps>
@@ -173,7 +173,7 @@ The corpus grows every week. This recipe polls the free `GET /statutes/coverage`
 </Steps>
 
 <Tip>
-  Because coverage is free, you can safely alert on any diff (a message to your team, a webhook, a ticket) without worrying about credit spend. Reserve paid `POST /statutes/search` calls for when a change actually affects your product.
+  You can alert on any diff (a message to your team, a webhook, a ticket). Reserve `POST /statutes/search` calls for when a change actually affects your product.
 </Tip>
 
 ## Related
