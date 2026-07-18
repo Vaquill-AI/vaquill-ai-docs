@@ -23,7 +23,7 @@ is a snapshot.
 
 <CardGroup cols={2}>
   <Card title="State statutes" icon="building-columns">
-    **51 jurisdictions** (49 of 50 states + DC + Puerto Rico), **1.62M+ sections**. Only Indiana is not yet ingested. Queryable via the statutes API.
+    **51 jurisdictions** (49 of 50 states + DC + Puerto Rico), **1.67M+ sections**. Only Indiana is not yet ingested. Queryable via the statutes API.
   </Card>
   <Card title="Federal law" icon="landmark">
     US Code (54,855), CFR (219,745), Federal Register rules (121,214), Executive Orders (3,593), agency guidance (2,509), Federal Rules of Procedure (526), US Constitution (74). Queryable via the statutes API.
@@ -85,9 +85,11 @@ for that jurisdiction. Sorted by statute volume.
 | Oregon | 36,202 | - | 1 | - |
 | Oklahoma | 35,329 | - | 330 | - |
 | Colorado | 34,231 | 1,026 | 396 | - |
+| Virginia | 33,856 | 22,396 | 123 | - |
 | Ohio | 33,161 | 19,275 | 217 | - |
 | Montana | 30,514 | - | 193 | - |
 | South Carolina | 29,947 | 6,606 | 240 | - |
+| Missouri | 29,296 | - | 303 | - |
 | North Dakota | 29,042 | - | 185 | - |
 | Georgia | 28,154 | - | 79 | - |
 | Minnesota | 27,747 | 15,391 | 138 | 958 |
@@ -116,19 +118,17 @@ for that jurisdiction. Sorted by statute volume.
 | Tennessee | 11,199 | - | 148 | - |
 | Wyoming | 10,219 | - | 314 | - |
 | Louisiana | 10,216 | - | 56 | - |
-| Virginia | 6,859 | 22,396 | 123 | - |
 | Iowa | 6,321 | - | 54 | - |
 | Puerto Rico (territory) | 2,909 | - | - | - |
 | Idaho | 2,080 | 8,551 | 240 | - |
 | Wisconsin | 812 | 17,823 | 14 | - |
-| Missouri | 385 | - | 303 | - |
 | Arkansas | 46 | - | 236 | - |
 | Indiana | - | - | 52 | - |
 
 <Note>
-  Some jurisdictions are partial and actively expanding. Arkansas, Missouri,
-  Idaho, Virginia, and Wisconsin have thin statute coverage today but are
-  prioritized for backfill, and Indiana statutes are queued for ingestion.
+  Some jurisdictions are partial and actively expanding. Arkansas, Idaho, and
+  Wisconsin have thin statute coverage today but are prioritized for backfill,
+  and Indiana statutes are queued for ingestion.
   Regulations, constitutions, and court rules roll out state by state. Call
   `/statutes/coverage` for the live per-corpusType matrix, or `/statutes/states`
   for headline statute counts.
