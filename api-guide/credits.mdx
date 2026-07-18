@@ -1,0 +1,102 @@
+---
+title: "Credits & Pricing"
+description: "How credits work, what each endpoint costs, and how to handle a 402"
+icon: "coins"
+---
+
+The API is metered in credits. **1 credit = \$0.01 USD.** Search and retrieval calls consume credits, discovery calls are free, and failed calls are refunded. Your balance is deducted per successful call.
+
+## Cost per endpoint
+
+| Endpoint | Credits | USD |
+|----------|---------|-----|
+| `POST /statutes/search` | 4 | \$0.04 |
+| `GET /statutes/section/{actId}` | 2 | \$0.02 |
+| `GET /statutes/section/{actId}/body` | 6 | \$0.06 |
+| `GET /statutes/states` | 0 | Free |
+| `GET /statutes/codes` | 0 | Free |
+| `GET /statutes/coverage` | 0 | Free |
+| `GET /api-credits/pricing` | 0 | Free (no auth) |
+
+Each credited response includes a `creditsConsumed` field so you can track spend inline.
+
+## Refunds on failure
+
+You are only charged for successful, useful responses:
+
+- A `404` (section not found) is refunded.
+- The body endpoint charges only when text is returned. If a section's text is unavailable (`available: false`), the call is refunded.
+- Server errors do not consume credits.
+
+## Free discovery endpoints
+
+The three discovery endpoints (`/statutes/states`, `/statutes/codes`, `/statutes/coverage`) cost 0 credits. Use them freely to learn what is queryable before spending on search. They are still authenticated and [rate limited](/api-guide/rate-limits).
+
+## Insufficient credits (402)
+
+When your balance cannot cover a call, the API returns `402` with a `detail` message and does not run the request. Top up or upgrade, then retry.
+
+```json
+{
+  "detail": "Insufficient credits."
+}
+```
+
+<Tip>
+  Handle `402` gracefully in your client: queue the request, alert on low balance, and top up before retrying. Purchases can take a few seconds to reflect after the payment provider confirms.
+</Tip>
+
+## Signup bonus, plans, and top-ups
+
+- **Signup bonus:** new accounts get 500 credits (\$5) to start.
+- **API plan (\$199/mo):** includes 20,000 credits per month, then continues on pay-as-you-go.
+- **API Business plan (\$1,000/mo):** includes 100,000 credits per month, then continues on pay-as-you-go.
+- **Top-ups:** pay-as-you-go top-ups start at 500 credits (\$5).
+
+Manage your balance and plan in your [dashboard](https://app.vaquill.ai/developer?tab=credits).
+
+## Check pricing programmatically
+
+`GET /api-credits/pricing` is public (no auth needed) and returns the live credit cost per endpoint. Read it at build time so your cost estimates stay in sync.
+
+<CodeGroup>
+```bash cURL
+curl https://api.vaquill.ai/api/v1/api-credits/pricing
+```
+
+```python Python
+import requests
+
+pricing = requests.get(
+    "https://api.vaquill.ai/api/v1/api-credits/pricing"
+).json()
+
+print(pricing["dollarPerCredit"])  # 0.01
+for cost in pricing["costs"]:
+    print(cost["endpoint"], cost["credits"], cost["usdCost"])
+```
+
+```javascript JavaScript
+const pricing = await (
+  await fetch("https://api.vaquill.ai/api/v1/api-credits/pricing")
+).json();
+
+console.log(pricing.dollarPerCredit); // 0.01
+for (const cost of pricing.costs) {
+  console.log(cost.endpoint, cost.credits, cost.usdCost);
+}
+```
+</CodeGroup>
+
+The response includes `dollarPerCredit`, `minCredits`, `maxCredits`, and a `costs` array where each entry carries `endpoint`, `operation`, `credits`, `usdCost`, `description`, `category`, and `regions`.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
+    Per-plan request ceilings, separate from credit cost.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/api-guide/errors">
+    How to recover from a 402 and other status codes.
+  </Card>
+</CardGroup>

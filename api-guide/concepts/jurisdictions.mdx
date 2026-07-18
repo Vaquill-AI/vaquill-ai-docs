@@ -1,0 +1,152 @@
+---
+title: "Jurisdictions & State Codes"
+description: "The 51 jurisdictions Vaquill covers, how state codes and the federal jurisdiction work, and how to discover live coverage"
+icon: "map-location-dot"
+---
+
+Vaquill organizes US primary law into **51 jurisdictions**: 49 of the 50 states,
+plus the District of Columbia and Puerto Rico. Only Indiana statutes are not yet
+ingested (Indiana is queued). Federal law lives under its own `federal`
+jurisdiction, separate from the states.
+
+## How jurisdictions are keyed
+
+- **State codes** are 2-letter lowercase strings: `ca`, `tx`, `ny`, `fl`, and so
+  on. You pass one as the `state` filter on `POST /statutes/search` to scope a
+  state corpus.
+- **`federal`** is the jurisdiction for all federal corpora (`USC`, `CFR`,
+  `CONSTITUTION`, `FEDERAL_RULES`, `EXECUTIVE_ACTION`, `FEDERAL_REGISTER`,
+  `AGENCY_GUIDANCE`). Federal searches need only a `corpusType`, no `state`.
+- Each jurisdiction row carries a **`kind`** field: `federal`, `state`, or
+  `territory`. DC and Puerto Rico are `territory`.
+
+<Warning>
+  Not every corpus type exists for every jurisdiction. A state may have its
+  statutory code (`STATE`) and constitution (`STATE_CONSTITUTION`) but no
+  administrative regulations (`REGULATION`) or court rules (`STATE_RULES`) yet.
+  Check coverage before you scope a search. Do not assume.
+</Warning>
+
+## Discovering coverage
+
+Three free, authenticated discovery endpoints tell you exactly what is available.
+They cost 0 credits.
+
+<CardGroup cols={2}>
+  <Card title="GET /statutes/coverage" icon="table-cells">
+    The self-describing matrix. Every jurisdiction with its per-corpusType
+    `corpora` counts, plus a `corpusTypes` legend. Start here.
+  </Card>
+  <Card title="GET /statutes/states" icon="list">
+    Headline counts per jurisdiction (`sectionCount`, `hasData`, `corpora`).
+  </Card>
+  <Card title="GET /statutes/codes?state=xx" icon="folder-tree">
+    The statutory codes (Penal, Civil, and so on) ingested for one state.
+  </Card>
+  <Card title="Live, not hardcoded" icon="arrows-rotate">
+    Coverage expands weekly. Read it at request time rather than baking counts
+    into your app.
+  </Card>
+</CardGroup>
+
+### Reading a jurisdiction's corpora
+
+`GET /statutes/coverage` returns a wrapped `{ "data": ..., "meta": ... }`
+response. Each jurisdiction in `data.jurisdictions` has a `corpora` object whose
+keys are the `corpusType` tokens that actually have data. Read those keys to know
+which searches you can scope.
+
+<CodeGroup>
+
+```bash cURL
+curl https://api.vaquill.ai/api/v1/statutes/coverage \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+import requests
+
+resp = requests.get(
+    "https://api.vaquill.ai/api/v1/statutes/coverage",
+    headers={"Authorization": "Bearer vq_key_..."},
+)
+data = resp.json()["data"]
+
+# Which corpus types does California have?
+ca = next(j for j in data["jurisdictions"] if j["code"] == "ca")
+print(ca["name"], ca["kind"], ca["sectionCount"])
+print("available corpora:", list(ca["corpora"].keys()))
+# e.g. ['STATE', 'STATE_CONSTITUTION', 'STATE_RULES']
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.vaquill.ai/api/v1/statutes/coverage", {
+  headers: { Authorization: "Bearer vq_key_..." },
+});
+const { data } = await resp.json();
+
+// Which corpus types does California have?
+const ca = data.jurisdictions.find((j) => j.code === "ca");
+console.log(ca.name, ca.kind, ca.sectionCount);
+console.log("available corpora:", Object.keys(ca.corpora));
+// e.g. ['STATE', 'STATE_CONSTITUTION', 'STATE_RULES']
+```
+
+</CodeGroup>
+
+### Listing a state's codes
+
+Once you know a state has `STATE` data, `GET /statutes/codes?state=xx` breaks it
+into its named codes so you can see how that state is structured.
+
+<CodeGroup>
+
+```bash cURL
+curl "https://api.vaquill.ai/api/v1/statutes/codes?state=ca" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+import requests
+
+resp = requests.get(
+    "https://api.vaquill.ai/api/v1/statutes/codes",
+    headers={"Authorization": "Bearer vq_key_..."},
+    params={"state": "ca"},
+)
+data = resp.json()["data"]
+print(data["stateName"])
+for code in data["codes"]:
+    print(code["displayLabel"], code["sectionCount"])
+```
+
+```javascript JavaScript
+const resp = await fetch(
+  "https://api.vaquill.ai/api/v1/statutes/codes?state=ca",
+  { headers: { Authorization: "Bearer vq_key_..." } },
+);
+const { data } = await resp.json();
+console.log(data.stateName);
+for (const code of data.codes) {
+  console.log(code.displayLabel, code.sectionCount);
+}
+```
+
+</CodeGroup>
+
+<Tip>
+  The discovery pattern is: `GET /statutes/coverage` to see which corpora a
+  jurisdiction has, then `GET /statutes/codes` to see a state's structure, then
+  `POST /statutes/search` with the `corpusType` and `state` you confirmed.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Corpus Types" icon="layer-group" href="/api-guide/concepts/corpus-types">
+    The 11 corpusType tokens and how to pair them with a state.
+  </Card>
+  <Card title="API Coverage" icon="map-location-dot" href="/api-guide/coverage">
+    The full jurisdiction matrix with current section counts.
+  </Card>
+</CardGroup>

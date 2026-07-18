@@ -1,0 +1,203 @@
+---
+title: "Build a statute lookup chatbot"
+description: "A minimal question-and-answer loop that searches US statutes, pulls the governing section, and replies with a grounded, cited answer"
+icon: "comments"
+---
+
+Build a chatbot that answers statute questions with real, cited law. Each user
+message runs one search, pulls the best matching section's text, and returns a
+grounded answer with a link to the official source. It is framework-agnostic: the
+same loop drops into Slack, Discord, a web widget, or a terminal.
+
+**Endpoints used:** `POST /statutes/search`, `GET /statutes/section/{actId}/body`.
+
+<Tip>
+  This is the compact version of the retrieve-then-ground pattern. For multi-source
+  answers, stricter citation rules, and prompt design, see
+  [Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding).
+</Tip>
+
+## The loop
+
+<Steps>
+  <Step title="Search on the user's message">
+    Send the message to `POST /statutes/search`. Scope with `corpusType` and
+    `state` if your bot already knows the jurisdiction.
+  </Step>
+  <Step title="Pull the best section's text">
+    Take the top result and fetch its full text with
+    `GET /statutes/section/{actId}/body`.
+  </Step>
+  <Step title="Reply, grounded and cited">
+    Give an LLM the section text and its citation, and have it answer only from
+    that text. Append the official source link so the user can verify.
+  </Step>
+</Steps>
+
+## Primary call: search
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "how much notice before a rent increase", "corpusType": "STATE", "state": "ca", "limit": 3}'
+```
+
+```python Python
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+resp = requests.post(
+    f"{BASE}/statutes/search",
+    headers=HEADERS,
+    json={
+        "query": "how much notice before a rent increase",
+        "corpusType": "STATE",
+        "state": "ca",
+        "limit": 3,
+    },
+)
+resp.raise_for_status()
+results = resp.json()["results"]
+```
+
+```javascript JavaScript
+const BASE = "https://api.vaquill.ai/api/v1";
+
+const resp = await fetch(`${BASE}/statutes/search`, {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer vq_key_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    query: "how much notice before a rent increase",
+    corpusType: "STATE",
+    state: "ca",
+    limit: 3,
+  }),
+});
+if (!resp.ok) throw new Error(`search failed: ${resp.status}`);
+const { results } = await resp.json();
+```
+
+</CodeGroup>
+
+## The full chatbot in one function
+
+```python Python
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def find_section(message, state=None, corpus_type="STATE"):
+    body = {"query": message, "limit": 3}
+    if corpus_type:
+        body["corpusType"] = corpus_type
+    if state:
+        body["state"] = state
+    resp = requests.post(f"{BASE}/statutes/search", headers=HEADERS, json=body)
+    resp.raise_for_status()
+    results = resp.json()["results"]
+    return results[0] if results else None
+
+
+def section_text(act_id):
+    resp = requests.get(f"{BASE}/statutes/section/{act_id}/body", headers=HEADERS)
+    resp.raise_for_status()
+    data = resp.json()
+    return data.get("plain") if data.get("available") else None
+
+
+def answer(message, state=None):
+    hit = find_section(message, state=state)
+    if not hit:
+        return "I could not find a statute on that. Try rephrasing your question."
+
+    text = section_text(hit["actId"])
+    if not text:
+        return "I found a matching section but its text is not available right now."
+
+    citation = hit.get("citation") or hit["actId"]
+    source_url = (
+        hit.get("stateHtmlUrl")
+        or hit.get("htmlUrl")
+        or hit.get("govInfoHtmlUrl")
+        or hit.get("externalUrl")
+    )
+
+    prompt = (
+        "Answer the user's question using ONLY the statute text below. "
+        "If it does not answer the question, say you could not find it. "
+        "Cite the statute by its citation in your answer.\n\n"
+        f"Citation: {citation}\n"
+        f"Statute text:\n{text}\n\n"
+        f"Question: {message}\n"
+    )
+    reply = call_llm(prompt)  # your LLM call; see note below
+    return f"{reply}\n\nSource: {citation}\n{source_url}"
+
+
+# call_llm(prompt) is a placeholder for the LLM you run in your stack.
+# Swap in whatever you use; it takes a prompt string and returns text.
+
+# Plain terminal loop. Replace input()/print() with your Slack, Discord,
+# or web handler and the rest is unchanged.
+if __name__ == "__main__":
+    while True:
+        message = input("You: ")
+        if message.strip().lower() in {"quit", "exit"}:
+            break
+        print("Bot:", answer(message, state="ca"))
+```
+
+<Note>
+  The loop is the whole bot. To wire it into Slack or Discord, call `answer()`
+  from your message handler and post the return value back to the channel. Nothing
+  about the retrieval or grounding changes.
+</Note>
+
+## Making it feel good
+
+<AccordionGroup>
+  <Accordion title="Set the jurisdiction once" icon="location-dot">
+    If your bot serves one state, pass `state` on every search so results stay
+    scoped. If users can switch jurisdictions, capture the two-letter state code
+    from the conversation and pass it through. Omit `corpusType` and `state` to
+    search the entire US corpus when the jurisdiction is unknown.
+  </Accordion>
+  <Accordion title="Always show the source link" icon="link">
+    Every reply ends with the citation and the official government URL. This is
+    what makes the bot trustworthy: users can click through and read the law
+    themselves. Vaquill complements existing research tools, it does not replace a
+    lawyer.
+  </Accordion>
+  <Accordion title="Handle the empty case honestly" icon="circle-question">
+    When search returns no results or the body is unavailable, say so plainly
+    instead of guessing. A statute bot that admits it did not find something is
+    more useful than one that invents an answer.
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Ground an LLM answer (RAG)" icon="brain" href="/api-guide/recipes/rag-grounding">
+    The deeper version: multiple sources, strict citation rules, prompt design.
+  </Card>
+  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+    Turn a citation string into verified, authoritative text.
+  </Card>
+  <Card title="Grounding LLMs" icon="shield-check" href="/api-guide/grounding-llms">
+    Why grounding on retrieved text prevents hallucinated law.
+  </Card>
+  <Card title="Vaquill MCP server" icon="plug" href="/integrations/mcp/vaquill">
+    Expose these same tools to an AI agent over MCP.
+  </Card>
+</CardGroup>

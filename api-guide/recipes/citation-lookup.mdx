@@ -1,0 +1,249 @@
+---
+title: "Resolve and verify a statute citation"
+description: "Take a statute or regulation citation string, resolve it to the governing section, confirm the match, and pull the authoritative text"
+icon: "quote-right"
+---
+
+Given a citation string like `17 CFR 240.10b5-1` or `42 U.S.C. 1983`, resolve it
+to the exact section, confirm the returned citation matches what you asked for,
+and pull the authoritative text. This is the reliable way to verify a citation an
+LLM produced, or to expand a citation your users typed into full, linkable law.
+
+<Warning>
+  This recipe covers **statutes and regulations only** (USC, CFR, state codes,
+  state regulations, constitutions, court rules, and other statute-corpus types).
+  It is not for case law citations. Case law is not part of the Vaquill Developer
+  API.
+</Warning>
+
+**Endpoints used:** `POST /statutes/search`, `GET /statutes/section/{actId}/body`.
+
+## The flow
+
+<Steps>
+  <Step title="Search with the citation as the query">
+    Send the citation string straight to `POST /statutes/search`. Scope
+    `corpusType` when the citation tells you the corpus: `CFR` for a `... CFR ...`
+    cite, `USC` for `... U.S.C. ...`, `STATE` (with a `state` code) for a state
+    statute.
+  </Step>
+  <Step title="Confirm the top result matches">
+    Compare the top result's `citation` and `citationShort` against your input. If
+    they do not line up, treat the citation as unresolved rather than guessing.
+  </Step>
+  <Step title="Pull the authoritative text">
+    On a confirmed match, call `GET /statutes/section/{actId}/body` for the full
+    `plain` text and a link to the official government source.
+  </Step>
+</Steps>
+
+## Step 1: search with the citation string
+
+<CodeGroup>
+
+```bash cURL
+# A CFR citation: scope corpusType to CFR
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "17 CFR 240.10b5-1", "corpusType": "CFR", "limit": 3}'
+
+# A USC citation: scope corpusType to USC
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "42 U.S.C. 1983", "corpusType": "USC", "limit": 3}'
+```
+
+```python Python
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def search_citation(citation, corpus_type=None, state=None):
+    body = {"query": citation, "limit": 3}
+    if corpus_type:
+        body["corpusType"] = corpus_type
+    if state:
+        body["state"] = state
+    resp = requests.post(f"{BASE}/statutes/search", headers=HEADERS, json=body)
+    resp.raise_for_status()
+    return resp.json()["results"]
+```
+
+```javascript JavaScript
+const BASE = "https://api.vaquill.ai/api/v1";
+
+async function searchCitation(citation, { corpusType, state } = {}) {
+  const body = { query: citation, limit: 3 };
+  if (corpusType) body.corpusType = corpusType;
+  if (state) body.state = state;
+  const resp = await fetch(`${BASE}/statutes/search`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer vq_key_...",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(`search failed: ${resp.status}`);
+  return (await resp.json()).results;
+}
+```
+
+</CodeGroup>
+
+A trimmed top result for `42 U.S.C. 1983`:
+
+```json
+{
+  "results": [
+    {
+      "actId": "USC_T42_C21_S1983",
+      "citation": "42 U.S.C. § 1983",
+      "citationShort": "42 USC 1983",
+      "title": "Civil action for deprivation of rights",
+      "corpusType": "USC",
+      "relevanceScore": 0.91,
+      "htmlUrl": "https://uscode.house.gov/...",
+      "govInfoHtmlUrl": "https://www.govinfo.gov/..."
+    }
+  ],
+  "total": 3,
+  "hasMore": false
+}
+```
+
+## Step 2 and 3: confirm the match, then fetch text
+
+Confirm before you trust. Normalize both the input and the returned
+`citation` / `citationShort` (strip the section sign, punctuation, and case) and
+require them to line up. If nothing matches, flag the citation as unresolved so a
+human, or the calling model, knows not to rely on it.
+
+```python Python
+import re
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def normalize(cite):
+    # Lowercase, drop the section sign, collapse punctuation and spacing so
+    # "42 U.S.C. § 1983" and "42 USC 1983" compare equal.
+    cite = cite.lower().replace("§", " ")
+    cite = re.sub(r"[.,]", " ", cite)
+    return re.sub(r"\s+", " ", cite).strip()
+
+
+def confirm_match(input_citation, result):
+    # Match if the normalized input and a returned citation field contain each
+    # other. Loose enough to bridge "42 U.S.C. § 1983" vs "42 USC 1983", strict
+    # enough to reject an unrelated section.
+    target = normalize(input_citation)
+    for field in ("citation", "citationShort"):
+        value = result.get(field)
+        if not value:
+            continue
+        candidate = normalize(value)
+        if target in candidate or candidate in target:
+            return True
+    return False
+
+
+def fetch_body(act_id):
+    resp = requests.get(f"{BASE}/statutes/section/{act_id}/body", headers=HEADERS)
+    resp.raise_for_status()
+    data = resp.json()
+    return data.get("plain") if data.get("available") else None
+
+
+def resolve_citation(citation, corpus_type=None, state=None):
+    results = search_citation(citation, corpus_type=corpus_type, state=state)
+    if not results:
+        return {"resolved": False, "reason": "no results", "input": citation}
+
+    top = results[0]
+    if not confirm_match(citation, top):
+        # Top result does not clearly match the requested citation.
+        return {
+            "resolved": False,
+            "reason": "no confident match",
+            "input": citation,
+            "closest": top.get("citation"),
+        }
+
+    text = fetch_body(top["actId"])
+    if not text:
+        return {
+            "resolved": False,
+            "reason": "text unavailable",
+            "input": citation,
+            "actId": top["actId"],
+        }
+
+    source_url = (
+        top.get("htmlUrl")
+        or top.get("stateHtmlUrl")
+        or top.get("govInfoHtmlUrl")
+        or top.get("externalUrl")
+    )
+    return {
+        "resolved": True,
+        "actId": top["actId"],
+        "citation": top.get("citation"),
+        "title": top.get("title"),
+        "sourceUrl": source_url,
+        "text": text,
+    }
+
+
+if __name__ == "__main__":
+    print(resolve_citation("17 CFR 240.10b5-1", corpus_type="CFR"))
+    print(resolve_citation("42 U.S.C. 1983", corpus_type="USC"))
+```
+
+## Flagging what you cannot resolve
+
+<AccordionGroup>
+  <Accordion title="Return an unresolved flag, not a guess" icon="triangle-exclamation">
+    When search returns nothing, or the top result's `citation` does not match, do
+    not fall through to a loosely related section. Return an explicit
+    `{"resolved": false, ...}` result. If you are verifying a citation an LLM
+    produced, an unresolved flag is exactly the signal that the model may have
+    fabricated it.
+  </Accordion>
+  <Accordion title="Scope by corpus to cut false matches" icon="filter">
+    The corpus token is usually right there in the citation. `... CFR ...` means
+    `corpusType: "CFR"`; `... U.S.C. ...` means `"USC"`; a state code section
+    means `"STATE"` with the two-letter `state`. `titleNumber` is accepted only
+    with `USC` or `CFR` and can pin the title further. Scoping keeps a same-numbered
+    section in the wrong corpus from ranking first.
+  </Accordion>
+  <Accordion title="404 on the body is refunded" icon="rotate-left">
+    If `GET /statutes/section/{actId}/body` cannot return text, it responds with
+    `available: false` (or a 404 that is credit-refunded). Treat that as
+    unresolved-with-metadata: you have a confirmed `actId` and citation, but no
+    authoritative text to quote yet.
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Ground an LLM answer (RAG)" icon="brain" href="/api-guide/recipes/rag-grounding">
+    Use verified citations as grounding sources for an LLM answer.
+  </Card>
+  <Card title="Map a requirement to the law" icon="clipboard-check" href="/api-guide/recipes/compliance-mapping">
+    Go from a plain-language obligation to the governing sections.
+  </Card>
+  <Card title="Grounding LLMs" icon="shield-check" href="/api-guide/grounding-llms">
+    Why citation verification belongs in every legal AI pipeline.
+  </Card>
+  <Card title="Statute lookup chatbot" icon="comments" href="/api-guide/recipes/statute-chatbot">
+    A conversational front end over the same lookups.
+  </Card>
+</CardGroup>

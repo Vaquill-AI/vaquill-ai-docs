@@ -1,0 +1,162 @@
+---
+title: "Enrich a citation database with source text"
+description: "Search a batch of topics or citations, take the best match, and attach a canonical citation, excerpt, and official source URL"
+icon: "database"
+---
+
+If you keep a list of topics or rough citations, you can ground each one against authoritative text. This recipe walks a batch of inputs, searches each one, takes the best match, and attaches the canonical citation, an excerpt, and the official government source URL back onto your record. It paces requests to respect the rate limit and backs off on a `429`.
+
+**Endpoints used:** `POST /statutes/search` (4 credits per call). Optionally `GET /statutes/section/{actId}/body` (6 credits) when you want full text rather than the excerpt.
+
+<Warning>
+  The base plan allows 30 requests per minute per key. Space your calls and honor the `Retry-After` header on a `429` so a large batch does not get throttled. See [Rate limits](/api-guide/errors).
+</Warning>
+
+<Steps>
+  <Step title="Define your batch of inputs">
+    Each input is a natural language topic or a rough citation you want to resolve. Scope with `corpusType` and `state` where you already know them; omit them to search the whole corpus.
+
+    ```python Python
+    INPUTS = [
+        {"topic": "civil rights deprivation under color of law", "corpusType": "USC"},
+        {"topic": "security deposit return deadline", "corpusType": "STATE", "state": "ca"},
+        {"topic": "hazard communication standard", "corpusType": "CFR"},
+    ]
+    ```
+  </Step>
+
+  <Step title="Search with rate-limit-aware pacing">
+    Wrap the search call so it sleeps between requests to stay under the per-minute cap, and retries with a backoff when the API returns `429`. Failed searches (for example a `404`) are refunded, so a miss costs nothing.
+
+    ```python Python
+    import time
+    import requests
+
+    BASE_URL = "https://api.vaquill.ai/api/v1"
+    HEADERS = {
+        "Authorization": "Bearer vq_key_...",
+        "Content-Type": "application/json",
+    }
+
+    # Base plan: 30/min. Stay under it with a fixed gap between calls.
+    MIN_INTERVAL_SECONDS = 2.1
+
+    def search_once(payload: dict, max_retries: int = 5) -> dict | None:
+        for attempt in range(max_retries):
+            resp = requests.post(
+                f"{BASE_URL}/statutes/search", headers=HEADERS, json=payload
+            )
+            if resp.status_code == 429:
+                wait = int(resp.headers.get("Retry-After", 2 ** attempt))
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            results = resp.json()["results"]
+            return results[0] if results else None
+        return None
+    ```
+  </Step>
+
+  <Step title="Choose the best source URL">
+    Prefer the official government link. `govInfoHtmlUrl` and `stateHtmlUrl` point at the authoritative federal and state publishers; `htmlUrl` is the general source link.
+
+    ```python Python
+    def best_source_url(result: dict) -> str | None:
+        for field in ("govInfoHtmlUrl", "stateHtmlUrl", "htmlUrl", "externalUrl"):
+            url = result.get(field)
+            if url:
+                return url
+        return None
+    ```
+  </Step>
+
+  <Step title="Enrich each record">
+    Build the search payload from each input, take the top match, and attach the canonical citation, excerpt, source URL, and `actId` (so you can fetch full text later).
+
+    ```python Python
+    def enrich(inputs: list[dict]) -> list[dict]:
+        enriched: list[dict] = []
+        for i, item in enumerate(inputs):
+            payload = {"query": item["topic"], "limit": 3}
+            if "corpusType" in item:
+                payload["corpusType"] = item["corpusType"]
+            if "state" in item:
+                payload["state"] = item["state"]
+
+            top = search_once(payload)
+            enriched.append(
+                {
+                    "topic": item["topic"],
+                    "actId": top.get("actId") if top else None,
+                    "citation": top.get("citation") if top else None,
+                    "excerpt": (top.get("excerpt") if top else None),
+                    "sourceUrl": best_source_url(top) if top else None,
+                }
+            )
+
+            # Pace all but the last request.
+            if i < len(inputs) - 1:
+                time.sleep(MIN_INTERVAL_SECONDS)
+
+        return enriched
+
+    if __name__ == "__main__":
+        for row in enrich(INPUTS):
+            status = row["citation"] or "(no match)"
+            print(f"{row['topic']}\n  -> {status}  {row['sourceUrl'] or ''}\n")
+    ```
+
+    Example output:
+
+    ```text
+    civil rights deprivation under color of law
+      -> 42 U.S.C. § 1983  https://...
+
+    security deposit return deadline
+      -> Cal. Civ. Code § 1950.5  https://...
+    ```
+  </Step>
+
+  <Step title="Optionally attach full text">
+    When you need the whole section rather than the excerpt, take the `actId` from a match and call the body endpoint. It charges only when text is returned.
+
+    <CodeGroup>
+    ```bash cURL
+    curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body \
+      -H "Authorization: Bearer vq_key_..."
+    ```
+
+    ```python Python
+    def fetch_body(act_id: str) -> str | None:
+        resp = requests.get(
+            f"{BASE_URL}/statutes/section/{act_id}/body",
+            headers={"Authorization": HEADERS["Authorization"]},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data["plain"] if data.get("available") else None
+    ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+<Note>
+  Store the returned `actId` on your record. It is the stable handle for that section, so a later job can re-fetch metadata or full text without searching again.
+</Note>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Compare a rule across states" icon="scale-balanced" href="/api-guide/recipes/multi-state-comparison">
+    Run one query across several states and build a comparison.
+  </Card>
+  <Card title="Add the corpus as an agent tool" icon="plug" href="/api-guide/recipes/mcp-tool">
+    Expose statute search to a tool-calling agent.
+  </Card>
+  <Card title="Monitor corpus coverage" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
+    Detect when new corpora appear so you can re-enrich.
+  </Card>
+  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+    Pace requests, cache coverage, and handle errors well.
+  </Card>
+</CardGroup>

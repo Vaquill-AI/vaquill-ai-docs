@@ -1,0 +1,204 @@
+---
+title: "Grounding LLMs with Vaquill"
+description: "Why and how to ground model answers in retrieved, authoritative US statutory text"
+icon: "shield-halved"
+---
+
+Generic language models are fluent about the law but not reliable about it. Ask one for a statute and it will often invent a plausible citation, misquote the text, or blend two unrelated sections into one confident paragraph. For legal work that is not a rough edge, it is a liability.
+
+Grounding fixes this. Instead of asking the model what the law says, you retrieve the authoritative sections first, hand the model their verbatim text, and require it to answer only from what you provided and cite every claim. Vaquill is built for exactly this loop: every section comes back with a citation, full text, and a link to the official government source, so your users can verify the answer against the primary record.
+
+<Note>
+  This page is the conceptual companion to the runnable [RAG grounding recipe](/api-guide/recipes/rag-grounding). Read this to understand the pattern, then follow the recipe for copy-paste code.
+</Note>
+
+## Why grounding matters
+
+A model with no retrieved context is answering from a compressed, lossy memory of its training data. For statutes that produces three predictable failures:
+
+- **Fabricated citations.** The model emits a section number that looks right but does not exist, or points to the wrong title or chapter.
+- **Misquoted text.** Even when the citation is real, the quoted language drifts from the enacted text. Small wording changes matter in law.
+- **Overconfident coverage.** The model answers a question the law does not actually address, rather than admitting the sources are silent.
+
+Grounding removes the model's discretion over the facts. It retrieves, it does not remember. The model's only job is to read the sections you retrieved, synthesize an answer, and attribute each claim to a citation you can trace back to the official source.
+
+## The pattern
+
+Four steps turn a raw question into a grounded, verifiable answer.
+
+<Steps>
+  <Step title="Retrieve the relevant sections">
+    Send the user's question to `POST /statutes/search`. Scope it with `corpusType` (and `state` for state-scoped corpora) so you search only the body of law that can answer it. Each result carries an `actId`, a `citation`, an `excerpt`, and a source URL.
+  </Step>
+
+  <Step title="Fetch the authoritative text">
+    The search `excerpt` is capped at 500 characters, which is enough to rank but not to answer. For each section you plan to cite, call `GET /statutes/section/{actId}/body` to get the full `plain` (or `html`) text. This is the authoritative text the model will reason over.
+  </Step>
+
+  <Step title="Construct a grounded prompt">
+    Build a prompt that gives the model the retrieved sections, each labeled with its citation and source URL, and instructs it to:
+
+    - answer **only** from the provided sections,
+    - cite each claim by its `citation`,
+    - say plainly that it cannot find support when the sources do not cover the question.
+  </Step>
+
+  <Step title="Link back to the source">
+    Show the answer with its citations, and link each one to the official government source URL returned with the section. The user verifies against the primary record, not against the model.
+  </Step>
+</Steps>
+
+## Practical guidance
+
+A few habits keep grounded answers accurate and cheap.
+
+<AccordionGroup>
+  <Accordion title="Scope retrieval to the right corpusType" icon="filter">
+    Searching the entire corpus for a question that only a state penal code can answer wastes credits and pulls in noise that competes for the model's attention. Pass the narrowest `corpusType` that fits (for example `USC` for federal statutes, or `STATE` with `state: "ca"` for California codes). If you are unsure which corpora a jurisdiction has, call the free `GET /statutes/coverage` and read the `corpora` keys before you search. See [Coverage](/api-guide/coverage).
+  </Accordion>
+
+  <Accordion title="Keep the retrieved text verbatim" icon="quote-left">
+    Do not summarize, clean up, or paraphrase a section before it reaches the model. Paraphrasing is where meaning quietly shifts, and it defeats the point of grounding. Pass the `plain` text from the body endpoint through untouched, and let the model quote from it directly.
+  </Accordion>
+
+  <Accordion title="Carry the citation and source URL with every passage" icon="link">
+    When you assemble the context block, keep each passage next to its `citation` and its source URL (for example `htmlUrl`, `stateHtmlUrl`, or `govInfoHtmlUrl`). That lets the model attribute claims correctly and lets you render clickable, verifiable citations in your UI.
+  </Accordion>
+
+  <Accordion title="Treat relevanceScore as a relative rank, not a threshold" icon="ranking-star">
+    `relevanceScore` orders results within a single response. It is not a calibrated confidence score and is not comparable across queries. Do not drop results below a fixed cutoff like `0.5` or trust a high score as proof of relevance. Use it to order what you show, and let the grounded prompt decide whether the sections actually answer the question.
+  </Accordion>
+
+  <Accordion title="Verify the model's citations before showing the answer" icon="circle-check">
+    A grounded model should only cite sections you retrieved, but verify it anyway. Before rendering, check that every `actId` or citation the model used appears in the set you passed in. Drop or flag anything that does not match. This catches the rare case where the model reaches back into its own memory instead of the provided context.
+  </Accordion>
+</AccordionGroup>
+
+## End-to-end sketch
+
+This puts the pattern together in Python. `call_llm` is a placeholder for whatever model you run in your own stack, so wire it to your LLM client.
+
+```python Python
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_...", "Content-Type": "application/json"}
+
+
+def retrieve(question: str, corpus_type: str, state: str | None = None, k: int = 4):
+    """Search, then fetch verbatim body text for each hit."""
+    body = {"query": question, "corpusType": corpus_type, "limit": k}
+    if state:
+        body["state"] = state
+
+    hits = requests.post(f"{BASE}/statutes/search", headers=HEADERS, json=body).json()["results"]
+
+    sections = []
+    for hit in hits:
+        text = requests.get(
+            f"{BASE}/statutes/section/{hit['actId']}/body", headers=HEADERS
+        ).json()
+        if not text.get("available"):
+            continue
+        sections.append(
+            {
+                "actId": hit["actId"],
+                "citation": hit["citation"],
+                "sourceUrl": hit.get("htmlUrl") or hit.get("stateHtmlUrl") or hit.get("govInfoHtmlUrl"),
+                "text": text["plain"],
+            }
+        )
+    return sections
+
+
+def build_prompt(question: str, sections: list[dict]) -> str:
+    blocks = "\n\n".join(
+        f"[{s['citation']}] (source: {s['sourceUrl']})\n{s['text']}" for s in sections
+    )
+    return (
+        "You are a legal research assistant. Answer the question using ONLY the "
+        "statutory sections below. Cite every claim by its bracketed citation. If the "
+        "sections do not address the question, say you cannot find supporting "
+        "authority. Do not rely on any outside knowledge.\n\n"
+        f"SECTIONS:\n{blocks}\n\n"
+        f"QUESTION: {question}\n\nGrounded answer:"
+    )
+
+
+def grounded_answer(question: str, corpus_type: str, state: str | None = None) -> str:
+    sections = retrieve(question, corpus_type, state)
+    if not sections:
+        return "No authoritative sections were retrieved for this question."
+
+    answer = call_llm(build_prompt(question, sections))  # your model in your stack
+
+    # Verify: every cited section must be one we actually retrieved.
+    allowed = {s["citation"] for s in sections}
+    if not any(citation in answer for citation in allowed):
+        return "The generated answer could not be grounded in the retrieved sections."
+    return answer
+
+
+print(grounded_answer("When can a person sue a state officer for civil rights violations?", "USC"))
+```
+
+The two properties that make this trustworthy: the model never sees text you did not retrieve, and you refuse to surface an answer whose citations you cannot trace back to the retrieved set.
+
+## Grounding inside a tool-calling agent
+
+The same loop works when an agent decides for itself when to look up the law. Instead of retrieving before every turn, you expose retrieval as a tool the model can call, and it grounds itself on demand. Define a `search_statutes` tool that wraps the same `retrieve` function, and let the agent invoke it when a question needs statutory authority.
+
+```python Python
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_statutes",
+            "description": (
+                "Search US statutes and return verbatim section text with citations "
+                "and official source URLs. Call this before answering any legal question."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string", "description": "The legal question to research."},
+                    "corpusType": {
+                        "type": "string",
+                        "description": "e.g. USC for federal statutes, STATE for state codes.",
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "2-letter lowercase state code when corpusType is state-scoped.",
+                    },
+                },
+                "required": ["question", "corpusType"],
+            },
+        },
+    }
+]
+
+
+def run_tool_call(name: str, args: dict):
+    if name == "search_statutes":
+        return retrieve(args["question"], args["corpusType"], args.get("state"))
+    raise ValueError(f"unknown tool: {name}")
+```
+
+The grounding discipline does not change: the tool returns verbatim text with citations, and your system prompt still requires the agent to answer only from tool results and cite each claim. If you would rather not maintain the tool wiring yourself, the [Vaquill MCP server](/api-guide/recipes/mcp-tool) exposes these same statute lookups as ready-made tools for agent frameworks.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="RAG grounding recipe" icon="magnifying-glass" href="/api-guide/recipes/rag-grounding">
+    The runnable, copy-paste version of the retrieve, fetch, prompt, and cite loop.
+  </Card>
+  <Card title="Statute chatbot recipe" icon="comments" href="/api-guide/recipes/statute-chatbot">
+    Build a multi-turn chatbot that stays grounded across a conversation.
+  </Card>
+  <Card title="MCP tool" icon="plug" href="/api-guide/recipes/mcp-tool">
+    Expose Vaquill statute lookups as tools inside an agent framework.
+  </Card>
+  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+    Scope queries, cache coverage, verify citations, and handle errors well.
+  </Card>
+</CardGroup>

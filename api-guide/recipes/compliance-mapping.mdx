@@ -1,0 +1,244 @@
+---
+title: "Map a compliance requirement to the governing law"
+description: "Take a plain-language obligation, search the relevant regulatory corpora, and return the governing sections grouped by jurisdiction with citations and official source links"
+icon: "clipboard-check"
+---
+
+Start from a plain-language obligation like "breach notification timelines" and
+end with the governing sections: federal regulations, agency guidance, and the
+relevant state rules, each with its citation and a link to the official source.
+This is the backbone of a RegTech or compliance-mapping feature.
+
+**Endpoints used:** `POST /statutes/search`, `GET /statutes/section/{actId}/body`, `GET /statutes/coverage` (to discover which corpora a jurisdiction has).
+
+<Info>
+  Vaquill returns the authoritative regulatory text and links back to the official
+  government source. It supports building a compliance map, it does not render a
+  compliance determination. Pair it with review by qualified counsel.
+</Info>
+
+## The flow
+
+<Steps>
+  <Step title="Pick the corpora that govern the obligation">
+    A regulatory obligation usually lives across several corpora: `CFR` (federal
+    regulations), `FEDERAL_REGISTER` (agency rules), `AGENCY_GUIDANCE` (rulings and
+    notices), and `REGULATION` (state administrative rules, paired with a `state`).
+  </Step>
+  <Step title="Search each corpus for the obligation">
+    Run `POST /statutes/search` once per corpus, using the same plain-language
+    query. Collect the top governing sections from each.
+  </Step>
+  <Step title="Pull the text and group the results">
+    Fetch each section's full text with `GET /statutes/section/{actId}/body`, then
+    group by `corpusType` and jurisdiction so the map reads by source of authority.
+  </Step>
+  <Step title="Present with citations and official links">
+    Show each section with its `citation` and the official government URL so a
+    reviewer can open the primary source.
+  </Step>
+</Steps>
+
+## Step 1: search across the regulatory corpora
+
+<CodeGroup>
+
+```bash cURL
+# Federal regulations (CFR)
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "data breach notification timeline", "corpusType": "CFR", "limit": 5}'
+
+# Federal Register agency rules
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "data breach notification timeline", "corpusType": "FEDERAL_REGISTER", "limit": 5}'
+
+# Agency guidance
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "data breach notification timeline", "corpusType": "AGENCY_GUIDANCE", "limit": 5}'
+
+# A specific state's administrative regulations (e.g. Washington)
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "data breach notification timeline", "corpusType": "REGULATION", "state": "wa", "limit": 5}'
+```
+
+```python Python
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def search(query, corpus_type, state=None, limit=5):
+    body = {"query": query, "corpusType": corpus_type, "limit": limit}
+    if state:
+        body["state"] = state
+    resp = requests.post(f"{BASE}/statutes/search", headers=HEADERS, json=body)
+    resp.raise_for_status()
+    return resp.json()["results"]
+```
+
+```javascript JavaScript
+const BASE = "https://api.vaquill.ai/api/v1";
+
+async function search(query, corpusType, { state, limit = 5 } = {}) {
+  const body = { query, corpusType, limit };
+  if (state) body.state = state;
+  const resp = await fetch(`${BASE}/statutes/search`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer vq_key_...",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(`search failed: ${resp.status}`);
+  return (await resp.json()).results;
+}
+```
+
+</CodeGroup>
+
+<Tip>
+  Not sure which corpora a state has? Call `GET /statutes/coverage` and read the
+  jurisdiction's `corpora` keys, then pass one as `corpusType`. State regulations
+  (`REGULATION`) are ingested for a subset of states, so check before you scope to
+  one.
+</Tip>
+
+## Step 2 and 3: collect, fetch text, and group
+
+```python Python
+import requests
+from collections import defaultdict
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def fetch_body(act_id):
+    resp = requests.get(f"{BASE}/statutes/section/{act_id}/body", headers=HEADERS)
+    resp.raise_for_status()
+    data = resp.json()
+    return data.get("plain") if data.get("available") else None
+
+
+def source_link(result):
+    return (
+        result.get("htmlUrl")
+        or result.get("stateHtmlUrl")
+        or result.get("govInfoHtmlUrl")
+        or result.get("pdfUrl")
+        or result.get("externalUrl")
+    )
+
+
+def map_requirement(obligation, states=None, limit=5):
+    # Federal regulatory corpora, plus one REGULATION pass per requested state.
+    plan = [
+        ("CFR", None),
+        ("FEDERAL_REGISTER", None),
+        ("AGENCY_GUIDANCE", None),
+    ]
+    for st in states or []:
+        plan.append(("REGULATION", st))
+
+    grouped = defaultdict(list)
+    for corpus_type, state in plan:
+        for r in search(obligation, corpus_type, state=state, limit=limit):
+            text = fetch_body(r["actId"])
+            if not text:
+                continue  # skip sections with no available text
+            # Group key: corpusType, plus the state for state-scoped corpora.
+            jurisdiction = (r.get("state") or "federal").upper()
+            key = f"{corpus_type} / {jurisdiction}"
+            grouped[key].append(
+                {
+                    "citation": r.get("citation") or r["actId"],
+                    "title": r.get("title"),
+                    "sourceUrl": source_link(r),
+                    "text": text,
+                }
+            )
+    return grouped
+
+
+def render(obligation, grouped):
+    print(f"Governing law for: {obligation}\n")
+    for group, sections in grouped.items():
+        print(f"== {group} ==")
+        for s in sections:
+            print(f"  {s['citation']} - {s['title']}")
+            print(f"    Source: {s['sourceUrl']}")
+        print()
+
+
+if __name__ == "__main__":
+    obligation = "data breach notification timeline"
+    result = map_requirement(obligation, states=["wa", "md"])
+    render(obligation, result)
+```
+
+A grouped result reads by source of authority:
+
+```text
+Governing law for: data breach notification timeline
+
+== CFR / FEDERAL ==
+  16 CFR § 318.5 - Notification to the Federal Trade Commission
+    Source: https://www.ecfr.gov/...
+
+== AGENCY_GUIDANCE / FEDERAL ==
+  ... - Agency guidance on breach reporting
+    Source: https://www.govinfo.gov/...
+
+== REGULATION / WA ==
+  WAC ... - Notice to affected consumers
+    Source: https://app.leg.wa.gov/...
+```
+
+## Notes for a production compliance map
+
+<AccordionGroup>
+  <Accordion title="Feed the grouped sections into an LLM for a summary" icon="brain">
+    Once you have the grouped, cited text, you can pass it to an LLM in your stack
+    to produce a plain-language summary of each obligation, one that cites each
+    section and links its official source. Use the strict grounding pattern in
+    [Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding) so the
+    summary quotes only the retrieved regulatory text.
+  </Accordion>
+  <Accordion title="Scope state regulations deliberately" icon="location-dot">
+    `REGULATION` is state-scoped: always pair it with a two-letter `state` code.
+    Coverage spans a subset of states and expands weekly, so drive the state list
+    from `GET /statutes/coverage` rather than assuming every state is present.
+  </Accordion>
+  <Accordion title="Keep the official link on every row" icon="link">
+    Each result carries source URLs (`htmlUrl`, `stateHtmlUrl`, `govInfoHtmlUrl`,
+    `pdfUrl`, and others; any may be null). Surface the first present link on every
+    mapped section so a reviewer can open the primary source and confirm the text.
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Ground an LLM answer (RAG)" icon="brain" href="/api-guide/recipes/rag-grounding">
+    Summarize the mapped obligations with strict, cited grounding.
+  </Card>
+  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+    Verify a specific regulation citation and pull its text.
+  </Card>
+  <Card title="Grounding LLMs" icon="shield-check" href="/api-guide/grounding-llms">
+    The principles behind grounding legal AI on primary sources.
+  </Card>
+  <Card title="API Coverage" icon="map-location-dot" href="/api-guide/coverage">
+    Which corpora and jurisdictions are ingested, with live counts.
+  </Card>
+</CardGroup>

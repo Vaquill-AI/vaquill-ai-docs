@@ -185,11 +185,33 @@
         "icon": "code",
         "groups": [
           {
-            "group": "Guide",
+            "group": "Get Started",
+            "icon": "rocket",
+            "pages": [
+              "api-guide/overview",
+              "api-guide/quickstart",
+              "api-guide/authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
             "icon": "book-open",
             "pages": [
-              "api-guide/authentication",
-              "api-guide/errors"
+              "api-guide/concepts/corpus-types",
+              "api-guide/concepts/jurisdictions",
+              "api-guide/concepts/section-ids",
+              "api-guide/concepts/formats"
+            ]
+          },
+          {
+            "group": "Working with the API",
+            "icon": "gears",
+            "pages": [
+              "api-guide/pagination",
+              "api-guide/rate-limits",
+              "api-guide/credits",
+              "api-guide/errors",
+              "api-guide/best-practices"
             ]
           },
           {
@@ -197,6 +219,41 @@
             "icon": "database",
             "pages": [
               "api-guide/coverage"
+            ]
+          },
+          {
+            "group": "Grounding AI",
+            "icon": "shield-halved",
+            "pages": [
+              "api-guide/grounding-llms"
+            ]
+          },
+          {
+            "group": "Recipes",
+            "icon": "flask",
+            "pages": [
+              "api-guide/recipes/rag-grounding",
+              "api-guide/recipes/statute-chatbot",
+              "api-guide/recipes/citation-lookup",
+              "api-guide/recipes/compliance-mapping",
+              "api-guide/recipes/multi-state-comparison",
+              "api-guide/recipes/coverage-monitoring",
+              "api-guide/recipes/citation-enrichment",
+              "api-guide/recipes/mcp-tool"
+            ]
+          },
+          {
+            "group": "Use Cases",
+            "icon": "lightbulb",
+            "pages": [
+              "api-guide/use-cases"
+            ]
+          },
+          {
+            "group": "Resources",
+            "icon": "clock-rotate-left",
+            "pages": [
+              "api-guide/changelog"
             ]
           }
         ]

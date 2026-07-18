@@ -1,0 +1,90 @@
+---
+title: "Use Cases"
+description: "Who the Vaquill Developer API is for and what teams build with it: grounding AI, compliance mapping, and embedding authoritative US legal text"
+icon: "lightbulb"
+---
+
+The Vaquill Developer API turns US statutes and regulations into infrastructure. Search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance. Every result comes back with a citation, full text in multiple formats, and a link to the official government source, so anything you build stays grounded in authoritative law that a user can verify. Teams reach for it in three shapes: to ground AI (RAG and agents) in real law, to power compliance and RegTech workflows, and to embed authoritative legal text directly into a product.
+
+## By what you build
+
+Most projects reduce to a handful of reusable patterns. Start from the one closest to your goal, then adapt.
+
+<CardGroup cols={2}>
+  <Card title="Legal Q&A chatbot" icon="comments" href="/api-guide/recipes/statute-chatbot">
+    Answer statute and regulation questions with an assistant that quotes the section it relied on and links to the official source.
+  </Card>
+  <Card title="Ground an LLM or agent (RAG)" icon="robot" href="/api-guide/recipes/rag-grounding">
+    Retrieve the on-point statutory text, feed it to an LLM in your stack as context, and return citations instead of guesses.
+  </Card>
+  <Card title="Resolve and verify a citation" icon="link" href="/api-guide/recipes/citation-lookup">
+    Turn a citation or an `actId` into verified metadata and full text, and confirm a quoted passage is real before you ship it.
+  </Card>
+  <Card title="Compliance obligation mapping" icon="shield-check" href="/api-guide/recipes/compliance-mapping">
+    Map a control, policy, or obligation to the statutes and regulations that govern it, with a source link for every match.
+  </Card>
+  <Card title="Monitor corpus coverage and changes" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
+    Read `/statutes/coverage` at runtime to know exactly what is queryable, and track how jurisdictions and section counts grow week to week.
+  </Card>
+  <Card title="Compare a rule across states" icon="scale-balanced" href="/api-guide/recipes/multi-state-comparison">
+    Run the same query against multiple state codes and line up how each jurisdiction treats an issue side by side.
+  </Card>
+  <Card title="Enrich a citation database" icon="database" href="/api-guide/recipes/citation-enrichment">
+    Backfill an existing table of citations with canonical text, structured metadata, and official government links.
+  </Card>
+  <Card title="Add the corpus as an agent tool (MCP)" icon="plug" href="/api-guide/recipes/mcp-tool">
+    Expose statute search and retrieval to an AI agent as tools it can call, so it grounds itself in law on demand.
+  </Card>
+</CardGroup>
+
+## By who you are
+
+Same corpus, different jobs. Here is what each kind of team tends to build, with a recipe to start from.
+
+<CardGroup cols={2}>
+  <Card title="Legaltech / SaaS builders" icon="laptop-code" href="/api-guide/recipes/rag-grounding">
+    Embed statute search into a CLM, drafting, or practice-management product. Ground an in-app research assistant. Show the governing section next to a contract clause, with a link to the source.
+  </Card>
+  <Card title="In-house legal & compliance teams" icon="building" href="/api-guide/recipes/compliance-mapping">
+    Stand up an internal research tool over the US Code and CFR. Map company policies to the regulations behind them. Answer "what does the law say here" without leaving your own systems.
+  </Card>
+  <Card title="Law firms & solo practitioners" icon="scale-balanced" href="/api-guide/recipes/statute-chatbot">
+    Build a first-pass research assistant grounded in statutes and court rules. Pull the exact section text into a brief or memo. Confirm a cited statute resolves before it goes out the door.
+  </Card>
+  <Card title="RegTech / compliance-monitoring vendors" icon="satellite-dish" href="/api-guide/recipes/coverage-monitoring">
+    Power automated regulatory checks against the CFR, the Federal Register, and agency guidance. Watch coverage grow to widen what you monitor. Alert customers when the underlying obligations shift.
+  </Card>
+  <Card title="GRC / IRM platforms" icon="clipboard-check" href="/api-guide/recipes/compliance-mapping">
+    Show the actual statute or regulation text inside a risk questionnaire so answers are grounded, not from memory. Attach a citation to every control. Link each requirement to the law that drives it.
+  </Card>
+  <Card title="Due-diligence, KYC & investigations" icon="magnifying-glass" href="/api-guide/recipes/multi-state-comparison">
+    Look up the licensing or disclosure rules that apply across a target's states of operation. Compare a requirement jurisdiction by jurisdiction. Attach authoritative source links to a diligence memo.
+  </Card>
+  <Card title="Academics, policy researchers & journalists" icon="book-open" href="/api-guide/recipes/multi-state-comparison">
+    Assemble a cross-state dataset of how an issue is regulated. Trace a rule from executive order to Federal Register to codified regulation. Cite primary law with a stable link every time.
+  </Card>
+  <Card title="Content & SEO teams / legal publishers" icon="file-lines" href="/api-guide/recipes/citation-enrichment">
+    Generate accurate, citation-backed explainers grounded in the real section text. Enrich a citation index with canonical text and official links. Keep published references pointing at authoritative sources.
+  </Card>
+  <Card title="AI labs / model builders" icon="microchip" href="/api-guide/recipes/citation-lookup">
+    Supply grounding data for legal RAG. Validate that model-generated citations resolve to real sections and quoted passages. Build evaluation sets from authoritative statutory text.
+  </Card>
+  <Card title="Government & civic tech" icon="landmark" href="/api-guide/recipes/statute-chatbot">
+    Make the law searchable for constituents in plain language. Cross-reference state codes, constitutions, and court rules. Link every answer back to the official government text.
+  </Card>
+</CardGroup>
+
+<Note>
+  Coverage expands weekly. Call `/statutes/coverage` at runtime to see exactly which jurisdictions and corpora are queryable rather than hardcoding counts. See the [Coverage](/api-guide/coverage) matrix for the human-readable view.
+</Note>
+
+## Start building
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/api-guide/quickstart">
+    Make your first search and fetch a section in a few minutes.
+  </Card>
+  <Card title="API Overview" icon="code" href="/api-guide/overview">
+    Every endpoint, credit cost, and the discovery flow at a glance.
+  </Card>
+</CardGroup>

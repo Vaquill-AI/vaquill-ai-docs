@@ -1,0 +1,68 @@
+---
+title: "API Overview"
+description: "The deepest US statutes and regulations API, built for grounding AI and compliance"
+icon: "code"
+---
+
+The Vaquill Developer API is the deepest US statutes and regulations API. Search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance. Every section comes back with a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into your product.
+
+## Endpoints at a glance
+
+Every path is prefixed with `/api/v1`. Search and retrieval endpoints cost credits (1 credit = \$0.01). Discovery endpoints are free.
+
+| Method | Path | Purpose | Credits |
+|--------|------|---------|---------|
+| `POST` | `/statutes/search` | Hybrid keyword + semantic search across the corpus | 4 |
+| `GET` | `/statutes/section/{actId}` | Section metadata by `actId` | 2 |
+| `GET` | `/statutes/section/{actId}/body` | Full section text (HTML + plain) | 6 |
+| `GET` | `/statutes/states` | Coverage summary by jurisdiction | Free |
+| `GET` | `/statutes/codes?state=XX` | Statutory codes ingested for one state | Free |
+| `GET` | `/statutes/coverage` | Full coverage matrix + corpus legend | Free |
+| `GET` | `/api-credits/pricing` | Credit cost per endpoint (no auth) | Free |
+
+<Note>
+  Coverage expands weekly. Call `/statutes/coverage` at runtime to see exactly what is queryable rather than hardcoding jurisdiction counts.
+</Note>
+
+## What you can build
+
+<CardGroup cols={2}>
+  <Card title="Use cases" icon="lightbulb" href="/api-guide/use-cases">
+    Grounding AI, compliance mapping, legal research tools, and more.
+  </Card>
+  <Card title="RAG grounding" icon="robot" href="/api-guide/recipes/rag-grounding">
+    Feed authoritative statute text to an LLM in your stack, with citations and source links.
+  </Card>
+  <Card title="Compliance mapping" icon="shield-check" href="/api-guide/recipes/compliance-mapping">
+    Map obligations to the statutes and regulations that govern them.
+  </Card>
+  <Card title="Statute chatbot" icon="comments" href="/api-guide/recipes/statute-chatbot">
+    Answer statute questions in your product, grounded in official text.
+  </Card>
+</CardGroup>
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/api-guide/quickstart">
+    Make your first search and fetch a section in a few minutes.
+  </Card>
+  <Card title="Authentication" icon="key" href="/api-guide/authentication">
+    Create an API key and authenticate every request.
+  </Card>
+</CardGroup>
+
+## Positioning
+
+Vaquill complements your existing legal research tools. It is built to ground and power products, always linking back to official government text, not to replace a lawyer or a licensed research service.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Coverage" icon="table" href="/api-guide/coverage">
+    The jurisdiction matrix in human-readable form.
+  </Card>
+  <Card title="Credits & pricing" icon="coins" href="/api-guide/credits">
+    What each call costs and how credits work.
+  </Card>
+</CardGroup>

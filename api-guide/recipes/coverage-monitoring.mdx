@@ -1,0 +1,194 @@
+---
+title: "Monitor corpus coverage and changes"
+description: "Poll the free coverage endpoint on a schedule and diff snapshots to detect new or expanded corpora"
+icon: "chart-line"
+---
+
+The corpus grows every week. This recipe polls the free `GET /statutes/coverage` endpoint on a schedule, saves a snapshot of each jurisdiction's `corpora` counts, and diffs it against the previous snapshot so you can react when a jurisdiction gains a new corpus (for example a state adding regulations) or an existing corpus expands.
+
+**Endpoints used:** `GET /statutes/coverage` (free).
+
+<Note>
+  `/statutes/coverage` costs 0 credits. It is authenticated and rate limited, so run it on a sensible cadence (daily or weekly is plenty) rather than in a tight loop.
+</Note>
+
+<Steps>
+  <Step title="Fetch the coverage matrix">
+    The response is wrapped as `{ "data": {...}, "meta": {...} }`. Inside `data` you get a `corpusTypes` legend and a `jurisdictions` array, where each jurisdiction carries a `corpora` object mapping a corpusType token to its ingested chunk count.
+
+    <CodeGroup>
+    ```bash cURL
+    curl https://api.vaquill.ai/api/v1/statutes/coverage \
+      -H "Authorization: Bearer vq_key_..."
+    ```
+
+    ```python Python
+    import requests
+
+    resp = requests.get(
+        "https://api.vaquill.ai/api/v1/statutes/coverage",
+        headers={"Authorization": "Bearer vq_key_..."},
+    )
+    cov = resp.json()["data"]
+
+    for j in cov["jurisdictions"]:
+        if j["hasData"]:
+            print(j["code"], j["corpora"])
+    ```
+    </CodeGroup>
+
+    A trimmed `data` payload looks like this:
+
+    ```json
+    {
+      "corpusTypes": [
+        {"token": "STATE", "description": "State statutory codes", "scope": "state"},
+        {"token": "REGULATION", "description": "State administrative regulations", "scope": "state"}
+      ],
+      "jurisdictions": [
+        {
+          "code": "wa",
+          "name": "Washington",
+          "kind": "state",
+          "sectionCount": 45231,
+          "hasData": true,
+          "corpora": {"STATE": 45231, "REGULATION": 51142, "STATE_CONSTITUTION": 179}
+        }
+      ],
+      "totalSections": 1620000,
+      "stateCountWithData": 51
+    }
+    ```
+  </Step>
+
+  <Step title="Reduce the response to a comparable snapshot">
+    Keep only the fields you want to track. A dictionary keyed by jurisdiction code, holding each jurisdiction's `corpora` map, is compact and easy to diff.
+
+    ```python Python
+    def to_snapshot(coverage_data: dict) -> dict:
+        """Flatten coverage into {code: {corpusToken: count}}."""
+        return {
+            j["code"]: dict(j["corpora"])
+            for j in coverage_data["jurisdictions"]
+            if j["hasData"]
+        }
+    ```
+  </Step>
+
+  <Step title="Save each snapshot to disk">
+    Persist the snapshot as JSON so the next run has a baseline to compare against. Timestamp the file name so you keep a history.
+
+    ```python Python
+    import json
+    from datetime import datetime, timezone
+    from pathlib import Path
+
+    SNAPSHOT_DIR = Path("coverage_snapshots")
+
+    def save_snapshot(snapshot: dict) -> Path:
+        SNAPSHOT_DIR.mkdir(exist_ok=True)
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        path = SNAPSHOT_DIR / f"coverage-{stamp}.json"
+        path.write_text(json.dumps(snapshot, indent=2, sort_keys=True))
+        return path
+
+    def load_latest_snapshot() -> dict | None:
+        files = sorted(SNAPSHOT_DIR.glob("coverage-*.json"))
+        if not files:
+            return None
+        return json.loads(files[-1].read_text())
+    ```
+  </Step>
+
+  <Step title="Diff the new snapshot against the last one">
+    Compare the two maps to surface three kinds of change: a brand new jurisdiction, a new corpus within a known jurisdiction, and an existing corpus whose count grew.
+
+    ```python Python
+    def diff_snapshots(old: dict, new: dict) -> list[str]:
+        changes: list[str] = []
+
+        for code, corpora in new.items():
+            if code not in old:
+                changes.append(f"NEW jurisdiction {code}: {sorted(corpora)}")
+                continue
+
+            prev = old[code]
+            for token, count in corpora.items():
+                if token not in prev:
+                    changes.append(f"{code}: new corpus {token} ({count} chunks)")
+                elif count > prev[token]:
+                    delta = count - prev[token]
+                    changes.append(
+                        f"{code}: {token} grew by {delta} "
+                        f"({prev[token]} -> {count})"
+                    )
+
+        return changes
+    ```
+  </Step>
+
+  <Step title="Run it on a schedule">
+    Wire the pieces together into one job you can trigger from cron, a scheduled task, or a worker. It fetches coverage, diffs against the last snapshot, prints what changed, and saves the new baseline.
+
+    ```python Python
+    import requests
+
+    BASE_URL = "https://api.vaquill.ai/api/v1"
+    HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+    def fetch_coverage() -> dict:
+        resp = requests.get(f"{BASE_URL}/statutes/coverage", headers=HEADERS)
+        resp.raise_for_status()
+        return resp.json()["data"]
+
+    def run() -> None:
+        new_snapshot = to_snapshot(fetch_coverage())
+        previous = load_latest_snapshot()
+
+        if previous is None:
+            print("First run. Saving baseline snapshot.")
+        else:
+            changes = diff_snapshots(previous, new_snapshot)
+            if changes:
+                print(f"{len(changes)} coverage change(s) detected:")
+                for line in changes:
+                    print("  -", line)
+            else:
+                print("No coverage changes since last snapshot.")
+
+        save_snapshot(new_snapshot)
+
+    if __name__ == "__main__":
+        run()
+    ```
+
+    Example output on a run where a state gained regulations:
+
+    ```text
+    2 coverage change(s) detected:
+      - va: new corpus REGULATION (22400 chunks)
+      - tx: STATE grew by 1840 (120967 -> 122807)
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Because coverage is free, you can safely alert on any diff (a message to your team, a webhook, a ticket) without worrying about credit spend. Reserve paid `POST /statutes/search` calls for when a change actually affects your product.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Compare a rule across states" icon="scale-balanced" href="/api-guide/recipes/multi-state-comparison">
+    Run one query across several states and assemble a comparison table.
+  </Card>
+  <Card title="Enrich a citation database" icon="database" href="/api-guide/recipes/citation-enrichment">
+    Attach canonical citations, excerpts, and source links to a batch of topics.
+  </Card>
+  <Card title="Coverage matrix" icon="table-cells" href="/api-guide/coverage">
+    The human-readable jurisdiction and corpus matrix.
+  </Card>
+  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+    Cache coverage, scope queries, and handle errors well.
+  </Card>
+</CardGroup>

@@ -1,0 +1,174 @@
+---
+title: "Section Identifiers"
+description: "The actId canonical section id, the fields that describe a section's place in the hierarchy, and how to go from search to full text"
+icon: "hashtag"
+---
+
+Every section in the Vaquill corpus has one canonical identifier: its **`actId`**.
+It is stable, unique, and the key you use to fetch a section's metadata and full
+text. You never construct an `actId` by hand. You get it from search results and
+pass it back to the section endpoints.
+
+## What an actId looks like
+
+`actId` values encode the section's place in the source hierarchy. A few examples:
+
+| actId | Points to |
+|---|---|
+| `USC_T42_C21_S1983` | 42 U.S.C. Chapter 21, Section 1983 |
+| `CFR_T17_P240_S240_10b5_1` | 17 CFR Part 240, Section 240.10b5-1 |
+| `USC_T15_C1_S1` | 15 U.S.C. Chapter 1, Section 1 |
+
+State sections follow the same idea, encoding the state's code and section
+structure. Treat the whole string as an opaque key: read it from a result, store
+it, and pass it back unchanged.
+
+## The workflow
+
+<Steps>
+  <Step title="Search to get an actId">
+    `POST /statutes/search` returns result objects, each with an `actId`.
+  </Step>
+  <Step title="Fetch section metadata">
+    `GET /statutes/section/{actId}` returns the full result object for that one
+    section (citation, hierarchy, source URLs). Costs 2 credits.
+  </Step>
+  <Step title="Fetch full text">
+    `GET /statutes/section/{actId}/body` returns the section's full text. Costs
+    6 credits, charged only when text is returned.
+  </Step>
+</Steps>
+
+## Result and hierarchy fields
+
+Search results and the `section` object share the same shape. Alongside `actId`,
+these fields describe where a section sits and how to cite it:
+
+| Field | Meaning |
+|---|---|
+| `titleNumber` | The title or code number (may be alphanumeric, e.g. `13A`) |
+| `titleName` | The title's name |
+| `chapter` | The chapter number |
+| `chapterName` | The chapter's name |
+| `sectionNumber` | The section number within the chapter |
+| `displayPath` | A human-readable path through the hierarchy |
+| `breadcrumb` | An array of hierarchy levels, from broadest to the section |
+| `citation` | The full legal citation |
+| `citationShort` | A compact citation form |
+
+<Note>
+  `titleNumber` can be alphanumeric (some states use ids like `13A`), so treat it
+  as a string, not an integer.
+</Note>
+
+## Example: search, then fetch
+
+This walks the full path: run a search, take the first `actId`, fetch its
+metadata, then fetch its body.
+
+<CodeGroup>
+
+```bash cURL
+# 1. Search
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "civil action for deprivation of rights", "corpusType": "USC", "limit": 1}'
+
+# 2. Fetch metadata for the returned actId
+curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983 \
+  -H "Authorization: Bearer vq_key_..."
+
+# 3. Fetch full text
+curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+import requests
+
+headers = {"Authorization": "Bearer vq_key_..."}
+
+# 1. Search
+search = requests.post(
+    "https://api.vaquill.ai/api/v1/statutes/search",
+    headers=headers,
+    json={
+        "query": "civil action for deprivation of rights",
+        "corpusType": "USC",
+        "limit": 1,
+    },
+).json()
+act_id = search["results"][0]["actId"]
+
+# 2. Fetch metadata
+section = requests.get(
+    f"https://api.vaquill.ai/api/v1/statutes/section/{act_id}",
+    headers=headers,
+).json()["section"]
+print(section["citation"], "-", section["displayPath"])
+
+# 3. Fetch full text
+body = requests.get(
+    f"https://api.vaquill.ai/api/v1/statutes/section/{act_id}/body",
+    headers=headers,
+).json()
+print(body["plain"][:500] if body["available"] else "text unavailable")
+```
+
+```javascript JavaScript
+const headers = { Authorization: "Bearer vq_key_..." };
+
+// 1. Search
+const search = await (
+  await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query: "civil action for deprivation of rights",
+      corpusType: "USC",
+      limit: 1,
+    }),
+  })
+).json();
+const actId = search.results[0].actId;
+
+// 2. Fetch metadata
+const section = (
+  await (
+    await fetch(
+      `https://api.vaquill.ai/api/v1/statutes/section/${actId}`,
+      { headers },
+    )
+  ).json()
+).section;
+console.log(section.citation, "-", section.displayPath);
+
+// 3. Fetch full text
+const body = await (
+  await fetch(
+    `https://api.vaquill.ai/api/v1/statutes/section/${actId}/body`,
+    { headers },
+  )
+).json();
+console.log(body.available ? body.plain.slice(0, 500) : "text unavailable");
+```
+
+</CodeGroup>
+
+<Tip>
+  A `404` on either section endpoint is refunded, and the `/body` endpoint is
+  charged only when text actually comes back. Check `available` before reading
+  `html` or `plain`.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Response Formats" icon="file-lines" href="/api-guide/concepts/formats">
+    The text formats and source URLs a section can carry.
+  </Card>
+  <Card title="Corpus Types" icon="layer-group" href="/api-guide/concepts/corpus-types">
+    The corpusType tokens you filter a search by.
+  </Card>
+</CardGroup>

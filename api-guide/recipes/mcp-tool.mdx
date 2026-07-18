@@ -1,0 +1,158 @@
+---
+title: "Add the corpus as an AI agent tool (MCP)"
+description: "Give an AI agent authoritative statute search, either through the hosted Vaquill MCP server or by wrapping the REST API as your own tool"
+icon: "plug"
+---
+
+Grounding an AI agent in authoritative legal text is one of the most common uses of this API. There are two ways to do it: connect an MCP-compatible client to the hosted Vaquill MCP server, or wrap the REST API as a tool your own agent can call. Both return citations and source links, so answers stay grounded in official government text.
+
+**Endpoints used:** `POST /statutes/search` (4 credits) for the custom-tool path. The hosted server path needs no direct REST calls from you.
+
+## Path A: Hosted Vaquill MCP server
+
+The fastest route is the hosted Vaquill MCP server. Any MCP-compatible client can connect to it and query US statutes and regulations directly, without you writing glue code. The server exposes statute search and retrieval as tools the agent can call, and every result comes back with a citation and a link to the official source.
+
+<Card title="Vaquill MCP server" icon="plug" href="/integrations/mcp/vaquill">
+  Connection details, available tools, and setup steps for the hosted MCP server.
+</Card>
+
+Use this path when your agent runs inside an MCP-compatible client and you want statute access with the least integration work.
+
+## Path B: Wrap the REST API as your own tool
+
+When you are building your own tool-calling agent, define a `search_statutes` function backed by `POST /statutes/search` and register it as a tool. The agent decides when to call it, and you return cited results the model can quote.
+
+<Steps>
+  <Step title="Implement the tool function">
+    The function takes a query and optional scoping, calls search, and returns a compact, citation-first list. Trimming the payload to the fields the model needs keeps token use low.
+
+    ```python Python
+    import requests
+
+    BASE_URL = "https://api.vaquill.ai/api/v1"
+    HEADERS = {
+        "Authorization": "Bearer vq_key_...",
+        "Content-Type": "application/json",
+    }
+
+    def search_statutes(
+        query: str,
+        corpus_type: str | None = None,
+        state: str | None = None,
+        limit: int = 5,
+    ) -> list[dict]:
+        """Search US statutes and regulations. Returns cited results."""
+        payload: dict = {"query": query, "limit": limit}
+        if corpus_type:
+            payload["corpusType"] = corpus_type
+        if state:
+            payload["state"] = state
+
+        resp = requests.post(
+            f"{BASE_URL}/statutes/search", headers=HEADERS, json=payload
+        )
+        resp.raise_for_status()
+
+        results = []
+        for r in resp.json()["results"]:
+            results.append(
+                {
+                    "actId": r.get("actId"),
+                    "citation": r.get("citation"),
+                    "title": r.get("title"),
+                    "excerpt": r.get("excerpt"),
+                    "sourceUrl": (
+                        r.get("govInfoHtmlUrl")
+                        or r.get("stateHtmlUrl")
+                        or r.get("htmlUrl")
+                    ),
+                }
+            )
+        return results
+    ```
+  </Step>
+
+  <Step title="Declare the tool schema">
+    Tool-calling agents need a schema so the model knows when and how to call your function. This shape (a name, a description, and a JSON Schema for parameters) is the common convention across tool-calling frameworks.
+
+    ```python Python
+    SEARCH_STATUTES_TOOL = {
+        "name": "search_statutes",
+        "description": (
+            "Search US statutes and regulations (US Code, CFR, state codes, "
+            "constitutions, court rules, and more). Use for any question about "
+            "what the law says. Returns citations, excerpts, and source links."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Natural language question or keywords.",
+                },
+                "corpus_type": {
+                    "type": "string",
+                    "description": (
+                        "Optional corpus filter, e.g. USC, CFR, STATE, "
+                        "REGULATION. Omit to search everything."
+                    ),
+                },
+                "state": {
+                    "type": "string",
+                    "description": "Optional 2-letter lowercase state code, e.g. ca.",
+                },
+            },
+            "required": ["query"],
+        },
+    }
+    ```
+  </Step>
+
+  <Step title="Run the tool-call loop">
+    When the model asks to call `search_statutes`, run the function with its arguments and hand the cited results back. The exact plumbing depends on your framework, but the flow is always the same: read the tool call, dispatch to the function, return the result, let the model compose a grounded answer.
+
+    ```python Python
+    def dispatch_tool_call(name: str, arguments: dict) -> list[dict]:
+        if name == "search_statutes":
+            return search_statutes(
+                query=arguments["query"],
+                corpus_type=arguments.get("corpus_type"),
+                state=arguments.get("state"),
+            )
+        raise ValueError(f"Unknown tool: {name}")
+
+    # Pseudocode for a tool-calling agent loop:
+    #
+    #   response = agent.run(user_message, tools=[SEARCH_STATUTES_TOOL])
+    #   while response.wants_tool_call:
+    #       result = dispatch_tool_call(response.tool_name, response.tool_args)
+    #       response = agent.continue_with_tool_result(result)
+    #   print(response.text)  # grounded answer with citations
+    ```
+  </Step>
+
+  <Step title="Keep answers grounded">
+    Instruct the model to cite the `citation` field and link the `sourceUrl` for every legal claim, and to say when the corpus returns no match rather than guessing. This keeps the agent honest and traceable back to official text.
+  </Step>
+</Steps>
+
+<Tip>
+  For heavy agent traffic, cache the free `/statutes/coverage` response and reuse it to steer `corpusType` and `state` on tool calls. That narrows searches and avoids spending credits on jurisdictions with no data.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Vaquill MCP server" icon="plug" href="/integrations/mcp/vaquill">
+    Connect an MCP-compatible client to the hosted server.
+  </Card>
+  <Card title="Enrich a citation database" icon="database" href="/api-guide/recipes/citation-enrichment">
+    Batch-resolve topics into cited, sourced records.
+  </Card>
+  <Card title="Compare a rule across states" icon="scale-balanced" href="/api-guide/recipes/multi-state-comparison">
+    Run one query across several states.
+  </Card>
+  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+    Scope queries, cache coverage, and handle errors well.
+  </Card>
+</CardGroup>

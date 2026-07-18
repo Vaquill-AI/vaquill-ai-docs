@@ -1,0 +1,56 @@
+---
+title: "Changelog"
+description: "Updates and additions to the Vaquill Developer API"
+icon: "clock-rotate-left"
+---
+
+Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
+For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
+
+<Update label="2026-07-18" description="Regulations, coverage discovery, and pagination">
+  ## Regulations, Federal Register, and agency guidance are now queryable
+
+  Three new `corpusType` tokens open up corpora that were already in the corpus but not
+  filterable:
+
+  - `REGULATION`: state administrative regulations (176K+ rules across 12 states).
+  - `FEDERAL_REGISTER`: Federal Register agency rules, final and proposed (100K+ documents).
+  - `AGENCY_GUIDANCE`: agency guidance, including SSA rulings and IRS notices, revenue
+    rulings, and procedures.
+
+  Scope a search to any of them with the `corpusType` filter (pair `REGULATION` with a
+  `state`). See [Corpus Types](/api-guide/concepts/corpus-types).
+
+  ## New endpoint: GET /statutes/coverage
+
+  A free, self-describing coverage matrix. It returns a legend of every `corpusType`
+  token (its meaning and whether it is federal or state scoped) plus, for each
+  jurisdiction, the per-corpusType counts. Call it to learn exactly what is queryable
+  where, then pass a token as `corpusType`. See [Jurisdictions and State Codes](/api-guide/concepts/jurisdictions)
+  and the [coverage monitoring recipe](/api-guide/recipes/coverage-monitoring).
+
+  ## GET /statutes/states now returns a per-corpusType breakdown
+
+  Each jurisdiction row now includes a `corpora` object, for example
+  `{"STATE": 176778, "REGULATION": 51142, "STATE_CONSTITUTION": 179}`, so you can see
+  which corpora a jurisdiction has without a separate call.
+
+  ## Pagination on POST /statutes/search
+
+  Search now accepts an `offset` parameter (0-40) alongside `limit`, and the response
+  includes `offset` and a `hasMore` flag so you can page through results. `total` is the
+  count returned on the current page. See [Pagination](/api-guide/pagination).
+
+  ## Fix: STATE_RULES now returns results
+
+  The `STATE_RULES` (state court rules) corpus is now correctly served. Court rules are
+  available for a handful of states, discoverable via `/statutes/coverage`.
+
+  ## New documentation
+
+  A full developer guide: [Quickstart](/api-guide/quickstart), [Core Concepts](/api-guide/concepts/corpus-types),
+  [Pagination](/api-guide/pagination), [Rate Limits](/api-guide/rate-limits),
+  [Credits and Pricing](/api-guide/credits), [Best Practices](/api-guide/best-practices),
+  a [Grounding LLMs](/api-guide/grounding-llms) guide, eight [Recipes](/api-guide/recipes/rag-grounding),
+  and a [Use Cases](/api-guide/use-cases) catalog.
+</Update>

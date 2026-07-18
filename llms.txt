@@ -1,0 +1,62 @@
+# Vaquill
+
+> Vaquill is a legal AI suite for in-house counsel, plus a US statutes and regulations Developer API. The API lets you search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance. Every result carries a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into products.
+
+Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authenticate every request with an API key: `Authorization: Bearer vq_key_...`. Credits are 1 credit = $0.01 USD; discovery endpoints are free. The API serves US statutes and regulations only (case law and India are not part of the Developer API).
+
+## API: Get Started
+
+- [API Overview](https://www.vaquill.ai/docs/api-guide/overview): What the API covers, every public endpoint, and what you can build.
+- [Quickstart](https://www.vaquill.ai/docs/api-guide/quickstart): Make your first search, fetch a section and its full text, and discover coverage.
+- [Authentication](https://www.vaquill.ai/docs/api-guide/authentication): API keys, the Authorization header, and key rotation.
+
+## API: Core Concepts
+
+- [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 11 corpusType tokens (USC, CFR, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, AGENCY_GUIDANCE), federal vs state scope, and how to filter a search.
+- [Jurisdictions and State Codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The 51 jurisdictions, 2-letter state codes, and discovering what is queryable via /statutes/coverage.
+- [Section Identifiers](https://www.vaquill.ai/docs/api-guide/concepts/section-ids): The actId format and the search then section then body workflow.
+- [Response Formats](https://www.vaquill.ai/docs/api-guide/concepts/formats): HTML, PDF, XML, plain text, DOCX, and official government source links.
+
+## API: Working with the API
+
+- [Pagination](https://www.vaquill.ai/docs/api-guide/pagination): The limit and offset parameters and the hasMore flag on search.
+- [Rate Limits](https://www.vaquill.ai/docs/api-guide/rate-limits): Per-key, per-plan limits, 429 handling, and backoff.
+- [Credits and Pricing](https://www.vaquill.ai/docs/api-guide/credits): The credit model, per-endpoint costs, and the pricing endpoint.
+- [Errors](https://www.vaquill.ai/docs/api-guide/errors): Status codes and how to recover from each.
+- [Best Practices](https://www.vaquill.ai/docs/api-guide/best-practices): Scoping, caching coverage, retries, and using discovery before search.
+
+## API: Coverage and Data
+
+- [Coverage](https://www.vaquill.ai/docs/api-guide/coverage): The jurisdiction-by-jurisdiction matrix of what is ingested.
+
+## API: Grounding AI
+
+- [Grounding LLMs with Vaquill](https://www.vaquill.ai/docs/api-guide/grounding-llms): Retrieve, cite, and verify so an LLM or agent answers only from authoritative law.
+
+## API: Recipes
+
+- [Ground an LLM answer in statutes (RAG)](https://www.vaquill.ai/docs/api-guide/recipes/rag-grounding): Search, fetch section text, build a grounded and cited prompt.
+- [Build a statute lookup chatbot](https://www.vaquill.ai/docs/api-guide/recipes/statute-chatbot): A retrieve-then-ground Q&A loop for any chat surface.
+- [Resolve and verify a statute citation](https://www.vaquill.ai/docs/api-guide/recipes/citation-lookup): Turn a citation string into the section and its authoritative text.
+- [Map a compliance requirement to the governing law](https://www.vaquill.ai/docs/api-guide/recipes/compliance-mapping): Find the CFR, Federal Register, agency guidance, and state regulation sections that govern an obligation.
+- [Compare a rule across states](https://www.vaquill.ai/docs/api-guide/recipes/multi-state-comparison): Run one query across several states and assemble a comparison.
+- [Monitor corpus coverage and changes](https://www.vaquill.ai/docs/api-guide/recipes/coverage-monitoring): Snapshot and diff /statutes/coverage over time.
+- [Enrich a citation database with source text](https://www.vaquill.ai/docs/api-guide/recipes/citation-enrichment): Batch-attach citations, excerpts, and official source URLs.
+- [Add the corpus as an AI agent tool (MCP)](https://www.vaquill.ai/docs/api-guide/recipes/mcp-tool): Use the hosted MCP server or wrap the REST API as your own tool.
+
+## API: Use Cases
+
+- [Use Cases](https://www.vaquill.ai/docs/api-guide/use-cases): Who builds with the API (legaltech, in-house, compliance, RegTech, GRC, investigations, research, publishing, AI labs) and the patterns they build.
+
+## API Reference
+
+- [Search US statutes](https://www.vaquill.ai/docs/api-reference/statutes/search-us-statutes): POST /statutes/search.
+- [List US statutes coverage](https://www.vaquill.ai/docs/api-reference/statutes/list-us-statutes-coverage): GET /statutes/states.
+- [List US state codes](https://www.vaquill.ai/docs/api-reference/statutes/list-us-state-codes): GET /statutes/codes.
+- [OpenAPI schema](https://api.vaquill.ai/external/openapi.json): Machine-readable spec for all public endpoints.
+
+## Optional
+
+- [Introduction](https://www.vaquill.ai/docs/introduction): The full Vaquill product, including the in-app legal AI suite.
+- [Changelog](https://www.vaquill.ai/docs/api-guide/changelog): API updates and additions.
+- [Vaquill MCP](https://www.vaquill.ai/docs/integrations/mcp/vaquill): The hosted MCP server for AI agents.

@@ -1,0 +1,94 @@
+---
+title: "Rate Limits"
+description: "Per-plan request limits and how to back off on a 429"
+icon: "gauge-high"
+---
+
+Rate limits are enforced per API key and scale with your plan. They are independent of your credit balance: a call can succeed on credits and still be rate limited if you exceed your per-minute, per-hour, or per-day ceiling.
+
+## Limits by plan
+
+| Plan | Per minute | Per hour | Per day |
+|------|-----------|----------|---------|
+| API (\$199/mo) | 30 | 500 | 2,000 |
+| API Business (\$1,000/mo) | 150 | 2,500 | 10,000 |
+
+<Note>
+  Discovery endpoints (`/statutes/states`, `/statutes/codes`, `/statutes/coverage`) cost 0 credits but still count against these rate limits. Cache their responses rather than calling them on every request.
+</Note>
+
+## Handling a 429
+
+When you exceed a limit the API returns `429` with a `Retry-After` header telling you how many seconds to wait. Respect it, and add exponential backoff so retries spread out under sustained pressure.
+
+<CodeGroup>
+```python Python
+import time
+import requests
+
+def search_with_retry(payload, max_retries=5):
+    url = "https://api.vaquill.ai/api/v1/statutes/search"
+    headers = {
+        "Authorization": "Bearer vq_key_...",
+        "Content-Type": "application/json",
+    }
+    for attempt in range(max_retries):
+        resp = requests.post(url, headers=headers, json=payload)
+        if resp.status_code == 429:
+            # Prefer the server hint, fall back to exponential backoff.
+            retry_after = resp.headers.get("Retry-After")
+            delay = int(retry_after) if retry_after else 2 ** attempt
+            time.sleep(delay)
+            continue
+        resp.raise_for_status()
+        return resp.json()
+    raise RuntimeError("Rate limit: max retries exceeded")
+
+data = search_with_retry({"query": "data breach notification"})
+```
+
+```javascript JavaScript
+async function searchWithRetry(payload, maxRetries = 5) {
+  const url = "https://api.vaquill.ai/api/v1/statutes/search";
+  const headers = {
+    Authorization: "Bearer vq_key_...",
+    "Content-Type": "application/json",
+  };
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (resp.status === 429) {
+      const retryAfter = resp.headers.get("Retry-After");
+      const delay = retryAfter ? Number(retryAfter) * 1000 : 2 ** attempt * 1000;
+      await new Promise((r) => setTimeout(r, delay));
+      continue;
+    }
+    if (!resp.ok) throw new Error(`Request failed: ${resp.status}`);
+    return resp.json();
+  }
+  throw new Error("Rate limit: max retries exceeded");
+}
+
+const data = await searchWithRetry({ query: "data breach notification" });
+```
+</CodeGroup>
+
+<Tip>
+  Smooth your request rate before you hit the ceiling. A small client-side delay between calls in a paging loop keeps you comfortably under the per-minute limit and avoids retries entirely.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Errors" icon="triangle-exclamation" href="/api-guide/errors">
+    Every status code and how to recover from it.
+  </Card>
+  <Card title="Credits & pricing" icon="coins" href="/api-guide/credits">
+    Limits cap request volume, credits cover cost. Both matter.
+  </Card>
+</CardGroup>

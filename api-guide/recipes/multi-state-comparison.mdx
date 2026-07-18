@@ -1,0 +1,169 @@
+---
+title: "Compare a rule across states"
+description: "Run the same query across several state codes and assemble a side-by-side comparison"
+icon: "scale-balanced"
+---
+
+Many legal questions are really the same question asked of many jurisdictions: how does each state handle security deposits, non-competes, or breach notice? This recipe runs one query with `corpusType=STATE` across a list of `state` codes, keeps the top section per state, and assembles a comparison table of state to citation to excerpt and source link.
+
+**Endpoints used:** `GET /statutes/coverage` (free) to pick states, then `POST /statutes/search` (4 credits per call).
+
+<Tip>
+  Call `/statutes/coverage` first and keep only the states that actually carry the `STATE` corpus. That way you never spend a search credit on a jurisdiction that has no data to return.
+</Tip>
+
+<Steps>
+  <Step title="Pick states that have the corpus">
+    Read the free coverage matrix and collect the codes of `state` jurisdictions whose `corpora` includes the corpus you want to compare (here, `STATE`).
+
+    ```python Python
+    import requests
+
+    BASE_URL = "https://api.vaquill.ai/api/v1"
+    HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+    def states_with_corpus(token: str = "STATE") -> list[str]:
+        cov = requests.get(
+            f"{BASE_URL}/statutes/coverage", headers=HEADERS
+        ).json()["data"]
+        return [
+            j["code"]
+            for j in cov["jurisdictions"]
+            if j["kind"] == "state" and token in j.get("corpora", {})
+        ]
+    ```
+  </Step>
+
+  <Step title="Search one state at a time">
+    Send the same `query` for each state, scoping with `corpusType="STATE"` and the 2-letter lowercase `state` code. Keep `limit` small since you only want the best match per state.
+
+    <CodeGroup>
+    ```bash cURL
+    curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+      -H "Authorization: Bearer vq_key_..." \
+      -H "Content-Type: application/json" \
+      -d '{"query": "security deposit return deadline", "corpusType": "STATE", "state": "ca", "limit": 3}'
+    ```
+
+    ```python Python
+    def top_section_for_state(query: str, state: str) -> dict | None:
+        resp = requests.post(
+            f"{BASE_URL}/statutes/search",
+            headers={**HEADERS, "Content-Type": "application/json"},
+            json={
+                "query": query,
+                "corpusType": "STATE",
+                "state": state,
+                "limit": 3,
+            },
+        )
+        resp.raise_for_status()
+        results = resp.json()["results"]
+        return results[0] if results else None
+    ```
+    </CodeGroup>
+
+    A trimmed single-state response:
+
+    ```json
+    {
+      "results": [
+        {
+          "actId": "STATE_CA_Cciv_D3_P4_T5_C2_S1950.5",
+          "citation": "Cal. CIV § 1950.5",
+          "title": "Security for rental of residential property",
+          "corpusType": "STATE",
+          "state": "ca",
+          "relevanceScore": 0.88,
+          "excerpt": "Any payment or deposit of money the primary function of which is to secure...",
+          "stateHtmlUrl": "https://...",
+          "htmlUrl": "https://..."
+        }
+      ],
+      "total": 3,
+      "hasMore": false,
+      "creditsConsumed": 4
+    }
+    ```
+  </Step>
+
+  <Step title="Pick the best source link per result">
+    Each result carries several optional source URLs. Prefer the official government link when present, falling back gracefully.
+
+    ```python Python
+    def best_source_url(result: dict) -> str | None:
+        for field in ("stateHtmlUrl", "govInfoHtmlUrl", "htmlUrl", "externalUrl"):
+            url = result.get(field)
+            if url:
+                return url
+        return None
+    ```
+  </Step>
+
+  <Step title="Assemble the comparison">
+    Iterate over your chosen states, collect the top section for each, and build one row per state. States with no match are recorded so gaps are visible.
+
+    ```python Python
+    def compare_across_states(query: str, states: list[str]) -> list[dict]:
+        rows: list[dict] = []
+        for state in states:
+            top = top_section_for_state(query, state)
+            if top is None:
+                rows.append({"state": state, "citation": None, "excerpt": None, "url": None})
+                continue
+            rows.append(
+                {
+                    "state": state,
+                    "citation": top.get("citation"),
+                    "excerpt": (top.get("excerpt") or "")[:200],
+                    "url": best_source_url(top),
+                }
+            )
+        return rows
+
+    if __name__ == "__main__":
+        target_states = ["ca", "ny", "tx", "fl", "wa"]
+        available = set(states_with_corpus("STATE"))
+        target_states = [s for s in target_states if s in available]
+
+        table = compare_across_states("security deposit return deadline", target_states)
+        for row in table:
+            citation = row["citation"] or "(no match)"
+            print(f"{row['state'].upper():4}  {citation}")
+            if row["url"]:
+                print(f"      {row['url']}")
+    ```
+
+    Example output:
+
+    ```text
+    CA    Cal. Civ. Code § 1950.5
+          https://...
+    NY    N.Y. Gen. Oblig. Law § 7-108
+          https://...
+    TX    Tex. Prop. Code § 92.103
+          https://...
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  `relevanceScore` is a relative rank within a single response. Do not compare scores across states to decide which jurisdiction is "more relevant"; use it only to order results inside one state's response.
+</Note>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Monitor corpus coverage" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
+    Poll the free coverage endpoint and diff snapshots over time.
+  </Card>
+  <Card title="Enrich a citation database" icon="database" href="/api-guide/recipes/citation-enrichment">
+    Attach canonical citations, excerpts, and source links to a batch of topics.
+  </Card>
+  <Card title="Coverage matrix" icon="table-cells" href="/api-guide/coverage">
+    See which states carry which corpora.
+  </Card>
+  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+    Scope queries, pace requests, and handle errors well.
+  </Card>
+</CardGroup>

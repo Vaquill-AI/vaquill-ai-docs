@@ -1,0 +1,267 @@
+---
+title: "Ground an LLM answer in statutes (RAG)"
+description: "Retrieve authoritative US statutes and regulations, then make an LLM answer only from that text with citations that link back to the official government source"
+icon: "brain"
+---
+
+Turn a user question into a grounded, citable answer. You retrieve the governing
+sections from Vaquill, pull their full text, and pass that text to an LLM in your
+stack with strict instructions: answer only from the provided sources, cite every
+claim, and link back to the official government source. This is the classic
+retrieve-then-ground (RAG) loop, and it is the single most reliable way to keep a
+legal assistant from making things up.
+
+**Endpoints used:** `POST /statutes/search` (retrieve), `GET /statutes/section/{actId}/body` (full text).
+
+<Info>
+  Vaquill provides the authoritative text and the source links. The LLM in your
+  stack does the reasoning. Vaquill does not replace a lawyer or a licensed
+  research service, and every answer should carry a link back to the official
+  government text so a reader can verify it.
+</Info>
+
+## The pattern in four steps
+
+<Steps>
+  <Step title="Retrieve candidate sections">
+    Send the user question to `POST /statutes/search`. Scope the search with
+    `corpusType` and `state` when you know them (for example `USC` for federal
+    statutes, or `STATE` with `state: "ca"` for California). Take the top few
+    results.
+  </Step>
+  <Step title="Fetch the full text of each section">
+    Search returns an `excerpt` (up to 500 chars). That is enough to rank, not to
+    ground on. For each result you want to cite, call
+    `GET /statutes/section/{actId}/body` to get the complete `plain` text.
+  </Step>
+  <Step title="Build a grounded prompt">
+    Assemble a prompt that contains the retrieved sections, each labeled with its
+    `citation` and its official source URL. Instruct the model to answer only from
+    those sources, to cite each claim, and to say it cannot find the answer if the
+    sources do not support one.
+  </Step>
+  <Step title="Answer with links back to the source">
+    Return the model's answer plus the list of cited sources, each linking to the
+    official government text (`htmlUrl`, `stateHtmlUrl`, or `govInfoHtmlUrl`).
+  </Step>
+</Steps>
+
+## Step 1 and 2: retrieve, then fetch full text
+
+<CodeGroup>
+
+```bash cURL
+# 1. Retrieve candidate sections (scope to USC when the question is federal)
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "employer retaliation whistleblower protection", "corpusType": "USC", "limit": 3}'
+
+# 2. Fetch the full text of one result by its actId
+curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def search(query, corpus_type=None, state=None, limit=3):
+    body = {"query": query, "limit": limit}
+    if corpus_type:
+        body["corpusType"] = corpus_type
+    if state:
+        body["state"] = state
+    resp = requests.post(f"{BASE}/statutes/search", headers=HEADERS, json=body)
+    resp.raise_for_status()
+    return resp.json()["results"]
+
+
+def fetch_body(act_id):
+    resp = requests.get(f"{BASE}/statutes/section/{act_id}/body", headers=HEADERS)
+    resp.raise_for_status()
+    data = resp.json()
+    if not data.get("available"):
+        return None
+    return data.get("plain") or data.get("html")
+```
+
+```javascript JavaScript
+const BASE = "https://api.vaquill.ai/api/v1";
+const HEADERS = {
+  Authorization: "Bearer vq_key_...",
+  "Content-Type": "application/json",
+};
+
+async function search(query, { corpusType, state, limit = 3 } = {}) {
+  const body = { query, limit };
+  if (corpusType) body.corpusType = corpusType;
+  if (state) body.state = state;
+  const resp = await fetch(`${BASE}/statutes/search`, {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(`search failed: ${resp.status}`);
+  return (await resp.json()).results;
+}
+
+async function fetchBody(actId) {
+  const resp = await fetch(`${BASE}/statutes/section/${actId}/body`, {
+    headers: { Authorization: HEADERS.Authorization },
+  });
+  if (!resp.ok) throw new Error(`body failed: ${resp.status}`);
+  const data = await resp.json();
+  if (!data.available) return null;
+  return data.plain || data.html;
+}
+```
+
+</CodeGroup>
+
+A trimmed search result looks like this. Note the `actId` (used to fetch the
+body), the `citation`, and the source URLs.
+
+```json
+{
+  "results": [
+    {
+      "actId": "USC_T42_C21_S1983",
+      "citation": "42 U.S.C. § 1983",
+      "citationShort": "42 USC 1983",
+      "title": "Civil action for deprivation of rights",
+      "corpusType": "USC",
+      "relevanceScore": 0.82,
+      "excerpt": "Every person who, under color of any statute, ordinance...",
+      "htmlUrl": "https://uscode.house.gov/...",
+      "govInfoHtmlUrl": "https://www.govinfo.gov/..."
+    }
+  ],
+  "total": 3,
+  "hasMore": false
+}
+```
+
+## Step 3 and 4: build the grounded prompt and answer
+
+The prompt is where grounding happens. Give the model the retrieved text, a
+stable label per source, and rules it cannot skip: answer only from the sources,
+cite by citation and link, and refuse when the text does not support an answer.
+
+```python Python
+def build_grounded_prompt(question, sources):
+    """sources: list of dicts with citation, source_url, and text."""
+    blocks = []
+    for i, s in enumerate(sources, start=1):
+        blocks.append(
+            f"[{i}] {s['citation']}\n"
+            f"Source: {s['source_url']}\n"
+            f"{s['text']}\n"
+        )
+    context = "\n---\n".join(blocks)
+    return (
+        "You are a careful legal research assistant. Answer the question using ONLY "
+        "the numbered sources below. Do not use outside knowledge.\n\n"
+        "Rules:\n"
+        "1. Every factual claim must cite the source it comes from, using the "
+        "citation and its Source link, e.g. (42 U.S.C. section 1983, "
+        "https://uscode.house.gov/...).\n"
+        "2. If the sources do not answer the question, say exactly: 'The provided "
+        "sources do not answer this question.' Do not guess.\n"
+        "3. Quote the statute's own words when the wording matters.\n"
+        "4. End with a 'Sources' list that links each cited section to its "
+        "official government text.\n\n"
+        f"Sources:\n{context}\n\n"
+        f"Question: {question}\n"
+    )
+
+
+def answer_question(question, corpus_type=None, state=None):
+    results = search(question, corpus_type=corpus_type, state=state, limit=3)
+
+    sources = []
+    for r in results:
+        text = fetch_body(r["actId"])
+        if not text:
+            continue  # skip sections whose text is unavailable
+        source_url = (
+            r.get("htmlUrl")
+            or r.get("stateHtmlUrl")
+            or r.get("govInfoHtmlUrl")
+            or r.get("externalUrl")
+        )
+        sources.append(
+            {
+                "citation": r.get("citation") or r["actId"],
+                "source_url": source_url,
+                "text": text,
+            }
+        )
+
+    if not sources:
+        return "The provided sources do not answer this question."
+
+    prompt = build_grounded_prompt(question, sources)
+    return call_llm(prompt)  # your LLM call; returns the grounded, cited answer
+
+
+# call_llm(prompt) is a placeholder for whatever LLM you run in your stack.
+# It takes the prompt string and returns the model's text answer.
+
+if __name__ == "__main__":
+    print(answer_question(
+        "What must a plaintiff show for a civil rights claim against a state official?",
+        corpus_type="USC",
+    ))
+```
+
+<Warning>
+  Ground on the full section text from `/body`, not on the `excerpt` from search.
+  The excerpt is capped at 500 characters and is meant for ranking, not for
+  quoting. Passing only excerpts to the model invites partial or misleading
+  answers.
+</Warning>
+
+## Why this holds up
+
+<AccordionGroup>
+  <Accordion title="The model cannot cite what it was not given" icon="lock">
+    Because the prompt forbids outside knowledge and every source carries a
+    citation plus a link, the model's claims are traceable. A reader can click the
+    official government URL and confirm the text. If retrieval returns nothing
+    relevant, the model returns the refusal string instead of inventing law.
+  </Accordion>
+  <Accordion title="Scope narrows retrieval, and narrow retrieval grounds better" icon="crosshairs">
+    When you know the question is federal, pass `corpusType: "USC"` or `"CFR"`.
+    When it is about one state, pass `corpusType: "STATE"` with the two-letter
+    `state` code. Tighter scope means the top results are more likely to be the
+    governing sections, which makes the grounded answer more precise. Omit both to
+    search the whole corpus.
+  </Accordion>
+  <Accordion title="Always link back to the official source" icon="link">
+    Every result carries source URLs (`htmlUrl`, `stateHtmlUrl`, `govInfoHtmlUrl`,
+    `pdfUrl`, and others; any may be null). Pick the first one present and surface
+    it in the answer. This is what lets your users verify the law themselves, and
+    it is what keeps your product honest.
+  </Accordion>
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Grounding LLMs" icon="shield-check" href="/api-guide/grounding-llms">
+    The concepts behind grounding and why it prevents hallucinated law.
+  </Card>
+  <Card title="Statute lookup chatbot" icon="comments" href="/api-guide/recipes/statute-chatbot">
+    A simpler Q&A loop built on the same retrieve-then-ground pattern.
+  </Card>
+  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+    Turn a citation string into authoritative, verified text.
+  </Card>
+  <Card title="Vaquill MCP server" icon="plug" href="/integrations/mcp/vaquill">
+    Give an AI agent these same tools over MCP.
+  </Card>
+</CardGroup>

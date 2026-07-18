@@ -1,0 +1,218 @@
+---
+title: "Quickstart"
+description: "Search US statutes and fetch a section in a few minutes"
+icon: "bolt"
+---
+
+This guide takes you from zero to your first grounded statute answer. You will search the corpus, take an `actId` from the results, fetch that section's metadata and full text, and discover what is queryable.
+
+Every path is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header.
+
+<Steps>
+  <Step title="Get an API key">
+    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Copy it once, it will not be shown again. See [Authentication](/api-guide/authentication) for details. New accounts get a 500 credit signup bonus (\$5).
+  </Step>
+
+  <Step title="Make your first search">
+    Send a natural language query to `POST /statutes/search`. Scope it with `corpusType` and `state` for tighter results.
+
+    <CodeGroup>
+    ```bash cURL
+    curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+      -H "Authorization: Bearer vq_key_..." \
+      -H "Content-Type: application/json" \
+      -d '{"query": "civil rights deprivation under color of law", "corpusType": "USC", "limit": 5}'
+    ```
+
+    ```python Python
+    import requests
+
+    resp = requests.post(
+        "https://api.vaquill.ai/api/v1/statutes/search",
+        headers={
+            "Authorization": "Bearer vq_key_...",
+            "Content-Type": "application/json",
+        },
+        json={
+            "query": "civil rights deprivation under color of law",
+            "corpusType": "USC",
+            "limit": 5,
+        },
+    )
+    data = resp.json()
+    first = data["results"][0]
+    print(first["citation"], first["actId"])
+    ```
+
+    ```javascript JavaScript
+    const resp = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer vq_key_...",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query: "civil rights deprivation under color of law",
+        corpusType: "USC",
+        limit: 5,
+      }),
+    });
+    const data = await resp.json();
+    const first = data.results[0];
+    console.log(first.citation, first.actId);
+    ```
+    </CodeGroup>
+
+    A trimmed response looks like this. The top-level fields describe the page, and each `results` entry carries a citation, an excerpt, and links to the official source.
+
+    ```json
+    {
+      "results": [
+        {
+          "actId": "USC_T42_C21_S1983",
+          "citation": "42 U.S.C. § 1983",
+          "citationShort": "42 USC 1983",
+          "title": "Civil action for deprivation of rights",
+          "corpusType": "USC",
+          "state": null,
+          "year": 1996,
+          "relevanceScore": 0.91,
+          "excerpt": "Every person who, under color of any statute, ordinance, regulation, custom, or usage...",
+          "titleNumber": 42,
+          "titleName": "The Public Health and Welfare",
+          "sectionNumber": "1983",
+          "breadcrumb": ["Title 42", "Chapter 21", "Section 1983"],
+          "htmlUrl": "https://...",
+          "govInfoPdfUrl": "https://..."
+        }
+      ],
+      "total": 5,
+      "offset": 0,
+      "hasMore": true,
+      "query": "civil rights deprivation under color of law",
+      "processingTimeMs": 412.6,
+      "creditsConsumed": 4
+    }
+    ```
+
+    <Note>
+      `total` is the count returned on this page, not the corpus-wide match count. Use `hasMore` to decide whether to fetch the next page. See [Pagination](/api-guide/pagination).
+    </Note>
+  </Step>
+
+  <Step title="Fetch the section and its body">
+    Take an `actId` from the results (for example `USC_T42_C21_S1983`). Call `GET /statutes/section/{actId}` for metadata, and `GET /statutes/section/{actId}/body` for the full text.
+
+    <CodeGroup>
+    ```bash cURL
+    # Metadata
+    curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983 \
+      -H "Authorization: Bearer vq_key_..."
+
+    # Full text
+    curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body \
+      -H "Authorization: Bearer vq_key_..."
+    ```
+
+    ```python Python
+    import requests
+
+    headers = {"Authorization": "Bearer vq_key_..."}
+    act_id = "USC_T42_C21_S1983"
+
+    meta = requests.get(
+        f"https://api.vaquill.ai/api/v1/statutes/section/{act_id}",
+        headers=headers,
+    ).json()
+
+    body = requests.get(
+        f"https://api.vaquill.ai/api/v1/statutes/section/{act_id}/body",
+        headers=headers,
+    ).json()
+
+    if body["available"]:
+        print(body["plain"])
+    ```
+
+    ```javascript JavaScript
+    const headers = { Authorization: "Bearer vq_key_..." };
+    const actId = "USC_T42_C21_S1983";
+
+    const meta = await (
+      await fetch(
+        `https://api.vaquill.ai/api/v1/statutes/section/${actId}`,
+        { headers },
+      )
+    ).json();
+
+    const body = await (
+      await fetch(
+        `https://api.vaquill.ai/api/v1/statutes/section/${actId}/body`,
+        { headers },
+      )
+    ).json();
+
+    if (body.available) console.log(body.plain);
+    ```
+    </CodeGroup>
+
+    <Tip>
+      The body endpoint returns `html` and `plain` text plus an `available` flag and a `source`. You are charged only when text is returned. A 404 or unavailable section is refunded.
+    </Tip>
+  </Step>
+
+  <Step title="Discover coverage">
+    The corpus grows weekly. Call the free `GET /statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data. Pass one of those tokens back into `/statutes/search`.
+
+    <CodeGroup>
+    ```bash cURL
+    curl https://api.vaquill.ai/api/v1/statutes/coverage \
+      -H "Authorization: Bearer vq_key_..."
+    ```
+
+    ```python Python
+    import requests
+
+    cov = requests.get(
+        "https://api.vaquill.ai/api/v1/statutes/coverage",
+        headers={"Authorization": "Bearer vq_key_..."},
+    ).json()["data"]
+
+    for j in cov["jurisdictions"]:
+        if j["hasData"]:
+            print(j["code"], list(j["corpora"].keys()))
+    ```
+
+    ```javascript JavaScript
+    const cov = (
+      await (
+        await fetch("https://api.vaquill.ai/api/v1/statutes/coverage", {
+          headers: { Authorization: "Bearer vq_key_..." },
+        })
+      ).json()
+    ).data;
+
+    for (const j of cov.jurisdictions) {
+      if (j.hasData) console.log(j.code, Object.keys(j.corpora));
+    }
+    ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Pagination" icon="list-ol" href="/api-guide/pagination">
+    Page through search results with `limit`, `offset`, and `hasMore`.
+  </Card>
+  <Card title="Credits & pricing" icon="coins" href="/api-guide/credits">
+    Understand what each call costs and how refunds work.
+  </Card>
+  <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
+    Per-plan limits and how to back off on a 429.
+  </Card>
+  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+    Scope queries, cache coverage, and handle errors well.
+  </Card>
+</CardGroup>

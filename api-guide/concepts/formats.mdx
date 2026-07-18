@@ -1,0 +1,119 @@
+---
+title: "Response Formats"
+description: "The text formats the body endpoint returns and the source URL fields that deep-link back to official government text"
+icon: "file-lines"
+---
+
+A section can come back in more than one form. The API gives you rendered text
+directly, plus links to the original files the source publishes. Which formats
+exist depends on what the underlying government source makes available, so any
+given field may be `null`.
+
+## Text from the body endpoint
+
+`GET /statutes/section/{actId}/body` returns the section's full text in two
+forms:
+
+| Field | Contains |
+|---|---|
+| `html` | The section rendered as HTML (string or `null`) |
+| `plain` | The section as plain text (string or `null`) |
+| `source` | Where the text was sourced from (string or `null`) |
+| `available` | Whether text was returned at all (bool) |
+| `note` | An optional note when text is partial or unavailable (string or `null`) |
+
+Use `html` when you are displaying the section in a UI and want its structure
+preserved. Use `plain` when you are feeding the text to an LLM in your stack or
+doing plain-text processing. Always check `available` first.
+
+## Source URL fields
+
+Search results and the section metadata object carry a set of source URL fields.
+These point at the original files the publisher hosts. Any of them may be `null`
+depending on what that source offers:
+
+| Field | Points to |
+|---|---|
+| `htmlUrl` | HTML version of the section |
+| `pdfUrl` | PDF version |
+| `xmlUrl` | XML version |
+| `textUrl` | Plain-text version |
+| `docxUrl` | DOCX version |
+| `stateHtmlUrl` | The state legislature's own HTML page |
+| `govInfoHtmlUrl` | The section on govinfo.gov (HTML) |
+| `govInfoPdfUrl` | The section on govinfo.gov (PDF) |
+| `externalUrl` | Another authoritative external link |
+
+<Info>
+  The government links (`stateHtmlUrl`, `govInfoHtmlUrl`, `govInfoPdfUrl`) let
+  you deep-link users straight back to authoritative text on the state
+  legislature's site or govinfo.gov. That is the recommended way to cite a
+  source in your product.
+</Info>
+
+## Picking the best available format
+
+Because fields can be `null`, choose the best format that is present rather than
+assuming one exists. This helper prefers an official government link, then falls
+back through the other formats:
+
+<CodeGroup>
+
+```python Python
+def best_source_url(result):
+    for field in (
+        "govInfoHtmlUrl",
+        "stateHtmlUrl",
+        "htmlUrl",
+        "govInfoPdfUrl",
+        "pdfUrl",
+        "textUrl",
+        "xmlUrl",
+        "docxUrl",
+        "externalUrl",
+    ):
+        url = result.get(field)
+        if url:
+            return url
+    return None
+```
+
+```javascript JavaScript
+function bestSourceUrl(result) {
+  const order = [
+    "govInfoHtmlUrl",
+    "stateHtmlUrl",
+    "htmlUrl",
+    "govInfoPdfUrl",
+    "pdfUrl",
+    "textUrl",
+    "xmlUrl",
+    "docxUrl",
+    "externalUrl",
+  ];
+  for (const field of order) {
+    if (result[field]) return result[field];
+  }
+  return null;
+}
+```
+
+</CodeGroup>
+
+<Tip>
+  For displaying the text itself, prefer `html` from the `/body` endpoint. For
+  citing where it came from, prefer an official government link
+  (`govInfoHtmlUrl` or `stateHtmlUrl`) so readers can verify against the
+  authoritative source.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Section Identifiers" icon="hashtag" href="/api-guide/concepts/section-ids">
+    How to get an actId and fetch a section's metadata and body.
+  </Card>
+  <Card title="Corpus Types" icon="layer-group" href="/api-guide/concepts/corpus-types">
+    The corpusType tokens you filter a search by.
+  </Card>
+</CardGroup>

@@ -1,0 +1,143 @@
+---
+title: "Corpus Types"
+description: "The 11 corpusType tokens that scope a Vaquill statutes search, what each holds, and how to pair them with a state"
+icon: "layer-group"
+---
+
+The Vaquill statutes corpus is one index of US primary law, split into 11 named
+slices. The `corpusType` filter on `POST /statutes/search` tells the API which
+slice to search. Omit it and you search everything; set it and you narrow to one
+body of law (federal statutes, state regulations, a constitution, and so on).
+
+Corpus types come in two scopes. **Federal** corpora live under the single
+`federal` jurisdiction. **State** corpora are keyed by jurisdiction, so you pair
+them with a `state` filter (a 2-letter lowercase code like `ca` or `tx`) to
+search one jurisdiction's data.
+
+## The 11 tokens
+
+### Federal-scoped
+
+| Token | Contains | Scope | ~Size |
+|---|---|---|---|
+| `USC` | United States Code (federal statutes) | federal | 54,855 |
+| `CFR` | Code of Federal Regulations | federal | 219,745 |
+| `CONSTITUTION` | U.S. Constitution (Articles + Amendments) | federal | 74 |
+| `FEDERAL_RULES` | Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP) | federal | 526 |
+| `EXECUTIVE_ACTION` | Presidential documents (executive orders, proclamations, memos) | federal | 3,593 |
+| `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | federal | 121,214 |
+| `AGENCY_GUIDANCE` | Agency guidance (SSA rulings, IRS notices, revenue rulings and procedures) | federal | 2,509 |
+
+### State-scoped
+
+| Token | Contains | Scope | ~Size |
+|---|---|---|---|
+| `STATE` | State statutory codes | state | 1.62M across 51 jurisdictions |
+| `REGULATION` | State administrative regulations | state | 176K across 12 states |
+| `STATE_CONSTITUTION` | State constitutions | state | 7.6K across 50 jurisdictions |
+| `STATE_RULES` | State court rules (civil, criminal, appellate, local) | state | 8K across 7 states |
+
+<Info>
+  These are approximate totals and expand weekly. The exact per-jurisdiction
+  counts are always live via `GET /statutes/coverage`.
+</Info>
+
+## Scoping a search
+
+<Steps>
+  <Step title="corpusType alone">
+    A federal corpus needs only `corpusType`. This searches the whole US Code:
+
+    ```json
+    {"query": "civil rights under color of law", "corpusType": "USC"}
+    ```
+  </Step>
+  <Step title="corpusType plus state">
+    A state corpus needs both `corpusType` and `state`. This searches only
+    California's statutory code:
+
+    ```json
+    {"query": "security deposit return", "corpusType": "STATE", "state": "ca"}
+    ```
+
+    Omit `state` on a state-scoped corpus and the search spans every
+    jurisdiction that has that corpus ingested.
+  </Step>
+</Steps>
+
+<Note>
+  `titleNumber` is only valid alongside `corpusType` `USC` or `CFR`. Sending it
+  with any other corpus returns a `422`.
+</Note>
+
+## Example: state regulations
+
+A `REGULATION` search paired with a state returns that state's administrative
+rules. Here is Washington's environmental regulations:
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "stormwater discharge permit", "corpusType": "REGULATION", "state": "wa", "limit": 5}'
+```
+
+```python Python
+import requests
+
+resp = requests.post(
+    "https://api.vaquill.ai/api/v1/statutes/search",
+    headers={"Authorization": "Bearer vq_key_..."},
+    json={
+        "query": "stormwater discharge permit",
+        "corpusType": "REGULATION",
+        "state": "wa",
+        "limit": 5,
+    },
+)
+data = resp.json()
+for r in data["results"]:
+    print(r["citation"], "-", r["title"])
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer vq_key_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    query: "stormwater discharge permit",
+    corpusType: "REGULATION",
+    state: "wa",
+    limit: 5,
+  }),
+});
+const data = await resp.json();
+for (const r of data.results) {
+  console.log(r.citation, "-", r.title);
+}
+```
+
+</CodeGroup>
+
+<Tip>
+  Not every corpus type exists for every state. Before you scope a state
+  search, call `GET /statutes/coverage` and read that jurisdiction's `corpora`
+  keys to see which tokens actually have data. This avoids empty results from
+  guessing.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Jurisdictions & State Codes" icon="map-location-dot" href="/api-guide/concepts/jurisdictions">
+    The 51 jurisdictions, state codes, and how to discover live coverage.
+  </Card>
+  <Card title="API Coverage" icon="layer-group" href="/api-guide/coverage">
+    The full per-jurisdiction matrix with current section counts.
+  </Card>
+</CardGroup>

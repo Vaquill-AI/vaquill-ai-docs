@@ -7,9 +7,10 @@ icon: "map-location-dot"
 This page lists the US legal data Vaquill has ingested, by corpus type and by
 jurisdiction. Vaquill covers the full stack of US primary law, not just statutes:
 federal law, state statutes, state constitutions, court rules, state regulations,
-and case law. The **statutes API** (`/statutes/*`) serves the statute and federal
-code data; case law and the other corpora are available in the platform. Statute
-counts are queryable live from `GET /statutes/states`; the per-corpus matrix below
+and case law. The **Developer API** (`/statutes/*`) serves statutes, regulations,
+constitutions, court rules, and executive actions, scoped with the `corpusType`
+filter; case law is available in the platform. Coverage is queryable live from
+`GET /statutes/coverage` and `GET /statutes/states`; the per-corpus matrix below
 is a snapshot.
 
 <Info>
@@ -28,13 +29,13 @@ is a snapshot.
     US Code (54,855), CFR (219,745), Federal Register rules (121,214), Executive Orders (3,593), agency guidance (2,509), Federal Rules of Procedure (526), US Constitution (74). Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
-    **50 jurisdictions**, ~7.6K sections, with article/section structure and clickable citations.
+    **50 jurisdictions**, ~7.6K sections, with article/section structure and clickable citations. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
-    **7 states**, ~8K rules (civil, criminal, appellate, and local), refreshed weekly.
+    **7 states**, ~8K rules (civil, criminal, appellate, and local), refreshed weekly. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
-    **12 states**, **176K+ rules**, with effective dates, statutory authority, and amendment history.
+    **12 states**, **176K+ rules**, with effective dates and statutory authority. Queryable via the API (`corpusType=REGULATION`).
   </Card>
   <Card title="Case law" icon="scale-balanced">
     Federal opinions from the Supreme Court through the District Courts (all 13 Circuits), plus state appellate and supreme court opinions across all 50 states, with inline citation resolution. Available in the platform.
@@ -128,13 +129,18 @@ for that jurisdiction. Sorted by statute volume.
   Some jurisdictions are partial and actively expanding. Arkansas, Missouri,
   Idaho, Virginia, and Wisconsin have thin statute coverage today but are
   prioritized for backfill, and Indiana statutes are queued for ingestion.
-  Regulations, constitutions, and court rules roll out state by state. Always
-  check `/statutes/states` for the current statute counts.
+  Regulations, constitutions, and court rules roll out state by state. Call
+  `/statutes/coverage` for the live per-corpusType matrix, or `/statutes/states`
+  for headline statute counts.
 </Note>
 
 ## How to query a jurisdiction
 
 ```bash
+# Self-describing coverage matrix: every corpusType and its per-jurisdiction counts
+curl https://api.vaquill.ai/api/v1/statutes/coverage \
+  -H "Authorization: Bearer vq_key_..."
+
 # Live coverage with current section counts
 curl https://api.vaquill.ai/api/v1/statutes/states \
   -H "Authorization: Bearer vq_key_..."
@@ -148,7 +154,15 @@ curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "landlord retaliation", "corpusType": "STATE", "state": "ms"}'
+
+# Search state regulations (corpusType REGULATION, paired with a state)
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "stormwater discharge permit", "corpusType": "REGULATION", "state": "wa"}'
 ```
+
+Each column in the matrix above maps to a `corpusType` filter on `/statutes/search`: statutes to `STATE`, regulations to `REGULATION`, constitutions to `STATE_CONSTITUTION`, and court rules to `STATE_RULES`. Federal Register agency rules use `FEDERAL_REGISTER` and agency guidance uses `AGENCY_GUIDANCE`.
 
 <CardGroup cols={2}>
   <Card title="API Reference" icon="code" href="/api-reference/statutes/search-us-statutes">
