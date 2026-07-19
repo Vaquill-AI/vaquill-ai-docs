@@ -14,7 +14,7 @@ filter; case law is available in the platform. Coverage is queryable live from
 is a snapshot.
 
 <Info>
-  **Snapshot date: 2026-07-18.** Statute coverage is always live via
+  **Snapshot date: 2026-07-19.** Statute coverage is always live via
   `/statutes/states` and `/statutes/codes`. Regulations, constitutions, court
   rules, and case law are an expanding set, refreshed weekly.
 </Info>
@@ -29,7 +29,7 @@ is a snapshot.
     US Code (54,855), CFR (219,745), Federal Register rules (121,214), Executive Orders (3,593), agency guidance (2,509), Federal Rules of Procedure (526), US Constitution (74). Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
-    **50 jurisdictions**, ~7.6K sections, with article/section structure and clickable citations. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
+    **51 jurisdictions** (50 states + Puerto Rico), ~7.7K sections, with article/section structure and clickable citations. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
     **7 states**, ~8K rules (civil, criminal, appellate, and local), refreshed weekly. Queryable via the API (`corpusType=STATE_RULES`).
@@ -76,13 +76,17 @@ for that jurisdiction. Sorted by statute volume.
 | Mississippi | 158,688 | - | 304 | - |
 | Texas | 122,535 | - | 402 | - |
 | Indiana | 83,148 | - | 52 | - |
-| Washington | 78,400 | 51,282 | 159 | - |
 | Illinois | 72,163 | - | 168 | 422 |
 | New Jersey | 55,910 | - | 11 | - |
+| Washington | 51,488 | 51,282 | 159 | - |
 | Nevada | 48,190 | - | 1 | 1,349 |
 | Alabama | 45,984 | - | 233 | - |
-| New York | 40,101 | - | 21 | - |
+| Louisiana | 43,550 | - | 56 | - |
+| Michigan | 40,646 | - | 307 | - |
+| New York | 40,102 | - | 21 | - |
 | Maryland | 39,552 | 12,729 | 24 | 1,220 |
+| South Dakota | 39,541 | - | 29 | - |
+| Arkansas | 36,936 | - | 236 | - |
 | Oregon | 36,202 | - | 1 | - |
 | Oklahoma | 35,329 | - | 330 | - |
 | Colorado | 34,231 | 1,026 | 396 | - |
@@ -92,6 +96,7 @@ for that jurisdiction. Sorted by statute volume.
 | South Carolina | 29,947 | 6,606 | 240 | - |
 | Missouri | 29,296 | - | 303 | - |
 | North Dakota | 29,042 | - | 185 | - |
+| Iowa | 28,223 | - | 54 | - |
 | Georgia | 28,154 | - | 79 | - |
 | Minnesota | 27,747 | 15,391 | 138 | 958 |
 | North Carolina | 26,685 | - | 154 | - |
@@ -100,38 +105,36 @@ for that jurisdiction. Sorted by statute volume.
 | West Virginia | 25,460 | - | 5 | - |
 | New Hampshire | 25,375 | - | 2 | - |
 | Maine | 25,316 | 1,813 | 106 | - |
-| Florida | 24,376 | - | 188 | - |
+| Florida | 24,866 | - | 188 | - |
 | Kansas | 24,361 | - | 16 | - |
 | New Mexico | 24,035 | 14,608 | 59 | - |
+| District of Columbia (territory) | 23,694 | - | - | - |
+| Puerto Rico (territory) | 23,649 | - | 102 | - |
 | Vermont | 23,521 | - | 22 | - |
 | Massachusetts | 23,152 | - | 5 | - |
 | Idaho | 22,754 | 8,551 | 240 | - |
 | Arizona | 22,674 | - | 323 | 1,740 |
 | Delaware | 21,649 | - | 196 | - |
 | Rhode Island | 21,107 | - | 119 | - |
-| District of Columbia (territory) | 21,088 | - | - | - |
 | Kentucky | 20,894 | 4,760 | 274 | - |
+| Wisconsin | 18,158 | 17,823 | 14 | - |
 | Alaska | 17,935 | - | 44 | - |
-| Michigan | 17,881 | - | 307 | - |
 | Hawaii | 16,446 | - | 169 | - |
 | Connecticut | 16,082 | - | 34 | - |
-| South Dakota | 12,638 | - | 29 | - |
-| Pennsylvania | 12,510 | - | 186 | 1,722 |
+| Pennsylvania | 14,547 | - | 186 | 1,722 |
 | Tennessee | 11,199 | - | 148 | - |
 | Wyoming | 10,219 | - | 314 | - |
-| Louisiana | 10,216 | - | 56 | - |
-| Iowa | 6,321 | - | 54 | - |
-| Puerto Rico (territory) | 2,909 | - | - | - |
-| Wisconsin | 812 | 17,823 | 14 | - |
-| Arkansas | 46 | - | 236 | - |
 
 <Note>
-  All 50 states plus DC and Puerto Rico now have statute coverage. A few remain
-  partial and are actively expanding: Arkansas and Wisconsin have thin statute
-  coverage today but are prioritized for backfill.
-  Regulations, constitutions, and court rules roll out state by state. Call
-  `/statutes/coverage` for the live per-corpusType matrix, or `/statutes/states`
-  for headline statute counts.
+  All 50 states plus DC and Puerto Rico have statute coverage, and most are
+  complete. Several are still being expanded to full section depth and should be
+  treated as partial today: Tennessee.
+  Pennsylvania's Consolidated Statutes are
+  complete; its older unconsolidated (Purdon's) statutes are a separate later
+  addition. These are prioritized for backfill. For the authoritative current
+  count of any jurisdiction, call
+  `/statutes/coverage` or `/statutes/states` (live).
+  Regulations, constitutions, and court rules roll out state by state.
 </Note>
 
 ## How to query a jurisdiction
