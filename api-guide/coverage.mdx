@@ -11,13 +11,22 @@ and case law. The **Developer API** (`/statutes/*`) serves statutes, regulations
 constitutions, court rules, and executive actions, scoped with the `corpusType`
 filter; case law is available in the platform. Coverage is queryable live from
 `GET /statutes/coverage` and `GET /statutes/states`; the per-corpus matrix below
-is a snapshot. In total the ingested corpus holds **~2.5M sections** across all of
+is a snapshot. In total the ingested corpus holds **~3.5M sections** across all of
 these corpus types.
 
 <Info>
-  **Snapshot date: 2026-07-19.** Statute coverage is always live via
-  `/statutes/states` and `/statutes/codes`. Regulations, constitutions, court
-  rules, and case law are an expanding set, refreshed weekly.
+  **Snapshot date: 2026-07-21.** Statute coverage is always live via
+  `/statutes/states` and `/statutes/codes`. Constitutions, court rules and case
+  law are an expanding set.
+
+  **Regulations come in two tiers, and the difference matters.** 14 states are
+  ingested from the state's own official publisher and refreshed on a monthly
+  cycle. The remaining 31 come from a dated 2024 corpus with no live refresh
+  path, because those states either publish no free official full text or have
+  not been built yet. Every section from that tier carries `actStatus:
+  "snapshot"` plus the source's own "current through" line, and resolves to
+  `goodLawStatus: "unknown"` rather than being asserted as current law. The
+  matrix below marks them.
 </Info>
 
 ## What's in the corpus
@@ -36,7 +45,7 @@ these corpus types.
     **7 states**, ~8K rules (civil, criminal, appellate, and local), refreshed weekly. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
-    **12 states**, **176K+ rules**, with effective dates and statutory authority. Queryable via the API (`corpusType=REGULATION`).
+    **45 states**, **1.1M+ rules**, with effective dates and statutory authority. 14 refreshed monthly from official publishers; 31 from a dated 2024 corpus, flagged `actStatus: "snapshot"`. Queryable via the API (`corpusType=REGULATION`).
   </Card>
   <Card title="Case law" icon="scale-balanced">
     Federal opinions from the Supreme Court through the District Courts (all 13 Circuits), plus state appellate and supreme court opinions across all 50 states, with inline citation resolution. Available in the platform.
@@ -71,60 +80,65 @@ them.
 Counts are ingested sections. A dash means that corpus type is not yet ingested
 for that jurisdiction. Sorted by statute volume.
 
+An asterisk (\*) on a regulation count marks the **2024 snapshot tier**: those
+sections carry `actStatus: "snapshot"`, resolve to `goodLawStatus: "unknown"`,
+and are not refreshed. Unmarked regulation counts are ingested from the state's
+own official publisher and refreshed monthly.
+
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
-| California | 161,226 | - | 295 | 640 |
-| Mississippi | 158,688 | - | 304 | - |
-| Texas | 122,535 | - | 402 | - |
-| Indiana | 83,148 | - | 52 | - |
+| California | 161,226 | 75,872* | 295 | 640 |
+| Mississippi | 158,688 | 35,546* | 304 | - |
+| Texas | 122,535 | 44,247 | 402 | - |
+| Indiana | 83,148 | 37,749* | 52 | - |
 | Illinois | 72,163 | - | 168 | 422 |
-| New Jersey | 55,910 | - | 11 | - |
-| Washington | 51,488 | 51,282 | 159 | - |
-| Nevada | 48,190 | - | 1 | 1,349 |
-| Alabama | 45,984 | - | 233 | - |
-| Louisiana | 43,550 | - | 56 | - |
-| Michigan | 40,646 | - | 307 | - |
-| New York | 40,102 | - | 21 | - |
-| Maryland | 39,552 | 12,729 | 24 | 1,220 |
-| South Dakota | 39,541 | - | 29 | - |
-| Arkansas | 36,936 | - | 236 | - |
-| Oregon | 36,202 | - | 1 | - |
-| Oklahoma | 35,329 | - | 330 | - |
-| Colorado | 34,231 | 1,026 | 396 | - |
-| Virginia | 33,856 | 22,396 | 123 | - |
-| Ohio | 33,161 | 19,275 | 217 | - |
+| New Jersey | 55,910 | 52,061* | 11 | - |
+| Washington | 51,488 | 51,142 | 159 | - |
+| Nevada | 48,190 | 34,245* | 1 | 1,349 |
+| Alabama | 45,984 | 18,282* | 233 | - |
+| Louisiana | 43,550 | 29,127* | 56 | - |
+| Michigan | 40,646 | 22,961* | 307 | - |
+| New York | 40,102 | 50,570* | 21 | - |
+| Maryland | 39,552 | 12,871 | 24 | 1,220 |
+| South Dakota | 39,541 | 25,884* | 29 | - |
+| Arkansas | 36,936 | 5,555* | 236 | - |
+| Oregon | 36,202 | 48,578* | 1 | - |
+| Oklahoma | 35,329 | 56,910* | 330 | - |
+| Colorado | 34,231 | 610 | 396 | - |
+| Virginia | 33,856 | 22,399 | 123 | - |
+| Ohio | 33,161 | 19,293 | 217 | - |
 | Tennessee | 32,685 | - | 148 | - |
-| Montana | 30,514 | - | 193 | - |
-| South Carolina | 29,947 | 6,606 | 240 | - |
-| Missouri | 29,296 | - | 303 | - |
-| North Dakota | 29,042 | - | 185 | - |
-| Iowa | 28,223 | - | 54 | - |
-| Georgia | 28,154 | - | 79 | - |
+| Montana | 30,514 | 32,208* | 193 | - |
+| South Carolina | 29,947 | 6,651 | 240 | - |
+| Missouri | 29,296 | 9,660* | 303 | - |
+| North Dakota | 29,042 | 17,144* | 185 | - |
+| Iowa | 28,223 | 26,237* | 54 | - |
+| Georgia | 28,154 | 19,580* | 79 | - |
 | Minnesota | 27,747 | 15,391 | 138 | 958 |
-| North Carolina | 26,685 | - | 154 | - |
-| Nebraska | 25,997 | - | 244 | - |
+| North Carolina | 26,685 | 30,167* | 154 | - |
+| Nebraska | 25,997 | 14,127* | 244 | - |
 | Utah | 25,880 | - | 220 | - |
-| West Virginia | 25,460 | - | 5 | - |
+| West Virginia | 25,460 | 20,029* | 5 | - |
 | New Hampshire | 25,375 | - | 2 | - |
-| Maine | 25,316 | 1,813 | 106 | - |
-| Florida | 24,866 | - | 188 | - |
+| Maine | 25,316 | 1,770 | 106 | - |
+| Florida | 24,866 | 32,765* | 188 | - |
 | Kansas | 24,361 | - | 16 | - |
-| New Mexico | 24,035 | 14,608 | 59 | - |
+| New Mexico | 24,035 | 13,274 | 59 | - |
 | District of Columbia (territory) | 23,694 | - | - | - |
 | Puerto Rico (territory) | 23,649 | - | 102 | - |
-| Vermont | 23,521 | - | 22 | - |
-| Massachusetts | 23,152 | - | 5 | - |
+| Vermont | 23,521 | 1,047* | 22 | - |
+| Massachusetts | 23,152 | 24,735* | 5 | - |
 | Idaho | 22,754 | 8,551 | 240 | - |
-| Arizona | 22,674 | - | 323 | 1,740 |
+| Arizona | 22,674 | 16,417* | 323 | 1,740 |
 | Delaware | 21,649 | - | 196 | - |
-| Rhode Island | 21,107 | - | 119 | - |
-| Kentucky | 20,894 | 4,760 | 274 | - |
-| Wisconsin | 18,158 | 17,823 | 14 | - |
-| Alaska | 17,935 | - | 44 | - |
-| Hawaii | 16,446 | - | 169 | - |
-| Connecticut | 16,082 | - | 34 | - |
-| Pennsylvania | 14,547 | - | 186 | 1,722 |
-| Wyoming | 10,219 | - | 314 | - |
+| Rhode Island | 21,107 | 12,102* | 119 | - |
+| Kentucky | 20,894 | 4,894 | 274 | - |
+| Wisconsin | 18,158 | 17,830 | 14 | - |
+| Alaska | 17,935 | 24,765* | 44 | - |
+| Hawaii | 16,446 | 26,705* | 169 | - |
+| Connecticut | 16,082 | 17,468* | 34 | - |
+| Pennsylvania | 14,547 | 52,663* | 186 | 1,722 |
+| Wyoming | 10,219 | 18,416* | 314 | - |
 
 <Note>
   All 50 states plus DC and Puerto Rico have statute coverage, and most are
@@ -135,7 +149,13 @@ for that jurisdiction. Sorted by statute volume.
   For the authoritative current
   count of any jurisdiction, call
   `/statutes/coverage` or `/statutes/states` (live).
-  Regulations, constitutions, and court rules roll out state by state.
+  Regulations now cover 45 states. 14 are official-source and refreshed monthly
+  (CO, ID, IL, KS, KY, MD, ME, MN, NM, OH, SC, VA, WA, WI); the rest are the
+  2024 snapshot tier marked with an asterisk above, and California, New Jersey,
+  New York and Vermont can only ever be served that way because their
+  administrative codes are published exclusively under commercial licence with
+  no free official full text. Constitutions and court rules roll out state by
+  state.
 </Note>
 
 ## How to query a jurisdiction
