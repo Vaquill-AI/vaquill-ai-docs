@@ -19,7 +19,7 @@
     "metatags": {
       "canonical": "https://www.vaquill.ai/docs",
       "og:site_name": "Vaquill AI Docs",
-      "og:image": "/images/research-1.png",
+      "og:image": "/images/chat-sources.webp",
       "og:description": "Legal AI suite for in-house counsel, with a US statutes API. Look up the US Code, the CFR, and all 50 state statute codes, and integrate statute data into your product.",
       "og:locale": "en_US",
       "twitter:card": "summary_large_image",
