@@ -29,6 +29,7 @@ node capture.mjs         # top-level surfaces, from the SHOTS list in the file
 node capture_detail.mjs  # detail views, from OUT/detail_urls.json
 node capture_rich.mjs    # interaction states (opened cells, expanded panels)
 node rich2.mjs           # builder palette, graph view, settings panels
+node capture_launchers.mjs  # one launcher per built-in workflow (25)
 node optimize.mjs        # PNG -> WebP q82, capped at 150 KB
 cp "$OUT"/shots/web/*.webp ../../images/
 ```
@@ -76,14 +77,16 @@ Review hub hides playbook and markup settings behind **Advanced options**.
 Not every page should have one. Roughly 60 pages here are deliberately without,
 and that is the intended state:
 
-- **The 25 built-in workflow pages.** Every launcher looks the same. Twenty-five
-  near-identical screenshots would be twenty-five things to re-shoot on each UI
-  change for no marginal value. One launcher shot on "Running a workflow"
-  teaches the pattern.
 - **Integration setup guides.** Those screenshots would be of Slack, Discord,
   Teams and other third-party UIs, which change on someone else's schedule.
 - **Field-reference pages.** A table of config fields is not clarified by a
   picture of the same table.
+
+Every built-in workflow page **does** carry its launcher, because each launcher
+renders that workflow's own document slots and typed input form. They are not
+interchangeable: NDA Bulk Review asks which side you are on, Motion Drafter asks
+for a motion type and a local-rule profile. Re-shoot all 25 with
+`capture_launchers.mjs`.
 
 Add an image when the feature is genuinely visual (a grid, a graph, a score, a
 dialog) or when the text alone leaves a reader unsure what they are looking for.
