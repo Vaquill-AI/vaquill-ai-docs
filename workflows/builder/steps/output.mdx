@@ -1,0 +1,89 @@
+---
+title: "Output steps"
+sidebarTitle: "4.8 Output"
+description: "Render a markdown body as a DOCX report, or export a matrix as an XLSX workbook"
+---
+
+Two steps. Both are output-kind, which means they produce a real file and are treated as side effects: they short-circuit on a Test Run, and the artifact they write lands on the run for download.
+
+<Note>
+  [Save to Matter](/workflows/builder/steps/document-io) is also an output-kind step, but the palette files it under Document I/O because it takes a document rather than producing one.
+</Note>
+
+---
+
+## Export DOCX Report
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="floppy-disk">Output</Card>
+  <Card title="Latency" icon="bolt">Fast</Card>
+</CardGroup>
+
+Renders a markdown body as a Word document and saves it as a run artifact. The most common final step in a custom workflow.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Title | Text | Yes | | The document heading and the saved filename. Up to 200 characters. |
+| Body | Long text (markdown) | Yes | | Up to 200,000 characters. Headings, lists, and the usual markdown are supported. **Use the upstream-output picker** to pull the body from a Summarize Document, Generate Legal Draft, or Verify Synthesis step rather than typing it. |
+| Report type | Executive or Per-document | No | Executive | Executive is one high-level report; per-document produces one section per document. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Artifact | The artifact descriptor: key, label, mime type, object key, size. Appears on the run for download. |
+| Size Bytes | File size. |
+
+<Tip>
+  The body field accepts a mix of literal text and upstream references, so you can wrap a generated summary in your own framing paragraphs without post-processing the file.
+</Tip>
+
+---
+
+## Export Matrix as XLSX
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="floppy-disk">Output</Card>
+  <Card title="Latency" icon="bolt">Fast</Card>
+</CardGroup>
+
+Renders a matrix as an Excel workbook. Use after a Build and Run Matrix step and pick that step from the matrix picker to inherit its id.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Matrix | Matrix picker | Yes | | Usually wired from an upstream Build and Run Matrix step. |
+| Include citations | Boolean | No | On | Adds a separate citations sheet alongside the answers. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Artifact | The artifact descriptor. |
+| Size Bytes | File size. |
+
+<Note>
+  Leave **Include citations** on unless you have a specific reason not to. A matrix export without its citations sheet is a table of assertions with no way to check any of them.
+</Note>
+
+---
+
+## What happens to an artifact
+
+Artifacts written by these steps are recorded on the run and exposed as short-lived signed downloads, exactly like built-in workflow artifacts. See [Results and artifacts](/workflows/results-and-artifacts) for the download mechanics and expiry behavior.
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Results and artifacts" icon="file-export" href="/workflows/results-and-artifacts">
+    Downloads, expiry, and matter attachment.
+  </Card>
+  <Card title="Document I/O steps" icon="folder-open" href="/workflows/builder/steps/document-io">
+    Save to Matter, the other way to land an output.
+  </Card>
+</CardGroup>

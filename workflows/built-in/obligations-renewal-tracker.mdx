@@ -1,0 +1,80 @@
+---
+title: "Contract Obligations and Renewal Tracker"
+sidebarTitle: "1.5 Obligations Tracker"
+description: "Build an obligations register and a subscribable renewal calendar across a contract portfolio so auto-renewal traps never slip"
+---
+
+**Best for:** building an obligations register and renewal calendar across a 100+ contract portfolio so auto-renewal traps and notice deadlines never slip.
+
+Surfaces key dates, auto-renewal traps, and the substantive obligations that bind your company, then emits both a register you can read and an iCalendar feed you can subscribe to.
+
+| | |
+| --- | --- |
+| Category | In-House |
+| Jurisdiction | Any |
+| Practice areas | Commercial, operations |
+| Runtime | 4-20 minutes |
+| Queue | Long-running (two-hour ceiling) |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Contracts in portfolio** | Yes | 1-2000 | Vendor, customer, and partner agreements to inventory. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Register name | Text | No | Used as the ICS feed name and the register DOCX title. **Keep it stable across re-runs** so existing calendar subscribers do not end up with duplicate feeds. |
+| Reminder cadence (days before deadline) | Multi-select | No | 120, 90, 60, 30, 14, 7. The ICS feed emits a `VALARM` at each selected offset. Industry norm for auto-renewals is multi-stage 120/90/60/30. Defaults to 30 days. |
+| Obligation types to track | Multi-select | No | Auto-renewals and notice-of-non-renewal deadlines, payment milestones, deliverable and SLA deadlines, audit-right windows, insurance and COI renewals, indemnification triggers, data-processing certifications. Leave blank to track everything. |
+| Materiality threshold (USD) | Select | No | No threshold, $1,000, $10,000, $50,000, $100,000. Suppresses obligations whose underlying contract value is below the floor. |
+| Default notice period when the contract is silent | Select | No | 30, 60, 90, 120 days. Used when a contract does not specify one. Defaults to 60. |
+| Portfolio side | Select | No | Vendor-facing (we are the customer), customer-facing (we are the vendor), mixed. Drives whose obligations get priority in the register. |
+
+## How it runs
+
+A matrix-review pipeline with a calendar-building render stage.
+
+<Steps>
+  <Step title="Prepare, extract, wait">
+    Builds an extraction matrix over the portfolio: counterparty, effective and expiration dates, auto-renewal mechanics, notice windows, and the obligation types you selected. Every cell is answered against one contract.
+  </Step>
+  <Step title="Normalize and score">
+    Resolves dates, applies the default notice period where a contract is silent, and drops obligations below the materiality floor.
+  </Step>
+  <Step title="Synthesize">
+    Rolls up the portfolio view and runs the synthesis verifier.
+  </Step>
+  <Step title="Render register and calendar">
+    Writes the two DOCX artifacts and builds an RFC 5545 iCalendar feed with one `VEVENT` per renewal window and a `VALARM` at each reminder offset you chose.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Obligations Register** | DOCX | The portfolio register plus the renewal calendar in readable form. |
+| **Per-Contract Detail** | DOCX | One section per contract with its extracted obligations and dates. |
+| **Renewal Calendar** | ICS | RFC 5545 iCalendar feed. Import into Outlook or Google Calendar to surface upcoming renewal decisions with reminders. |
+
+## What this will not do
+
+- Send notice-of-non-renewal or termination letters to counterparties on your behalf.
+- Sync directly with your contract-management system, calendar, or finance ERP for live reminders. The ICS is an export, not a live connection.
+- Track amendments or side letters that were not part of the upload, or notice your counterparty has sent.
+- Replace counsel review for the final decision to terminate, renegotiate, or let an agreement auto-renew.
+- Confirm whether a missed notice deadline has waived your termination right under the contract's exact wording.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="MSA and Vendor Review" icon="briefcase" href="/workflows/built-in/msa-vendor-review">
+    Review the agreements before they are signed and tracked.
+  </Card>
+  <Card title="Chronology builder" icon="timeline" href="/guides/chronology-builder">
+    Dated events across a matter rather than obligations across a portfolio.
+  </Card>
+</CardGroup>

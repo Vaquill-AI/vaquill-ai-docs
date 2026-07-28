@@ -1,0 +1,68 @@
+---
+title: "Privacy and Data Protection Audit"
+sidebarTitle: "2.1 Privacy Audit"
+description: "Gap analysis over privacy policies, DPAs, processing records, and consent notices against state and federal privacy law"
+---
+
+**Best for:** gap analysis over privacy policies and DPAs against CCPA, CPRA, VCDPA, and CPA, plus federal HIPAA, GLBA, COPPA, and FCRA where applicable.
+
+US state-privacy aware, covering the 20+ state laws live in 2026 alongside the federal sector regimes. Produces specific remediation drafting suggestions tied to statutory provisions rather than generic advice.
+
+| | |
+| --- | --- |
+| Category | In-House |
+| Jurisdiction | Any |
+| Practice areas | Privacy, compliance, data protection |
+| Runtime | 15-60 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Privacy documents to audit** | Yes | 1-500 | Privacy policies, DPAs, processing records, consent notices. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Audit name | Text | No | The report title and matter handle. Regulators may later request audit artifacts, so pick a name that maps to your records-retention scheme. |
+| **US states where you have users or data subjects** | Multi-select | **Yes** | 19 named states plus "All states". Each state law has different thresholds, opt-out mechanics, sensitive-data definitions, and breach-notification windows. |
+| **Company role** | Select | **Yes** | Controller · processor · both. Drives DPA obligations, sub-processor flow-downs, and CPRA service-provider contractual terms. |
+| Industry sector | Select | No | Tech/SaaS, healthcare (HIPAA), financial services (GLBA), education (FERPA), children's products (COPPA), consumer reporting (FCRA), adtech, other B2B, other B2C. Triggers the sector-specific federal checks. |
+| Sensitive data processed | Multi-select | No | Biometrics, precise geolocation, health, children under 13, race/ethnicity/religion, immigration status, sexual orientation, genetic, financial/payment card. Sensitive data flips consent-versus-opt-out and triggers DPIA obligations under CPRA § 1798.185 and Colorado Rule 6. |
+| Uses automated decision-making or AI profiling? | Yes/No | No | The CCPA ADMT regulations effective 1 January 2026 require risk assessments and consumer pre-use notices. |
+| Cross-border data transfers | Multi-select | No | EU/UK (GDPR), Canada (PIPEDA / Quebec Law 25), Brazil (LGPD), China (PIPL), other. Triggers SCC, IDTA, or equivalent transfer-mechanism review. |
+| Audit type | Select | No | First-time baseline, annual refresh, M&A diligence support, post-incident remediation, vendor onboarding. Sets depth and tone. |
+| Approximate consumer record count | Select | No | Under 100K through over 10M. Drives the California cybersecurity-audit threshold, which combines revenue and processing-volume tests. |
+
+## How it runs
+
+A matrix-review pipeline: `prepare → extract → wait for extraction → normalize and score → synthesize → render`.
+
+The matrix columns are the specific statutory requirements implied by your state selection, company role, sector, and sensitive-data categories, so a controller in California with biometric data gets a materially different column set than a B2B processor in Texas. Findings are scored per document, then synthesized into the portfolio gap analysis and verified.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Audit Report** | DOCX | The gap analysis, with remediation drafting suggestions tied to specific statutory provisions. |
+| **Per-Document Detail** | DOCX | One section per audited document. |
+
+## What this will not do
+
+- Replace privacy counsel review for final remediation decisions or the breach-notification call.
+- Confirm regime applicability, such as HIPAA covered-entity status or CCPA thresholds, when the facts are ambiguous. Consult counsel.
+- File regulatory submissions, register a data broker, or send breach notices on your behalf.
+- Audit your actual data flows or vendor sub-processor chain beyond what the uploaded documents describe.
+- Run a technical security review: penetration testing, code audit, SOC 2 readiness.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Compliance Scan Agent" icon="shield" href="/workflows/built-in/compliance-scan-agent">
+    Wider net: works out which regimes apply, then dispatches the right checks.
+  </Card>
+  <Card title="DPA Reviewer" icon="lock" href="/workflows/built-in/dpa-reviewer">
+    Deeper on the DPAs specifically.
+  </Card>
+</CardGroup>

@@ -1,0 +1,83 @@
+---
+title: "Drafting steps"
+sidebarTitle: "4.6 Drafting"
+description: "Generate a template-constrained legal document and save it to the Drafts surface"
+---
+
+One step. It produces new legal text rather than analysing existing text, which makes it the highest-value and highest-risk step in the palette.
+
+---
+
+## Generate Legal Draft
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Generates a template-constrained legal document (NDA, MSA, demand letter, complaint, and the rest) and saves it to the Drafts surface, where it becomes editable like any other draft.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Document type | Select | Yes | | What kind of document to draft. |
+| Title | Text | Yes | | The heading and filename of the saved draft. Up to 500 characters. |
+| Governing-law state | Text | No | | US state for the choice-of-law clause, or federal. |
+| Tone | Select | No | Balanced | Balanced is neutral, aggressive favors your side, conservative is cautious. |
+| Variables | Key/value pairs | No | | Values for the template's placeholders: party names, dates, dollar amounts. |
+| Special instructions | Long text | No | | Free text for unusual clauses or deviations. Up to 10,000 characters. |
+| Template | Template picker | No | | Leave empty to use the default template for the chosen document type. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Draft Id | The saved draft. **Wire into Save to Matter** to file it. |
+| Title | The draft title. |
+| Quality Score | A quality signal when available. Usable as a branch condition. |
+| Section Count | How many sections were produced. |
+| Body Markdown | The draft body. **Wire into Verify Citations and Export DOCX Report.** |
+
+## Template-constrained, not freeform
+
+The step generates against a template rather than from a blank page. That is the main defense against a model inventing structure, and it is why the document type field is required: it selects the template and its constraints.
+
+Supplying a specific template overrides the default for that document type, which is how you get firm-standard output rather than generic output.
+
+## Always verify the output
+
+<Warning>
+  A drafting step that quotes case law can fabricate citations. Follow every Generate Legal Draft with [Verify Citations](/workflows/builder/steps/verification) wired to Body Markdown, and branch on the result rather than exporting regardless.
+</Warning>
+
+The pattern:
+
+```
+Search US Case Law
+  → Generate Legal Draft
+  → Verify Citations         (reads Body Markdown)
+  → [branch on Has Fabricated Case]
+  → Export DOCX Report  /  Save to Matter
+```
+
+Both the "Quick Case-Law Memo" and "Demand-Letter Skeleton" [starter templates](/workflows/builder/templates) are built on exactly this shape.
+
+## When to use a built-in instead
+
+If you want a specific instrument with jurisdiction-aware structure, statutory prerequisites, and supporting documents, the [built-in drafting workflows](/workflows/built-in) do considerably more than this step: a complaint with jurisdictional allegations, a motion with a proposed order and compliance checklist, a demand letter with the right state's retraction window.
+
+Use this step when the drafting is one part of a larger custom chain. Use a built-in when the draft is the whole job.
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Drafting guide" icon="pen-nib" href="/guides/drafting">
+    The interactive drafting surface this step writes into.
+  </Card>
+  <Card title="Verification steps" icon="circle-check" href="/workflows/builder/steps/verification">
+    What must follow this step.
+  </Card>
+</CardGroup>

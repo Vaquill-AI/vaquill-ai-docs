@@ -1,0 +1,90 @@
+---
+title: "Results and artifacts"
+sidebarTitle: "4. Results and artifacts"
+description: "What a finished run gives you: DOCX and XLSX deliverables, citation appendices, verification passes, and matter attachment"
+---
+
+A workflow's output is a set of **artifacts**: real files, not chat transcripts. Every built-in workflow declares its artifacts up front, so you know before you launch exactly what you will be able to download.
+
+## Artifact formats
+
+| Format | Used for |
+| --- | --- |
+| **DOCX** | Executive memos, per-document detail, drafted instruments, checklists, citation appendices |
+| **XLSX** | Privilege logs, contradiction matrices, comparables tables, jurisdiction comparison matrices |
+
+Across the built-in catalogue that is 52 DOCX artifacts and 6 XLSX artifacts. Each workflow's page lists its exact set.
+
+## The common artifact shapes
+
+Most workflows emit some combination of these.
+
+<AccordionGroup>
+  <Accordion title="Executive summary or memo" icon="file-lines">
+    The read-first document. Portfolio-level findings, a traffic-light or posture grid across all reviewed documents, ranked issues, and recommended actions. Written for someone who will not read the detail file.
+  </Accordion>
+  <Accordion title="Per-document detail" icon="files">
+    One section per reviewed document: benchmark scoring, flagged clauses, suggested redline language. This is the working document you take into the negotiation or the review.
+  </Accordion>
+  <Accordion title="Citations and authorities used" icon="quote-left">
+    A deduplicated appendix of every statute and case the output relies on. Drafting workflows produce citations interleaved in the body text, which is unverifiable without scrolling line by line, so the appendix pulls them into one list you can check. Detection is deliberately conservative: a false positive is something you skip past, a false negative is a citation with no verification trace.
+  </Accordion>
+  <Accordion title="Spreadsheet deliverables" icon="table">
+    Where the output is genuinely tabular, you get an XLSX instead of a table crammed into a Word file: privilege logs, cross-examination contradiction matrices, settlement comparables, 50-state comparison grids.
+  </Accordion>
+</AccordionGroup>
+
+## Grounding and verification
+
+The riskiest step in a portfolio review is the final synthesis, because the synthesizer sees per-document summaries rather than the raw documents and is asked to invent cross-document findings. Every matrix-backed workflow runs a verification pass between synthesis and persistence that drops:
+
+- findings citing a document that was not in the input set
+- findings whose recommended redline asserts a clause that came back Not Found in every document
+- duplicate findings with the same title, which are merged instead
+- placeholder findings, the "further review recommended" filler
+
+The verifier runs before the result is saved, so what you download has already been through it. Workflows that additionally verify specific claims, such as [Cross-Examination Prep](/workflows/built-in/cross-exam-prep) verifying each alleged contradiction, say so on their own page.
+
+<Note>
+  Verification narrows the gap; it does not close it. Every workflow ships an explicit **What this will not do** list, and "replace counsel review before signature or filing" is on nearly all of them.
+</Note>
+
+## Downloading
+
+Artifacts live in object storage, and downloads go through short-lived signed URLs valid for five minutes. Requesting a URL requires both that you can see the run and that the object key belongs to that run, so a valid run ID plus someone else's object key resolves to a 404 rather than a leak.
+
+Signed links expire; the run does not. Come back to the run page and generate a fresh link whenever you need the file again.
+
+## Attaching to a matter
+
+Launch a run with a matter selected and every artifact is also written into that matter as a document, badged as workflow output and deep-linked back to the run that produced it.
+
+These are filed as deliverables, not as search inputs: they are not pushed through the RAG ingestion pipeline. Workflow output is long-form prose a lawyer reads rather than searches, and embedding every run's memo is hard to justify. If you do want a deliverable to become searchable, re-upload it explicitly and it goes through the normal ingest path.
+
+Matter attachment is best-effort. If it fails, the artifact is already in storage and recorded on the run, so the download still works.
+
+## Run history
+
+Every run keeps:
+
+- its artifacts
+- the documents that were attached, with their slot roles
+- the inputs you submitted
+- the full audit timeline of every step, document processed, and artifact rendered
+
+Runs are listed in the Runs index and on the matter they were scoped to. Owners can delete a run.
+
+## Follow-up questions on Cited Q&A
+
+[Cited Q&A across a Document Set](/workflows/built-in/cited-qa-document-set) is the one workflow you can extend after it finishes. Append new questions to a completed run and each becomes a new column answered against the same document set, with the report re-rendered. You do not re-upload anything and you do not re-run the whole pipeline.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Running a workflow" icon="play" href="/workflows/running-a-workflow">
+    Slots, inputs, auto-fill, progress, and cancelling.
+  </Card>
+  <Card title="Answer verification" icon="circle-check" href="/guides/answer-verification">
+    How Vaquill grades its own answers against sources.
+  </Card>
+</CardGroup>

@@ -1,102 +1,319 @@
 ---
 title: "Drafting"
-description: "Describe what you need in plain English and get a jurisdiction-aware first draft you can refine and export"
+description: "Describe what you need in plain English and get a jurisdiction-aware first draft you can redline, review, and export"
 icon: "pen-nib"
 ---
 
-Drafting turns a plain-English description into a legal document. Tell it what you need, pick a quick-start category or write a custom prompt, set the jurisdiction, and you get a draft you can refine in place. Every draft is saved, organized into folders, and exportable.
+Drafting turns a plain-English description into a legal document.
+Tell it what you need, pick a document type or write your own brief, set the governing-law state, and you get a draft that is built section by section, grounded in the statutes for that state, and checked before you ever see it.
 
-<Frame caption="The drafting start screen: a plain-English prompt box, quick-start categories, and your saved drafts">
-  <img src="/images/drafting.png" alt="Vaquill drafting start screen asking What do you need to draft, with a prompt box set to New draft mode and California jurisdiction, quick-start chips for NDA, Employment, Service Agreement, and Lease, and a Drafts list with folders" style={{ borderRadius: '0.5rem' }} />
+From there the draft opens in a full editor with track changes, comments, version history, and Word export, so the whole review cycle happens in one place instead of an email chain of attachments.
+
+<Frame caption="The drafting start screen: a plain-English prompt box, quick-start document types, and your saved drafts">
+  <img src="/images/drafting.png" alt="Vaquill drafting start screen asking What do you need to draft, with a prompt box set to New draft mode, a governing-law state selector, quick-start document type chips, and a Drafts list with folders" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
 ## Describe what you need
 
-The prompt box is the front door. Describe your document in plain English and include the details that matter:
+The prompt box is the front door.
+Describe your document in plain English and include the details that matter:
 
 - Parties and their roles
 - Key terms, amounts, and dates
-- Jurisdiction
-- Any specific clauses you need (or want left out)
+- Any specific clauses you need, or want left out
+- Anything unusual about the deal that a generic form would miss
 
-You do not need to know the right legal phrasing. *"A mutual NDA between Acme Corp and a freelance designer, two-year term, governed by California law, with a carve-out for independently developed work"* is enough to produce a usable first draft.
+You do not need to know the right legal phrasing.
+*"A mutual NDA between Acme Corp and a freelance designer, two-year term, governed by California law, with a carve-out for independently developed work"* is enough to produce a usable first draft.
 
-## Quick-start categories
+If your description is thin, the **Improve** action next to the prompt box rewrites it into a sharper drafting brief in place.
+It sharpens the instruction only: it will not invent parties, amounts, addresses, dates, or statute numbers you did not give it.
 
-When you would rather start from a known document type, pick a quick-start chip instead of writing a prompt from scratch:
+You can also dictate the brief with the microphone, and attach up to five reference documents (a prior agreement, a term sheet, a signed precedent).
+Reference documents are read in full and used as source material for the draft, not merely searched.
 
-<CardGroup cols={2}>
-  <Card title="NDA" icon="shield-halved">
-    Mutual or one-way non-disclosure agreements.
-  </Card>
-  <Card title="Employment" icon="user-tie">
-    Offer letters, employment agreements, and related terms.
-  </Card>
-  <Card title="Service Agreement" icon="file-signature">
-    Master services agreements and statements of work.
-  </Card>
-  <Card title="Lease" icon="building">
-    Residential and commercial lease documents.
-  </Card>
-</CardGroup>
+## Choosing a document type
 
-Need something outside these four? Use **Browse all categories** for the full set, or start with the **Custom Legal Document** sample prompt and describe anything from scratch.
+**Quick start** offers the four highest-volume types for your workspace as chips.
+In a general or in-house workspace those are **NDA**, **MSA**, **Vendor**, and **DPA**.
+In the Landlord and Tenant workspace they are **3-Day Notice to Pay**, **Lease / Rental**, **Estoppel**, and **Termination Notice**.
 
-## Choose a jurisdiction
+**Browse all categories** opens the full catalog, split into **Contracts** and **Disputes & Notices** tabs, with everything from *Statement of Work (SOW)*, *SAFE (Simple Agreement for Future Equity)*, and *Service Level Agreement (SLA)* through *Motion for Summary Judgment*, *Cease & Desist Letter*, and *Appellate Brief*.
+A **Custom Draft (describe anything)** tile always sits at the bottom for documents that do not fit a named type.
 
-Drafting is jurisdiction-aware. The jurisdiction selector (for example, California) sets the legal context for the draft, so statutory references, required notices, and default positions match the state you select. Set it before you generate so the first draft is already aimed at the right venue.
+You do not have to pick one at all.
+Start typing and the document type is detected from your description, shown as **Detected:** with the option to override it.
 
-<Note>
-  Vaquill is a US product. The jurisdiction selector covers US federal and all 50 state jurisdictions, backed by the US Code, CFR, and 50-state statute codes.
-</Note>
+<Tip>
+  Every document type has a **How this draft is built** panel, opened from the info button on a type tile or on the scope chip in the composer. It lists the exact sections the draft will produce, what it never includes, the statutory values it copies verbatim, the legal basis it cites, and its safeguards. Read it once for a type you use often and you will know exactly what you are getting.
+</Tip>
 
-## New draft vs Improve
+Below the prompt box, **Start with a sample prompt** offers fully written briefs for the selected type, with the blanks pre-selected so you can tab through them.
+If you have saved [document templates](/guides/templates), matching ones appear as **Your templates for this document type**.
 
-The prompt box has two modes:
+## Governing law and forum
 
-- **New draft** generates a fresh document from your description.
-- **Improve** takes an existing draft (or pasted text) and revises it. Use it to tighten language, add a missing clause, change a party, or adapt a document to a different jurisdiction.
+Drafting is jurisdiction-aware, and for US documents the governing-law state is required before you can generate.
+Pick a state, or **Federal / multi-state** for federal-only or cross-state scope.
+The selection pins retrieval and citations: statutes, deadlines, dollar figures, and required notices are pulled for that state rather than averaged across the country.
 
-Switch modes with the toggle next to the prompt box. Improve keeps the document you are working on and applies your instruction as an edit rather than starting over.
+<Warning>
+  The governing-law state **locks after the first generation**. The draft header shows it as a locked pill. To draft the same document under a different state, create a new draft rather than editing this one, so the citations and the body never drift apart.
+</Warning>
 
-## Drafts and folders
+For litigation documents, a **Court forum** option sets **Federal court (FRCP/FRE)** or **State court**, with a field for the specific district or court.
+That drives which procedural rules the draft is written against and how the caption is formed.
 
-Every draft you generate is saved automatically and listed in the **Drafts** panel. Drafts carry a status (for example, a custom draft or an imported one) and a last-edited time, and you can organize them into folders to keep matters separate.
+The **More options** menu on the composer also carries:
+
+| Option | What it does |
+|---|---|
+| Language | Drafts in a language other than English, including bilingual output |
+| Playbook | Draft toward a specific [playbook](/guides/playbooks) instead of the default for the document type |
+| Per-deal overrides | Override a playbook's preferred or acceptable position for this draft only, with a rationale stored on the draft for audit. Your saved playbook is never modified |
+| Court forum | Federal or state, plus the district or court name |
+
+## What happens during generation
+
+Generation is not one prompt.
+The progress panel shows each stage as it runs, and you can close the tab and come back.
 
 <Steps>
-  <Step title="Generate or import">
-    Create a draft from a prompt, or import an existing document to revise.
+  <Step title="Understanding your requirements">
+    Sets up the right document structure for the type you asked for.
   </Step>
-  <Step title="Refine in Improve mode">
-    Iterate on the draft until the language is right. Each change is saved.
+  <Step title="Looking up applicable laws">
+    Retrieves the statutes, regulations, and case law that actually govern the document, scoped to your governing-law state. Attached reference documents are read in at this point.
   </Step>
-  <Step title="File it in a folder">
-    Move the draft into a folder so it sits with the rest of the matter's work.
+  <Step title="Drafting each section">
+    Sections are written in parallel, each one given the canonical list of its sibling sections so it cannot cross-reference an article that does not exist.
+  </Step>
+  <Step title="Verifying every cited authority">
+    Case names, statute sections, constitutional references, and dates are checked against authoritative sources. Anything that comes back fabricated or mismatched sends that section back for a targeted rewrite with the correct citation supplied.
+  </Step>
+  <Step title="Senior-partner review">
+    A final read-through of the whole draft for role drift, internal contradictions, forum-language drift, and anything that survived the citation pass.
   </Step>
 </Steps>
 
-## Pick up where you left off
+## Guardrails, and what gets flagged
 
-The start screen surfaces a **Pick up where you left off** row with your most recently edited drafts, each showing when it was last touched. Click one to jump straight back into it, or open **View all drafts** for the full list. You never lose a draft to a closed tab.
+Two of those stages fix problems silently before you see the draft.
+The rest surface in the editor, because they need your judgment.
+
+<AccordionGroup>
+  <Accordion title="Quality badge">
+    A pill in the editor header reading **Fact-checked**, **Partner-reviewed**, or **N citations verified**. Hovering it tells you how many cited authorities were confirmed, how many self-correction passes ran, and how many sections were rewritten during quality review before the draft reached you.
+  </Accordion>
+  <Accordion title="Sources panel">
+    Lists every act, case, and citation in the draft, grouped into statutes and cases, each marked verified, could not verify, or not checked. It also lists open issues by domain: outdated statutes, unverified citations, missing pinpoint cites, unfilled placeholders, inconsistent dates, sections that ran long, and low-confidence sections.
+  </Accordion>
+  <Accordion title="Review banner">
+    An amber strip naming the specific sections where a citation or date could not be auto-resolved, with a jump button per section. The draft is still saved; the banner is telling you where to look first.
+  </Accordion>
+  <Accordion title="Compliance review">
+    For document types that run an adversarial red-team pass, this panel separates **Residual critical defects** (must fix), **Residual concerns** (decide), **Manual review** (confirm the supporting documentation exists), and **Fixed in v2** (defects the automatic revision pass already closed).
+  </Accordion>
+  <Accordion title="Playbook compliance">
+    A banner scoring each section against your playbook as preferred, fallback, or needs attention, with a risk band from low risk through partner sign-off recommended. You can insert the playbook's preferred language, or a numbered fallback, directly as a tracked change.
+  </Accordion>
+  <Accordion title="Refusal">
+    If the request cannot produce a valid legal document, drafting stops and says so, with the applicable law and suggested next steps, rather than generating something unenforceable.
+  </Accordion>
+</AccordionGroup>
+
+Specific checks that reach the issue list include unfilled placeholders, the same date stated two ways, a case cited without a pinpoint or with conflicting pinpoints, a wrong court caption for the forum, and a non-compete drafted for a state that does not enforce them.
+
+## New draft vs Improve
+
+The toggle above the prompt box switches between the two modes.
+
+- **New draft** generates a fresh document from your description.
+- **Improve** takes a document you already have and analyzes it first.
+
+Improve works from an upload (PDF, DOCX, or TXT, up to 50 MB), not from pasted text.
+Set the governing-law state before uploading so the analysis is scoped to the right body of law.
+
+You get back a quality score and a list of anchored findings.
+Each finding is graded from critical down to nice to have, tagged by category (Enforceability, Compliance, Liability, Imbalance, Clarity, Missing protection, Procedural, Missing section, Formatting), highlighted in the document viewer next to it, and expandable into a suggested fix showing the original text, the proposed replacement, and a one-sentence rationale.
+Filter to **Critical only** or **Critical + High** when the list is long.
+
+From there you can download the analysis as a tracked-changes redline, a highlighted markup document, or a findings PDF, or add special instructions and generate the improved draft outright.
+
+## Importing an existing document
+
+You can also bring a document straight into the editor as an editable draft, from PDF, Word, plain text, Markdown, RTF, or an image of a page.
+
+Word imports keep more than the text.
+Comments become real comment threads, tracked insertions and deletions become live redlines with the original author's name and color, and hyperlinks survive.
+A banner tells you what was preserved, for example *"We kept 8 comments, 23 insertions, 4 deletions from the original document."*
+Headers and footers are recorded but not placed in the editor body.
+
+## The editor
+
+The draft opens in a rich editor with the formatting you would expect: headings, lists, tables, alignment, links, block quotes, and checklists, plus a slash menu for inserting blocks without leaving the keyboard.
+
+Select any passage and a bubble menu offers **Rewrite**, **Simplify**, **Formalize**, **Explain**, and **Comment**.
+Rewrites are staged rather than applied: you see the original struck through, the suggestion, and why, then accept or reject.
+**Explain** opens a plain-language summary of the clause with its obligations, risks, and applicable acts.
+
+A floating instruction bar lets you select text and describe the change you want in prose instead of picking from the menu.
+
+**Insert standard US clause** in the toolbar drops in vetted boilerplate grouped by area (Federal Procedure, Pleading Recitals, Discovery & Evidence, Settlement & Releases, Confidentiality / NDA, Trade Secrets & IP, Employment, Choice of Law / Forum), or opens **From clause library...** to search your [clause library](/guides/clause-library) by type.
+
+## Track changes
+
+The mode control at the right of the toolbar sets how your edits are recorded.
+
+| Mode | Behavior |
+|---|---|
+| Editing | Direct editing without tracking |
+| Suggesting | Every change is marked as a suggestion others can accept or reject |
+| Viewing | Read-only preview as if all suggestions were accepted |
+
+The **Suggestions** panel lists everything pending, filterable to **All** or **Mine**, with a live risk badge.
+Per suggestion you can accept, reject, or **Modify**, which is a counter-offer: edit the proposed wording before accepting it.
+Accept all and reject all require a second click to confirm.
+
+AI-generated redlines, including those pushed in from [contract review](/guides/contract-review), are attributed to the reviewer rather than to you, so a human decision is always distinguishable from a machine suggestion.
+
+The **Timeline** tab keeps the audit trail.
+Every insertion, deletion, replacement, and formatting change is logged with its status, and stays logged after it is resolved, because the in-document mark disappears on accept or reject but the record should not.
+A resolved change can be un-resolved, which brings it back as a live, re-decidable suggestion.
+
+## Comments and review
+
+Drafts carry threaded comments anchored to a passage, so review happens in the draft.
+
+- **Anchor a comment** to a selection and start a thread
+- **Reply** within the thread, including nested replies
+- **@-mention a teammate** to email them a link that opens directly on that thread
+- **Resolve** a thread once it is dealt with, or reopen it later
+- Filter to **open**, **resolved**, or **all**
+
+Only the thread author or an org owner can resolve, reopen, or delete a thread, and resolving someone else's thread emails them.
+Individual comments can be edited or deleted within five minutes of posting; after that they are fixed, and deletions are soft so history survives.
+
+If the text a thread was anchored to gets edited away, the thread moves to an **Unanchored** group rather than disappearing.
+
+<Tip>
+  Resolve rather than delete. A resolved thread preserves why a clause reads the way it does, which is exactly the question that comes up six months later.
+</Tip>
+
+## Version history
+
+Versions are snapshots you take deliberately.
+Auto-save keeps your work safe continuously but does **not** create a version, so the history stays a list of meaningful checkpoints rather than a keystroke log.
+
+Save explicitly, with an optional change summary, to snapshot the draft.
+The **Versions** tab lists them newest first, and **Restore** replaces the current draft with that version while recording the restore itself as a new change.
+
+If two people have the same draft open and the underlying version has moved on, the save is refused rather than silently overwriting a colleague's work.
+
+## Variables and bulk merge
+
+The **Variables** panel finds the fill-in points in your draft and lets you complete them in a form instead of hunting through the body.
+
+- `[Square brackets]` are one-off placeholders for this document
+- `{Curly braces}` are merge fields you intend to bulk-fill
+
+Fields are typed, so dates get a date picker, amounts get currency formatting, and US states get a dropdown.
+**Apply all** replaces every filled placeholder in one pass, with undo.
+
+**Bulk merge** generates one personalized copy of the draft per row of data: paste or upload a spreadsheet, map the columns to your merge fields, name the output with a title pattern, and get a separate draft per row plus a single zip of Word files.
+Rows fail individually rather than sinking the batch.
+You can also extract merge values from uploaded identity and entity documents instead of typing them.
+
+## Approvals
+
+Where a playbook attaches a sign-off requirement to a clause, sections that land on a fallback or needs-attention position become pending approval items in the **Approval workflow** panel.
+
+Each item names the clause type, the sections involved, the escalation triggers that fired, and the required level: **Manager sign-off**, **Partner sign-off**, or **General Counsel sign-off**.
+Decisions are **Approved**, **Rejected**, or **Changes requested**, each recorded with a rationale in a decision audit trail.
+A lower-authority decision does not satisfy a higher gate.
+
+## Drafts, folders, and trash
+
+Every draft is saved automatically and listed in the **Drafts** panel.
+
+Search across drafts by content, and filter by status (Draft, Review, Final, Archived), by source (AI-generated, Uploaded, Imported), and by date.
+Folders are shared with chats, so a project folder can hold both the conversation and the contracts.
+Select several drafts at once to move or duplicate them together.
+
+The start screen also surfaces **Pick up where you left off** with your most recently edited drafts and when each was last touched.
+
+Deleted drafts go to **Trash** for 30 days before they are removed permanently, and can be restored from there.
+
+## Sharing and co-editing
+
+Share a draft by public link or by email.
+A public link is a **read-only snapshot**: anyone with the link can view it without signing in, and later edits are not reflected.
+Email sharing sends the title and a link to named recipients.
+
+Within your organization, drafts are visible to teammates, and the editor shows who else is present with live avatars marking who is viewing and who is typing, plus a connection badge.
 
 ## Exporting
 
-When a draft is ready, export it for use outside Vaquill. Drafts export to Word (DOCX) so you can hand them to a counterparty, drop them into a matter, or take them through a final human review before signature.
+Export from the editor header.
 
-<Tip>
-  Pair drafting with a [Playbook](/guides/playbooks) to bake your firm's preferred clause language and fallback positions into every draft, then score the result section by section before you export.
-</Tip>
+| Option | What you get |
+|---|---|
+| Export as PDF | US Letter, Times, 1.5 line spacing, a DRAFT watermark, page numbers, clickable citation links, and a review-required footer |
+| Export as DOCX | The same layout as a Word file with live citation hyperlinks, with comments and redlines flattened to text |
+| Export as Word (tracked changes) | Native Word tracked changes and native Word comments, so the recipient can accept or reject in Word |
+| Copy to clipboard | The plain text of the draft |
+
+If the export still contains unfilled placeholders, you are warned before you send it to a counterparty.
+
+**Save to matter** files the finished draft into a [matter](/guides/matters-workspaces) as a document, where it becomes searchable alongside the rest of the case file.
+
+## Limits
+
+- Full draft generation and draft analysis each consume 3 message credits; a clause rewrite or explanation consumes 1.
+- Plans carry a monthly cap on full draft generations. Failed and cancelled generations do not count against it. See [Plans and limits](/guides/plans-and-limits).
+- Uploads are capped at 50 MB per file, with up to five reference documents attached to a generation.
+- Bulk merge handles up to 200 rows per job.
+
+## Limitations
+
+<Warning>
+  Every draft is AI-generated and requires review by a qualified attorney before it is signed, filed, or served. Verification and the final read-through catch a great deal, but they do not make the output advice, and they do not make it right for your facts.
+</Warning>
+
+- **Citations are checked, not guaranteed.** Anything the verifier could not confirm is marked unverified in the Sources panel rather than removed. Treat unverified as unchecked.
+- **The governing-law state is locked after the first generation.** Adapting a finished draft to another state means starting a new one.
+- **Coverage varies by state.** Where the statutory corpus is thin for a state, the governing-law pill warns you, and drafts for that state will carry less statutory authority.
+- **Your saved clauses are not automatically used.** Clause library wording reaches a draft either by being referenced from a playbook or by being inserted by hand in the editor.
+- **Imports are lossy for some formats.** Scanned PDFs and images go through OCR and come back as text without structure. Headers and footers from Word are recorded but not placed in the editor body.
+- **PDF export flattens review markup.** Tracked changes and comments only survive in the Word tracked-changes export.
+- **Duplicating a draft does not carry comment threads.** The copy starts with a clean review state.
+- **Anti-hallucination findings are not itemized to you.** You see the corrected draft, the quality badge, and the residual flags, not the full internal fact-check log.
 
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="Document Templates" icon="file-invoice" href="/guides/templates">
+    Turn a Word document you already use into a reusable skeleton with detected variables.
+  </Card>
+  <Card title="Clause Library" icon="paragraph" href="/guides/clause-library">
+    Save vetted clause wording and insert it into any draft.
+  </Card>
   <Card title="Playbooks" icon="clipboard-list" href="/guides/playbooks">
-    Encode preferred clauses and fallback positions, then draft against them.
+    Encode preferred clauses and fallback positions, then draft and score against them.
+  </Card>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Run a clause-level review with severity flags, then push the redlines into the editor.
   </Card>
   <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
     Redline a draft against a counterparty's version side by side.
   </Card>
-  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
-    Run a clause-level review with severity flags before you sign.
+  <Card title="Matters & Workspaces" icon="briefcase" href="/guides/matters-workspaces">
+    File a finished draft into the matter it belongs to.
+  </Card>
+  <Card title="Demand Letter Drafter" icon="envelope-open-text" href="/workflows/built-in/demand-letter-drafter">
+    A guided workflow for demand letters, end to end.
+  </Card>
+  <Card title="US Motion Drafter" icon="gavel" href="/workflows/built-in/us-motion-drafter">
+    A guided workflow for federal and state motions.
   </Card>
 </CardGroup>

@@ -1,0 +1,80 @@
+---
+title: "US Motion Drafter"
+sidebarTitle: "5.1 US Motion Drafter"
+description: "Draft a federal civil motion with its memorandum, proposed order, supporting Rule 56.1 or 37(a)(1) documents, and a local-rule compliance checklist"
+---
+
+**Best for:** a first-pass draft of a federal civil motion, with the proposed order, supporting documents, and a compliance checklist surfacing local-rule and citation-verification gaps **before** you file.
+
+Covers 12(b)(6), 12(b)(1), 12(b)(2), summary judgment, motion to compel, and motion in limine.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US federal |
+| Practice areas | Litigation, civil, commercial, employment, IP litigation, products liability |
+| Runtime | 4-20 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Supporting record** | No | 0-500 | The complaint (required in practice for 12(b) motions), depositions, declarations, expert reports, and anything else the drafter should cite. |
+
+<Note>
+  Each supporting document is capped at 6 KB of extracted text in the model context. Upload the documents that matter rather than the whole file, and put the load-bearing facts into the **Matter facts** field.
+</Note>
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / case | Text | No | Document title and DOCX file names. |
+| **Motion type** | Select | **Yes** | Motion to dismiss for failure to state a claim, 12(b)(6) · for lack of subject-matter jurisdiction, 12(b)(1) · for lack of personal jurisdiction, 12(b)(2) · Motion for summary judgment (Rule 56) · Motion to compel (Rule 37) · Motion in limine. Determines which supporting artifacts are generated. |
+| **Court / local-rule profile** | Select | **Yes** | S.D.N.Y. · N.D. Cal. · D.D.C. · Default (other federal district). Drives length caps, whether a 56.1 statement is required, meet-and-confer rules, and proposed-order format. Pick the default profile for a district not in the list. |
+| Case caption | Long text | No | Pasted-in caption. The title block is formatted from this. Optional if the supporting documents contain the caption. |
+| Court (free-text label) | Text | No | Court name and judge as you would write it in the caption. Fallback when the caption field is empty. |
+| Assigned judge | Text | No | When provided, individual-practice considerations are mentioned where relevant. |
+| **Party moving** | Text | **Yes** | Drops into the caption, the signature block, and the proposed order. |
+| **Matter facts** | Long text | **Yes** | Two to five sentences. **Only facts stated here or in the supporting documents will appear in the motion.** |
+| **Relief sought** | Long text | **Yes** | Be specific about which counts, exhibits, or requests. The proposed-order clauses are built from this. |
+
+## How it runs
+
+<Steps>
+  <Step title="Draft">
+    Generates the motion and memorandum against the selected motion type and local-rule profile, grounded in your matter facts and the supporting record.
+  </Step>
+  <Step title="Render motion artifacts">
+    Writes the filing documents plus the internal compliance checklist and the citations appendix. Which supporting documents appear depends on the motion type.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | When | Contents |
+| --- | --- | --- | --- |
+| **Motion + Memorandum** | DOCX | Always | Combined motion and memorandum of points and authorities, per federal practice, compliant with the selected local-rule profile. |
+| **Proposed Order** | DOCX | Always | Separate proposed order suitable for filing alongside the motion. |
+| **Rule 56.1 Statement** | DOCX | MSJ only | Separately numbered statement of material undisputed facts with record citations. |
+| **Compliance Checklist** | DOCX | Always | Word count against the local-rule cap, Rule 56.1 and 37(a)(1) completeness, citation-verification status. **Attorney-only. Do not file.** |
+| **Citations and Authorities Used** | DOCX | Always | Deduplicated appendix of every authority cited. |
+
+## What this will not do
+
+- File the motion with the court or serve it on opposing counsel.
+- **Replace partner review of citations.** The workflow does not independently verify cases against Westlaw, Lexis, or CourtListener at insert time. The appendix is a checklist, not proof.
+- Account for judge-specific individual practices not captured by the local-rule profile, such as SDNY chambers rules or NDCA standing orders.
+- Negotiate the meet-and-confer for a motion to compel. It drafts the certification language; you must actually meet and confer first.
+- Generate exhibits or declarations. Those are separate documents.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Citations" icon="quote-left" href="/guides/citations">
+    How Vaquill handles citation verification, and where the gaps are.
+  </Card>
+  <Card title="Discovery Response Pack" icon="file-lines" href="/workflows/built-in/discovery-response-pack">
+    For the discovery dispute that a motion to compel follows.
+  </Card>
+</CardGroup>

@@ -1,0 +1,105 @@
+---
+title: "Extraction steps"
+sidebarTitle: "4.3 Extraction"
+description: "Summarize a document, pull a dated chronology, or extract structured contract facts for scoring"
+---
+
+Three steps, all AI-kind. They turn document text into something structured that downstream steps can act on.
+
+---
+
+## Summarize Document
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Generates a structured summary of one document with verified citations. The markdown output feeds straight into Export DOCX, Verify Citations, or a downstream agentic step.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Document | Document picker | Yes | One document. |
+| Summary length | Select | No | Longer summaries include more detail. Defaults to medium. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Document Id, Title | Which document was summarized. |
+| Summary Markdown | The summary body. Wire this into Export DOCX or Verify Citations. |
+| Section Count, Citation Count | Structure and grounding counts. |
+
+<Tip>
+  To summarize a whole set rather than one document, put this step inside a [Loop Over Documents](/workflows/builder/steps/routing). That is exactly what the "Summarize Each Document" starter template does.
+</Tip>
+
+---
+
+## Extract Chronology
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Pulls dated events from one or more documents and merges them into a single timeline. Uses the same extractor as the matter Chronology tab.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Documents | Document list | Yes | | 1 to 200. **This one field takes many documents**, and the step fans out across all of them with bounded concurrency, so you do not need a loop. |
+| Maximum events | Integer | No | 100 | 1 to 500 events on the merged timeline. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Events | The merged, ordered events. |
+| Event Count | How many survived the cap. |
+| Timeline Markdown | Renderable timeline body. |
+
+---
+
+## Extract Contract Facts
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="gauge">Medium</Card>
+</CardGroup>
+
+Reads a contract and extracts the structured facts (term lengths, carve-outs, durations) that Score Against Benchmarks consumes.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Document | Document picker | Yes | The contract to read. |
+| Benchmark suite | NDA, MSA, Employment, M&A, Privacy | Yes | Which suite the extracted facts should match. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Facts | The structured facts dict. Wire this straight into Score Against Benchmarks. |
+| Extracted Count, Total Count | How many of the suite's facts were actually found. |
+
+<Note>
+  Pair **Extract Contract Facts → Score Against Benchmarks** and select the same benchmark suite on both. That gets you a scored contract without typing a single value. A low Extracted Count relative to Total Count is a signal that the contract is unusual or the wrong suite is selected.
+</Note>
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Analysis steps" icon="chart-simple" href="/workflows/builder/steps/analysis">
+    Scoring, comparing, and synthesizing what you extracted.
+  </Card>
+  <Card title="Routing steps" icon="code-branch" href="/workflows/builder/steps/routing">
+    Fanning a single-document step across a whole set.
+  </Card>
+</CardGroup>

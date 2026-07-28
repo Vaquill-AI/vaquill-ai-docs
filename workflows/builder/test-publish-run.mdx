@@ -1,0 +1,79 @@
+---
+title: "Test, publish, run"
+sidebarTitle: "6. Test, publish, run"
+description: "The three verbs, what the validator checks at each, how versioning works, and where the cost estimate comes from"
+---
+
+Three distinct actions, often confused.
+
+<CardGroup cols={3}>
+  <Card title="Test Run" icon="flask">
+    Executes the workflow end to end **without writing anything**. Side-effect steps short-circuit to no-ops.
+  </Card>
+  <Card title="Publish" icon="box-archive">
+    Ships a versioned, content-hashed snapshot that the gallery can launch.
+  </Card>
+  <Card title="Run" icon="play">
+    Launches the published version against a matter you pick.
+  </Card>
+</CardGroup>
+
+## Test Run
+
+Use it to spot-check that step outputs look right and that branches route the way you expected. Save to Matter and any other side-effect step becomes a no-op, so you can rehearse as many times as you like without polluting a matter.
+
+Everything else runs for real, including AI steps, so a test run still costs money.
+
+## Publish
+
+Publishing takes the current draft, validates it strictly, and writes a new version row. Each publish content-hashes the definition, so publishing an unchanged workflow dedupes to the same version rather than creating noise in the history.
+
+Version history is browsable, so you can see what changed and when.
+
+### Draft saves versus publish
+
+The validator runs in two modes, and the difference matters.
+
+| Gate | Draft save | Publish |
+| --- | --- | --- |
+| Every step type is registered | **Always enforced** | Enforced |
+| Every required input is set or bound to an upstream output | Not enforced | Enforced |
+| Every `{{ step_x.field }}` reference points at a real upstream step and a field it actually emits | Not enforced | Enforced |
+| Every branch target exists and is strictly downstream | Not enforced | Enforced |
+
+Draft saves stay permissive on purpose. A half-configured step is the normal state mid-edit, not a bug, and blocking autosave there would lose your work. Unknown step types are refused even on a draft save, because the builder cannot render a config form for a step it does not recognize, and storing one is strictly worse than refusing.
+
+<Tip>
+  Errors aggregate. A workflow with three problems reports all three in one publish attempt, on separate lines, rather than making you fix and retry three times.
+</Tip>
+
+## Run
+
+Running from the gallery opens a small launcher where you pick the matter for the run. Matter-scoped steps, including Pick Documents, Save to Matter, and anything that reads retrieval context, inherit that matter automatically.
+
+From there the run behaves like any other: live per-step progress, an audit event stream, cooperative cancel, and artifacts on completion. See [Running a workflow](/workflows/running-a-workflow).
+
+## Cost estimates
+
+Before you launch, the builder shows an estimated cost with a per-step breakdown.
+
+The estimate is computed server-side from the **median actual cost per step type in your organization's usage history**, falling back to a hardcoded per-tier rate only for step types with no history yet, which is typical right after a new step type ships. Each line in the breakdown says which source it used.
+
+Server-side rather than browser-side for three reasons: you get consistent numbers regardless of whose machine opened the workflow, the historical median is dramatically more accurate for AI steps than a flat per-tier rate, and a hash-stable server estimate is defensible if a runaway run is ever disputed.
+
+Steps the estimator cannot price are listed explicitly as uncounted rather than silently omitted.
+
+## Cancelling
+
+Cancel is cooperative. Long-running step handlers check for a cancel signal periodically; when one is set, the run stops and is marked cancelled with the state written consistently rather than left half-finished.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Troubleshooting" icon="circle-question" href="/workflows/builder/troubleshooting">
+    Every validation error and how to clear it.
+  </Card>
+  <Card title="Templates" icon="copy" href="/workflows/builder/templates">
+    Fork a published starter instead of building from scratch.
+  </Card>
+</CardGroup>

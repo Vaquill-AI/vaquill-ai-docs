@@ -1,0 +1,115 @@
+---
+title: "Plans, Trial, and Limits"
+description: "What the free trial includes, what happens when it ends, and the limits that apply on each plan"
+icon: "gauge-high"
+---
+
+Every new account starts on a **7-day free trial** with the full feature set. This page covers what that includes, what happens on day 8, and the limits you will actually run into.
+
+For current prices and what each plan costs per seat, see [vaquill.ai/pricing](https://vaquill.ai/pricing). Prices change; the limits below are what the product enforces.
+
+## The trial
+
+The trial deliberately mirrors the paid Plus caps rather than offering a cut-down preview, so what you evaluate is what you would buy.
+
+| | Trial |
+| --- | --- |
+| Length | 7 days from signup |
+| Pages | 5,000 |
+| Messages | 1,000 / month |
+| Daily query cap | None |
+| Deep research | 75 / month |
+| Storage | 100 GB |
+| Matters | 5,000 |
+| Seats | 3 |
+| Legal tool runs | 150 / month |
+| Full drafts | 75 / month |
+
+No credit card is required to start, and nothing is charged automatically when the trial ends.
+
+## What happens when the trial ends
+
+<Warning>
+  When the trial lapses without a subscription, the account moves to **Expired** and **every** part of the product stops at once: chat, workflows, uploads, research, drafting. Requests return `402` with an upgrade link rather than degrading gracefully.
+</Warning>
+
+This is deliberate rather than a bug, but it is abrupt, so plan for it:
+
+- There is **no free tier to fall back to.** The old Free plan is closed to new signups and exists only for grandfathered accounts.
+- **Your data is not deleted.** Matters, documents, and past runs stay exactly where they are. Subscribing restores access to all of it.
+- Anything **in flight** when the trial lapses will not finish. Start long-running workflows with time to spare.
+
+Subscribe from **Settings → Billing** in the [dashboard](https://app.vaquill.ai/settings/billing).
+
+## Paid plans
+
+| Plan | Who it is for | Usage |
+| --- | --- | --- |
+| **Plus** | Solo counsel and small teams. Priced per seat, monthly or yearly. | The caps in the table below |
+| **Power** | Teams that do not want to think about caps. Priced per seat. | Unmetered on every quota below |
+| **Enterprise** | Large firms and in-house departments with procurement, custom terms, or volume beyond Power. | Custom |
+
+### Plus limits
+
+| Limit | Plus |
+| --- | --- |
+| Pages | 5,000 |
+| Messages | 1,000 / month |
+| Daily query cap | None |
+| Deep research | 75 / month |
+| Storage | 100 GB |
+| Matters | 20,000 |
+| Legal tool runs | 150 / month |
+| Full drafts | 75 / month |
+
+**Power** lifts all of the above to unmetered, with a 2 TB storage ceiling.
+
+### Seats
+
+Both paid plans are **per seat**. Your team-member cap equals the number of seats you have purchased, so adding a colleague means adding a seat. Manage seats from **Settings → Billing**.
+
+## File and document limits
+
+These apply on every plan, including Power.
+
+| Limit | Value |
+| --- | --- |
+| Maximum file size | 250 MB |
+| Document comparison, per file | 50 MB |
+| Document comparison, page count | 500 pages |
+| Matrix rows per matrix | 200 documents |
+
+Vaquill accepts 50+ formats including scanned PDFs via OCR. See [File Formats](/guides/file-formats) for the full list.
+
+<Tip>
+  A "page" for quota purposes is a page of ingested document content, not a page view. A 300-page contract consumes 300 of your page allowance once, at upload.
+</Tip>
+
+## What is not separately metered
+
+Some things people expect to be charged per use are simply included:
+
+- **Workflow runs.** Neither the [25 built-in workflows](/workflows/built-in) nor your own [custom workflows](/workflows/builder) are billed per run or charged against a separate workflow quota. They are covered by your subscription.
+- **MCP connections**, which are available on every plan including Expired.
+- **Memories**, which are unlimited.
+
+The custom workflow builder does show a per-run **cost estimate** before you launch. That is an internal transparency figure so you can see which steps are expensive; it is not an invoice.
+
+## Legacy plans
+
+If you subscribed before the current pricing, you may be on Starter, Professional, or the old Free plan. Those keep renewing at their original price and are not affected by later pricing changes. They are simply no longer offered to new customers.
+
+## Raising a limit
+
+Organization-level overrides can be applied above the plan defaults. If you are hitting a cap that does not fit how your team works, email [contact@vaquill.ai](mailto:contact@vaquill.ai) rather than buying a plan you do not otherwise need.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Team Workspaces" icon="users" href="/guides/team-workspaces">
+    Seats, roles, and inviting your team.
+  </Card>
+  <Card title="File Formats" icon="file" href="/guides/file-formats">
+    Everything Vaquill can ingest.
+  </Card>
+</CardGroup>

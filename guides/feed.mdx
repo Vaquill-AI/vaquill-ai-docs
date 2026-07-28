@@ -1,0 +1,79 @@
+---
+title: "Legal Intelligence Feed"
+description: "Track topics, regulators, and counterparties, and get fresh legal developments surfaced from authoritative sources"
+icon: "rss"
+---
+
+The Feed watches the topics you care about and surfaces new legal developments as they are published: regulatory moves, enforcement actions, notable decisions, and industry-specific legal news.
+
+You tell it what to track. It checks continuously and keeps a per-item read state so you only see what you have not already dealt with.
+
+## When to use it
+
+- Following a regulator whose rulemaking affects your product
+- Watching a counterparty, competitor, or acquisition target
+- Keeping a practice area current without a daily manual search
+- Tracking a statute or doctrine you expect to move
+
+## Tracked interests
+
+An **interest** is a topic you want watched. Add one and the feed starts discovering against it; delete it and the feed stops.
+
+The app also **suggests interests** based on your existing work, which is usually a faster start than typing them cold.
+
+<Tip>
+  Interests are keyword-shaped, so be specific. "CCPA enforcement" surfaces far better material than "privacy". Narrow interests can be added freely, and a narrow one that goes quiet costs you nothing.
+</Tip>
+
+## Where the items come from
+
+The feed is **deliberately web-only**, scoped per jurisdiction to an allow-list of authoritative legal domains: Cornell LII, Justia, congress.gov, Law360, Reuters, SCOTUSblog, and similar.
+
+That is a considered choice rather than a limitation. A feed is about what is *new*, and Vaquill's own corpora are the wrong shape for it:
+
+- The case-law mirror is a **periodic snapshot**, so nothing filed this week is in it yet
+- The statutes corpus carries **year-granular** amendment data, not "this changed on Tuesday"
+
+Both were surfacing stale material as though it were fresh, so the feed leans entirely on live web search. Statutory and case developments still appear, because the allow-listed sources publish them.
+
+<Note>
+  For the authoritative text of a statute or case, use [Statutes and Regulations](/guides/statutes-regulations) or [Case Law Research](/guides/case-law-research). The feed tells you something happened; the corpus tells you exactly what it says.
+</Note>
+
+## Working the feed
+
+| Action | Effect |
+| --- | --- |
+| **Read** | Marks the item read and clears it from the unread count |
+| **Dismiss** | Removes it from the feed without marking it read, for items that matched but do not matter |
+| **Refresh** | Triggers a discovery pass rather than waiting for the scheduled one |
+
+An unread count surfaces in the app so the feed is glanceable without opening it.
+
+## Jurisdiction
+
+The feed defaults to **US** sources and scopes discovery per jurisdiction. It is aligned with the rest of the platform: the corpus, the drafting defaults, and the research surfaces are all US-first.
+
+## Limitations
+
+- Items are third-party web content. Vaquill surfaces and dedupes them; it does not verify their accuracy.
+- Coverage is bounded by the source allow-list. A development covered only by a niche outlet may not appear.
+- It is not a docket alert or a compliance-monitoring service. Do not rely on it as your sole notice of a filing or a deadline.
+- Published dates come from the source. Items missing one fall back to when Vaquill discovered them.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Case Law Research" icon="gavel" href="/guides/case-law-research">
+    Authoritative case text, once the feed tells you where to look.
+  </Card>
+  <Card title="Statutes and Regulations" icon="landmark" href="/guides/statutes-regulations">
+    The governing text behind a regulatory development.
+  </Card>
+  <Card title="Deep Research" icon="brain" href="/guides/deep-research">
+    Turn a feed item into a proper research pass.
+  </Card>
+  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+    Test your documents against a regime that just moved.
+  </Card>
+</CardGroup>

@@ -1,0 +1,82 @@
+---
+title: "iManage Work"
+description: "Connect iManage Work to browse workspaces, import documents into matters, and save drafts back to the DMS"
+icon: "folder-tree"
+---
+
+The iManage Work connector links your DMS to Vaquill. Browse your workspaces, pull documents into a matter, and save finished drafts back into iManage without leaving either system.
+
+It uses **per-user OAuth over the iManage REST v2 API**, so each person authenticates as themselves and sees exactly what iManage already permits them to see. Vaquill never holds a shared service account with blanket access to your library.
+
+## What you can do
+
+| Action | Detail |
+| --- | --- |
+| **Browse workspaces** | Navigate your iManage workspaces and folders from inside Vaquill |
+| **Search** | Query the DMS directly |
+| **Import** | Pull documents into a Vaquill matter, where they become searchable and usable by every feature |
+| **Save back** | Write a finished draft into iManage as a document |
+
+## Setup
+
+Setup is two-stage: an administrator configures the tenant once, then each person connects their own account.
+
+<Steps>
+  <Step title="An Owner configures the tenant">
+    In **Settings → Integrations**, enter your iManage **customer ID** and, optionally, a default **library ID**. This is organization-level configuration and only needs doing once.
+  </Step>
+  <Step title="Each user connects their own account">
+    Individual users then authorize through iManage's own OAuth flow. They sign in to iManage directly; Vaquill never sees their DMS password.
+  </Step>
+  <Step title="Browse and import">
+    Once connected, iManage workspaces appear as a source you can browse, search, and import from.
+  </Step>
+</Steps>
+
+<Note>
+  Attempting to connect before an Owner has configured the tenant returns a clear "iManage is not configured for this organization" error rather than failing obscurely. If you see it, the tenant setup step has not happened yet.
+</Note>
+
+## Permissions
+
+Because authentication is per user rather than per organization:
+
+- You see only what your own iManage account can see
+- Your DMS permissions are enforced by iManage, not re-implemented by Vaquill
+- Disconnecting your account revokes Vaquill's access for you alone and leaves colleagues connected
+
+An Owner can remove the tenant configuration entirely, which disconnects everyone.
+
+## What happens to imported documents
+
+An imported document becomes a normal Vaquill document in the matter you chose: indexed for search, available to chat, usable by [workflows](/workflows), reviewable by [Contract Review](/guides/contract-review).
+
+Importing **copies** the document. Later edits in iManage do not flow through automatically; re-import to pick up a new version.
+
+## Saving drafts back
+
+A draft written in Vaquill can be saved into iManage as a document, so the DMS stays the system of record. Nothing is written back automatically; saving is always an explicit action.
+
+## Limitations
+
+- Import is a point-in-time copy, not a live sync.
+- Availability depends on your plan tier. If the connector does not appear in settings, check [Plans, trial, and limits](/guides/plans-and-limits).
+- Requires iManage Work with REST v2 API access enabled on your tenant.
+- Vaquill reads and writes documents. It does not manage iManage workspaces, security classes, or retention policies.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Google Drive Import" icon="google-drive" href="/guides/google-drive-import">
+    The same shape for Drive.
+  </Card>
+  <Card title="Documents" icon="file" href="/guides/documents">
+    What happens to a document once it lands in Vaquill.
+  </Card>
+  <Card title="Email to RAG" icon="envelope" href="/guides/email-to-rag">
+    Forward documents in by email.
+  </Card>
+  <Card title="Matters and Workspaces" icon="briefcase" href="/guides/matters-workspaces">
+    Where imported documents live.
+  </Card>
+</CardGroup>

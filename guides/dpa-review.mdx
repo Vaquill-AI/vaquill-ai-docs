@@ -1,71 +1,163 @@
 ---
 title: "DPA Review & Vendor Inventory"
-description: "Review Data Processing Addenda against an in-house checklist, track sub-processors, and validate Standard Contractual Clauses"
+description: "Read one vendor's Data Processing Addendum in place: roles, transfer mechanism, sub-processors, breach and audit and deletion terms, and an assessed risk tier written onto the vendor record"
 icon: "shield-check"
 ---
 
-DPA Review helps in-house privacy and vendor counsel get through Data Processing Addenda quickly and consistently. Upload a vendor's DPA and Vaquill reviews it clause by clause against a 15-point in-house checklist, surfaces the sub-processors it names, validates the Standard Contractual Clauses, and tracks renewal and audit dates across your vendor portfolio.
+DPA Review is the interactive, one document at a time pass over a Data Processing Addendum. You attach the vendor's DPA to their record, run the analysis, and Vaquill reads the agreement and fills in the things you would otherwise be highlighting by hand: who is the controller and who is the processor, what transfer mechanism the agreement relies on, every sub-processor it names, the breach notice window, the audit terms, the deletion period, and an assessed risk tier with a one line reason.
 
-<Frame caption="A DPA reviewed against an in-house checklist, with sub-processors and SCC status surfaced">
-  <img src="/images/dpa-review.webp" alt="DPA Review showing a Data Processing Addendum analyzed against an in-house checklist with sub-processor inventory and Standard Contractual Clause validation" style={{ borderRadius: '0.5rem' }} />
+The result lands on the vendor record itself, not in a separate report you have to remember to open. Six months later, when a customer asks which of your vendors touch health data under a US transfer, the answer is already sitting in the registry.
+
+<Frame caption="The DPA review panel on a vendor record: risk flags first, then roles, transfer mechanism, breach and deletion and audit terms, and the named sub-processors">
+  <img src="/images/dpa-review.webp" alt="A vendor record showing the DPA review panel with transfer risk flags, assessed risk tier, controller and processor roles, and a list of named sub-processors" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
-## When To Use It
+## When to use it
 
-- Reviewing a vendor's DPA before signing an MSA or order form
-- Building and maintaining a sub-processor inventory across all vendors
-- Validating that Standard Contractual Clauses are the current version and correctly completed
-- Tracking DPA renewal dates, audit windows, and breach-notification timelines
-- Responding to a customer DPA request with your own processing terms
+- A vendor sent their standard DPA and you need the shape of it in two minutes, not twenty
+- You are onboarding a vendor and want the registry entry built from the agreement rather than typed from scratch
+- Someone asks which downstream sub-processors a vendor discloses, and you do not want to reopen the PDF
+- You need to know whether the agreement addresses cross-border transfers at all, and on what basis
+- A DPA was renegotiated and you want the record refreshed against the new version
 
-## What It Checks
+For a standardized scored review across many DPAs at once, with GDPR Article 28(3) coverage tables, SCC module fit, a Schrems II transfer impact assessment, and HIPAA BAA scoring, use the [DPA Reviewer workflow](/workflows/built-in/dpa-reviewer) instead. This guide covers the fast interactive path.
 
-Vaquill reviews each DPA against the points in-house teams actually care about:
+## How to run it
 
-| Area | What it surfaces |
-|------|------------------|
-| **Roles** | Controller vs processor characterization, and whether it matches reality |
-| **Sub-processors** | The named sub-processors, change-notice rights, and objection windows |
-| **SCCs** | Whether Standard Contractual Clauses are attached, current, and completed |
-| **Security** | Technical and organizational measures, encryption, and access controls |
-| **Breach notice** | Notification timelines and what the vendor commits to provide |
-| **Audit rights** | Audit scope, frequency, and cost allocation |
-| **Data transfers** | Transfer mechanisms and onward-transfer restrictions |
-| **Retention & deletion** | Return-or-delete obligations on termination |
-| **Liability** | Carve-outs, caps, and indemnities that actually move |
-
-## Sub-Processor Inventory
-
-Every DPA you review feeds a running inventory of the sub-processors your vendors rely on, so you can answer "which of our vendors send data to which downstream providers" without re-reading each contract. Track change notices and objection deadlines in one place.
-
-## How To Use It
+There are two entry points, depending on whether the vendor already exists.
 
 <Steps>
-  <Step title="Upload the DPA">
-    Add the vendor's Data Processing Addendum to the matter, or paste the text.
+  <Step title="Start from the DPA, if the vendor is new">
+    On the Vendors and Sub-processors page, open **Import** and choose **From a DPA (AI)**. Pick the file, and Vaquill uploads it, reads it, and proposes a vendor entry.
+
+    The proposal opens in the normal vendor form so you can correct anything before saving. Nothing is written to the registry until you confirm it, by design: a wrong compliance registry is worse than an empty one.
   </Step>
-  <Step title="Run the review">
-    Vaquill analyzes the document against the in-house checklist and returns a per-point status with citations to the exact clauses.
+  <Step title="Or attach the DPA to an existing vendor">
+    Open the vendor record and use **Upload DPA** in the Documents section. The file is attached to the vendor and the analysis runs automatically as soon as the upload lands.
+
+    If the upload succeeds but the analysis does not, the document stays attached. Run it again from the panel.
   </Step>
-  <Step title="Review sub-processors and SCCs">
-    Check the surfaced sub-processor list and the SCC validation, and add anything missing to your inventory.
+  <Step title="Read the DPA review panel">
+    The panel sits between the vendor overview and the document list. Risk flags render at the top, then the extracted terms, then the sub-processor list, then a timestamp of when the analysis last ran.
   </Step>
-  <Step title="Track renewals">
-    Capture renewal, audit, and notice dates so you are not caught off guard at renewal.
+  <Step title="Re-run after a renegotiation">
+    Upload the new version and press **Re-analyze DPA**. The panel is rewritten from the latest analysis, and the registry fields you filled in by hand are left alone.
   </Step>
 </Steps>
 
-<Warning>
-  DPA Review flags gaps and inconsistencies; it does not replace privacy-counsel judgment. Confirm the SCC version and transfer mechanism against current guidance before you rely on the result.
-</Warning>
+<Note>
+  Pressing **Analyze DPA** from the panel reads the most recently updated document attached to that vendor. If a vendor has several attached files, upload or update the one you want first so the right document is the newest.
+</Note>
+
+## What the review surfaces
+
+| Panel field | What it holds |
+| --- | --- |
+| **Assessed risk** | Unassessed, Low, Medium, High, or Critical, with a short rationale such as "US transfer plus health data" |
+| **Role** | The role the agreement gives the vendor, in the agreement's own words, for example "Processor (Cloud / Compute)" |
+| **Controller** | The customer or controller party on the other side |
+| **Transfer mechanism** | The cross-border basis the DPA relies on: EU Standard Contractual Clauses, the UK IDTA, the EU-US Data Privacy Framework, an adequacy decision, or nothing stated |
+| **Breach notice** | The personal data breach notification window, in hours |
+| **Deletion** | The return or deletion period after termination, in days |
+| **Audit** | A short summary of the audit right, for example "Once per year, 30 days notice" |
+| **Sub-processors** | Every sub-processor the DPA names, usually pulled from the annex rather than the body |
+
+Any field the agreement does not address is left out of the panel rather than filled with a guess. An empty transfer mechanism is itself a finding.
+
+### Risk flags
+
+Two things are pulled above the extracted terms, because they are the reason you opened the record:
+
+- **Transfer gaps** appear as amber banners. The most common is an agreement that references EU Standard Contractual Clauses but has no UK IDTA or UK Addendum when UK data subjects may be in scope. Only gaps the text actually supports are flagged.
+- **Special-category data** appears as a red banner, with the categories listed: health, biometric, genetic, racial, political, religious, sexual, or criminal data.
+
+A non-adequate transfer combined with special-category data is treated as High risk by default. That assessment is a starting point for your own risk framework, not a substitute for it.
+
+## What it writes back to the vendor record
+
+The analysis fills empty registry fields and never overwrites one you set yourself. Your corrections survive every re-run.
+
+| Registry field | Filled when |
+| --- | --- |
+| Data region | The DPA states where data is processed and the field is blank |
+| Processing purpose | The DPA describes the purpose and the field is blank |
+| Sub-processor flag | The agreement positions the counterparty as a processor or sub-processor |
+| Data categories | The DPA describes the data and no categories are set yet |
+| Contact email | A privacy, DPO, or notices address is given and no contact is set |
+| DPA status | The status is still No DPA and the agreement reads as executed |
+| DPA signed date, renewal date | A concrete date appears in the text and the field is blank |
+| Risk tier | The tier is still Unassessed |
+
+The review layer itself, meaning the roles, transfer terms, flags, and the sub-processor list, is rewritten on every run so the panel always reflects the most recent analysis.
+
+<Tip>
+  Set the vendor's risk tier by hand if you disagree with the assessment. Once you set it, later runs leave it alone, and the model's own view stays visible in the panel as the assessed risk.
+</Tip>
+
+## Reading the agreement alongside the review
+
+Click any attached document to open the preview. The document text sits on the left, and on the right there are two tabs:
+
+- **Summary**, a short plain-English summary plus three to seven key points covering parties, data, transfers, sub-processors, and the breach, audit, and deletion terms.
+- **Chat**, a question box scoped to that one document. Ask "what is the breach-notice window?" or "does this allow onward transfers?" and the answer is grounded strictly in the text of that document. If the answer is not in the document, it says so rather than guessing.
+
+**Open in editor** takes the document into the drafting editor if you want to redline it. **Draft DPA** on the vendor record starts a new Data Processing Agreement instead of reviewing an incoming one.
+
+## From one review to the portfolio view
+
+A single review is most useful when it rolls up. Because results land on vendor records, the registry answers portfolio questions directly:
+
+- Filter the vendor list by **DPA: missing**, **DPA: requested**, **DPA: signed**, or **DPA: expired**, or narrow to sub-processors only.
+- Export **Audit CSV (all vendors)** for the internal audit list, or **Sub-processor list CSV** for the sub-processor disclosure you publish or hand to a customer's security review. The sub-processor export carries the downstream sub-processors these reviews extracted.
+- Renewal dates drive the "renews in N days" and overdue labels on the list, escalating as the date approaches within the lead time you set per vendor.
+
+See the [Vendor and Sub-processor Registry](/guides/vendor-registry) guide for the registry itself.
+
+## Going deeper on one agreement
+
+<AccordionGroup>
+  <Accordion title="Negotiate it clause by clause" icon="file-contract">
+    [Contract Review](/guides/contract-review) with a [playbook](/guides/playbooks) gives you positions, fallbacks, and redlines instead of extracted facts. Vaquill ships controller-side and processor-side DPA playbooks with standard positions on breach windows, sub-processor approval and objection rights, audit, deletion, and transfer mechanisms, plus escalation triggers for the terms that should not pass quietly.
+  </Accordion>
+  <Accordion title="Check it against a regulation" icon="clipboard-check">
+    [Compliance Check](/guides/compliance-check) scores a document against a named regulation with per-requirement status and article-level references. Use it when the question is "does this satisfy Article 28" rather than "what does this say".
+  </Accordion>
+  <Accordion title="Review a whole stack of DPAs" icon="layer-group">
+    The [DPA Reviewer workflow](/workflows/built-in/dpa-reviewer) scores up to 500 agreements against Article 28(3), the 2021 SCCs, a Schrems II transfer impact assessment, and the HIPAA BAA elements, and returns an executive memo plus per-DPA detail with proposed redlines.
+  </Accordion>
+</AccordionGroup>
+
+## Limitations
+
+- **This is extraction, not adjudication.** The interactive review reports what the agreement says. It does not score the DPA against Article 28(3), validate which SCC module was used, or check that the SCC version is current. The workflow does those.
+- **No clause citations in the panel.** Findings are not linked back to the exact clause they came from. Open the preview and use document chat when you need the wording.
+- **One document per run.** The analysis reads a single attached document, the most recently updated one unless you upload a new file. It does not merge a DPA with a separately attached SCC annex or BAA.
+- **Long documents are truncated.** Roughly the first 24,000 characters are analyzed, which covers most DPAs including the annex, but a sub-processor list buried deep inside an unusually long master agreement can fall outside that window.
+- **Renewal reminders are in-app.** The registry shows escalating "renews in N days" and overdue labels and records the alert server side. It does not email you.
+- **Dates it never saw cannot warn you.** If the agreement states no signed or renewal date, nothing is filled in, and the reminder has nothing to fire against.
+- **It does not verify practice.** The review reads the paper. It says nothing about whether the vendor's real sub-processor chain, security posture, encryption key custody, or incident history matches what the DPA promises.
+- **Text-based documents only.** Attach text-searchable PDF, DOCX, DOC, TXT, RTF, or Markdown. A scanned image with no extractable text gives the analysis nothing to read.
+- **Privacy counsel still signs off.** Confirm the transfer mechanism, the special-category assessment, and the risk tier against current guidance before you rely on any of it.
 
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="Vendor and Sub-processor Registry" icon="building" href="/guides/vendor-registry">
+    The record these reviews write to, plus filters, exports, and renewal tracking.
+  </Card>
+  <Card title="DPA Reviewer workflow" icon="layer-group" href="/workflows/built-in/dpa-reviewer">
+    Batch scoring against Article 28(3), the SCCs, a Schrems II TIA, and BAA elements.
+  </Card>
   <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
-    Check contracts and policies against CCPA, GDPR, HIPAA, SOX, and more.
+    Per-requirement scoring against GDPR, CCPA, HIPAA, and more.
   </Card>
   <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
-    Clause-by-clause review with severity flags and redlines.
+    Clause-by-clause review with playbook positions, severity flags, and redlines.
+  </Card>
+  <Card title="Playbooks" icon="book" href="/guides/playbooks">
+    The controller-side and processor-side DPA negotiation positions.
+  </Card>
+  <Card title="Privacy and Data Protection Audit" icon="user-shield" href="/workflows/built-in/privacy-data-protection-audit">
+    Privacy posture across policies and agreements together.
   </Card>
 </CardGroup>

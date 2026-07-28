@@ -48,6 +48,18 @@ Vaquill is a legal AI suite for in-house counsel: contract review, compliance re
   <Card title="Case Law & Statute Research" icon="scale-balanced" href="/guides/case-law-research">
     When a regulator or counterparty cites authority, look up case law and statutes in seconds, with verified citations.
   </Card>
+
+  <Card title="Workflows" icon="diagram-project" href="/workflows">
+    Multi-step pipelines that take documents in and return finished DOCX and XLSX work product. 25 built in, or build your own.
+  </Card>
+
+  <Card title="Vendor Registry" icon="building" href="/guides/vendor-registry">
+    Track sub-processors, DPA status, data categories, and renewals, with automatic DPA review.
+  </Card>
+
+  <Card title="Legal Intelligence Feed" icon="rss" href="/guides/feed">
+    Track regulators, counterparties, and practice areas, and get fresh developments surfaced from authoritative sources.
+  </Card>
 </CardGroup>
 
 ## Coverage
@@ -104,7 +116,10 @@ See [Authentication](/api-guide/authentication) for API keys and the [API Refere
   <Tab title="Use the Platform">
     <Steps>
       <Step title="Create an account">
-        Sign up at [app.vaquill.ai](https://app.vaquill.ai). Every new account starts with a 7-day free trial of the full feature set; after that, continue on a paid subscription.
+        Sign up at [app.vaquill.ai](https://app.vaquill.ai). Every new account starts with a 7-day free trial of the full feature set, no card required. See [Plans, trial, and limits](/guides/plans-and-limits) for what the trial includes and what happens when it ends.
+      </Step>
+      <Step title="Create a matter">
+        A matter is the container for one engagement: its documents, chats, and work product. Everything else hangs off it. See [Matters & Workspaces](/guides/matters-workspaces).
       </Step>
       <Step title="Upload a document">
         Drag and drop a file - or forward an email - into a matter. Supports 50\+ file formats including scanned PDFs.
@@ -114,6 +129,9 @@ See [Authentication](/api-guide/authentication) for API keys and the [API Refere
       </Step>
       <Step title="Run a Legal Tool">
         Activate Contract Review, NDA Triage, Compliance Check, or any of the [Legal Tools](/guides/legal-tools) from the conversation bar.
+      </Step>
+      <Step title="Run a workflow">
+        For multi-step work that ends in a finished DOCX or XLSX, run one of the 25 [built-in workflows](/workflows/built-in). The [quickstart](/workflows/quickstart) takes about ten minutes.
       </Step>
     </Steps>
   </Tab>

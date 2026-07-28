@@ -1,0 +1,110 @@
+---
+title: "Versions, Sharing, and Export"
+description: "Snapshots and restore, defaults per contract type, team access, and the portable playbook file"
+icon: "clock-rotate-left"
+---
+
+A playbook is a living document that quietly controls what your team sends to counterparties.
+That makes three things matter: being able to undo a change, knowing which playbook is actually in force, and being able to move one between accounts.
+
+## Version history
+
+Every save snapshots the prior state automatically.
+The **History** tab appears as soon as there is at least one snapshot.
+
+Each entry shows the version number, when it was taken, the name at the time, how many clauses it held, and a one-line summary of how it differs from the live playbook.
+
+<Steps>
+  <Step title="Preview">
+    Opens a side-by-side comparison of that version against the current playbook, field by field.
+  </Step>
+  <Step title="Restore">
+    Rolls the live playbook back to that version.
+  </Step>
+  <Step title="Undo the restore if you need to">
+    The state you restored away from is snapshotted first, so a restore is itself recorded in history.
+    A bad restore is always one more restore away from being fixed.
+  </Step>
+</Steps>
+
+<Note>
+  Applying a drift suggestion also writes a snapshot before it changes anything, so learning-loop edits are undoable the same way.
+</Note>
+
+## Defaults
+
+Each contract type can have one default playbook.
+Mark a playbook as the default from its row on the playbooks list, and any previous default for that same contract type steps aside.
+
+When drafting or review needs a playbook and you did not pick one explicitly, the resolution runs in this order:
+
+1. The playbook you picked explicitly on the form.
+2. The default playbook for that contract type.
+3. The most recently updated playbook of that contract type.
+4. The built-in market-standard positions, if you have no playbook for the type at all.
+
+That last step is why review and drafting still behave sensibly on day one, before you have written anything.
+
+## Team access
+
+In a [team workspace](/guides/team-workspaces), playbooks stamped with the organization are visible to every member, alongside each member's own personal playbooks.
+The organization's default drives everyone's drafting and review, not just the owner's.
+
+Editing stays with the owner.
+A teammate who wants different positions duplicates the playbook and customizes the copy.
+This is deliberate: a shared playbook that anyone can silently change is worse than no playbook.
+
+## Managing the list
+
+The playbooks list gives each row a menu:
+
+| Action | Notes |
+| --- | --- |
+| **Rename** | Name only, positions untouched |
+| **Duplicate** | Creates a copy suffixed "(copy)" that you own and can edit freely |
+| **Set or unset default** | One default per contract type |
+| **Export** | Downloads the portable file described below |
+| **Delete** | Removes the playbook. Drafts and reviews already produced are not affected |
+
+## Export and import
+
+**Export** downloads a portable file containing the playbook's name, description, contract type, and every position with all of its fields.
+Where a position linked a clause from your library, the clause text is embedded by value rather than by reference, so the export stands on its own.
+
+Everything tied to the specific instance is deliberately left out: ownership, the default flag, timestamps, version history, and any record of the import the playbook came from.
+
+**Upload** on the playbooks page reads that file back and creates a **new** playbook you own.
+
+- The name is suffixed with "(imported)" so it is distinguishable from the source.
+- Embedded clauses are matched against your own clause library by exact text. A match is reused; anything new becomes a new entry in your library.
+- A contract type the file names that Vaquill does not recognize falls back to a generic type.
+- A position that cannot be read is skipped rather than failing the whole import.
+
+This is the supported path for moving a playbook between accounts, between a personal workspace and a team workspace, or into version control of your own.
+
+## Limitations
+
+- Exports carry positions, not history. Version snapshots, analytics, and drift signal do not travel with the file.
+- An import always creates a new playbook. There is no way to merge an export into an existing one, or to update in place.
+- The file format is versioned. A file from a future, incompatible version is rejected rather than partially read.
+- Restoring replaces the whole playbook. There is no per-clause restore from a snapshot.
+- Duplicating breaks the connection to the original. Later changes to either copy do not propagate.
+- Only the owner can edit a shared playbook, and ownership cannot be transferred from the playbooks list.
+- Deleting a playbook does not retroactively change drafts or reviews that were produced with it.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Building a Playbook" icon="pen-ruler" href="/guides/playbooks/building-a-playbook">
+    Where snapshots come from in the first place.
+  </Card>
+  <Card title="Team Workspaces" icon="users" href="/guides/team-workspaces">
+    How organization membership drives shared access.
+  </Card>
+  <Card title="Drift Suggestions" icon="lightbulb" href="/guides/playbooks/drift-suggestions">
+    Changes that write a snapshot before they apply.
+  </Card>
+  <Card title="Clause Library" icon="book-bookmark" href="/guides/clause-library">
+    Where embedded clauses land when you import a playbook.
+  </Card>
+</CardGroup>

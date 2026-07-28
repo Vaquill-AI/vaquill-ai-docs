@@ -1,0 +1,106 @@
+---
+title: "Verification steps"
+sidebarTitle: "4.5 Verification"
+description: "Detect fabricated case citations, and drop synthesis findings that reference documents outside the input set"
+---
+
+Two steps, both deterministic. They exist because AI steps fail in two specific, catchable ways: inventing authorities, and inventing document references.
+
+Neither step is optional in practice. Any chain with an AI drafting step should end with Verify Citations; any chain with a Cross-Doc Synthesis should follow it with Verify Synthesis.
+
+---
+
+## Verify Citations
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="gauge">Medium</Card>
+</CardGroup>
+
+Detects fabricated case citations in a body of text. **Run it after any AI drafting step that quotes case law, and before exporting or saving.**
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Text to check | Long text | Yes | Up to 200,000 characters. Use the upstream-output picker to wire the body from a Generate Legal Draft or Summarize Document step. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Has Fabricated Case | Boolean. **The natural branch condition:** route to a rework path when true. |
+| Fabricated Count | How many. |
+| Flagged | The specific citations that failed, so you can check them by hand. |
+
+<Tip>
+  Branch on Has Fabricated Case rather than just logging it. A workflow that exports a DOCX regardless of the verification result has verified nothing useful.
+</Tip>
+
+---
+
+## Verify Synthesis
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="bolt">Fast</Card>
+</CardGroup>
+
+Drops synthesis findings that reference documents outside the actual input set. This catches the common failure mode where a synthesizer, working from summaries rather than raw documents, invents a document reference.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Synthesis | Dict | Yes | Wire from an upstream Cross-Doc Synthesis step. |
+| Per-document findings | Dict | No | The findings that fed the synthesis. Wire Findings By Filename from Build and Run Matrix, or the equivalent from Extract Chronology. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Cleaned Synthesis | The sanitized synthesis. **Use this downstream, not the raw one.** |
+| Dropped Count | How many findings were removed. |
+| Dropped Findings | Which ones, so a persistent pattern is visible rather than silent. |
+
+<Note>
+  The equivalent pass runs automatically inside every matrix-backed built-in workflow. This step is the standalone version for custom chains, where you assemble the synthesis yourself.
+</Note>
+
+---
+
+## Wiring both together
+
+The canonical verified portfolio chain:
+
+```
+Pick Documents
+  → Wait For Document Ingestion
+  → Build and Run Matrix
+  → Cross-Doc Synthesis        (reads Answers By Question By Doc)
+  → Verify Synthesis           (reads Findings By Filename, emits Cleaned Synthesis)
+  → Export DOCX Report         (reads Cleaned Synthesis)
+```
+
+And the verified drafting chain:
+
+```
+Search US Case Law
+  → Generate Legal Draft
+  → Verify Citations           (reads Body Markdown)
+  → [branch on Has Fabricated Case]
+  → Export DOCX Report
+```
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Answer verification" icon="circle-check" href="/guides/answer-verification">
+    The wider verification story across Vaquill, beyond workflows.
+  </Card>
+  <Card title="Branching and loops" icon="code-branch" href="/workflows/builder/branching-and-loops">
+    Routing on a verification result instead of ignoring it.
+  </Card>
+</CardGroup>

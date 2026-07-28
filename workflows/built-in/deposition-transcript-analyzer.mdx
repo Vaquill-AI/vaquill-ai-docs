@@ -1,0 +1,69 @@
+---
+title: "Deposition Transcript Analyzer"
+sidebarTitle: "4.3 Deposition Analyzer"
+description: "Mine deposition transcripts for admissions, damaging testimony, and cross-witness contradictions, all cited to page and line"
+---
+
+**Best for:** trial prep across 3 to 10 depositions, with page:line cited admissions, verified cross-witness contradictions, and a working XLSX you can bring to the podium.
+
+Upload transcripts and receive a per-witness summary with page:line citations, a multi-witness brief with cross-witness contradictions, and a trial-prep workbook with editable counsel-notes columns.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, trial, civil, commercial, employment, IP litigation, personal injury |
+| Runtime | 10-45 minutes |
+| Queue | Long-running (two-hour ceiling) |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Deposition transcripts** | Yes | 1-500 | PDF or text transcripts in standard page:line format. |
+| **Prior statements and evidence** | No | 0-500 | Complaint, prior declarations, interrogatory responses, expert reports, prior depositions of the same witnesses. The contradiction verifier needs these to confirm alleged prior-inconsistent claims. |
+
+<Tip>
+  Without the reference slot, a claimed prior inconsistent statement has nothing to be checked against. If you want verified contradictions rather than asserted ones, upload the prior statements.
+</Tip>
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / case | Text | No | Report title and file name. The deliverable is core work product, so pick a name consistent with your privilege-log conventions. |
+| **Which side took the depositions?** | Select | **Yes** | Plaintiff · defense · both/mixed. Drives which statements count as favorable admissions versus damaging testimony from your perspective. |
+| Case theory | Long text | No | Two or three sentences. Used to rank admissions and prioritize cross-examination lines toward what actually matters in your case. |
+
+## How it runs
+
+A matrix-review pipeline: `prepare → extract → wait for extraction → normalize and score → synthesize → render`.
+
+Extraction pulls admissions, damaging testimony, prior inconsistent statements, exhibits, and objections from each transcript with verbatim page:line cites. Synthesis then compares statements across witnesses, and the synthesis verifier drops contradictions that cite a transcript outside the set or assert testimony that came back not-found.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Multi-Witness Executive Brief** | DOCX | Portfolio summary across every deposed witness: ranked admissions, verified cross-witness contradictions, recommended cross-examination order. |
+| **Per-Deposition Detail** | DOCX | One section per deposition: admissions, damaging testimony, prior inconsistent statements, exhibits, objections, all with page:line citations. |
+| **Trial Prep Workbook** | XLSX | Six sheets: Deponents, Page-Line Index, Admissions, Damaging, Prior Inconsistent, Cross-Witness Contradictions. Every sheet carries an editable counsel-notes column. |
+
+## What this will not do
+
+- Replace trial counsel for the final cross-examination plan or live courtroom judgment calls.
+- Predict how a witness will perform under live cross or on redirect.
+- Authenticate or admit prior statements and exhibits over evidentiary objections.
+- Verify that the uploaded transcripts are the certified final versions, or check court-reporter signatures.
+- Substitute for re-reading the cited passages before you use them at trial.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Cross-Examination Prep Brief" icon="magnifying-glass" href="/workflows/built-in/cross-exam-prep">
+    Takes the analysis further into chapter framing and impeachment lines.
+  </Card>
+  <Card title="Chronology builder" icon="timeline" href="/guides/chronology-builder">
+    For the timeline the testimony sits on.
+  </Card>
+</CardGroup>

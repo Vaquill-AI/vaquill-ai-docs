@@ -1,0 +1,90 @@
+---
+title: "Complaint Drafter"
+sidebarTitle: "5.2 Complaint Drafter"
+description: "Draft an FRCP Rule 8(a) civil complaint with jurisdictional allegations, counts, Rule 9(b) particularity where required, and prayer for relief"
+---
+
+**Best for:** an FRCP Rule 8(a) civil complaint with jurisdictional allegations, counts pleaded to their elements, Rule 9(b) particularity where fraud is alleged, and a complete prayer for relief.
+
+Produces the caption, jurisdiction allegations, statement of facts, counts, prayer for relief, and jury demand.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, civil, commercial |
+| Runtime | 8-20 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Exhibits / evidence pack** | No | 0-500 | Documents to attach as exhibits. Include any EEOC right-to-sue letter, charge of discrimination, or other administrative-exhaustion document. |
+| **Opposing-party documents** | No | 0-500 | Correspondence or documents from the other side. |
+
+## Inputs
+
+### Parties and court
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Matter / case title | Text | No | File name and docket handle. Not printed in the caption, which uses formal party names. |
+| **Court tier** | Select | **Yes** | Federal district · federal bankruptcy · state trial · state appellate. Federal pleading is governed by FRCP 8 plus Twombly and Iqbal; state practice varies. |
+| **Court name / district** | Text | **Yes** | Goes in the caption. Use the formal district and division name. |
+| **Plaintiff(s) name** | Party name | **Yes** | Full legal name including entity suffix. Add capacity ("as parent and natural guardian") where applicable. |
+| Plaintiff citizenship | Text | No | Required to plead diversity under 28 USC § 1332. |
+| **Defendant(s) name** | Party name | **Yes** | Specify capacity, and add Doe defendants if identities are unknown but joinable later under FRCP 15. |
+| Defendant citizenship | Text | No | Required for diversity. Corporations are citizens of both the state of incorporation and the principal place of business. |
+
+### Jurisdiction and venue
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| **Subject-matter jurisdiction basis** | Select | **Yes** | Federal question (§ 1331) · diversity (§ 1332) · supplemental (§ 1367) · removal · original state-court. Drives the jurisdictional allegations block. |
+| Amount in controversy (USD) | Text | No | Diversity requires more than $75,000. |
+| Venue basis (§ 1391) | Long text | No | Plead one of the three § 1391(b) prongs. Missing venue allegations invite a 12(b)(3) motion. |
+| Personal jurisdiction facts | Long text | No | General or specific jurisdiction under International Shoe and Daimler. Out-of-state defendants need this to survive 12(b)(2). |
+
+### Claims and relief
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| **Counts / causes of action** | Long text | **Yes** | List each count separately with its elements. |
+| Includes a fraud or mistake claim? | Yes/No | No | When Yes, FRCP 9(b) particularity (who, what, when, where, how) is applied to each fraud-based count. |
+| **Statement of facts** | Long text | **Yes** | **The drafter uses only these facts.** Do not omit material context. |
+| Administrative exhaustion status | Select | No | Not applicable · EEOC right-to-sue obtained · EEOC charge pending · other agency completed · other agency pending. Title VII suits filed without a right-to-sue letter face dismissal; attach the letter as an exhibit. |
+| Damages categories | Multi-select | No | Compensatory, punitive, statutory, injunctive, declaratory, attorneys' fees, specific performance, restitution. Each feeds the prayer block. Punitive damages need a hook; fees need a statute, contract, or recognized exception. |
+| Demand jury trial? | Yes/No | No | FRCP 38. A jury demand inside the complaint avoids the 14-day post-pleading waiver trap. |
+| Class action? | Yes/No | No | When Yes, FRCP 23 class-allegation paragraphs are added. |
+| **Prayer for relief** | Long text | **Yes** | The WHEREFORE block. Plead every remedy you might pursue; courts will not award relief absent from the prayer, except under FRCP 54(c) on default. |
+
+## How it runs
+
+A drafting pipeline: `prepare → generate → export`.
+
+Prepare gathers the drafting context from your form answers and the exhibit and opposing-party documents. Generate produces the complaint against the selected court tier and jurisdictional basis, applying Rule 9(b) particularity and Rule 23 allegations where you asked for them. Export writes the DOCX.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Complaint** | DOCX | Caption, jurisdictional allegations, statement of facts, counts, prayer for relief, and jury demand. |
+
+## What this will not do
+
+- File the complaint, pay the filing fee, or arrange service on the defendant.
+- Replace counsel for the final review, attorney signature, and Rule 11 sign-off.
+- Run a damages model or verify that the amount in controversy meets the jurisdictional threshold.
+- Investigate facts beyond what you provide. No discovery, witness interviews, or subpoenas.
+- Calculate or apply the statute of limitations and tolling rules. Verify with counsel.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Answer to Complaint Drafter" icon="file-lines" href="/workflows/built-in/answer-to-complaint-drafter">
+    The other side of the same pleading.
+  </Card>
+  <Card title="Demand Letter Drafter" icon="envelope" href="/workflows/built-in/demand-letter-drafter">
+    The pre-litigation step that often comes first.
+  </Card>
+</CardGroup>

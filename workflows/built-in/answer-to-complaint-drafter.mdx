@@ -1,0 +1,92 @@
+---
+title: "Answer to Complaint Drafter"
+sidebarTitle: "5.3 Answer to Complaint"
+description: "Draft a defendant's Answer under FRCP 8(b) with paragraph-by-paragraph responses, every affirmative defense preserved, and an optional counterclaim"
+---
+
+**Best for:** a defendant's Answer or Rule 12(b) motion with paragraph-by-paragraph responses, every affirmative defense preserved, and an optional counterclaim.
+
+Produces admissions and denials paragraph by paragraph, affirmative defenses, an optional counterclaim, and the prayer for dismissal.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, civil |
+| Runtime | 6-15 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Complaint to respond to** | No | 0-500 | Effectively required in Answer mode, since the paragraph-by-paragraph response is built from it. Optional for a Rule 12 motion. |
+| **Your supporting documents** | No | 0-500 | Contracts, correspondence, business records supporting the defense. |
+
+## Inputs
+
+### Mode and court
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Matter name | Text | No | File name and internal handle. Not in the caption. |
+| **Output mode** | Select | **Yes** | Answer with affirmative defenses · Rule 12(b) motion to dismiss · Answer plus counterclaim · Answer plus 12(b) motion combined. **Drives the entire document structure.** Answering versus moving is the strategic first decision in defense practice. |
+| **Court tier** | Select | **Yes** | Federal district · federal bankruptcy · state trial · state appellate. Federal applies FRCP 8(b) and the Twombly/Iqbal standard; state practice and timing vary. |
+| **Court name** | Text | **Yes** | Must match the court named in the served complaint exactly. |
+| Case number | Text | No | The docket number. A missing case number triggers clerk rejection on most CM/ECF systems. |
+| **Plaintiff(s)** | Party name | **Yes** | Copy the name exactly as captioned in the complaint to avoid clerk objections. |
+| **Defendant(s), your client** | Party name | **Yes** | Include capacity where it matters to defenses such as veil-piercing or qualified immunity. |
+
+### Timing
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Service date | Date | No | Drives the FRCP 12(a) deadline: 21 days from service. |
+| Was service waived (FRCP 4(d))? | Yes/No | No | Yes extends the deadline to 60 days from the waiver request. |
+
+### Defenses and responses
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Affirmative defenses to assert | Multi-select | No | 20 options from statute of limitations through failure to mitigate. **FRCP 8(c) requires affirmative defenses to be pleaded in the Answer or they are waived.** Pick every defense you might rely on. |
+| Rule 12(b) defenses | Multi-select | No | 12(b)(1) through 12(b)(7). **12(b)(2) to (5) and (7) are waived if omitted from a pre-answer motion.** 12(b)(1) and (6) can be raised at any time. |
+| Paragraph-by-paragraph response | Long text | No | Per complaint paragraph: admit, deny, or lack knowledge. **If left blank in Answer mode, the drafter applies FRCP 8(b)(5) per paragraph and flags each guess with `[VERIFY]` for your review.** |
+| Defense theory | Long text | No | One paragraph anchoring the narrative. |
+| Counterclaim allegations | Long text | No | FRCP 13 governs. |
+| Crossclaim against a co-defendant? | Yes/No | No | Adds an FRCP 13(g) section. Use when a co-defendant is liable to your client for all or part of the claim. |
+| Third-party complaint / impleader? | Yes/No | No | Adds a Rule 14 third-party complaint. Common for indemnification, contribution, or insurer pass-through. |
+| Demand jury trial in the answer? | Yes/No | No | FRCP 38. The demand must be in the Answer or is waived within 14 days of the last pleading. |
+
+<Warning>
+  Leaving the paragraph-by-paragraph field blank does not skip the responses. It produces a full draft with a `[VERIFY]` flag on every inferred response, which you must then work through. That is faster than typing them all, but it is not a shortcut you can skip reviewing.
+</Warning>
+
+## How it runs
+
+A drafting pipeline: `prepare → generate → export`.
+
+Prepare reads the served complaint and your supporting documents. Generate builds the document in the structure your output mode dictates, applying the preserved defenses. Export writes the DOCX.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Answer / Motion** | DOCX | Whichever structure your output mode selected, with defenses, optional counterclaim, crossclaim, or third-party complaint. |
+
+## What this will not do
+
+- File the Answer or serve it on plaintiff's counsel.
+- Replace counsel for the final review, attorney signature, and Rule 11 sign-off.
+- Calculate your Rule 12 response deadline from the service date, or warn you if you are out of time. Verify with counsel.
+- Investigate facts beyond what you provide, including discovery, witness statements, or admissions in the complaint exhibits.
+- Decide whether to file a Rule 12(b) motion instead of an Answer. That strategic call belongs with counsel.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Complaint Drafter" icon="gavel" href="/workflows/built-in/complaint-drafter">
+    The pleading this responds to.
+  </Card>
+  <Card title="US Motion Drafter" icon="gavel" href="/workflows/built-in/us-motion-drafter">
+    For a standalone, fully developed Rule 12(b) motion with a proposed order.
+  </Card>
+</CardGroup>

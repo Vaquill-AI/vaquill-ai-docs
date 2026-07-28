@@ -1,0 +1,86 @@
+---
+title: "M&A Due Diligence"
+sidebarTitle: "1.6 M&A Due Diligence"
+description: "Run diligence over a data room with domain specialists, top deal risks, and concrete next-step asks"
+---
+
+**Best for:** full data-room diligence across 50 to 200 documents, with domain-bucketed findings, top deal risks, and concrete next-step seller asks.
+
+Runs diligence over an M&A or investment data room and returns findings bucketed by domain (Legal, Financial, IP, Employment, Regulatory, Commercial), the top deal risks, and the asks you should put to the other side.
+
+| | |
+| --- | --- |
+| Category | In-House |
+| Jurisdiction | Any |
+| Practice areas | M&A, transactional, corporate |
+| Runtime | 8-30 minutes |
+| Queue | Long-running (two-hour ceiling) |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Data room documents** | Yes | 1-2000 | SPA, MPA, SHA, disclosure schedules, and any other deal documents. Larger sets take longer. |
+| **Reference / pre-existing company documents** | No | 0-1000 | Existing company NDAs, employment IP assignments, key contracts. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Deal / matter name | Text | No | Used as the deal codename across the report and exports. Codenames keep the target's identity out of cc'd inboxes. |
+| **Which side are you on?** | Select | **Yes** | Buy-side (acquirer/investor) · sell-side (target/seller). Buy-side flags risks for the acquirer; sell-side highlights disclosure gaps the seller should pre-empt before opening the data room. |
+| **Deal structure** | Select | **Yes** | Asset purchase · stock purchase · merger · equity investment · other. Drives which documents matter: cap-table review is near-irrelevant in asset deals, successor liability dominates stock deals. |
+| **Target industry** | Select | **Yes** | Tech/SaaS, healthcare, financial services, manufacturing, energy, real estate, consumer/retail, other. Triggers the HIPAA, AML/KYC, FDA, open-source IP-chain, or export-control specialist modules. |
+| **Deal stage** | Select | **Yes** | Pre-LOI exploratory · signed LOI · post-signing confirmatory · pre-closing bring-down. Changes the depth and tone of findings. |
+| **Materiality threshold (USD)** | Select | **Yes** | $10K through $5M. Findings below the floor are summarized in aggregate rather than itemized. The main lever for suppressing noise in a large data room. |
+| Deal size | Select | No | Under $25M, $25M-$100M, $100M-$500M, over $500M. Drives HSR analysis against the 2026 threshold and CFIUS applicability. |
+| Foreign investor or national-security exposure? | Yes/No | No | Gates CFIUS / Exon-Florio review. |
+| Focus the diligence on | Multi-select | No | Legal, Financial, IP, Employment, Regulatory, Commercial. Leave blank to run all five specialists. Picking a subset skips the rest and omits their report sections. Commercial rolls into the Legal and Financial buckets, so selecting it alone is treated as both. |
+
+## How it runs
+
+A matrix-review pipeline with domain specialists layered over the extraction.
+
+<Steps>
+  <Step title="Prepare">
+    Builds the extraction matrix across the data room, with columns determined by the deal structure, industry, and the specialists you enabled.
+  </Step>
+  <Step title="Extract and wait">
+    Every document is answered against the matrix, with supporting quotes. This is the long pole on a 200-document room.
+  </Step>
+  <Step title="Normalize and score">
+    Applies the materiality threshold and buckets findings into their domains.
+  </Step>
+  <Step title="Synthesize">
+    Domain specialists roll their findings into top deal risks and next-step asks. The synthesis verifier drops findings citing documents outside the set or asserting terms that came back not-found.
+  </Step>
+  <Step title="Render">
+    Writes both DOCX artifacts.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Diligence Report** | DOCX | Domain-bucketed findings, top deal risks, and next steps. |
+| **Per-Document Detail** | DOCX | One section per data-room document with its findings. |
+
+## What this will not do
+
+- Replace deal counsel review for the final closing risk allocation or disclosure schedule sign-off.
+- Run financial quality-of-earnings, tax structuring, or environmental Phase I work.
+- Investigate facts outside the data room: off-record litigation, customer churn signals, founder background checks.
+- Issue the diligence asks or negotiate reps and warranties with the seller on your behalf.
+- Confirm CFIUS, HSR, or sector-specific filing decisions when the facts are ambiguous. Consult counsel.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Document Matrix" icon="table" href="/guides/document-matrix">
+    The extraction engine underneath, usable on its own.
+  </Card>
+  <Card title="Matter Triage Agent" icon="robot" href="/workflows/built-in/matter-triage-agent">
+    Point an agent at a matter and let it decide which reviews to run.
+  </Card>
+</CardGroup>

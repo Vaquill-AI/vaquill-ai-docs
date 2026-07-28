@@ -1,94 +1,130 @@
 ---
 title: "Playbooks"
-description: "Encode your preferred clause language, fallback positions, and escalation triggers, then draft and review against them"
+description: "Write your negotiation positions down once, then draft, review, and escalate against them"
 icon: "clipboard-list"
 ---
 
-A playbook encodes your team's preferred clause language, fallback positions, and escalation triggers. Once it exists, drafting and review use the active playbook as the source of truth for what good looks like, so every document is measured against your standard instead of a generic one.
+A playbook is your house position written down once, at the clause level, in a form the AI can act on.
+It records the wording you want, how far you will flex, the line you will not cross, and who has to sign off when a deal goes past it.
+Once a playbook exists, drafting generates toward it and review scores counterparty paper against it, so every document is measured against your standard instead of a generic one.
 
 <Frame caption="The Negotiation Playbooks intro, showing what you can do with a playbook today">
   <img src="/images/playbooks.png" alt="Vaquill Negotiation Playbooks screen describing import from a contract, link vetted clauses, multi-round redlines, and per-section compliance scoring on every draft" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
-## What a playbook encodes
+## What a playbook holds
 
-A playbook is your house position, written down once and applied everywhere:
+Each playbook covers one contract type and holds one rule per clause.
+Every rule is organized into three layers, which the editor surfaces as three tabs.
 
-- **Preferred clause language** is the wording you want to see for each section.
-- **Fallback positions** are the alternatives you will accept when the preferred language is off the table.
-- **Escalation triggers** are the conditions that should pull a senior reviewer in rather than auto-accept.
+| Layer | What it controls | Fields |
+| --- | --- | --- |
+| **Language** | What the AI writes | Preferred position, acceptable range, optional link to a vetted clause from your library |
+| **Guardrails** | The limits that trip review | Fallback ladder, walk-away floor, escalation triggers, numeric limits |
+| **Governance** | Who signs off, and how loudly a miss is flagged | Priority, rationale, approval level, conditional escalation, risk weight |
 
-With those three layers in place, every draft and every review can tell you not just what a clause says, but whether it matches what you want.
-
-## Import from a contract
-
-You do not have to build a playbook from a blank page. Start from a contract you already trust.
-
-<Steps>
-  <Step title="Upload or paste">
-    Bring in a .docx file or paste the contract text.
-  </Step>
-  <Step title="Classify each clause">
-    Vaquill classifies every clause by type (indemnity, limitation of liability, term, assignment, and so on).
-  </Step>
-  <Step title="Infer preferred positions">
-    For each classified clause, it infers the preferred position so you have a starting playbook to review line by line.
-  </Step>
-</Steps>
-
-Review the inferred positions, adjust anything that does not match your house standard, and the playbook is ready to use.
-
-## Link vetted clauses
-
-Rather than paraphrasing a clause every time, link vetted language directly. Pick a clause from your library or create one inline. When a clause is linked, drafting drops in that exact language for the section instead of generating a paraphrase, so your approved wording lands verbatim.
+Only the preferred position is required.
+A playbook with nothing but preferred wording still works.
+The rest of the fields are what turn it from a style guide into something that can gate a deal.
 
 <Tip>
-  Build a small library of your most-negotiated clauses (indemnity, liability cap, IP ownership, governing law) and link them into your playbooks. Update the clause once and every playbook that links it stays current.
+  Start in **Simple** detail level, which shows only the preferred position and acceptable range for each clause.
+  Switch to **Advanced** when you want fallback ladders, numeric limits, approvals, and risk weighting.
+  The editor picks Advanced automatically if the playbook already has that depth.
 </Tip>
 
-## Multi-round redlines
+## Four ways to start
 
-Playbooks plug into [Contract Review](/guides/contract-review) for back-and-forth negotiation. Paste the version you sent and the counterparty's response, and Vaquill computes a real diff between the two, then proposes the minimal edits needed to move the counterparty's draft back toward your fallback. Repeat each round so you always negotiate from your playbook rather than from scratch.
-
-## Per-section compliance scoring
-
-When you generate a draft with a playbook attached, the editor shows a per-section verdict so you can see compliance at a glance:
-
-<CardGroup cols={3}>
-  <Card title="Preferred" icon="circle-check">
-    The section matches your preferred language. Nothing to do.
+<CardGroup cols={2}>
+  <Card title="Clone a template" icon="layer-group" href="/guides/playbooks/templates">
+    28 curated starting points covering both sides of 14 agreement types, already carrying fallback ladders, walk-away floors, and sign-off rules.
   </Card>
-  <Card title="Fallback" icon="circle-half-stroke">
-    The section sits at an acceptable fallback position. Review if you want to push for preferred.
+  <Card title="Build from scratch" icon="pen-ruler" href="/guides/playbooks/building-a-playbook">
+    Name it, pick a contract type, add clause rules one at a time. Best when your positions are unusual enough that no template is close.
   </Card>
-  <Card title="Needs attention" icon="triangle-exclamation">
-    The section is off-playbook or hits an escalation trigger. Look here first.
+  <Card title="Import from a contract" icon="file-import" href="/guides/playbooks/import-from-contracts">
+    Upload or paste a contract you already negotiated. Vaquill splits it into clauses and infers a starting position for each one.
+  </Card>
+  <Card title="Upload an export" icon="file-arrow-up" href="/guides/playbooks/versions-and-sharing">
+    Bring a playbook over from another account or workspace using the portable export file.
   </Card>
 </CardGroup>
 
-The scoring focuses your attention on the sections that matter, so partner review goes straight to the **Needs attention** clauses instead of re-reading the whole document.
+## Where a playbook gets used
 
-## Using a playbook in drafting and review
+<AccordionGroup>
+  <Accordion title="Drafting" icon="pen-nib">
+    Attach a playbook and the drafter writes toward your preferred wording, using linked clause text verbatim where you set one.
+    The editor then shows a per-section verdict of **Preferred**, **Fallback**, or **Needs attention**, plus a weighted risk band for the draft as a whole.
+    Flagged sections are fixable in place: the banner offers to drop the on-playbook wording in as a tracked change.
+    See [Drafting](/guides/drafting).
+  </Accordion>
+  <Accordion title="Contract Review" icon="file-contract">
+    Run inbound paper against the playbook to get per-clause deviations, redline suggestions aimed at your fallback positions, and a sign-off gate on anything that needs senior approval before it goes back out.
+    Later negotiation rounds accept the version you sent, so the redlines target what actually changed rather than the whole contract.
+    See [Contract Review](/guides/contract-review).
+  </Accordion>
+  <Accordion title="Bulk playbook review" icon="layer-group">
+    For scoring many contracts against a playbook at once, with a per-issue scorecard and a draft negotiation email, use the [Contract Playbook Review workflow](/workflows/built-in/contract-playbook-review).
+    That workflow reads a playbook you upload as a document, which is a different path from the structured playbooks described here.
+  </Accordion>
+</AccordionGroup>
 
-The same playbook works across both surfaces:
+## In this section
 
-- In [Drafting](/guides/drafting), attach a playbook so new drafts use your preferred language from the start and surface per-section verdicts as you write.
-- In [Contract Review](/guides/contract-review), run an inbound contract against the playbook to flag every clause that deviates and propose redlines toward your fallback.
+<CardGroup cols={2}>
+  <Card title="Starter Templates" icon="layer-group" href="/guides/playbooks/templates">
+    The 28 built-in playbooks, what each one is tuned for, and how to preview before you clone.
+  </Card>
+  <Card title="Building a Playbook" icon="pen-ruler" href="/guides/playbooks/building-a-playbook">
+    Create, add clause rules, test-drive the result, and compare it against the market-standard baseline.
+  </Card>
+  <Card title="Clause Rules" icon="list-check" href="/guides/playbooks/clause-rules">
+    Every field on a clause rule and what it changes downstream.
+  </Card>
+  <Card title="Import From Contracts" icon="file-import" href="/guides/playbooks/import-from-contracts">
+    Turn signed contracts into a playbook, including consensus across a whole folder of them.
+  </Card>
+  <Card title="Structure Check" icon="clipboard-check" href="/guides/playbooks/structure-check">
+    The authoring linter that catches gaps before a playbook ever sees a deal.
+  </Card>
+  <Card title="Sign-Off Gates" icon="shield-check" href="/guides/playbooks/sign-off-gates">
+    Approval levels, conditional escalation, walk-away floors, and how they block a send.
+  </Card>
+  <Card title="Playbook Health" icon="chart-line" href="/guides/playbooks/playbook-health">
+    How each clause is performing against your real redline history, plus coverage gaps and staleness.
+  </Card>
+  <Card title="Drift Suggestions" icon="lightbulb" href="/guides/playbooks/drift-suggestions">
+    Where your team's actual behavior has diverged from what the playbook says.
+  </Card>
+  <Card title="Versions, Sharing, and Export" icon="clock-rotate-left" href="/guides/playbooks/versions-and-sharing">
+    Version history, defaults per contract type, team sharing, and the portable export file.
+  </Card>
+</CardGroup>
 
-<Note>
-  A playbook is the active source of truth only while it is attached. Switch playbooks per matter or per client when your standard positions differ, for example a stricter playbook for vendor agreements than for partner deals.
-</Note>
+## Limitations
+
+- A playbook is scoped to one contract type. If your vendor terms and your customer terms differ, that is two playbooks, not one.
+- Positions are mostly free text, and the AI interprets them. Vague wording produces vague enforcement. Numeric limits and fallback ladders are far more reliable than a paragraph of prose.
+- A playbook only drives a draft or a review when it is attached or resolved as the default for that contract type. Nothing is applied globally.
+- Editing is owner-only. Teammates can read and use a shared playbook but must duplicate it to change positions.
+- Sign-off gates flag, and in deep review block. They do not route to a named approver, integrate with an approval system, or know your org chart.
+- Health and drift analytics need recorded review decisions before they say anything. A new playbook shows no signal for a while.
+- Nothing here is legal advice. The built-in defaults and templates are market-standard starting points that need a lawyer's review before you rely on them.
 
 ## Related
 
 <CardGroup cols={2}>
   <Card title="Drafting" icon="pen-nib" href="/guides/drafting">
-    Generate jurisdiction-aware drafts that use your playbook language.
+    Generate drafts that use your playbook language and show per-section compliance.
   </Card>
   <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
     Score and redline inbound contracts against your playbook.
   </Card>
-  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
-    Gap-check a document against a standard or regulatory framework.
+  <Card title="Clause Library" icon="book-bookmark" href="/guides/clause-library">
+    Keep vetted clause text in one place and link it into playbook positions.
+  </Card>
+  <Card title="Contract Playbook Review workflow" icon="layer-group" href="/workflows/built-in/contract-playbook-review">
+    Score up to 500 contracts against an uploaded playbook document in one run.
   </Card>
 </CardGroup>

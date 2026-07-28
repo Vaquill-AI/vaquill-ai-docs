@@ -1,0 +1,123 @@
+---
+title: "Routing and logic steps"
+sidebarTitle: "4.7 Routing and logic"
+description: "Branch on a condition, fan a step out across every document, or hand off to a constrained agent"
+---
+
+Three steps. These are what make a workflow a program rather than a list.
+
+---
+
+## Conditional Branch
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="code-branch">Routing</Card>
+  <Card title="Latency" icon="bolt">Fast</Card>
+</CardGroup>
+
+An explicit decision point. Reads a field from an upstream step, evaluates a condition, and emits TRUE or FALSE. Downstream steps branch on that result through their own Branching panel.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Source step | Step picker | Yes | An earlier step whose output the condition reads. |
+| Field | Text | Yes | The name of a top-level output field on that step. |
+| Operator | Select | Yes | Equals, does not equal, greater than, less than, contains, is one of. |
+| Value | Any | No | What to compare against. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Matched | Whether the condition held. |
+| Actual Value | What the field actually contained, which is what you look at when a branch routes unexpectedly. |
+
+<Note>
+  The same condition shape is available inline on any step via its Branching panel. Use the standalone step when the decision does not belong to the step that produced the data, or when you want the decision to appear as its own row in the run timeline.
+
+  Conditions read **one top-level field**. Nested paths and regex are deliberately unavailable, which is what lets publishing statically verify every branch.
+</Note>
+
+---
+
+## Loop Over Documents
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="code-branch">Routing</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Runs another step once per document, with bounded concurrency. The fan-out primitive: summarize each, score each, extract from each.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Documents | Document list | Yes | | 1 to 50. Wire from an upstream Pick Documents. |
+| Step to run per document | Step type | Yes | | Chosen from a dropdown. |
+| Per-document settings | Dict | Yes | | The inner step's config. The current document is injected automatically each iteration; the form gives you click-to-insert chips for the document's id and filename. |
+| How many to run at once | Integer | No | 2 | 1 to 5. Higher is faster but may hit external provider rate limits. |
+| Continue on error | Boolean | No | On | On records the failure and keeps going. Off fails the loop on the first error. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Iterations, Succeeded, Failed | Counts. |
+| Results | Per-iteration results, including which documents failed and why. |
+
+<Warning>
+  **Two things cannot go inside a loop**, and both are refused at config time rather than at run time:
+
+  - **Nested loops.** A Loop Over Documents step cannot be its own inner step.
+  - **Side-effect steps**, such as Save to Matter. Firing a side effect N times across a document set is almost never intended and is hard to undo.
+
+  Move them outside the loop and run them once on the loop's results.
+</Warning>
+
+<Tip>
+  Some steps already fan out internally and do not need a loop. [Extract Chronology](/workflows/builder/steps/extraction) takes up to 200 documents in one field and merges them into a single timeline. Check whether the step handles a list before wrapping it.
+</Tip>
+
+---
+
+## Agentic Step
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Lets the model pick tools from a constrained set and iterate. Use it for open-ended research where the right tool order depends on what the previous call returned.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Goal | Long text | Yes | | What you want accomplished. Up to 5,000 characters. |
+| Tools | Multi-select | No | Documents, case law, statutes | Choose from: search uploaded documents, search US case law, look up US statute, web search. |
+| Maximum steps | Integer | No | 5 | 1 to 10 research rounds before the agent must stop. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Final Answer | The agent's answer. |
+| Iterations, Tool Call Count | How much work it actually did. |
+| Stopped Reason | Why it stopped. **Check this:** finishing and hitting the cap are different outcomes. |
+
+This is a bounded tool loop, not an open-ended agent. It can only call the tools you enabled, and only as many rounds as you allowed. If the right sequence of steps is knowable in advance, a hard-coded chain is cheaper, faster, and auditable; reach for the agentic step when it genuinely is not.
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Branching and loops" icon="code-branch" href="/workflows/builder/branching-and-loops">
+    The conceptual guide, including graph-view routing.
+  </Card>
+  <Card title="Agent mode" icon="robot" href="/guides/agent-mode">
+    The interactive, chat-based version of agentic research.
+  </Card>
+</CardGroup>

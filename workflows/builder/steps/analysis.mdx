@@ -1,0 +1,166 @@
+---
+title: "Analysis steps"
+sidebarTitle: "4.4 Analysis"
+description: "Run a matrix over a document set, diff two documents, check compliance gaps, score against benchmarks, or reason across a whole set"
+---
+
+Five steps. This is where a workflow stops collecting material and starts producing judgments.
+
+---
+
+## Build and Run Matrix
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Applies a matrix template to a set of documents and extracts every cell. Rows are documents, columns are the template's questions. This is the same engine behind [Document Matrix](/guides/document-matrix) and behind most of the built-in review workflows.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Matrix template | Template picker | Yes | | One of yours or a built-in template. |
+| Documents | Document list | Yes | | 1 to 200. One row per document. |
+| Title | Text | No | "Workflow Matrix" | How the matrix appears in the Matrix list and the run viewer. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Matrix Id | Open the Matrix surface to drill into individual cells. |
+| Rows, Columns | Matrix dimensions. |
+| Extracted, Not Found, Errors | Per-cell result counts. |
+| Truncated | True when polling hit the time cap before every cell finished. The matrix keeps filling; the step stopped waiting. |
+| Answers By Question By Doc | Per-document answers as `{question: {filename: answer}}`. **Wire into Cross-Doc Synthesis.** |
+| Findings By Filename | Per-document findings in the shape Verify Synthesis expects. **Wire into Verify Synthesis.** |
+
+<Tip>
+  The two dict outputs exist specifically so a matrix can feed the synthesis and verification steps without you reshaping anything. Wiring **Answers By Question By Doc** into Cross-Doc Synthesis, and **Findings By Filename** into Verify Synthesis, is the canonical portfolio-review chain.
+</Tip>
+
+---
+
+## Compare Two Documents
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="gauge">Medium</Card>
+</CardGroup>
+
+Redline-style diff between two documents.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Original document | Document picker | Yes | The baseline. |
+| Revised document | Document picker | Yes | The proposed version. |
+| Title | Text | No | Defaults to the filenames. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Comparison Id, Status | The created comparison. |
+| Url Path | Relative path to open the comparison viewer and accept changes. |
+
+---
+
+## Compliance Gap Check
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Scores one document against a regulatory regime and surfaces per-requirement gaps.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Document | Document picker | Yes | |
+| Regulation | Select | Yes | GDPR, CCPA, DPDP, HIPAA, SOX, UK GDPR, LGPD, PCI-DSS, DORA, NIS2, SOC 2. |
+| Document category | Select | Yes | DPA, privacy policy, terms of service, breach plan, consent form, DSR process, vendor agreement, information security policy, incident response plan, financial report, and others. |
+| Context | Text | No | Industry, jurisdiction, or data-type context to sharpen the check. Up to 2,000 characters. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Analysis Id | The stored analysis. |
+| Overall Status | The headline verdict. |
+| Requirements | Per-requirement results. |
+| Gap Count | How many requirements came back as gaps. Useful as a branch condition. |
+
+---
+
+## Score Against Benchmarks
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="bolt">Fast</Card>
+</CardGroup>
+
+Scores extracted contract facts against market-standard benchmarks. No model call, so it is fast and repeatable.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Benchmark group | NDA, MSA, Employment, M&A, Privacy | Yes | Each suite scores a different contract family. |
+| Facts | Dict | Yes | Wire from an upstream Extract Contract Facts step. Facts the suite does not recognize are ignored. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Overall Tier | The headline risk tier. Good branch condition. |
+| Overall Score | Numeric score. |
+| Benchmark Scores | Per-benchmark detail. |
+| Flagged Benchmarks, Flagged Count | The redline-ready list. |
+
+---
+
+## Cross-Doc Synthesis
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Answers comparison and aggregation questions across multiple documents: "which is worst", "where do they disagree", "which ones are missing this clause".
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Documents | Document list | Yes | **2 to 50.** Order does not matter. |
+| Questions | String list | Yes | 1 to 10 cross-document questions. |
+| Per-document answers | Dict | No | An optional starting point. Wire Answers By Question By Doc from an upstream Build and Run Matrix so the synthesizer starts primed rather than reading everything cold. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Answers | One answer per question. |
+| Document Count, Question Count | What was actually reasoned over. |
+
+<Warning>
+  This is the highest-hallucination-risk step in a portfolio chain, because it reasons over summaries rather than raw documents. Always follow it with [Verify Synthesis](/workflows/builder/steps/verification), which drops findings that reference documents outside the input set.
+</Warning>
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Verification steps" icon="circle-check" href="/workflows/builder/steps/verification">
+    The pass that should follow every synthesis.
+  </Card>
+  <Card title="Output steps" icon="file-export" href="/workflows/builder/steps/output">
+    Turning a matrix or a synthesis into a deliverable.
+  </Card>
+</CardGroup>

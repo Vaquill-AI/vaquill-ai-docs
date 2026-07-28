@@ -1,0 +1,68 @@
+---
+title: "Privilege Log Builder"
+sidebarTitle: "4.2 Privilege Log Builder"
+description: "Turn a document population into an FRCP 26(b)(5) privilege log plus an attorney work-product memo flagging what needs sign-off"
+---
+
+**Best for:** building a defensible FRCP 26(b)(5) privilege log and an attorney work-product memo flagging which entries need partner sign-off, including partial-privilege redactions, third-party break risks, and work-product opinion claims, **before** service.
+
+Upload the documents the discovery team is reviewing for privilege. You get the log you serve and, separately, the analysis you keep.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, civil, commercial, employment, IP litigation, white collar |
+| Runtime | 8-40 minutes |
+| Queue | Long-running (two-hour ceiling) |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Documents to analyse for privilege** | Yes | 1-1000 | Emails, memos, contracts, meeting notes, attorney communications: the candidate privileged documents. PDF or DOCX, text-searchable. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / case | Text | No | The file title. Privilege logs become discoverable artifacts in their own right, so pick a stable, professional name. |
+| Case caption | Long text | No | Pasted-in caption. Appears in the served log header and the internal memo. |
+
+## How it runs
+
+A matrix-review pipeline: `prepare → extract → wait for extraction → normalize and score → synthesize → render`.
+
+Each document is analysed for privilege type and basis, for third-party recipients that would break privilege, for whether the claim is fact or opinion work product, and for whether a partial redaction is the right call rather than a full withhold. The synthesis rolls those into portfolio-level risk patterns before the render stage writes the log and the memos.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Privilege Log** | XLSX | FRCP 26(b)(5) compliant log served on opposing counsel: a caption sheet plus one row per withheld document. |
+| **Privilege Analysis Memo** | DOCX | Attorney-only. Portfolio summary of third-party privilege break risks, partial-privilege redactions, work-product opinion claims, and the entries recommended for partner sign-off. |
+| **Per-Document Privilege Detail** | DOCX | One section per reviewed document: privilege type, basis, third-party considerations, and review recommendation. |
+| **Citations and Authorities Used** | DOCX | Deduplicated authority appendix. |
+
+<Warning>
+  The Privilege Analysis Memo and the Per-Document Detail are work product. Only the XLSX log is meant to leave your side.
+</Warning>
+
+## What this will not do
+
+- Serve the log on opposing counsel.
+- Replace partner sign-off on any partial-privilege redaction call or third-party-break risk.
+- Authenticate the documents. It analyses file metadata and text; it does not verify Bates ranges against the production set.
+- Adjudicate the privilege call if challenged on motion. The log is your starting position, not a defense against in-camera review.
+- Identify privileges peculiar to state or sector law: state attorney-client variations, deliberative-process scope, sectoral self-critical analysis.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Discovery Response Pack" icon="file-lines" href="/workflows/built-in/discovery-response-pack">
+    Produces a narrower privilege log scoped to one response set.
+  </Card>
+  <Card title="Document search" icon="magnifying-glass" href="/guides/document-search">
+    Finding the candidate documents in the first place.
+  </Card>
+</CardGroup>

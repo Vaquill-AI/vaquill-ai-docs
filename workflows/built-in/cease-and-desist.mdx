@@ -1,0 +1,91 @@
+---
+title: "Cease and Desist Drafter"
+sidebarTitle: "5.5 Cease and Desist"
+description: "Cease-and-desist letters for IP, defamation, restrictive covenants, or DMCA, with the statutory basis and escalation path spelled out"
+---
+
+**Best for:** a cease-and-desist letter for IP infringement, defamation, restrictive covenants, or DMCA takedown, with the statutory basis and escalation path spelled out.
+
+Covers Lanham Act, Copyright Act, and DTSA infringement, defamation, breach of restrictive covenant, and harassment. Includes the statutory basis, demanded undertakings, deadline, and reservation of rights.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, IP, dispute resolution, defamation |
+| Runtime | 3-8 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Evidence / reference documents** | No | 0-500 | Evidence of the conduct (screenshots, the publication, the infringing product), prior correspondence, the underlying contract. |
+
+## Inputs
+
+### Claim type
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Matter name | Text | No | File name and internal handle. Not printed on the letter. |
+| **Cease-and-desist type** | Select | **Yes** | Trademark, copyright, DMCA takedown (17 USC 512(c)), defamation/retraction, trade secret misappropriation, breach of restrictive covenant, harassment, debt collection, right of publicity, other. Drives the template, the statutory citations, and the tone. **DMCA, defamation, and FDCPA paths each carry statute-specific prerequisites.** |
+
+### IP specifics
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| IP registration status | Select | No | Federally registered · application pending · common-law/unregistered · not applicable. The TMA 2020 irreparable-harm presumption only applies once liability is shown under Lanham §§ 32 or 43. |
+| Registration / application number | Text | No | Required for the DMCA § 512(c)(3)(A)(ii) identification element and to invoke incontestable-mark status. Recipients ignore unverifiable claims. |
+| Infringer URL / handle / platform | Text | No | Required for DMCA § 512(c)(3)(A)(iii) location specificity. Also helps identify Doe defendants. |
+
+### Defamation specifics
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Sender's status | Select | No | Public figure · limited-purpose public figure · private individual · not applicable. Drives actual-malice versus negligence framing. Required when the type is defamation. |
+| State for retraction-demand window | Select | No | California (20 days, Civ. Code § 48a) · Texas (90 days, CPRC § 73.055) · Florida (5 days, FS § 770.01) · Georgia · other · not applicable. **Many states condition punitive or presumed damages on a pre-suit retraction demand inside a fixed window; missing it can cap recovery to actual damages.** |
+
+### Parties and demand
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| **Sender name** | Party name | **Yes** | The rights-holder or counsel issuing the demand. For DMCA notices this is the "person authorized to act" on the owner's behalf. |
+| Sender address | Long text | No | Letterhead block and the return address for compliance certifications. |
+| **Recipient name** | Party name | **Yes** | The party engaging in the conduct. If represented, address counsel instead under ABA Rule 4.2. |
+| Recipient address | Long text | No | Use the registered agent for entities. For DMCA § 512(c) takedowns this goes to the platform's designated agent at the Copyright Office. |
+| **Conduct to cease** | Long text | **Yes** | Describe the offending conduct specifically. |
+| Have you previously contacted them? | Yes/No | No | First contact versus follow-up changes the good-faith-effort framing. |
+| **Demanded actions** | Long text | **Yes** | What the recipient must do: cease, destroy, certify, and so on. |
+| Damages claimed | Multi-select | No | Actual damages, statutory damages (Lanham § 1117 / Copyright § 504(c), up to $150K), disgorgement, injunctive relief only, attorneys' fees. Statutory damages under § 504(c) require timely registration; willfulness raises the ceiling. |
+| Escalation if ignored | Multi-select | No | Federal lawsuit, TRO/preliminary injunction, DMCA § 512(c) notice to host, CBP seizure, UDRP/URS domain takedown, platform report. **Stating realistic escalation avoids Lanham § 43(a) and § 1927 overstatement counterclaim exposure.** |
+| Tone | Select | No | Courteous first contact · firm · final warning. Mitigates Rule 11 and § 1927 vexatious-litigation risk. Defaults to firm. |
+| Compliance deadline (days) | Select | No | 7, 10, 14, 21, or 30 days. Industry standard is 10 to 14 for IP and online infringement. |
+
+## How it runs
+
+A drafting pipeline: `prepare → generate → export`. The claim type selects the template and its statutory prerequisites, then the letter is generated from your facts and the evidence documents and exported as DOCX.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Cease and Desist Letter** | DOCX | The full letter with statutory basis, demanded undertakings, deadline, escalation path, and reservation of rights. |
+
+## What this will not do
+
+- Send the letter or arrange certified-mail service.
+- Replace counsel for the final review, attorney signature, and bar-rules sign-off.
+- Verify trademark or copyright ownership status against USPTO, Copyright Office, or registrar records.
+- Investigate facts beyond what you provide, including infringer revenue, scope of use, or willfulness evidence.
+- Calculate or apply the statute of limitations. Verify timeliness with counsel.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Demand Letter Drafter" icon="envelope" href="/workflows/built-in/demand-letter-drafter">
+    When the ask is payment rather than stopping conduct.
+  </Card>
+  <Card title="Legal tools" icon="toolbox" href="/guides/legal-tools">
+    Single-shot clause and risk utilities.
+  </Card>
+</CardGroup>

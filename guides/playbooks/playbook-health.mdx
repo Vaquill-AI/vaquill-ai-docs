@@ -1,0 +1,84 @@
+---
+title: "Playbook Health"
+description: "How each clause in your playbook is performing against your team's real redline history"
+icon: "chart-line"
+---
+
+Most playbook tools ship a rule sheet and never tell you whether the rules are working.
+Playbook health joins your authored positions to the accept and reject decisions your team recorded on real contract reviews, and reports where the playbook is earning its keep and where it is out of touch.
+
+Find it on the **Insights** tab of the playbook editor, next to the [structure check](/guides/playbooks/structure-check).
+
+## The four headline numbers
+
+| Metric | What it means |
+| --- | --- |
+| **Redline decisions** | How many accept or reject decisions were recorded in the window, and how many of your clauses have enough of them to say anything |
+| **Acceptance rate** | How often the counterparty's language was accepted rather than pushed back on |
+| **Escalation volume** | How many of those decisions landed on clauses that require Partner or General Counsel sign-off, are marked must-have, or carry a walk-away floor |
+| **Staleness** | Days since the playbook was last edited, and how much new negotiation signal has accumulated since |
+
+Pick the window with the selector: 30 days, 90 days, 180 days, or a year. It defaults to 90 days.
+
+<Note>
+  A playbook is called **stale** only when both conditions hold: it has gone roughly six weeks without an edit, and enough new decisions have piled up since to justify a revisit.
+  An untouched playbook that nobody is reviewing against is not stale, it is just idle.
+</Note>
+
+## Clause deviation
+
+Below the metrics, every enabled clause gets a row showing how often it actually drew a redline, what share of counterparty language was accepted on it, and its authored approval level.
+Clauses that are high-stakes, meaning Partner or General Counsel approval, must-have priority, or a declared walk-away floor, are badged, as are declared deal-breakers.
+
+Each row ends with a drift verdict.
+
+| Verdict | Meaning |
+| --- | --- |
+| **Consider relaxing** | Your team accepts the counterparty's language on this clause most of the time. The authored position may be stricter than how you really negotiate |
+| **Consider tightening** | Your team rejects the counterparty's language most of the time. The authored position may be softer than your real practice |
+| **Aligned** | Acceptance sits in the middle. The position and the behavior agree |
+| **No signal yet** | Not enough recorded decisions on this clause to call it |
+
+Rows are ordered by decision volume, so the clauses your team argues about most come first.
+
+## Coverage gaps
+
+The most useful part of the panel is often at the bottom.
+Coverage gaps list clause types your team keeps redlining that have **no position in this playbook at all**.
+The playbook is blind to them, which means review has no consistent standard to apply.
+
+Each gap shows how many redlines it drew and what share was accepted, so you can start with the ones that are costing the most time.
+
+## What produces the signal
+
+Health reads the accept and reject decisions recorded against contract reviews.
+It does not read drafts, chats, or documents.
+That means the panel stays empty until your team is actually working reviews and recording outcomes, and it fills in from there.
+
+In a team workspace, the signal is shared: decisions recorded across the organization feed everyone's view, plus your own personal reviews.
+
+## Limitations
+
+- A clause needs a handful of recorded decisions in the window before it gets any verdict at all. Below that it reports no signal rather than guessing.
+- The drift thresholds are deliberately coarse. Roughly, accepting the counterparty most of the time reads as too strict and rejecting most of the time reads as too soft. There is no statistical test underneath.
+- Acceptance rate counts decisions, not deal value. Ten small deals move it as much as ten large ones.
+- The panel measures behavior, not correctness. A clause where you always accept the counterparty may mean your position is too strict, or it may mean your team is conceding something it should not.
+- Staleness is measured from the last edit to the playbook, so a trivial edit resets it.
+- Coverage gaps only surface clause types that were actually redlined and classified. A clause nobody has touched will never appear.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Drift Suggestions" icon="lightbulb" href="/guides/playbooks/drift-suggestions">
+    The per-clause version, with the actual language your team accepted.
+  </Card>
+  <Card title="Structure Check" icon="clipboard-check" href="/guides/playbooks/structure-check">
+    Whether the playbook is well-formed, independent of any deal data.
+  </Card>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Where the accept and reject decisions come from.
+  </Card>
+  <Card title="Clause Rules" icon="list-check" href="/guides/playbooks/clause-rules">
+    Close a coverage gap by adding the missing position.
+  </Card>
+</CardGroup>

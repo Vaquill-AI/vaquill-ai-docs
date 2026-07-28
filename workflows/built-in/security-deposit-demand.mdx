@@ -1,0 +1,70 @@
+---
+title: "Security Deposit Demand Letter"
+sidebarTitle: "6.3 Security Deposit Demand"
+description: "State-specific demand letter citing the statutory return deadline and bad-faith penalty, and setting up a small-claims filing"
+---
+
+<Note>
+  This workflow surfaces in **QuillDraft**, the landlord-tenant product. It is filtered out of the Vaquill in-house gallery.
+</Note>
+
+**Best for:** a tenant who moved out, did not get the deposit back on time, and wants the statute-backed demand letter that comes before small claims.
+
+Generates a state-specific demand letter citing the statutory return deadline and the bad-faith penalty, demanding the money back and setting up a small-claims filing. This is the documented first step every small-claims judge expects to see.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Landlord-tenant, consumer protection |
+| Runtime | 3-8 minutes |
+
+## What you need
+
+**No documents.** This workflow runs entirely from the form.
+
+## Inputs
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| **State where the rental is located** | Select | **Yes** | Drives the statutory return deadline (California 21 days, New York 14, Texas 30), the itemization rule, and the bad-faith penalty the letter cites. |
+| **Your name** | Party name | **Yes** | Tenant. |
+| **Your forwarding address** | Long text | **Yes** | **Providing a written forwarding address is itself a legal step.** In several states the deposit clock starts when the landlord receives it. |
+| **Landlord / property manager name** | Party name | **Yes** | |
+| Landlord address | Long text | No | Where the letter will be mailed. |
+| **Rental unit address** | Long text | **Yes** | |
+| **Deposit you paid** | Text | **Yes** | |
+| **Amount not returned** | Text | **Yes** | The dollar amount you are demanding back. |
+| **Move-out date** | Date | **Yes** | When you returned possession. The statutory deadline counts from here in most states. |
+| Date you gave a written forwarding address | Date | No | In some states the deadline runs from this date instead of move-out. |
+| Deductions you dispute | Long text | No | Describe what the landlord claimed and why it is normal wear and tear rather than damage. |
+| Days you will give the landlord to pay | Select | No | 7, 10, 14, or 21 days. Defaults to 14. |
+| Tone | Select | No | Collaborative · firm · final warning. Defaults to firm. |
+
+## How it runs
+
+A drafting pipeline: `prepare → generate → export`. The state selects the governing statute, its deadline, and its penalty provision; the letter is generated from your figures and dates and exported as DOCX.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Security Deposit Demand Letter** | DOCX | The demand with the statutory deadline, the bad-faith penalty, your itemized dispute, and the small-claims escalation. |
+
+## What this will not do
+
+- File the small-claims case or serve the landlord for you.
+- Guarantee the deposit will be returned or that a court will award penalties.
+- Confirm the exact current deadline, penalty multiplier, or filing rules for your state. Verify these before relying on them.
+- Calculate your precise statutory damages or represent you at the hearing.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Respond to an Eviction" icon="shield" href="/workflows/built-in/respond-to-eviction">
+    If the tenancy ended in an eviction case.
+  </Card>
+  <Card title="Demand Letter Drafter" icon="envelope" href="/workflows/built-in/demand-letter-drafter">
+    The general-purpose demand letter for other claim types.
+  </Card>
+</CardGroup>

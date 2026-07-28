@@ -1,0 +1,133 @@
+---
+title: "Document I/O steps"
+sidebarTitle: "4.1 Document I/O"
+description: "Pick which documents the workflow reads, wait for an upload to finish ingesting, and save an output back to a matter"
+---
+
+Three steps. These are the bookends of most workflows: getting documents in at the start, and putting a result somewhere at the end.
+
+---
+
+## Pick Documents
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="bolt">Fast</Card>
+</CardGroup>
+
+Select the documents to feed downstream steps. This is the first step in most workflows.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Documents | Document picker | Yes | 1 to 200 documents. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Documents | The list of document references, ready to wire into any step that takes a document list. |
+
+<Note>
+  The picker is **matter-scoped**. When the workflow is launched against a matter, only that matter's documents are pickable, so cross-matter picking is structurally impossible. Org-wide workflows launched without a matter can pick any document in the organization, which is intentional.
+</Note>
+
+---
+
+## Wait For Document Ingestion
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="hourglass">Slow</Card>
+</CardGroup>
+
+Blocks until the supplied documents finish ingestion: chunked, embedded, and indexed. **Required before any retrieval step that runs immediately after a fresh upload**, otherwise the retrieval step searches an index that does not have the documents yet.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Documents | Document list | Yes | | 1 to 200. Usually wired from Pick Documents. |
+| Timeout (seconds) | Integer | No | 600 | 10 to 1,800. The step fails if any document is still processing when the timeout expires. |
+| Check interval (seconds) | Integer | No | 5 | 2 to 30. How often to re-check. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Documents | The document references, now confirmed ready. |
+| Waited Seconds | How long the step actually waited. |
+| Already Ready | How many documents were already ingested on arrival. |
+
+<Tip>
+  Already Ready equal to the document count means the step was a no-op and you could reorder it. It is still cheap insurance on any workflow where documents might be fresh.
+</Tip>
+
+---
+
+## Smart Auto-Fill Inputs
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="robot">AI</Card>
+  <Card title="Latency" icon="gauge">Medium</Card>
+</CardGroup>
+
+Extracts structured input hints (party names, claim summaries, dates) from a document or a matter, shaped to fill a specific built-in workflow's input fields. Pair it with a downstream drafting step so you are not retyping facts that are already in a file.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Read from | Document or Matter | Yes | Document reads one file's content; matter reads structured matter metadata. |
+| Source | Picker | Yes | Becomes a document picker or a matter picker depending on the field above. |
+| Also include matter metadata | Boolean | No | When reading from a document, additionally pull the run's matter metadata. Defaults to off. |
+| Target workflow | Workflow picker | Yes | Which built-in workflow's input fields the hints should be shaped to fill. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Hints | The extracted field hints. |
+| Hint Count | How many hints were produced. |
+
+---
+
+## Save to Matter
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="floppy-disk">Output</Card>
+  <Card title="Latency" icon="bolt">Fast</Card>
+</CardGroup>
+
+Attaches a document to a matter so it appears in that matter's document list. Usually the final step after a Generate Legal Draft.
+
+**Config**
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Document | Document picker | Yes | Usually wired from an upstream Pick Documents or Generate Legal Draft. |
+| Matter | Matter picker | Yes | Where the document should appear. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Document Id, Matter Id, Saved | Confirmation of what was attached where. |
+
+<Warning>
+  This is a **side-effect step**. It short-circuits to a no-op on a Test Run, and it cannot be used as the inner step of a Loop Over Documents. Run it once, outside the loop, on the loop's results.
+</Warning>
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Retrieval steps" icon="magnifying-glass" href="/workflows/builder/steps/retrieval">
+    What usually comes next after Pick Documents.
+  </Card>
+  <Card title="Output steps" icon="file-export" href="/workflows/builder/steps/output">
+    Exporting rather than filing into a matter.
+  </Card>
+</CardGroup>

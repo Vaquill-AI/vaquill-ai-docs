@@ -1,0 +1,92 @@
+---
+title: "NDA Bulk Review"
+sidebarTitle: "1.1 NDA Bulk Review"
+description: "Upload one or many NDAs and get a portfolio risk dashboard, per-document benchmark scoring, and concrete redline suggestions"
+---
+
+**Best for:** pre-signing review across 5 to 50 NDAs in one upload, with traffic-light risk tiers and concrete redline language ready to paste.
+
+Upload one or many NDAs and receive a portfolio risk dashboard, per-document benchmark scoring, and concrete redline suggestions. The point is volume: reviewing forty counterparty NDAs one at a time is a week; this is one launch and a coffee.
+
+| | |
+| --- | --- |
+| Category | In-House |
+| Jurisdiction | Any |
+| Practice areas | Commercial, general, transactional |
+| Runtime | 3-12 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **NDAs to review** | Yes | 1-500 | The NDAs under review. PDF or DOCX, text-searchable. |
+| **Your playbook** | No | 0-1 | An optional company NDA playbook to compare against. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / engagement name | Text | No | Used in the matrix and DOCX artifact titles. |
+| **Which side are you on?** | Select | **Yes** | Receiving Party · Disclosing Party · Mutual / Either Side. Determines what counts as risky. This inverts most of the scoring rubric, so get it right. |
+| Your industry | Select | No | SaaS/Software, Fintech, Healthcare/HIPAA, Biotech, Hardware, AI/ML, Consumer/Retail, Government/Defense, Professional Services, Other. Calibrates residuals tolerance, trade-secret definitions, and which carve-outs (HIPAA, GLBA, BAA) count as required. |
+| Purpose of disclosure | Select | No | M&A diligence, vendor evaluation, customer pilot, partnership, hiring, investor, other. Purpose creep is a top NDA red flag; setting this lets the review flag mismatches between the stated purpose and the permitted-use clause. |
+| Maximum acceptable confidentiality term | Select | No | 2, 3, 5, 7 years, or perpetual OK. Anything longer triggers a redline. Defaults to 3 years when blank. |
+| Preferred governing law | Select | No | No preference, or a US state. Governing-law mismatch is the most common NDA redline trigger; if set, any other governing law is flagged. |
+| Residuals clause tolerance | Select | No | Never acceptable (strict) · acceptable if narrowed to memory only · fine as drafted. Tech and SaaS counsel split sharply here. Defaults to "never acceptable". |
+| Deal / relationship value | Select | No | Under $100K, $100K-$1M, over $1M, strategic. Calibrates how hard to push on liquidated damages, injunctive relief, and indemnification. |
+| Require explicit "no LLM training" carve-out? | Yes/No | No | When Yes, flags any NDA that omits an explicit prohibition on using disclosed information to train ML models. |
+
+<Tip>
+  Use **Try with example data** on the launcher to see a realistic configuration, or point auto-fill at one of the NDAs and let it infer the side, purpose, and governing law.
+</Tip>
+
+## How it runs
+
+This is a matrix-review pipeline.
+
+<Steps>
+  <Step title="Prepare">
+    Builds an extraction matrix over the uploaded NDAs. Rows are documents, columns are the clause questions the rubric needs answered.
+  </Step>
+  <Step title="Extract">
+    Schedules per-cell extraction. Each cell is answered against that one document only, with the supporting quote captured.
+  </Step>
+  <Step title="Wait for extraction">
+    Blocks until every cell resolves. This is the long pole on large uploads.
+  </Step>
+  <Step title="Normalize and score">
+    Scores each NDA against the benchmark set, calibrated by your side, industry, term ceiling, and residuals tolerance. Produces the per-document risk tier.
+  </Step>
+  <Step title="Synthesize">
+    Finds cross-portfolio patterns and outliers, then runs the synthesis verifier to drop findings that cite documents not in the set, assert clauses that came back not-found everywhere, or are placeholder filler.
+  </Step>
+  <Step title="Render">
+    Writes both DOCX artifacts.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Executive Summary** | DOCX | Portfolio-level summary with a traffic-light grid across every NDA. |
+| **Per-Document Detail** | DOCX | Per-document benchmark results plus suggested redlines. |
+
+## What this will not do
+
+- Replace counsel review for the final redline decision on a signed NDA.
+- Negotiate with the counterparty or send the redline back on your behalf.
+- Track changes against a prior version of the same NDA. Use [Document Comparison](/guides/document-comparison) for that.
+- Investigate facts outside the uploaded NDA, including counterparty background or related deal terms.
+- Confirm enforceability of trade-secret claims under specific state Uniform Trade Secrets Act variants.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="MSA and Vendor Review" icon="briefcase" href="/workflows/built-in/msa-vendor-review">
+    The same shape for master service and SaaS agreements.
+  </Card>
+  <Card title="Contract Playbook Review" icon="book-open" href="/workflows/built-in/contract-playbook-review">
+    Score against your own playbook rather than market benchmarks.
+  </Card>
+</CardGroup>

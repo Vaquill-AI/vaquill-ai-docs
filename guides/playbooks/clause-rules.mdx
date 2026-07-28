@@ -1,0 +1,182 @@
+---
+title: "Clause Rules"
+description: "Every field on a playbook position and what it changes when you draft, review, or escalate"
+icon: "list-check"
+---
+
+One playbook holds one rule per clause type.
+In Advanced detail level, each rule opens into three tabs.
+This page is the reference for what every field does downstream, so you can decide which ones are worth filling in.
+
+<Info>
+  Only the preferred position is required, and even that becomes optional if you link a vetted clause instead.
+  Everything else is depth you add where the negotiation actually happens.
+</Info>
+
+## Language
+
+What the AI writes.
+
+<AccordionGroup>
+  <Accordion title="Linked clause from your library" icon="book-bookmark">
+    Instead of describing the wording you want, link the exact clause.
+    Search your [clause library](/guides/clause-library) by name, or create a new entry inline with a name and the clause text.
+
+    When a clause is linked, drafting reproduces that text verbatim and adapts the surrounding section to it, rather than generating a paraphrase.
+    The preferred position field then becomes optional notes, which is the right place for deviation rules or rationale that the clause text itself does not carry.
+
+    Update the clause once in the library and every playbook that links it stays current.
+  </Accordion>
+  <Accordion title="Preferred position" icon="pen-nib">
+    The clause wording you want by default. The AI drafts to this exact position.
+
+    Write it as language, not as a wish.
+    "Mutual cap at 12 months of fees paid, with a super-cap for data-breach liability" is actionable.
+    "Reasonable liability cap" is not.
+
+    An **Improve** action sits under the field and rewrites a rough note into a cleaner position statement, with an undo.
+  </Accordion>
+  <Accordion title="Acceptable range" icon="arrows-left-right">
+    How far you will flex in negotiation.
+    Give numeric ranges or alternative phrasings.
+    Anything inside this range passes review without escalation.
+  </Accordion>
+</AccordionGroup>
+
+## Guardrails
+
+The limits that trip review.
+
+### Fallback ladder
+
+An ordered list of acceptable retreats, best first.
+When the preferred position is rejected, drafting takes the highest acceptable rung and review reports which rung a counterparty term actually lands on, instead of jumping straight to your worst case.
+
+A three-rung liability ladder might read: 12 months of fees, then 24 months of fees, then total contract value.
+
+This is the single highest-value optional field in a playbook.
+It is what turns "we want X" into a negotiation you can delegate.
+
+### Walk-away floor
+
+The non-negotiable line for this clause.
+A drafted or counterparty clause at or below it is forced to the most severe rating in review and to **Needs attention** in drafting, and it requires senior sign-off regardless of anything else.
+
+<Warning>
+  A walk-away floor with no fallback ladder makes the clause all or nothing.
+  The [structure check](/guides/playbooks/structure-check) flags exactly that combination as a warning.
+</Warning>
+
+### Escalation triggers
+
+Words or phrases that need sign-off if they appear.
+The AI avoids them when drafting, and review flags them if a counterparty slips one in.
+Keep them short and literal, for example "uncapped liability" or "no cure period".
+
+### Numeric limits
+
+Where a clause has typed constraints, the editor shows structured number fields instead of asking you to bury the number in prose.
+These are checked deterministically against generated text, so they are far more reliable than the same figure written in a sentence.
+
+| Clause | Numeric fields |
+| --- | --- |
+| Limitation of liability, Indemnification | Liability cap: unit (months of fees, fixed amount in USD, multiple of annual fees, or uncapped), the value, whether the cap is mutual, and which carve-outs sit outside it (confidentiality, IP infringement, data breach, willful misconduct, gross negligence, indemnification) |
+| Termination | Cure period in calendar or business days; whether auto-renewal is permitted and the opt-out window in days; initial term in months |
+| Payment terms | Net days, late fee as a percent per month, whether set-off is allowed |
+| Data protection | Personal-data breach notification window in hours from confirmation |
+| Non-compete | Duration in months post-termination |
+| Confidentiality | Survival in years post-termination |
+
+Clauses without applicable constraints show nothing here.
+
+## Governance
+
+Who signs off, and how loudly a miss is flagged.
+
+### Priority
+
+How negotiable the clause is.
+
+| Value | Meaning |
+| --- | --- |
+| **Unranked** | No signal |
+| **Must-have** | Deal-critical. Raise first, hard to concede. Review surfaces these before the rest |
+| **Should-have** | Strong preference |
+| **Nice-to-have** | Concession candidate |
+
+### Rationale
+
+Why the firm holds this position: the precedent, the regulator concern, or the past deal that drove it.
+This is not decoration.
+It is injected into the drafting prompt so the model can argue the position, and it is shown to reviewers in compliance results.
+The same **Improve** action is available here.
+
+### Approval level on deviation
+
+If a draft strays from this position, who has to approve before it can go out.
+
+| Level | Who |
+| --- | --- |
+| **None** | Silent. Deviations are allowed without sign-off |
+| **Manager** | Team lead |
+| **Partner** | Senior counsel |
+| **General Counsel** | Top authority |
+
+### Conditional escalation
+
+Raise the required sign-off automatically when the deal matches a rule.
+Each rule reads as a sentence: if an attribute compares a certain way to a value, then require a given level of sign-off.
+
+| Attribute | Comparisons | Example |
+| --- | --- | --- |
+| **Deal value (USD)** | over, at least, under, at most | If deal value is over 1,000,000, require General Counsel sign-off |
+| **This clause severity** | is, is not, is one of | Escalate when this clause comes back at the most severe rating |
+| **Counterparty paper** | their paper, our paper | Require Partner sign-off whenever we are reviewing on their paper |
+| **Governing law** | is, is not, is one of | Escalate when governing law is a state you do not normally accept |
+
+Rules are evaluated at review time against the deal context you supply on the review form.
+A rule that escalates to a level at or below the clause's base approval can never fire, and the structure check reports it as an error.
+
+### Risk weight
+
+How much a deviation on this clause matters, on a scale of 0 to 5.
+It drives how loudly review flags the clause and how much it moves the overall compliance score.
+
+| Weight | Label |
+| --- | --- |
+| 0 | Boilerplate |
+| 1 | Procedural |
+| 2 | Standard procedural |
+| 3 | Standard commercial |
+| 4 | Important commercial |
+| 5 | Financial or legal-existential |
+
+Standard clause types come with a sensible default weight.
+Setting a value overrides it, and the field shows both the default and your override so you can reset.
+
+## Limitations
+
+- Free-text fields are interpreted by a model. Precision in the wording is what makes enforcement precise.
+- Numeric limits only exist for the clause types listed above. Everywhere else, a number has to live in the prose.
+- Conditional escalation understands four attributes and nothing else. It cannot branch on counterparty identity, industry, region beyond governing law, or renewal status.
+- A deal value threshold must be a plain number. Anything else is flagged as an invalid rule.
+- Custom clause types carry no default risk weight and are not compared against the market-standard baseline.
+- A linked library clause is reproduced verbatim, which means a stale clause in the library becomes a stale clause in every draft. Keep the library current.
+- Escalation triggers match on language, so a counterparty who phrases the same concept differently will not trip them. Fallback ladders and numeric limits are the more robust guard.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Building a Playbook" icon="pen-ruler" href="/guides/playbooks/building-a-playbook">
+    Create a playbook and add rules like these.
+  </Card>
+  <Card title="Sign-Off Gates" icon="shield-check" href="/guides/playbooks/sign-off-gates">
+    What approval levels and conditional rules do at review time.
+  </Card>
+  <Card title="Structure Check" icon="clipboard-check" href="/guides/playbooks/structure-check">
+    The linter that catches missing ladders and dead rules.
+  </Card>
+  <Card title="Clause Library" icon="book-bookmark" href="/guides/clause-library">
+    Store vetted clause text and link it into positions.
+  </Card>
+</CardGroup>

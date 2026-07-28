@@ -1,0 +1,92 @@
+---
+title: "Demand Letter Drafter"
+sidebarTitle: "5.4 Demand Letter Drafter"
+description: "Pre-litigation demand letter with statutory prerequisites, a dollar demand, a compliance deadline, and FRE 408 protection"
+---
+
+**Best for:** a pre-litigation demand letter with the statutory prerequisites, a dollar demand, a deadline, and an FRE 408 caption baked in.
+
+Produces a formal demand from counsel: notice of claim, statement of facts, legal basis, specific demand, compliance deadline, and reservation of rights.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, dispute resolution, commercial, consumer protection, IP, employment, defamation |
+| Runtime | 5-12 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Correspondence / contractual reference** | No | 0-500 | Prior emails, the underlying contract, the publication at issue, or anything else the letter should cite. |
+
+## Inputs
+
+### Claim and governing law
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Matter name | Text | No | Internal file reference and DOCX file name. Not printed on the letter. |
+| **Claim type** | Select | **Yes** | Breach of contract, payment/collection, trademark, copyright, DMCA precursor, defamation/retraction, trade secret or restrictive covenant, employment, consumer/FDCPA/FCRA, other tort. Drives the template and the statutory prerequisites: FDCPA § 1692g, UCC 2-607 notice of breach, state retraction statutes. |
+| **Governing law / state** | Select | **Yes** | Drives retraction-statute prerequisites (California 20 days, Texas 90 days, Florida 5 days), the limitations period, and jury-waiver enforceability. |
+| Date of incident / discovery | Date | No | Drives limitations warnings and the defamation retraction-window calculation. |
+
+### Sender
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| **Sender name** | Party name | **Yes** | The signer. Include "Esq." or "Attorney for Plaintiff" if you are counsel of record. |
+| Sender firm / company | Text | No | Drives the letterhead block. |
+| Sender state bar admission | Text | No | Including your bar number under the signature is a professional norm and matters for unauthorized-practice exposure in multi-state demands. |
+| Sender address | Long text | No | Letterhead and return address. |
+
+### Recipient
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| **Recipient name** | Party name | **Yes** | The party receiving the demand. |
+| Recipient address | Long text | No | Use the registered agent or principal place of business for entities. Matters if proof of service is later contested. |
+| Is the recipient represented by counsel? | Yes/No | No | **ABA Rule 4.2 prohibits direct contact with a represented party once known.** Yes routes the letter through counsel. |
+| Recipient counsel name | Text | No | Triggers Rule 4.2 routing so the demand is addressed to counsel, not the party. |
+| Recipient counsel email | Text | No | Used to cc counsel and for electronic-service follow-up. |
+
+### Demand
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| **Factual background** | Long text | **Yes** | Plain facts only. The drafter will not invent anything beyond this. |
+| Damages claimed / calculation | Long text | No | A specific dollar amount or itemized damages. A demand without a number is unusable as a Rule 68 baseline. |
+| **Relief / remedy sought** | Long text | **Yes** | The specific "or else". Distinct from damages: this is the action you want taken, not just the amount owed. |
+| If the dispute escalates, forum | Select | No | Court litigation, arbitration per contract, mediation first, or per the forum-selection clause. Drives the reservation-of-rights paragraph and any FAA or mediation-first carve-outs. |
+| Compliance deadline (days) | Select | No | 7, 14, 21, 30, or 60 days from receipt. Defaults to 30. |
+| Tone | Select | No | Collaborative · firm · final warning. ABA Rule 4.4 limits scorched-earth rhetoric. Defaults to firm. |
+
+## How it runs
+
+A drafting pipeline: `prepare → generate → export`. Prepare gathers context from the reference documents and your answers, generate produces the letter against the claim type and governing state, and export writes the DOCX.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Demand Letter** | DOCX | The full letter with statutory basis, demand, deadline, and reservation of rights. |
+
+## What this will not do
+
+- Send the letter or arrange certified-mail service.
+- Replace counsel for the final review, attorney signature, and bar-rules sign-off.
+- Run an independent damages calculation or verify prejudgment-interest math.
+- Investigate facts beyond what you provide, such as the counterparty's financial condition or an asset search.
+- Calculate or apply the statute of limitations. Verify timeliness with counsel.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Cease and Desist Drafter" icon="triangle-exclamation" href="/workflows/built-in/cease-and-desist">
+    When the ask is "stop doing this" rather than "pay this".
+  </Card>
+  <Card title="Complaint Drafter" icon="gavel" href="/workflows/built-in/complaint-drafter">
+    The next step when the demand is ignored.
+  </Card>
+</CardGroup>

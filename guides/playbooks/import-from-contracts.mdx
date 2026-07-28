@@ -1,0 +1,114 @@
+---
+title: "Import From Contracts"
+description: "Turn contracts you already negotiated into a starting playbook, including consensus across a whole folder of them"
+icon: "file-import"
+---
+
+The fastest honest answer to "what is our position on liability?" is usually sitting in the contracts you already signed.
+Import reads those contracts, splits them into clauses, and infers a starting position for each one.
+You review the result and edit it before anything is saved.
+
+<Note>
+  Import never saves a playbook on its own.
+  It produces a preview you can edit, drop rows from, and then save through the normal create flow.
+</Note>
+
+## Start an import
+
+From the new-playbook page, choose **Import from a document**.
+
+<Steps>
+  <Step title="Set the contract type">
+    Leave it on **Auto-detect from document** and Vaquill infers the type from the text, or pick one explicitly if you already know.
+  </Step>
+  <Step title="Give it the contract">
+    **Upload file** takes Word and PDF files.
+    **Paste text** takes the body of a contract pasted directly, which is useful when you only have a fragment or an email attachment you cannot download.
+  </Step>
+  <Step title="Extract">
+    One file or pasted text runs a single extraction.
+    Two or more files run extraction on each and then consolidate them into one consensus playbook.
+    The same button does both; the file count decides the mode.
+  </Step>
+  <Step title="Review the preview">
+    Every recognized clause appears as an editable row: preferred position, acceptable range, escalation triggers, and rationale.
+    Uncheck any row you do not want. Fix anything that reads wrong.
+  </Step>
+  <Step title="Name it and save">
+    The preview seeds the normal playbook form. Add a name, confirm the contract type, and create.
+  </Step>
+</Steps>
+
+## One contract, or many
+
+<Tabs>
+  <Tab title="A single contract">
+    Best when you have one agreement that genuinely represents your house position, for example the template your team actually sends.
+
+    Each clause block is classified and summarized into a preferred position, an acceptable range, escalation triggers, a rationale, and, where the clause has typed constraints, the numbers themselves: cap, cure period, payment days, and so on.
+
+    Repeated clause types are merged rather than duplicated.
+  </Tab>
+  <Tab title="Several contracts at once">
+    Best when the right answer is the consensus across a body of signed deals, not whichever one you happened to pick first.
+
+    Every file is extracted, then the results are consolidated clause by clause.
+    Each consolidated position carries a source count so you can see how many of your contracts agreed, and non-consensus alternates are kept as minority positions rather than discarded.
+
+    Files that produce no recognizable clauses are skipped with a notice, and you need at least two files that did produce clauses for the consolidation to run.
+  </Tab>
+</Tabs>
+
+## What it accepts
+
+| Input | Limit |
+| --- | --- |
+| Word files | 25 MB each |
+| PDF files | 10 MB each, and the PDF must have a real text layer |
+| Files per import | 20 |
+| Pasted text | 400 characters minimum, 500,000 characters maximum |
+
+<Warning>
+  A scanned PDF with no text layer is rejected with a message telling you to run OCR first.
+  Convert it through the OCR tool in [Legal Tools](/guides/legal-tools), then import the result.
+</Warning>
+
+## Resume a recent import
+
+The new-playbook page lists your recent extractions.
+**Resume** reopens one of them in the preview stage, so an interrupted session does not mean re-uploading and re-running the extraction.
+
+## After the import
+
+An imported playbook is a first draft assembled by a model from your own paper.
+Two things are worth doing before you rely on it.
+
+- Run the [structure check](/guides/playbooks/structure-check). Imports typically arrive with language and no governance, so the score starts low and the findings tell you exactly what is missing.
+- Add fallback ladders and sign-off levels to the clauses you actually negotiate. Extraction infers what your contracts say, not how far you were willing to move or who had to approve it.
+
+## Limitations
+
+- Clause detection relies on document structure: numbered headings, all-caps headings, or a bold first line. A contract with unusual formatting produces fewer, coarser blocks.
+- Very large contracts are analyzed up to a cap. When that happens you get a warning that the analysis was partial, and any missing clauses have to be added by hand.
+- Clause classification is model-judged. Near-miss labels are folded onto the standard clause type, and clause types outside the standard vocabulary are kept only up to a small number per document.
+- Consolidation across several contracts is model-judged too. Confidence is a coarse measure of how many source files agreed on a clause, not a similarity score on the text.
+- Extraction reads the final language of a contract. It does not learn from tracked changes, so it tells you where you landed, not what you pushed for.
+- Positions arrive without fallback ladders, walk-away floors, approval levels, or conditional rules. Those are yours to add.
+- Nothing is verified against law. An imported position reflects what your contract said, including any mistakes in it.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Building a Playbook" icon="pen-ruler" href="/guides/playbooks/building-a-playbook">
+    Edit and extend the imported result.
+  </Card>
+  <Card title="Structure Check" icon="clipboard-check" href="/guides/playbooks/structure-check">
+    See exactly what an import is missing.
+  </Card>
+  <Card title="Starter Templates" icon="layer-group" href="/guides/playbooks/templates">
+    Start from a curated playbook instead, then import selectively.
+  </Card>
+  <Card title="Supported File Formats" icon="file-lines" href="/guides/file-formats">
+    What Vaquill can read across the product.
+  </Card>
+</CardGroup>

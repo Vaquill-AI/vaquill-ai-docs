@@ -1,0 +1,89 @@
+---
+title: "Structure Check"
+description: "A deterministic linter that scores whether a playbook is well-formed before it ever sees a deal"
+icon: "clipboard-check"
+---
+
+Playbook health tells you how a playbook is performing against real deals.
+The structure check tells you whether it is well-formed in the first place.
+It runs on the saved playbook alone, with no deal data and no model call, so it is instant and gives the same answer every time.
+
+Find it on the **Insights** tab of the playbook editor.
+
+## The score
+
+The check starts at 100 and deducts for each finding, floored at zero.
+
+| Score | Grade |
+| --- | --- |
+| 90 and above | Well-formed |
+| 70 to 89 | Solid, minor gaps |
+| Below 70 | Needs work |
+
+Findings are grouped into errors, warnings, and notes, listed errors first.
+A clean playbook gets a short confirmation instead: no structural gaps, deal-critical clauses have fallbacks and sign-off, and every conditional rule can fire.
+
+## What it checks
+
+<AccordionGroup>
+  <Accordion title="Errors" icon="shield-exclamation">
+    Something in the playbook is broken rather than merely thin.
+
+    **A clause with no preferred position.**
+    The rule exists but says nothing. Either write the position or disable the clause.
+
+    **A conditional rule with an invalid value.**
+    The rule has no value, or a deal-value threshold that is not a plain number. It cannot be evaluated.
+
+    **A conditional rule that can never raise sign-off.**
+    The rule escalates to a level at or below the clause's base approval, so firing it would change nothing. Escalate higher or remove the rule.
+  </Accordion>
+  <Accordion title="Warnings" icon="triangle-exclamation">
+    The playbook works but leaves a negotiator without instructions at the moment they need them.
+
+    **A deal-critical clause with no fallback ladder.**
+    You have marked the clause must-have but written down nothing to retreat to before walking away.
+
+    **A deal-critical clause with no sign-off gate.**
+    The clause is deal-critical, yet a deviation on it can go out silently.
+
+    **A walk-away line with no fallback ladder.**
+    The clause has a floor but no intermediate positions, which makes it all or nothing.
+  </Accordion>
+  <Accordion title="Notes" icon="circle-info">
+    **No clause is marked deal-critical.**
+    Nothing in the playbook is tagged must-have, so review has no basis for putting your non-negotiables first.
+  </Accordion>
+</AccordionGroup>
+
+Every finding names the clause and carries a one-line suggested fix, so the panel reads as a to-do list rather than a report card.
+
+<Tip>
+  A freshly imported playbook typically scores low and a freshly cloned template typically scores high.
+  That difference is the point: import gives you language, templates give you language plus governance.
+</Tip>
+
+## Limitations
+
+- The check is structural only. It has no opinion on whether your positions are commercially sensible, legally sound, or right for your business.
+- Disabled clauses are skipped entirely, so turning a problem clause off makes its findings disappear without solving anything.
+- It reads the saved playbook. Edits you have not saved yet are not reflected; save and the panel re-runs.
+- The scoring weights are fixed and not configurable.
+- A perfect score means the playbook is well-formed, not that it is complete. A playbook covering three clauses can score 100.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Clause Rules" icon="list-check" href="/guides/playbooks/clause-rules">
+    The fields the check is looking for.
+  </Card>
+  <Card title="Playbook Health" icon="chart-line" href="/guides/playbooks/playbook-health">
+    The other half of Insights: how the playbook performs against real deals.
+  </Card>
+  <Card title="Sign-Off Gates" icon="shield-check" href="/guides/playbooks/sign-off-gates">
+    Why a deal-critical clause without an approval level matters.
+  </Card>
+  <Card title="Import From Contracts" icon="file-import" href="/guides/playbooks/import-from-contracts">
+    Where low structure scores usually come from.
+  </Card>
+</CardGroup>

@@ -1,95 +1,212 @@
 ---
 title: "Legal Tools"
-description: "Purpose-built tools for the work lawyers do every day - contract review, NDA triage, risk assessment, redlining, and more"
+description: "The structured analysis surface: contract review, NDA triage, risk assessment, compliance checks, and OCR, with shared inputs, exports, and history"
 icon: "toolbox"
 ---
 
-Vaquill ships a suite of legal tools - each one purpose-built for a specific workflow that recurs in legal practice. Pick a tool from this overview, or activate one in chat by describing what you need ("triage this NDA", "redline this against our playbook", "compare these two leases").
+Chat is open-ended. Legal Tools is the opposite: a small set of structured analyses where you fill in a short form, run it once, and get a consistently shaped result you can export, save, and hand to someone else.
+Each tool asks for the same three things (a document, who you are in the deal, and any context worth knowing), then produces a graded, sectioned report rather than a paragraph of prose.
 
-For structured playbooks that combine tools and your firm's standards, see [Skills](/guides/skills). For autonomous multi-tool research, see [Agent Mode](/guides/agent-mode).
+You reach the hub from **Review** in the sidebar. Every tool lives there as a tab, and your past runs sit in a history panel alongside them.
 
-<Frame caption="The Legal Tools hub and its tabbed tools, with the Contract Review form open">
-  <img src="/images/tools.png" alt="Legal Tools hub showing tabs for Contract Review, NDA Triage, Risk Assessment, Compliance, Responses, OCR, and Feed; the Contract Review form is open with contract type, your side, playbook, markup mode, and negotiation round selectors and an upload area" style={{ borderRadius: '0.5rem' }} />
+<Frame caption="The Legal Tools hub with the Contract Review form open">
+  <img src="/images/tools.png" alt="Legal Tools hub showing tabs for Contract Review, NDA Triage, Risk Assessment, Compliance, OCR, and Feed, with the Contract Review form open" style={{ borderRadius: '0.5rem' }} />
 </Frame>
 
-## Document Analysis
+## The Tools
 
 <CardGroup cols={2}>
-  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
-    Clause-by-clause review with severity ratings and exportable Word redlines.
+  <Card title="Contract Review" icon="scale" href="/guides/contract-review">
+    Clause-by-clause analysis against your negotiation playbook. Green, yellow, and red grades per clause, drafted redlines with a Must-Have / Should-Have / Nice-to-Have priority, and a Word export with real tracked changes.
   </Card>
   <Card title="NDA Triage" icon="file-shield" href="/guides/tools/nda-triage">
-    Fast pass/warn/fail screening with routing recommendations and suggested markups.
+    A ten-point screen on a single NDA. Returns Approve, Counsel Review, or Reject / Counter with a pass, warning, or fail on each criterion.
   </Card>
-  <Card title="Document Analyst" icon="file-magnifying-glass" href="/guides/tools/document-analyst">
-    Ask any question about an uploaded document; sourced answers with page citations.
-  </Card>
-  <Card title="Contract Debugger" icon="bug" href="/guides/tools/contract-debugger">
-    Find undefined terms, broken cross-references, conflicts, and other structural defects.
-  </Card>
-</CardGroup>
-
-## Risk & Compliance
-
-<CardGroup cols={2}>
   <Card title="Risk Assessment" icon="triangle-exclamation" href="/guides/tools/risk-assessment">
-    5x5 severity-likelihood matrix with mitigation options and residual scoring.
+    Scores a described scenario on a five-by-five severity and likelihood grid, then lists mitigations and the residual score once they are applied.
   </Card>
   <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
-    Gap analysis against eleven regulatory frameworks with drafted remediation language.
+    Requirement-by-requirement gap analysis against a named framework, with drafted remediation language and a priority per gap.
+  </Card>
+  <Card title="OCR" icon="scan-line" href="/guides/file-formats">
+    Pulls readable text out of scanned filings, photographed documents, and image-only PDFs. Handwriting has its own mode.
+  </Card>
+  <Card title="Feed" icon="rss" href="/guides/feed">
+    Tracked-keyword legal alerts. It shares the hub for convenience rather than being an analysis tool.
   </Card>
 </CardGroup>
 
-## Comparison & Editing
+<Note>
+  Several closely related surfaces are not tabs in this hub but do the same kind of work: [Compare Documents](/guides/document-comparison) for redlines between two versions, [Document Matrix](/guides/document-matrix) for the same questions across many documents, [Chronology Builder](/guides/chronology-builder) for dated events, and [DPA Review](/guides/dpa-review) for vendor data agreements.
+</Note>
+
+## Running a Tool
+
+<Steps>
+  <Step title="Pick the tab">
+    Open **Review** from the sidebar and choose a tool. Switching tabs keeps whatever you had typed in the other tools, so you can start a compliance check without losing a half-filled review form.
+  </Step>
+  <Step title="Get the document in">
+    Drag a file onto the upload area, browse for one, or pull it straight from Google Drive. Text is extracted before analysis, and scanned or image-only PDFs fall back to OCR automatically instead of failing.
+  </Step>
+  <Step title="Set the framing fields">
+    Contract type and which side you represent for Contract Review. Framework and document category for Compliance. These are what make the output take a position rather than describe the document neutrally.
+  </Step>
+  <Step title="Add context, then sharpen it">
+    Every tool has a free-text box (Review Instructions, Business Context, or Additional Context). Type a fragment such as "watch the liability stuff, we are the customer" and press **Improve** to expand it into an explicit checklist of issues before you run.
+  </Step>
+  <Step title="Run and watch the steps">
+    The run streams live progress ("Loading your playbook positions", "Flagging where it deviates") rather than a spinner, so you can see where a long document is.
+  </Step>
+  <Step title="Act on the result">
+    Export it, send the findings into a draft as anchored comments, or leave it in history and come back to it later.
+  </Step>
+</Steps>
+
+## What Every Tool Shares
+
+<AccordionGroup>
+  <Accordion title="Input handling and file formats" icon="file-arrow-up">
+    Upload, paste, or import from Google Drive. PDF, Word, plain text, HTML, spreadsheets, presentations, and images are all accepted, and the extraction path is the same one the main document pipeline uses, so a scanned contract is run through the OCR ladder rather than rejected. Uploads are accepted up to 250 MB; the OCR tool caps at 100 MB and 1,000 pages. Analysis reads up to roughly 200,000 characters of document text, with a lower cap on the free tier.
+  </Accordion>
+
+  <Accordion title="The Improve button" icon="wand-magic-sparkles">
+    The context boxes are guidance notes, not questions and not documents, so they get their own rewriter. It expands scope, naming the clause types, carve-outs, and risk angles a competent lawyer would want covered, and it is explicitly barred from inventing facts. Party names, amounts, dates, citations, and jurisdictions you did not write come back as bracketed placeholders. Everything you did write, including which side you are on and any threshold you set, is preserved verbatim. If the rewrite fails, your original text is left untouched.
+  </Accordion>
+
+  <Accordion title="How long documents are handled" icon="layer-group">
+    Past roughly 12,000 characters, about four pages, a tool stops trying to read the whole document in one pass. It splits the document into sections, evaluates each one in parallel, then synthesizes a single report with a shared glossary of defined terms. This is why a hundred-page agreement completes instead of timing out, and it is also why a long document costs more and takes longer than a short one. Contract Review additionally picks its model by document length, so a three-page NDA does not run on the heavyweight model.
+  </Accordion>
+
+  <Accordion title="Grading vocabulary" icon="traffic-light">
+    The tools deliberately share a color grammar. Green means acceptable with no action, yellow means negotiate, and red means escalate. Risk Assessment adds orange between yellow and red for its high band. Compliance uses Compliant, Partially Compliant, Non-Compliant, and Not Applicable instead, since a requirement is not a negotiating position.
+  </Accordion>
+
+  <Accordion title="Saved analyses and history" icon="clock-rotate-left">
+    Every run is saved automatically and listed in the history panel next to the tool, newest first, with its grade. You can rename a run to something you will recognize later, delete it, or reopen it. Each saved run has its own link, so you can paste a specific review into an email or a matter note and it will open on that result.
+  </Accordion>
+
+  <Accordion title="Export" icon="file-export">
+    Any result exports to PDF, Word, or Markdown, styled as a legal document rather than a raw dump. Contract Review has an extra export: the original contract with your accepted redlines applied as native Word tracked changes, which opens in Word with working Accept and Reject buttons.
+  </Accordion>
+
+  <Accordion title="Sending findings into a draft" icon="comments">
+    Findings from a review can be pushed into a draft in the editor, where each one lands as a comment thread anchored to the clause it refers to. Findings whose language cannot be located in the draft are still attached rather than dropped, so nothing is silently lost.
+  </Accordion>
+</AccordionGroup>
+
+## Shared Vocabularies
+
+The tools draw on the same taxonomies, which is what lets a playbook written for one contract type apply cleanly in review and what keeps clause names consistent between the clause library, playbooks, and a finished report.
+
+| Vocabulary | Size | Coverage |
+|------|------|------|
+| Contract types | 39 | Commercial and vendor paper (SaaS, Master Services Agreement, Statement of Work, Reseller, Supply, Order Form), data and privacy (NDA, Data Processing Agreement, IP Assignment), employment (Offer Letter, Severance, Non-Compete), corporate and finance (Asset Purchase, Merger, SAFE, Term Sheet), and negotiated litigation paper (Settlement and Release, Stipulated Protective Order) |
+| Your side of the deal | 20 | Commercial roles (Vendor, Customer, Licensor, Licensee, Reseller), employment (Employer, Employee), transactional (Buyer, Seller, Investor), lending (Lender, Borrower), confidentiality (Disclosing Party, Receiving Party), and litigation (Plaintiff, Defendant) |
+| Clause types | 44 | The commercial core (Limitation of Liability, Indemnification, Termination, Confidentiality, Governing Law), plus specialized entries used by the deeper playbook templates such as Change of Control, Most Favoured Nation, Liquidated Damages, AI Training Data, and Release of Claims |
+| Compliance frameworks | 14 fully supported | Privacy (GDPR, UK GDPR, CCPA / CPRA, LGPD, DPDP, FERPA), sector rules (HIPAA, GLBA, TCPA, SOX), and security and resilience regimes (PCI DSS 4.0, SOC 2, DORA, NIS2) |
+| Document categories for compliance | 13 | Privacy policies, Data Processing Agreements, terms of service, breach and incident plans, consent forms, vendor agreements, security policies, and financial reports |
+
+<Tip>
+  A framework is only "fully supported" if it has a real requirement checklist behind it. The picker will let you choose Other, but the result then falls back to generic reasoning and should be treated as a starting point rather than an assessment.
+</Tip>
+
+## Choosing Between Tools
+
+| If you want to | Use |
+|------|------|
+| Know whether to sign a specific contract, clause by clause | [Contract Review](/guides/contract-review) |
+| Clear a stack of inbound NDAs quickly | [NDA Triage](/guides/tools/nda-triage) |
+| Score a situation that is not a document, such as a proposed business practice | [Risk Assessment](/guides/tools/risk-assessment) |
+| Test a policy or agreement against a named regulation | [Compliance Check](/guides/compliance-check) |
+| See what changed between two versions | [Compare Documents](/guides/document-comparison) |
+| Ask the same questions across many documents at once | [Document Matrix](/guides/document-matrix) |
+| Read text off a scan or a photograph | OCR, in the hub |
+| Ask a one-off question about a document | [Chat](/guides/chat) with the document attached |
+
+## Tool Reference
+
+Detailed pages for the individual analyses, including what each one checks, what it returns, and how to read the output.
 
 <CardGroup cols={2}>
-  <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
-    Cross-format redline with native Word Track Changes export and AI change summary.
+  <Card title="NDA Triage" icon="file-shield" href="/guides/tools/nda-triage">
+    The ten criteria, the three verdicts, and when to override one.
   </Card>
-  <Card title="Redline Analysis" icon="pen-line" href="/guides/tools/redline-analysis">
-    Commentary on a counterparty's tracked changes - what changed, why, and how to respond.
+  <Card title="Risk Assessment" icon="triangle-exclamation" href="/guides/tools/risk-assessment">
+    How the severity and likelihood grid is scored and what residual risk means.
   </Card>
-  <Card title="Document Matrix" icon="table" href="/guides/document-matrix">
-    Spreadsheet-style review of up to 200 documents with source-quoted cells.
+  <Card title="OCR" icon="file-magnifying-glass" href="/guides/tools/ocr">
+    Extracting clean text from scanned PDFs, images, and handwriting.
   </Card>
-</CardGroup>
-
-## Research & Reference
-
-<CardGroup cols={2}>
-  <Card title="Chronology Builder" icon="timeline" href="/guides/chronology-builder">
-    Extract dates and events into a sourced timeline. Timeline and table views.
+  <Card title="Legal Intelligence Feed" icon="rss" href="/guides/feed">
+    Tracked topics and fresh legal developments, surfaced in the hub.
   </Card>
 </CardGroup>
 
-## Productivity
+Contract Review and Compliance are the other two tabs, and both have full guides: [Contract Review](/guides/contract-review) and [Compliance Check](/guides/compliance-check).
 
-<CardGroup cols={2}>
-  <Card title="Canned Responses" icon="reply" href="/guides/tools/canned-responses">
-    Drafted responses for routine communications - data subject requests, subpoena receipts, vendor inquiries.
-  </Card>
-</CardGroup>
+## Running Tools From Chat
 
-## Activation
+You do not have to open the hub. With a document attached in chat, describing what you want routes the turn to the right engine, and the answer arrives inline with a card linking back to the full tool.
 
-Two ways to activate any tool:
-
-1. **Tools menu** - Click the tools icon in the conversation bar and pick the tool you want
-2. **Natural language** - Describe what you need and the right tool runs automatically
-
-> *"Triage this NDA"* triggers NDA Triage
+> *"Review this contract for risks"* runs a clause-by-clause review
 >
-> *"Compare these two versions"* triggers Compare Documents
+> *"Should I sign this? Any red flags?"* runs a fast triage
 >
-> *"Check this DPA against GDPR"* triggers Compliance Check
+> *"Is this compliant with GDPR?"* runs a compliance pass
 >
-> *"Build a timeline from this folder"* triggers Chronology Builder
+> *"What are all my obligations and deadlines?"* sweeps duties and dates
+>
+> *"Compare these two versions"* offers a comparison rather than answering inline
 
-## Activation by Plan
+Routing is conservative by design. Anything that would spawn a job, spend credits, or create a document is offered as a chip you confirm, not run silently. For a saved, repeatable version of one of these prompts, see [Skills](/guides/skills); for autonomous multi-step work, see [Agent Mode](/guides/agent-mode).
 
-The full tool suite is included on all paid plans. See your [dashboard](https://app.vaquill.ai/settings) for current usage.
+## Plans and Usage
+
+Legal Tools are available on every authenticated plan, including free, but the shape of the limit differs.
+
+- **Free**: five runs per tool per month, with a smaller document size ceiling of roughly twelve pages per run. The tab shows a used-of-total badge.
+- **Paid plans**: no per-tool cap. Each run draws from your monthly message credits instead, and the tab shows the cost. Contract Review, NDA Triage, Risk Assessment, and Compliance Check are the expensive ones; OCR is the cheapest.
+- Exporting a result, including the corrected Word export, is free. You already paid for the analysis.
+
+See [Plans and Limits](/guides/plans-and-limits) for the full picture, or your billing settings for current usage.
+
+## Limitations
+
+- **The output is a first pass, not advice.** Every tool produces a structured opinion from the text you gave it and the framing you chose. It does not know your deal history, your risk appetite beyond what you typed, or anything outside the document.
+- **Framing changes the answer.** Which side you say you are on drives the entire review. Getting it wrong produces a confident report arguing the other party's position.
+- **A framework without a checklist is guesswork.** Fourteen compliance frameworks have real requirement lists. Choosing Other produces generic output.
+- **Long documents lose some cross-references.** The section-by-section path shares a defined-terms glossary, but a contradiction between section 3 and section 41 is harder to catch than one inside a single clause.
+- **Risk Assessment scores what you describe.** It reads your scenario, not your systems. A thin description yields a thin score.
+- **OCR is not perfect on bad scans.** Faint photocopies, heavy stamps, and dense handwriting still lose characters. Check anything you intend to quote.
+- **Some tool pages describe capabilities that live elsewhere.** Document Analyst is how document questions work in [Chat](/guides/chat); Redline Analysis runs through [Compare Documents](/guides/document-comparison); Contract Debugger and Canned Responses are not currently available as tabs in the hub.
+- **Nothing here replaces review by a qualified lawyer** in the relevant jurisdiction.
 
 ## Related
 
-- [Skills](/guides/skills) - Saved playbooks that combine tools with your firm's standards
-- [Agent Mode](/guides/agent-mode) - Autonomous tool-using research
+<CardGroup cols={2}>
+  <Card title="Contract Review" icon="scale" href="/guides/contract-review">
+    The deepest tool in the suite, and the one playbooks were built for.
+  </Card>
+  <Card title="Playbooks" icon="book" href="/guides/playbooks">
+    Encode your negotiation positions once so reviews grade against your standards.
+  </Card>
+  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+    Framework-by-framework gap analysis with drafted remediation.
+  </Card>
+  <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
+    Redline two versions with native Word tracked-changes export.
+  </Card>
+  <Card title="Document Matrix" icon="table" href="/guides/document-matrix">
+    The same questions across up to hundreds of documents.
+  </Card>
+  <Card title="Skills" icon="sparkles" href="/guides/skills">
+    Saved playbooks that combine tools with your firm's standards.
+  </Card>
+  <Card title="File Formats" icon="file-lines" href="/guides/file-formats">
+    What Vaquill accepts, and how scanned documents are handled.
+  </Card>
+  <Card title="Plans and Limits" icon="gauge" href="/guides/plans-and-limits">
+    Per-tool caps, credit costs, and document size ceilings.
+  </Card>
+</CardGroup>

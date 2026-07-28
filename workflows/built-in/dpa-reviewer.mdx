@@ -1,0 +1,67 @@
+---
+title: "DPA Reviewer"
+sidebarTitle: "1.4 DPA Reviewer"
+description: "Score data processing agreements against GDPR Article 28(3), the 2021 SCCs, a Schrems II transfer impact assessment, and HIPAA BAA requirements"
+---
+
+**Best for:** in-house counsel signing 5 to 20 vendor DPAs a quarter who want a standardized review against Article 28, the SCCs, a TIA, and optionally a BAA, with proposed redlines and a portfolio-level view of the patterns vendors keep shipping.
+
+Upload data processing agreements, BAAs, or standalone SCC documents. Each is scored against GDPR Article 28(3), the 2021 Standard Contractual Clauses, a Schrems II Transfer Impact Assessment, and a HIPAA Business Associate Agreement scan when PHI is in scope.
+
+| | |
+| --- | --- |
+| Category | In-House |
+| Jurisdiction | US |
+| Practice areas | In-house, privacy, SaaS, commercial, vendor management, healthcare |
+| Runtime | 6-25 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **DPA / BAA / SCC documents** | Yes | 1-500 | The DPAs you are signing or negotiating. Upload as many as you like to roll up cross-vendor patterns. PDF or DOCX, text-searchable. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / vendor name | Text | No | Labels the artifacts. |
+| **Which party are we?** | Select | **Yes** | Processor · Controller · Sub-processor · Controller-to-controller. Determines which 2021 SCC module is the correct fit, and flags DPAs that picked the wrong module as CRITICAL. Most US SaaS vendors are the processor signing customer DPAs under Module 2; most enterprise customers are the controller. |
+| **Does this contract involve PHI (HIPAA)?** | Yes/No | **Yes** | When Yes, all ten BAA elements under 45 CFR 164.504(e) are scored and any missing element is flagged CRITICAL. When No, BAA scoring is skipped and the report focuses on Article 28 and SCC fit. |
+
+<Note>
+  Both required fields are enforced as hard prompt rules rather than as generic context, so a wrong-module DPA gets flagged rather than quietly passed over.
+</Note>
+
+## How it runs
+
+A matrix-review pipeline: `prepare → extract → wait for extraction → normalize and score → synthesize → render`.
+
+The matrix columns are the Article 28(3) sub-obligations, the SCC module-fit questions, the Schrems II TIA factors, and, when PHI is in scope, the ten BAA elements. Each cell is answered against one DPA with its supporting quote, then documents are scored, then a portfolio synthesis runs and is verified before persistence.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **DPA Review Executive Memo** | DOCX | Portfolio summary across every reviewed DPA and BAA: recommendation distribution, per-DPA posture, common vendor patterns, outliers, and prioritized negotiation asks. |
+| **Per-DPA Detail** | DOCX | Per-DPA Article 28(3) coverage table, SCC module fit, Schrems II TIA covering FISA 702, EO 12333, and CLOUD Act treatment, HIPAA BAA scan when PHI is in scope, and proposed redlines. |
+| **Citations and Authorities Used** | DOCX | Deduplicated authority appendix. |
+
+## What this will not do
+
+- Negotiate with the vendor counterparty on your behalf.
+- Replace partner or privacy-counsel sign-off, especially on Schrems II TIA conclusions and HIPAA BAA gaps.
+- Track regulatory updates after the run: Data Privacy Framework status, ICO IDTA changes, state law amendments.
+- Assess data-flow facts that are not in the DPA, such as actual sub-processor identities, real security incident history, or encryption-key custody.
+- Apply company-specific risk tolerance. Edit the overall recommendation if your policy differs.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="DPA review guide" icon="lock" href="/guides/dpa-review">
+    The single-document interactive version.
+  </Card>
+  <Card title="Privacy and Data Protection Audit" icon="user-shield" href="/workflows/built-in/privacy-data-protection-audit">
+    Broader than DPAs: audits a whole document set for privacy posture.
+  </Card>
+</CardGroup>

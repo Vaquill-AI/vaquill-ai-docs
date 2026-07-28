@@ -1,0 +1,85 @@
+---
+title: "Matter Facts"
+description: "A cross-document fact ledger for a matter, where every fact is a verified quote and contradictions between documents are flagged"
+icon: "list-check"
+---
+
+The Facts tab on a matter builds a **fact ledger**: one canonical entry per fact, assembled from every document in the matter, with the exact supporting quote attached to each. Where two documents disagree, the conflict is flagged rather than silently resolved.
+
+It answers the question you actually have on a new matter: *what do we know, and how do we know it?*
+
+## When to use it
+
+- Taking over a matter someone else opened and needing the facts without reading the file
+- Reconciling dates, amounts, and party names that appear differently across documents
+- Building a defensible statement of facts where every line traces to a source
+- Spotting the contradiction between the contract and the correspondence before the other side does
+
+## How it works
+
+<Steps>
+  <Step title="Evidence extraction">
+    Every document in the matter is read for discrete factual units: parties, dates, amounts, obligations, events. Extraction results are cached, so a document is only read once and later runs reuse it.
+  </Step>
+  <Step title="Deterministic clustering">
+    Evidence units are grouped into canonical facts by fact type, entities, date, and amount. This step is **deliberately not an AI call**: clustering is rule-based, which keeps every fact traceable to a real, verified quote rather than to a model's paraphrase.
+  </Step>
+  <Step title="Citation snapshots">
+    Each fact carries immutable citation snapshots pointing at the passage that supports it. The snapshot is frozen at build time, so the ledger stays readable even if the underlying document is later re-processed.
+  </Step>
+  <Step title="Conflict flagging">
+    When clustered evidence disagrees, the fact is flagged as conflicting and both sources are kept. Nothing is discarded to make the ledger look tidy.
+  </Step>
+</Steps>
+
+Generation is asynchronous. Launch it and the tab reports progress; you do not need to keep the page open.
+
+<Note>
+  Facts and [Matter Summary](/guides/matter-summary) share the same evidence layer. Running one warms the cache for the other, so the second is substantially faster.
+</Note>
+
+## Reading the ledger
+
+Each fact shows its type, its value, the documents that support it, and a citation you can click through to the source passage.
+
+**Conflicting facts are the ones to read first.** A flagged conflict usually means one of three things: a genuine discrepancy between documents, an amendment that superseded an earlier term, or an extraction picking up a hypothetical as though it were operative. All three are worth knowing.
+
+## Rebuilding
+
+A fact set is tied to the matter's document set. Add or remove documents and the existing set is marked **stale**, because it no longer reflects what the matter contains. Regenerate to pick up the change.
+
+A generation left in flight for more than 45 minutes is treated as abandoned so a stuck run never blocks a fresh one.
+
+## Plan availability
+
+| Action | Availability |
+| --- | --- |
+| View and export an existing fact sheet | Any matter member, on any plan |
+| Generate or regenerate | Active paid or trial plan |
+| Deep mode, using the stronger model | Paid plans |
+
+Viewing is deliberately ungated: a colleague who can see the matter can always read the ledger, whatever their own plan.
+
+## Limitations
+
+- Facts come only from documents in the matter. Nothing is pulled from the web or from case law.
+- Clustering is rule-based, so two phrasings of the same fact may land as separate entries. Read the ledger, do not assume it is deduplicated to perfection.
+- A flagged conflict is a prompt to look, not a determination of which source is right.
+- The ledger is work product, not evidence. Verify the cited passages before relying on a fact in a filing.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Matter Summary" icon="file-lines" href="/guides/matter-summary">
+    The narrative version, built on the same evidence layer.
+  </Card>
+  <Card title="Chronology Builder" icon="timeline" href="/guides/chronology-builder">
+    Dated events on a timeline rather than facts in a ledger.
+  </Card>
+  <Card title="Matters and Workspaces" icon="briefcase" href="/guides/matters-workspaces">
+    The matter these tabs live on.
+  </Card>
+  <Card title="Cited Q&A workflow" icon="comment-dots" href="/workflows/built-in/cited-qa-document-set">
+    Ask your own questions across the same document set.
+  </Card>
+</CardGroup>

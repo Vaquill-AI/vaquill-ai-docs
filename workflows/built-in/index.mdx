@@ -1,0 +1,140 @@
+---
+title: "Built-in workflows"
+sidebarTitle: "All 25 workflows"
+description: "The full catalogue of 25 pre-built legal pipelines, what each needs, and what each returns"
+---
+
+Twenty-five workflows ship with Vaquill. Each one is a maintained pipeline with its own document slots, typed input form, orchestration, and fixed artifact set. You do not configure them; you feed them and collect the output.
+
+They split into two gallery categories, In-House and Litigation, and are further grouped here by the job they do.
+
+## 1. Contracts and commercial
+
+Reviewing agreements at volume, against benchmarks or against your own playbook.
+
+| # | Workflow | Best for | Runtime |
+| --- | --- | --- | --- |
+| 1.1 | [NDA Bulk Review](/workflows/built-in/nda-bulk-review) | 5 to 50 NDAs in one upload, traffic-light risk tiers, paste-ready redlines | 3-12 min |
+| 1.2 | [MSA and Vendor Review](/workflows/built-in/msa-vendor-review) | Vendor and SaaS agreements: liability caps, indemnity, renewal uplift, data protection | 4-15 min |
+| 1.3 | [Contract Playbook Review](/workflows/built-in/contract-playbook-review) | Scoring contracts against your firm's playbook, with counter-proposal language | 6-25 min |
+| 1.4 | [DPA Reviewer](/workflows/built-in/dpa-reviewer) | GDPR Art. 28, 2021 SCCs, transfer impact assessment, HIPAA BAA | 6-25 min |
+| 1.5 | [Contract Obligations and Renewal Tracker](/workflows/built-in/obligations-renewal-tracker) | Extracting every deadline, renewal, and notice window into a register plus calendar | 4-20 min |
+| 1.6 | [M&A Due Diligence](/workflows/built-in/ma-due-diligence) | Data-room review across a portfolio, with domain specialists per area | 8-30 min |
+
+## 2. Compliance and privacy
+
+| # | Workflow | Best for | Runtime |
+| --- | --- | --- | --- |
+| 2.1 | [Privacy and Data Protection Audit](/workflows/built-in/privacy-data-protection-audit) | Auditing a document set for privacy and data-protection posture | 15-60 min |
+| 2.2 | [Compliance Scan Agent](/workflows/built-in/compliance-scan-agent) | Agent-scoped compliance sweep that plans its own sub-checks | 10-50 min |
+| 2.3 | [Employment Pack Review](/workflows/built-in/employment-pack-review) | Offer letters, handbooks, restrictive covenants, and separation agreements | 6-15 min |
+
+## 3. Research and analysis
+
+| # | Workflow | Best for | Runtime |
+| --- | --- | --- | --- |
+| 3.1 | [Cited Q&A across a Document Set](/workflows/built-in/cited-qa-document-set) | Asking the same questions of many documents, with a citation per answer | 3-15 min |
+| 3.2 | [50-State Jurisdiction Comparison Memo](/workflows/built-in/jurisdiction-comparison-memo) | One legal question compared across multiple US jurisdictions | 3-15 min |
+| 3.3 | [Matter Triage Agent](/workflows/built-in/matter-triage-agent) | Pointing an agent at a new matter and having it plan and launch the right reviews | 10-60 min |
+
+## 4. Litigation: discovery and evidence
+
+| # | Workflow | Best for | Runtime |
+| --- | --- | --- | --- |
+| 4.1 | [Discovery Response Pack](/workflows/built-in/discovery-response-pack) | Parsing opposing requests and drafting responses plus objections | 5-20 min |
+| 4.2 | [Privilege Log Builder](/workflows/built-in/privilege-log-builder) | Turning a document population into a defensible privilege log | 8-40 min |
+| 4.3 | [Deposition Transcript Analyzer](/workflows/built-in/deposition-transcript-analyzer) | Mining transcripts for admissions, contradictions, and trial-prep material | 10-45 min |
+| 4.4 | [Cross-Examination Prep Brief](/workflows/built-in/cross-exam-prep) | Building a verified contradiction matrix against a witness | 10-35 min |
+
+## 5. Litigation: drafting and motions
+
+| # | Workflow | Best for | Runtime |
+| --- | --- | --- | --- |
+| 5.1 | [US Motion Drafter](/workflows/built-in/us-motion-drafter) | Motions with a memorandum, proposed order, and compliance checklist | 4-20 min |
+| 5.2 | [Complaint Drafter](/workflows/built-in/complaint-drafter) | A civil complaint from the facts and exhibits | 8-20 min |
+| 5.3 | [Answer to Complaint Drafter](/workflows/built-in/answer-to-complaint-drafter) | Responding to a served complaint, paragraph by paragraph | 6-15 min |
+| 5.4 | [Demand Letter Drafter](/workflows/built-in/demand-letter-drafter) | Pre-litigation demand letters | 5-12 min |
+| 5.5 | [Cease and Desist Drafter](/workflows/built-in/cease-and-desist) | IP, defamation, and misuse cease-and-desist letters | 3-8 min |
+| 5.6 | [Settlement Negotiation Memo](/workflows/built-in/settlement-negotiation-memo) | BATNA analysis, comparables, and a decision tree before you negotiate | 5-20 min |
+
+## 6. Landlord and tenant
+
+<Note>
+  These three surface in **QuillDraft**, the landlord-tenant product. They are filtered out of the Vaquill in-house gallery, where they would be off-task for a corporate legal team. They are documented here for completeness.
+</Note>
+
+| # | Workflow | Best for | Runtime |
+| --- | --- | --- | --- |
+| 6.1 | [Evict a Tenant, Correctly](/workflows/built-in/evict-correctly) | Landlord-side eviction notice with a validator and a procedural checklist | 5-12 min |
+| 6.2 | [Respond to an Eviction](/workflows/built-in/respond-to-eviction) | Tenant-side answer, defenses, and proof of service | 6-15 min |
+| 6.3 | [Security Deposit Demand Letter](/workflows/built-in/security-deposit-demand) | Recovering a wrongfully withheld deposit, with statutory penalties | 3-8 min |
+
+## How to read a workflow page
+
+Every page follows the same shape:
+
+<Steps>
+  <Step title="What it is for">
+    The specific scenario the workflow was built around.
+  </Step>
+  <Step title="What you need">
+    Its document slots: which roles, how many documents each accepts, and whether the slot is required.
+  </Step>
+  <Step title="Inputs">
+    Every field on the launcher form, its type, whether it is required, its options, and what changing it actually does to the output.
+  </Step>
+  <Step title="How it runs">
+    The pipeline stages, named the same way the live progress view names them.
+  </Step>
+  <Step title="What you get">
+    Every artifact, its format, and its contents.
+  </Step>
+  <Step title="What it will not do">
+    The explicit limitations. Read this before you decide the workflow is the right tool.
+  </Step>
+</Steps>
+
+## Two shared pipeline shapes
+
+Most workflows are one of two patterns, which is worth knowing because it tells you how they scale.
+
+<CardGroup cols={2}>
+  <Card title="Matrix review" icon="table">
+    `prepare → extract → wait for extraction → normalize and score → synthesize → render`
+
+    Builds an extraction matrix over the document set, answers every cell, scores each document, then synthesizes across the portfolio and verifies that synthesis. Scales to hundreds of documents.
+  </Card>
+  <Card title="Drafting" icon="pen-nib">
+    `prepare → generate → export`
+
+    Gathers context from the reference documents and your form answers, generates the instrument, and exports DOCX. Fast, single-output, jurisdiction-aware.
+  </Card>
+</CardGroup>
+
+The remaining workflows, including the agentic ones and the jurisdiction comparison, have bespoke pipelines documented on their own pages.
+
+## Cost and scale
+
+**Workflow runs are not billed per run.** There is no per-run charge, no credit deduction, and no separate workflow quota. Every workflow here is covered by your subscription, so running M&A Due Diligence across a 200-document data room costs the same as running Document Triage on one file. See [Plans, trial, and limits](/guides/plans-and-limits).
+
+What does vary is **time**, and that is worth planning around.
+
+| Portfolio size | What to expect |
+| --- | --- |
+| 1-10 documents | The low end of the runtime range on each page. Fine to wait for. |
+| 10-50 documents | The high end of the range. Launch it and come back. |
+| 50-200+ documents | Use a workflow built for it. Six run on a dedicated queue with a two-hour ceiling: Compliance Scan Agent, Matter Triage Agent, Obligations Tracker, Deposition Analyzer, Privilege Log Builder, and M&A Due Diligence. |
+
+Three levers control noise and runtime on large sets:
+
+- **Materiality thresholds.** [M&A Due Diligence](/workflows/built-in/ma-due-diligence) and [Obligations Tracker](/workflows/built-in/obligations-renewal-tracker) summarize below-threshold findings in aggregate instead of itemizing them.
+- **Focus areas.** M&A Due Diligence runs five domain specialists by default; picking a subset skips the rest entirely.
+- **Regime scoping.** [Compliance Scan Agent](/workflows/built-in/compliance-scan-agent) sweeps every applicable regime unless you narrow it.
+
+<Warning>
+  A run in flight when a trial lapses will not finish. Start long-running workflows with time to spare.
+</Warning>
+
+## Jurisdiction
+
+Most workflows are US-only. A handful, listed on their own pages, accept any jurisdiction. Nothing in the catalogue is India-specific: the corpus and the drafting defaults are US.

@@ -1,0 +1,88 @@
+---
+title: "Settlement Negotiation Memo"
+sidebarTitle: "5.6 Settlement Memo"
+description: "BATNA, ZOPA, and decision-tree analysis with comparable settlements sourced from public court records, never invented"
+---
+
+**Best for:** mid-case settlement analysis, post-discovery and pre-trial, where the partner wants a defensible BATNA, ZOPA, and counter-offer memo with verifiable comparables and a decision tree they can stress-test in the room.
+
+Includes per-claim probability analysis, a damages model with record citations, expected value at trial, a reservation price, a recommended counter-offer with talking points, and ranked comparable settlements drawn from public court records.
+
+<Note>
+  Every comparable's dollar figure is tied to a primary source, a 10-Q or a settlement-approval order, or is explicitly marked "Confidential, amount not public". No invented dollar figures.
+</Note>
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, civil, commercial, employment, personal injury, IP litigation |
+| Runtime | 5-20 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Case record** | No | 0-500 | Documents the memo should cite for probability and damages grounding. The complaint is effectively required; expert reports and key discovery responses are strongly recommended. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / case | Text | No | Memo title. |
+| Case caption | Long text | No | Parties and court. |
+| **Primary claim type** | Select | **Yes** | Employment discrimination, employment retaliation, wage and hour, breach of contract, fraud, personal injury, IP infringement, antitrust, securities, products liability, consumer protection. Drives comparable-settlement retrieval. Pick the dominant claim if there are several. |
+| **Matter facts** | Long text | **Yes** | Two to five sentences. |
+| Opposing party's latest offer (USD) | Text | No | Numeric. Drives the ZOPA estimate. |
+| Prior offers history | Long text | No | The negotiation to date. |
+| Remaining cost to trial (USD) | Text | No | Remaining attorney fees, experts, and depositions. Feeds the expected-value comparison. |
+| **Client risk tolerance (1-5)** | Select | **Yes** | 1 is very risk-averse and settle-leaning, 5 is trial-ready. Drives the risk adjustment on the reservation price. |
+| Settlement authority cap (USD) | Text | No | The maximum the client has authorized. |
+| Court | Text | No | A court code if you want comparables narrowed to one district. |
+| Comparable filed-after date | Date | No | Restricts comparables to recent matters. Defaults to 1 January 2020. |
+| Additional comparable keywords | Text | No | Extra search terms ANDed with the claim-type keywords. |
+
+## How it runs
+
+<Steps>
+  <Step title="Gather case record">
+    Reads the uploaded record for the facts, claims, and damages evidence the analysis needs to cite.
+  </Step>
+  <Step title="Retrieve comparables">
+    Searches public court records for comparable settlements matching the claim type, court, date window, and any extra keywords, then ranks them.
+  </Step>
+  <Step title="Analyze">
+    Builds the BATNA, the decision tree, the reservation price, and the recommended counter-offer, adjusted for the client's risk tolerance.
+  </Step>
+  <Step title="Render">
+    Writes the memo, the comparables workbook, the decision-tree worksheet, and the citations appendix.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **BATNA / Settlement Memo** | DOCX | Per-claim probability with element-by-element rationale, damages model with record citations, rolled-back expected value at trial, reservation price, estimated ZOPA, recommended counter-offer with non-monetary asks, talking points, and the risks of not settling. |
+| **Comparable Settlements** | XLSX | Ranked comparables from public records. Every dollar amount is tied to a primary source or labeled confidential. |
+| **Decision Tree Worksheet** | DOCX | Branch-by-branch tree you can stress-test live: probability of liability at each branch, damages distribution, settle-versus-try expected value. |
+| **Citations and Authorities Used** | DOCX | Deduplicated authority appendix. |
+
+## What this will not do
+
+- Negotiate the settlement. The memo prepares the analysis; you run the negotiation.
+- Replace partner review of the probability assignments. AI-assigned probabilities are a starting point for human calibration, not an answer.
+- Find non-public settlement amounts. It labels them confidential rather than guessing.
+- Predict opposing counsel's strategy or the mediator's framing.
+- Substitute for structured verdict-data subscriptions such as VerdictSearch or Lex Machina in sectors where their data beats docket inference.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Case law research" icon="gavel" href="/guides/case-law-research">
+    The underlying case-law surface the comparables come from.
+  </Card>
+  <Card title="Demand Letter Drafter" icon="envelope" href="/workflows/built-in/demand-letter-drafter">
+    For the pre-litigation stage before any of this applies.
+  </Card>
+</CardGroup>

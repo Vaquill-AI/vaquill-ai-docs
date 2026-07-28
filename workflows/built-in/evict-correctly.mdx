@@ -1,0 +1,74 @@
+---
+title: "Evict a Tenant, Correctly"
+sidebarTitle: "6.1 Evict a Tenant"
+description: "Landlord-side eviction notice with the earliest legal filing date and a pre-flight check against the defects that get DIY cases dismissed"
+---
+
+<Note>
+  This workflow surfaces in **QuillDraft**, the landlord-tenant product. It is filtered out of the Vaquill in-house gallery.
+</Note>
+
+**Best for:** a small landlord starting an eviction who wants the right notice, the earliest legal filing date, and a check against the defects that get DIY cases dismissed.
+
+Picks the correct termination notice for your reason and state, tells you the earliest date you can legally file, and runs a pre-flight check for the usual defects: wrong notice type, bad service, filing too early, and non-rent charges bundled into a pay-or-quit.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Landlord-tenant, eviction |
+| Runtime | 5-12 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Lease and prior correspondence** | No | 0-50 | The signed lease and relevant notices or messages, to ground the facts. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| **State where the rental is located** | Select | **Yes** | Drives the notice type, the notice period, and just-cause rules. |
+| **Why are you evicting?** | Select | **Yes** | Determines which termination notice is required. **Picking the wrong one is the single most common cause of dismissal.** |
+| **Your name / company** | Party name | **Yes** | The landlord. |
+| **All adult tenants on the lease** | String list | **Yes** | List every adult tenant. Serving only one named tenant is a common defect. |
+| **Rental unit address** | Long text | **Yes** | |
+| How long has the tenant lived there? | Select | No | Less than 1 year · 1 year or more. Used for no-fault notice periods, typically 30 versus 60 days. |
+| Past-due rent (nonpayment only) | Text | No | **Rent only.** Do not include late fees or utilities. |
+| Does that amount include late fees, utilities, or other charges? | Yes/No | No | If Yes, the pre-flight flags it. A pay-or-quit must demand rent only. |
+| Describe the lease violation | Long text | No | For cure or serious-violation notices. |
+| Date you will serve the notice | Date | No | Used to estimate when the notice period expires and the earliest filing date. |
+| Is your city or state a just-cause jurisdiction? | Select | No | Yes · no · not sure. Just-cause areas require a stated reason, and sometimes relocation pay, even for no-fault terminations. |
+| Have you offered required relocation assistance? | Yes/No | No | |
+| Did you accept any partial rent after the problem started? | Yes/No | No | **Accepting partial rent can waive a pay-or-quit notice in many states.** |
+
+## How it runs
+
+A drafting pipeline: `prepare → generate → export`. The state and reason select the notice type, the drafter produces the notice and the two supporting documents, and the pre-flight validator runs the defect checks before export.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Eviction Notice** | DOCX | The termination notice matched to your state and reason. |
+| **Pre-Flight Validator** | DOCX | The dismissal-risk check: notice type, service, timing, and non-rent charges. |
+| **Service and Filing Checklist** | DOCX | What to do, in what order, and by when. |
+
+## What this will not do
+
+- File the eviction or serve the notice or summons for you.
+- Guarantee your case will not be dismissed. The pre-flight is guidance, not a warranty.
+- Confirm your state's exact notice period, forms, or just-cause rules. Verify before serving.
+- Replace a landlord-tenant attorney for the filing and the hearing.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Respond to an Eviction" icon="shield" href="/workflows/built-in/respond-to-eviction">
+    The tenant side of the same case.
+  </Card>
+  <Card title="Security Deposit Demand Letter" icon="money-bill" href="/workflows/built-in/security-deposit-demand">
+    The other common landlord-tenant dispute.
+  </Card>
+</CardGroup>

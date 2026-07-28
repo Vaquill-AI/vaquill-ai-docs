@@ -1,0 +1,88 @@
+---
+title: "Drift Suggestions"
+description: "Where your team's real redline behavior has diverged from what the playbook says, with the language they actually accepted"
+icon: "lightbulb"
+---
+
+A playbook records what you decided your positions should be.
+Your redline history records what your team actually did.
+Drift suggestions is the gap between the two, per clause, with the accepted language attached so the conversation has evidence in it.
+
+Find it on the **Insights** tab of the playbook editor.
+The panel stays hidden until there is enough signal to say something.
+
+## What a suggestion looks like
+
+Each row names a clause, an action, a signal strength, how many redline decisions it is based on, and the acceptance rate.
+
+| Action | When it appears | What it is telling you |
+| --- | --- | --- |
+| **Consider relaxing** | Your team accepted the counterparty's language on most redlines | The playbook may be more conservative than your real practice |
+| **Consider tightening** | Your team rejected most redlines on the clause | The playbook may be more permissive than your real practice |
+| **Review alignment** | Acceptance is mixed | Worth a senior read on whether the position matches the deals you are actually closing |
+
+Suggestions are ordered by signal strength first, then by how far the acceptance rate sits from the middle, so the strongest and most lopsided cases come first.
+Use the window selector to look at 30 days, 90 days, 180 days, or a year.
+
+## Expand a row
+
+Opening a suggestion gives you three things.
+
+<Steps>
+  <Step title="The summary">
+    A plain count, for example that your team accepted 9 of 11 redlines on this clause.
+    No interpretation beyond the action label.
+  </Step>
+  <Step title="Your current playbook position">
+    The preferred position as written today, so you can read it against the behavior without switching tabs.
+  </Step>
+  <Step title="What your team actually accepted">
+    Up to three representative samples of the final language that came out of those negotiations.
+    This is the part that makes the suggestion actionable: it is real clause text from your own deals, not a paraphrase.
+  </Step>
+</Steps>
+
+## Add an accepted position as a fallback
+
+Each sample has an **Add as fallback** action.
+It appends that language to the clause's fallback ladder, leaving your preferred position untouched.
+
+This is the safe direction for a learning loop to move.
+It records "we have accepted this before and it was fine" without quietly rewriting what you ask for first.
+
+<Note>
+  Applying a suggestion writes a version snapshot before it changes anything, so it is undoable from the History tab.
+</Note>
+
+<Tip>
+  Treat these as conversation starters for a senior review, not auto-update recommendations.
+  A clause where you always accept the counterparty may mean your position is too strict, or it may mean your team has been conceding something it should stop conceding.
+  The data cannot tell you which.
+</Tip>
+
+## Limitations
+
+- A clause needs a handful of recorded decisions in the window before it produces a suggestion. Quiet clauses never appear.
+- The action is a simple threshold on acceptance rate, not a statistical inference.
+- Suggestions are derived from decisions your team recorded on contract reviews. If nobody records outcomes, the panel stays empty forever.
+- Samples are representative final texts, chosen heuristically. They are not the most common position, and no numeric distribution is computed from them.
+- Applying a suggestion only ever adds a fallback rung. It never edits the preferred position, the walk-away floor, or any governance field.
+- Acceptance is counted per decision, so a handful of unusual deals can dominate a clause with low volume.
+- Nothing is applied automatically. Every change is a click you make.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Playbook Health" icon="chart-line" href="/guides/playbooks/playbook-health">
+    The same signal at playbook level, plus coverage gaps and staleness.
+  </Card>
+  <Card title="Clause Rules" icon="list-check" href="/guides/playbooks/clause-rules">
+    How fallback ladders behave once you add a rung.
+  </Card>
+  <Card title="Versions, Sharing, and Export" icon="clock-rotate-left" href="/guides/playbooks/versions-and-sharing">
+    Undo an applied suggestion from version history.
+  </Card>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    Where the accept and reject decisions are recorded.
+  </Card>
+</CardGroup>

@@ -1,0 +1,85 @@
+---
+title: "MSA and Vendor Review"
+sidebarTitle: "1.2 MSA and Vendor Review"
+description: "Multi-document review of master service, SaaS subscription, and vendor agreements against your own thresholds"
+---
+
+**Best for:** vendor and SaaS contract review with liability cap, indemnity, renewal uplift, and data-protection checks calibrated to your industry.
+
+Surfaces liability caps, indemnification gaps, termination asymmetries, data export rights, SLA shortfalls, and renewal pricing risk across a batch of master service, SaaS subscription, and vendor agreements.
+
+| | |
+| --- | --- |
+| Category | In-House |
+| Jurisdiction | Any |
+| Practice areas | Commercial, transactional, general |
+| Runtime | 4-15 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Vendor / SaaS agreements** | Yes | 1-500 | Master agreements, SOWs, DPAs. |
+| **Your playbook** | No | 0-1 | An optional company vendor playbook. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / engagement name | Text | No | Used in the executive summary and per-document DOCX titles for billing and matter tracking. |
+| **Which side are you on?** | Select | **Yes** | Customer · Vendor · Mixed packet. Determines what counts as risky. "Mixed" covers procurement teams reviewing both buy-side and resale contracts in one packet. |
+| Annual contract value | Select | No | Under $25K, $25K-$100K, $100K-$1M, over $1M, enterprise/unbounded. Drives review depth. A $10K SaaS subscription does not deserve the same scrutiny as a $2M enterprise deal. |
+| Data sensitivity | Select | No | None, business confidential only, PII, PHI (HIPAA), PCI cardholder data, regulated (FedRAMP/CJIS/ITAR). Determines whether a DPA, BAA, and super-cap are required. The single biggest risk multiplier in vendor packets. |
+| Acceptable liability cap (general) | Select | No | 12 months fees, 1x ACV, 2x ACV, greater of $X or fees, no preference. Anything weaker triggers a redline. Super-cap expectations come from the data-sensitivity tier. |
+| Renewal pricing protection | Select | No | CPI cap only, fixed cap, lesser-of, greater-of (avoid), no preference. Auto-renewal with uncapped price uplift is the second most common complaint in procurement reviews. |
+| Counterparty negotiating leverage | Select | No | Take-it-or-leave-it, some give-and-take, negotiable, startup vendor. Changes which redlines are realistic rather than aspirational. |
+| Your industry | Select | No | Tech/SaaS, healthcare, financial services, public sector, manufacturing, other. Gates the HIPAA, GLBA, and FedRAMP checks. |
+| Deal urgency | Select | No | Routine, executing this week, blocking revenue. Scales executive-summary verbosity and prioritizes the redline list. |
+
+## How it runs
+
+This is a matrix-review pipeline: `prepare → extract → wait for extraction → normalize and score → synthesize → render`.
+
+<Steps>
+  <Step title="Prepare">
+    Builds the extraction matrix over the uploaded agreements, with columns for the clause families the rubric covers.
+  </Step>
+  <Step title="Extract and wait">
+    Every cell is answered against a single document with its supporting quote, then the pipeline waits for the full set.
+  </Step>
+  <Step title="Normalize and score">
+    Scores each agreement against your thresholds: liability cap, renewal protection, data-sensitivity requirements, and the industry-gated regulatory checks.
+  </Step>
+  <Step title="Synthesize">
+    Portfolio patterns and outliers, then the synthesis verifier drops unsupported and placeholder findings.
+  </Step>
+  <Step title="Render">
+    Writes both DOCX artifacts.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Executive Summary** | DOCX | Portfolio findings, prioritized by the urgency and contract-value settings. |
+| **Per-Document Detail** | DOCX | Per-agreement scoring and flagged clauses with redline suggestions. |
+
+## What this will not do
+
+- Replace counsel review for the final redline decision before signature.
+- Negotiate the markup with the vendor or escalate internally on your behalf.
+- Track changes against the prior executed version or the vendor paper baseline.
+- Verify financial covenants, insurance carrier ratings, or the vendor's SOC 2 attestation.
+- Investigate facts outside the uploaded contracts, such as vendor litigation history or breach record.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="DPA Reviewer" icon="lock" href="/workflows/built-in/dpa-reviewer">
+    The data-processing agreement in the packet, reviewed properly.
+  </Card>
+  <Card title="Obligations and Renewal Tracker" icon="calendar" href="/workflows/built-in/obligations-renewal-tracker">
+    Once signed, extract every renewal and notice window into a calendar.
+  </Card>
+</CardGroup>

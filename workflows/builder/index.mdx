@@ -1,0 +1,62 @@
+---
+title: "Workflow Builder"
+sidebarTitle: "1. Builder overview"
+description: "Chain typed steps into your own repeatable pipeline, or describe it in plain English and let Vaquill draft the chain"
+---
+
+A custom workflow is an ordered list of **steps**. Each step is a typed unit that produces named outputs the next steps can read. You pick steps from a palette, configure each one, and the executor runs them in order with cancellation, audit logging, and cost tracking handled for you.
+
+Twenty-five step types ship out of the box, across eight categories.
+
+<Frame caption="The builder: an ordered step chain plus the step-type palette">
+  <img src="/images/workflow.png" alt="Vaquill workflow builder showing the chain Document I/O, Retrieval, Extraction, Verification, Output, with step-type cards and Add first step, Open the guide, and start from a template buttons" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+## Three ways to start
+
+<CardGroup cols={3}>
+  <Card title="From a template" icon="copy" href="/workflows/builder/templates">
+    Eight published starter workflows. Run one as-is or fork a copy to customize. Fastest path when a starter is close to your job.
+  </Card>
+  <Card title="From a prompt" icon="sparkles" href="/workflows/builder/generate-from-prompt">
+    Describe what you want in a sentence. Vaquill plans the steps, fills the configs, wires the references, and drops you into the builder with an editable draft.
+  </Card>
+  <Card title="From scratch" icon="plus" href="/workflows/builder/steps">
+    Open a blank workflow and chain the step types yourself.
+  </Card>
+</CardGroup>
+
+## What a chain looks like
+
+A common one runs **Document I/O → Retrieval → Extraction → Verification → Output**: pick the documents, pull the relevant passages, extract structured fields, check that every claim is grounded, then push the result to a matter or a download.
+
+Steps are not limited to a straight line. You can branch on a condition, fan a step out across every document, or hand off to a constrained agent.
+
+## Ownership and sharing
+
+Workflows are stored per organization. Other members of your org can run any published workflow. Only the owner can edit or delete one.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="3. Steps and wiring" icon="diagram-project" href="/workflows/builder/steps">
+    The palette, the eight categories, step kinds, and how to bind a field to an upstream step's output.
+  </Card>
+  <Card title="5. Branching and loops" icon="code-branch" href="/workflows/builder/branching-and-loops">
+    Conditional routing, fan-out over documents, and the rules the platform enforces.
+  </Card>
+  <Card title="6. Test, publish, run" icon="play" href="/workflows/builder/test-publish-run">
+    The three verbs, the validator gates, versioning, and cost estimates.
+  </Card>
+  <Card title="8. Troubleshooting" icon="circle-question" href="/workflows/builder/troubleshooting">
+    Every validation error, what it means, and how to fix it.
+  </Card>
+</CardGroup>
+
+## Keyboard shortcuts
+
+| Shortcut | Action |
+| --- | --- |
+| <kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd> | Open the step catalog from anywhere in the builder |
+| <kbd>Esc</kbd> | Close any open dialog or popover |
+| <kbd>↑</kbd> / <kbd>↓</kbd> + <kbd>Enter</kbd> | Navigate and commit inside any picker |

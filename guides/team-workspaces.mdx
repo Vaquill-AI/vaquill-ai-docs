@@ -20,26 +20,37 @@ A Team Workspace is the firm-level container that holds all of your matters, cli
 
 ## Roles
 
+Whoever creates the organization is its **Owner**. Everyone else is invited with one of the roles below.
+
 <CardGroup cols={2}>
   <Card title="Owner" icon="crown">
-    Full administrative control. Manages billing, members, and all matters.
+    Full administrative control. Manages billing, seats, members, and every matter. Not an invitable role: you become an Owner by creating the organization or by being promoted.
   </Card>
-  <Card title="Admin" icon="user-gear">
-    Manages members and settings. Cannot change billing.
+  <Card title="Team member" icon="user">
+    The default seat. Views and edits shared matters, drafts, and documents.
   </Card>
-  <Card title="Member" icon="user">
-    Creates matters and works in assigned matters. Uses all features within their access scope.
+  <Card title="Counsel" icon="scale-balanced">
+    In-house counsel. Edits any document in the organization, but deletes only their own.
   </Card>
-  <Card title="Viewer" icon="eye">
-    Read-only access to matters they are added to. No creation or editing.
+  <Card title="Legal Ops" icon="gears">
+    Operations and support. Edits any document in the organization, but deletes only their own.
+  </Card>
+  <Card title="Business stakeholder" icon="eye">
+    Read and comment only. For reviewers who should see the work but not change it.
   </Card>
 </CardGroup>
 
-Roles are assigned at the organization level. Within a matter, you can further restrict who has access regardless of organization role.
+**Billing** appears in the invite picker but is not selectable yet. It is marked "Coming soon".
+
+Roles are assigned at the organization level. Within a matter you can further restrict who has access, regardless of organization role.
 
 <Warning>
-  An Owner can change billing and remove other Owners. Limit the number of Owners to two or three trusted partners; everyone else should be Admin or Member.
+  An Owner can change billing and remove other Owners. Keep Owners to two or three trusted people; invite everyone else as Team member, Counsel, or Legal Ops.
 </Warning>
+
+<Note>
+  Counsel and Legal Ops have the same document permissions today. The distinction is organizational rather than technical, so pick whichever describes the person's job.
+</Note>
 
 ## Inviting Members
 
@@ -71,7 +82,7 @@ Even with organization-wide access, individual matters can be locked down:
 Use Restricted or Private for matters involving conflicts, sensitive client work, or matters where access should be limited (e.g., HR investigations of firm personnel).
 
 <Warning>
-  Matter-level access overrides organization role. An Admin will not see a Private matter they have not been added to. Add the right people explicitly when you set a matter to Restricted or Private.
+  Matter-level access overrides organization role. Someone with full organization access will still not see a Private matter they have not been added to. Add the right people explicitly when you set a matter to Restricted or Private.
 </Warning>
 
 ## Organization-Wide Resources
@@ -106,7 +117,7 @@ Every administrative action is logged:
 - Document exports
 - Share link creation and revocation
 
-The audit log is available to Owners and Admins, with export to CSV.
+The audit log is available to Owners, with export to CSV.
 
 ## Switching Organizations
 
@@ -119,7 +130,7 @@ If you are a member of multiple organizations (e.g., your firm and a co-counsel 
 </Tip>
 
 <Tip>
-  **Invite paralegals as Members, not Viewers.** They can do real work in the matter; reserve Viewer for clients or external observers.
+  **Invite paralegals as Legal Ops, not Business stakeholder.** They can do real work in the matter; reserve Business stakeholder for clients and external observers who should only read and comment.
 </Tip>
 
 <Tip>

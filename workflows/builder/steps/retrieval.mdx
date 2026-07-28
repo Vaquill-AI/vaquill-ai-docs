@@ -1,0 +1,168 @@
+---
+title: "Retrieval steps"
+sidebarTitle: "4.2 Retrieval"
+description: "Search your uploaded documents, US case law, federal and state statutes, statute cross-references, and the web"
+---
+
+Five steps, all deterministic: no model call, so they are cheap and idempotent. They are how you get grounded source material into a chain before an AI step reasons over it.
+
+---
+
+## Search Uploaded Documents
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="gauge">Medium</Card>
+</CardGroup>
+
+Hybrid dense plus keyword search over a matter's uploaded documents. Returns the top relevant passages for downstream summary, drafting, or verification steps.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Query | Text | Yes | | What to search for, up to 2,000 characters. |
+| Documents | Document list | No | | Narrow the search to specific documents. Leave blank to search the whole matter. |
+| Number of results | Integer | No | 10 | 1 to 50 passages. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Chunks | The retrieved passages with their source references. |
+| Total Found | How many matched before the top-K cut. |
+
+<Note>
+  **Scoping:** the matter comes from the run launcher, not from this step. You pick it once when you click Run, and every retrieval step in the workflow inherits that scope.
+</Note>
+
+---
+
+## Search US Case Law
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="gauge">Medium</Card>
+</CardGroup>
+
+Searches US federal and state case opinions.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Query | Text | Yes | | Natural language, boolean operators supported. |
+| Court | Text | No | | `federal` for all federal courts, a single court code such as `scotus` or `ca9`, or several comma-separated codes such as `ca2,sdny`. |
+| Filed on or after | Date | No | | ISO `YYYY-MM-DD`. |
+| Number of results | Integer | No | 5 | 1 to 50. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Cases | The matching opinions. |
+| Total Available | Total matches before the top-K cut. |
+
+---
+
+## Lookup US Statute
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="gauge">Medium</Card>
+</CardGroup>
+
+Keyword search across US federal statutes, regulations, and state codes.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Query | Text | Yes | | Boolean operators supported. |
+| Source | USC, CFR, Executive Actions | No | | The federal source to query. |
+| State | Text | No | | Restrict to a single state's statutes. |
+| USC title number | Integer | No | | 1 to 99. For example 17 for Copyright, 15 for Commerce. |
+| Include repealed sections | Boolean | No | off | By default repealed, omitted, transferred, and reserved sections are excluded. |
+| Number of results | Integer | No | 5 | 1 to 50. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Statutes | The matching sections. |
+| Total Available | Total matches before the top-K cut. |
+
+---
+
+## US Statute Cross-References
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="bolt">Fast</Card>
+</CardGroup>
+
+Pulls cross-references, the authority chain, and amendment history for one section. No model call, sub-second.
+
+**Config**
+
+Provide **one** of:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| Section ID | Text | The canonical exact key, for example `CFR_T7_P2_S2_601`. Emitted by an upstream Lookup US Statute step, which makes it the preferred wiring. |
+| Citation | Text | The human-readable form, for example `7 C.F.R. § 2.601` or `Cal. Civ. Code § 1798.100`. Used when no section ID is available. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Found | Whether the section was located. |
+| Act Id, Citation, Citation Short, Section Title, Display Path | Identity of the section. |
+| Act Status, State | Status and jurisdiction. |
+| Cross References Usc, Cross References Cfr | Sections this one points at. |
+| Statutory Authority | The authority chain. |
+| Amendment Years, Last Amended Year | Amendment history. |
+| Federal Register Citations | Federal Register references. |
+| R2 Section Text Url | Link to the full section text. |
+
+<Tip>
+  Chain **Lookup US Statute → US Statute Cross-References** and wire the first hit's section ID. That gives you the authority chain and amendment history for the section your query found, at effectively no cost.
+</Tip>
+
+---
+
+## Web Search
+
+<CardGroup cols={2}>
+  <Card title="Kind" icon="calculator">Deterministic</Card>
+  <Card title="Latency" icon="gauge">Medium</Card>
+</CardGroup>
+
+Web search for legal news and regulatory updates, restricted to US sources by default and hardened against SSRF.
+
+**Config**
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Query | Text | Yes | | Up to 2,000 characters. |
+| Number of results | Integer | No | 5 | 1 to 25. |
+| Recency (days) | Integer | No | | 1 to 365. Only results published in the last N days. Useful for breaking regulatory developments. |
+
+**Outputs**
+
+| Field | Contents |
+| --- | --- |
+| Results | The web results with their sources. |
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Extraction steps" icon="list-check" href="/workflows/builder/steps/extraction">
+    Turning retrieved material into structured output.
+  </Card>
+  <Card title="Verification steps" icon="circle-check" href="/workflows/builder/steps/verification">
+    Checking that what an AI step wrote is actually supported.
+  </Card>
+</CardGroup>

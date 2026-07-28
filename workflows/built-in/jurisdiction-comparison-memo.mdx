@@ -1,0 +1,85 @@
+---
+title: "50-State Jurisdiction Comparison Memo"
+sidebarTitle: "3.2 Jurisdiction Comparison"
+description: "One legal question compared across the jurisdictions you pick, grounded in verified statute text, as a memo plus a sortable matrix"
+---
+
+**Best for:** multi-state surveys where you need a defensible comparison grounded in actual statute text: non-compete enforceability, statute-of-limitations comparisons, state privacy obligations, wage-and-hour rules, consumer-protection thresholds.
+
+Ask a legal question, pick your jurisdictions, and get a comparison memo where every jurisdiction's section carries verbatim statute citations, plus a cross-jurisdictional synthesis naming the majority rule, the splits, the outliers, and recent amendments.
+
+<Note>
+  Every statute quote is verified against the cited section. Quotes that cannot be located are dropped before the memo reaches you.
+</Note>
+
+| | |
+| --- | --- |
+| Category | In-House |
+| Jurisdiction | US |
+| Practice areas | General, employment, commercial, IP, privacy, tort, regulatory, tax, real estate, family |
+| Runtime | 3-15 minutes |
+
+## What you need
+
+**No documents.** This workflow runs against Vaquill's US statutes corpus, not against your uploads. It is the one built-in workflow with no document slots at all.
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / memo title | Text | No | The memo title. |
+| **Legal question** | Long text | **Yes** | Frame it as a question. The workflow decomposes it into two to six narrow sub-questions that become the columns of the comparison matrix. Example: "Are post-employment non-compete covenants enforceable, and if so what limits apply?" |
+| **Jurisdictions** | Multi-select | **Yes** | Federal (USC/CFR) plus 49 states. |
+| Practice area | Select | No | Calibrates the decomposition. An employment non-compete question generates different sub-questions than a commercial assignment question. |
+| Sub-questions (override) | Long text | No | Power-user override. Supply your own column headers, one per line, formatted `Label -- Question`. When supplied, the legal question is not decomposed further. |
+
+<Warning>
+  **DC and Indiana are not supported** and are rejected before the run starts. The remaining 49 states and the federal corpus are available.
+</Warning>
+
+## How it runs
+
+<Steps>
+  <Step title="Validate jurisdictions and coverage">
+    Confirms every selected jurisdiction is supported and has corpus coverage for the question's area, rejecting the run early rather than producing a thin section.
+  </Step>
+  <Step title="Decompose">
+    Breaks the legal question into two to six narrow sub-questions, calibrated by the practice area. These become the matrix columns. Skipped if you supplied your own.
+  </Step>
+  <Step title="Per-jurisdiction statute analysis">
+    Retrieves and analyses the governing statute text for each jurisdiction against each sub-question.
+  </Step>
+  <Step title="Cross-jurisdictional synthesis">
+    Names the majority rule, the splits, the outliers, and any recent amendments visible in the statute text.
+  </Step>
+  <Step title="Render memo and matrix">
+    Writes the memo, the sortable matrix, and the citation appendix, after verifying every quote against its cited section.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Comparison Memo** | DOCX | Executive summary, per-jurisdiction analyses with verified citations, and the cross-jurisdictional synthesis. |
+| **Comparison Matrix** | XLSX | Sortable spreadsheet: rows are jurisdictions, columns are sub-questions, cells are one-line answers with confidence labels. |
+| **Citations and Authorities Used** | DOCX | Deduplicated citation appendix. |
+
+## What this will not do
+
+- **Cite case law.** The memo is built from statutes only. Where the statutory text is silent, the answer is honestly labeled "no on-point statute" rather than guessed at.
+- Cover DC or Indiana. Those jurisdictions are rejected before the run starts.
+- Replace primary-source verification. Every citation is verified against its cited section, but pull the underlying section before you rely on it.
+- Detect recent legislative changes that have not yet entered the research base. Recency flags surface only when the cited statute text itself mentions a recent enactment year.
+- Resolve genuine splits with judgment. The memo names the majority rule and the outliers; you decide which authority controls in your venue.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Statutes and regulations" icon="landmark" href="/guides/statutes-regulations">
+    The corpus this workflow reads, browsable directly.
+  </Card>
+  <Card title="Case law research" icon="gavel" href="/guides/case-law-research">
+    For the case law this workflow deliberately does not cite.
+  </Card>
+</CardGroup>

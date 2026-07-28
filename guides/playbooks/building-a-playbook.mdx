@@ -1,0 +1,127 @@
+---
+title: "Building a Playbook"
+description: "Create a playbook, add clause rules, test-drive it on a sample draft, and compare it against market standard"
+icon: "pen-ruler"
+---
+
+A playbook is a set of clause-level rules.
+The drafter consults it when generating contracts, and review uses it to score counterparty paper.
+This page covers creating one and working in the editor.
+For what each individual field does, see [Clause Rules](/guides/playbooks/clause-rules).
+
+## Create
+
+<Steps>
+  <Step title="Start a new playbook">
+    From the Playbooks page, choose **New playbook**.
+    The form opens with the template gallery and any recent imports underneath it, so you can still switch to a faster start.
+  </Step>
+  <Step title="Fill in the identity">
+    **Name** is required. Make it specific enough that a teammate picking from a list knows what it is for, for example "SaaS vendor MSA, house playbook".
+
+    **Contract type** determines which drafts and reviews this playbook can drive, and which playbook is resolved as the default for that type.
+
+    **Description** is optional and is the right place for notes on when to use this playbook, its scope, and known exceptions.
+  </Step>
+  <Step title="Add clause rules">
+    Pick clause types from the standard list, or define your own.
+    Each one becomes a card you can open and fill in.
+  </Step>
+  <Step title="Save">
+    Choose **Create playbook**.
+    From here on, every save writes a version snapshot, so nothing you do in the editor is unrecoverable.
+  </Step>
+  <Step title="Make it the default, if it should be">
+    From the playbooks list, mark it as the default for its contract type.
+    Drafting and review then use it automatically when no playbook is picked explicitly.
+  </Step>
+</Steps>
+
+## Adding clause rules
+
+The editor has two ways to add a rule.
+
+- **Standard clause types.** Pick from the built-in list. These are the clause types the rest of the product understands, so a standard type lines up with clause-library entries, default risk weights, review scoring, and the health analytics.
+- **Custom clause types.** Give the clause a name of your own, for example "Most favoured nation" or "Service levels". Use this only when nothing standard fits, because a custom type will not carry a default risk weight or match against the market-standard baseline.
+
+Each rule can be disabled without being deleted.
+A disabled rule is ignored by drafting, review, the structure check, and health analytics, but its text is kept so you can turn it back on later.
+
+## Simple and Advanced
+
+The detail-level toggle at the top of the clause list controls how much of each rule is shown.
+
+| Mode | Shows |
+| --- | --- |
+| **Simple** | Preferred position and acceptable range only |
+| **Advanced** | The full three-tab rule: Language, Guardrails, Governance |
+
+Simple is the right place to start.
+Write the wording you want for the ten or fifteen clauses you actually negotiate, save, and use it.
+Add depth later, clause by clause, as you learn where the arguments happen.
+
+<Note>
+  The editor opens in Advanced automatically if the playbook already carries fallback ladders, walk-away floors, approvals, conditional rules, or numeric limits.
+  That way a cloned template never hides its own depth from you.
+</Note>
+
+## Test-drive it before you rely on it
+
+**Run sandbox** generates a small fixture draft using this playbook so you can see whether your positions actually produce the language you expect.
+It picks a handful of the highest-stakes clauses your playbook covers, drafts those sections against a sample deal, and scores each one back against the same playbook.
+
+You get, per section:
+
+- The drafted clause text.
+- A verdict of **Preferred**, **Fallback**, or **Needs attention**.
+- An overall risk band: **No covered sections**, **Low risk**, **Needs review**, or **High risk**.
+
+You can replace the sample fact pattern with your own before running.
+The default is a generic two-party agreement with an effective date.
+
+<Tip>
+  A sandbox run that comes back **Needs attention** on a clause you thought was well specified usually means the preferred position is written as an aspiration rather than as language.
+  "Reasonable liability cap" is not draftable. "Mutual cap at 12 months of fees paid" is.
+</Tip>
+
+## Compare against market standard
+
+The **vs. market standard** panel puts your positions side by side with Vaquill's built-in baseline for the same clause and your active jurisdiction.
+It answers a question a rule sheet cannot: where has this team gone harder, or softer, than typical market terms?
+
+The comparison covers clauses in both, clauses only you have, and clauses only the baseline has.
+It is hidden for M&A and for the specialized addenda, because there is no meaningful generic baseline for those.
+
+## The three tabs
+
+| Tab | What lives there |
+| --- | --- |
+| **Editor** | Identity fields, the clause rule list, and the market-standard comparison |
+| **Insights** | The [structure check](/guides/playbooks/structure-check), [playbook health](/guides/playbooks/playbook-health), and [drift suggestions](/guides/playbooks/drift-suggestions), all reading the saved playbook |
+| **History** | [Version snapshots](/guides/playbooks/versions-and-sharing), with diff and restore. Appears once there is at least one snapshot |
+
+## Limitations
+
+- Insights read the saved playbook, not your unsaved edits. Save before checking whether a change fixed a finding.
+- The market-standard comparison is not available for every contract type.
+- A sandbox run costs a model call and drafts only a few sections. It is a smoke test, not a review of the whole playbook.
+- Custom clause types work, but they sit outside the standard vocabulary, so they get no default risk weight and no market-standard comparison.
+- Only the owner can edit. Teammates with access can read and use the playbook, and must duplicate it to make changes.
+- There is no approval flow on the playbook itself. Anyone who owns it can change a position and it takes effect on the next draft or review.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Clause Rules" icon="list-check" href="/guides/playbooks/clause-rules">
+    Every field on a clause rule and what it changes downstream.
+  </Card>
+  <Card title="Starter Templates" icon="layer-group" href="/guides/playbooks/templates">
+    Clone a curated playbook instead of starting from a blank page.
+  </Card>
+  <Card title="Structure Check" icon="clipboard-check" href="/guides/playbooks/structure-check">
+    Catch authoring gaps before the playbook sees a deal.
+  </Card>
+  <Card title="Versions, Sharing, and Export" icon="clock-rotate-left" href="/guides/playbooks/versions-and-sharing">
+    Snapshots, restore, defaults, and team access.
+  </Card>
+</CardGroup>

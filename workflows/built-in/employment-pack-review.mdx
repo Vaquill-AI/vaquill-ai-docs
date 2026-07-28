@@ -1,0 +1,67 @@
+---
+title: "Employment Pack Review"
+sidebarTitle: "2.3 Employment Pack Review"
+description: "Batch-review offer letters, IP assignments, non-competes, and severance packs with state-by-state enforceability checks"
+---
+
+**Best for:** batch review of offer letters, IP assignments, non-competes, and severance packs, with state-by-state non-compete enforceability checks.
+
+Surfaces missing IP assignments, outlier vesting, unenforceable non-competes, and severance gaps across a single hire's pack or a whole quarter of them.
+
+| | |
+| --- | --- |
+| Category | In-House |
+| Jurisdiction | Any |
+| Practice areas | Employment |
+| Runtime | 6-15 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Employment documents** | Yes | 1-500 | Offer letters, IP assignment and non-compete agreements, ESOP grant letters, severance and separation agreements. One hire's pack or many. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter name | Text | No | Report titles and audit trail. Useful when reviewing several hire packs in a quarter. |
+| **State of employment** | Select | **Yes** | 15 named states plus DC and "other US state". **Drives roughly 80% of the analysis.** California, North Dakota, Oklahoma, and Minnesota void non-competes entirely; Colorado, Illinois, Maryland, Massachusetts, Oregon, Virginia, Washington, and DC have income-threshold gates. California Labor Code § 2870 forces invention-assignment carve-outs. |
+| **Pack context** | Select | **Yes** | New hire onboarding · promotion/role change · separation/severance · post-hire amendment. A separation pack triggers ADEA 21/45-day review windows and OWBPA disclosures, which is a completely different criteria set from onboarding. |
+| **Role seniority** | Select | **Yes** | Executive, senior IC/staff, mid-level IC, junior, hourly/non-exempt. Executive packs warrant § 280G golden-parachute, 409A, and clawback scrutiny. Hourly triggers FLSA review. |
+| FLSA classification | Select | No | Exempt · non-exempt · unknown/mixed. Misclassification suits now exceed Title VII in volume. |
+| Industry | Select | No | Tech/SaaS, healthcare, financial services (FINRA), defense/government contractor, manufacturing, retail, other. Adds clearance, HIPAA, FINRA Form U4, and Service Contract Act carve-outs. |
+| Annual compensation band | Select | No | Under $75K through over $500K. Needed to test non-compete enforceability against state income thresholds: Washington $123K, Illinois $75K, Colorado $123K, and so on. |
+| Focus the review on | Multi-select | No | IP/invention assignment scope, non-compete, customer non-solicit, employee non-solicit, arbitration and class-action waiver, severance and release terms, equity vesting, garden leave, trade-secret definition. Leave blank to review everything. |
+
+## How it runs
+
+A matrix-review pipeline: `prepare → extract → wait for extraction → normalize and score → synthesize → render`.
+
+The state of employment and the pack context determine the column set, so a California separation pack and a Texas onboarding pack are scored against genuinely different rules rather than one generic checklist.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Executive Summary** | DOCX | Pack-level findings with the enforceability calls and the gaps. |
+| **Per-Document Detail** | DOCX | One section per document with its flagged terms. |
+
+## What this will not do
+
+- Replace employment counsel review for the final redline decision before extending the offer.
+- Run a real FLSA exempt versus non-exempt audit based on actual day-to-day duties.
+- Negotiate with the candidate or finalize comp bands on your behalf.
+- Investigate facts outside the uploaded pack, such as a prior employer's non-compete obligations or trade-secret risk.
+- Confirm 409A valuation, ISO versus NQSO tax treatment, or state-specific wage-payment timing rules.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="50-State Jurisdiction Comparison" icon="map" href="/workflows/built-in/jurisdiction-comparison-memo">
+    Compare one employment question across every state you hire in.
+  </Card>
+  <Card title="Legal tools" icon="toolbox" href="/guides/legal-tools">
+    Single-shot clause and risk utilities for one-off questions.
+  </Card>
+</CardGroup>

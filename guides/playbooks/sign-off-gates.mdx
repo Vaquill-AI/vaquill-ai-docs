@@ -1,0 +1,109 @@
+---
+title: "Sign-Off Gates"
+description: "Approval levels, walk-away floors, and conditional escalation, and how they stop a redline from going out unapproved"
+icon: "shield-check"
+---
+
+A playbook that only describes good positions is a style guide.
+What makes it a control is the sign-off gate: the rule that says a deviation on this clause cannot go back to the counterparty until someone at a given level of authority has approved it.
+
+## The ladder
+
+Every clause rule carries a base approval level, and there are four rungs.
+
+| Level | Who | Effect |
+| --- | --- | --- |
+| **None** | Nobody | Deviations pass silently |
+| **Manager** | Team lead | Lowest gate |
+| **Partner** | Senior counsel | |
+| **General Counsel** | Top authority | Strongest gate |
+
+Two things can raise the level above what the clause states.
+
+- **A walk-away floor.** A clause with a declared walk-away line requires Partner sign-off at minimum, even if its approval level says None. A walk-away line is never silent.
+- **A conditional escalation rule that fires.** If the deal matches the rule, the required level moves up to whatever the rule names.
+
+The highest applicable level wins, and the review reports the reason alongside it.
+
+## Deal context drives the conditional rules
+
+Conditional rules are evaluated against the deal, so the review form has a short deal-context section that feeds them.
+Both fields are optional, and both are what make a rule like "require General Counsel over one million dollars" actually fire.
+
+| Field | Feeds |
+| --- | --- |
+| **Deal value (USD)** | Rules that compare deal value against a threshold |
+| **Governing law** | Rules that check governing law. On US matters this is a state picker, plus a federal or multi-state option, so the value always matches what the rule compares against |
+| **Paper side** | Rules keyed to whether you are on their paper or your own |
+
+The severity a clause comes back at during review can also drive a rule, without any input from you.
+
+<Warning>
+  Leave deal value blank and a threshold rule cannot fire.
+  The review still runs and still flags deviations, but the escalation you configured stays dormant.
+</Warning>
+
+## In Contract Review
+
+Once a review completes, deviations and proposed redlines are stamped with the level they require.
+A clause that came back fully compliant never gates.
+
+- A banner sits above the results tabs when anything needs approval: the level required before sending, the clauses that drove it, and how many of them are declared deal-breakers.
+- Individual redlines carry their own badges: the required sign-off level and, where applicable, a **Deal-breaker** marker.
+- Redlines are ordered so deal-breakers and the highest sign-off levels surface first.
+
+This gate is advisory. It makes the requirement unmissable, and it does not physically stop you from copying a redline out of the page.
+
+## Deep review enforces it
+
+The deep review path is the enforced version.
+It walks every clause and evaluates the gates as part of the run itself.
+
+<Steps>
+  <Step title="The run pauses">
+    When a deal-breaker clause is hit, the review does not complete.
+    It reports that sign-off is required before the review can be used, names the level, counts the deal-breaker clauses, and lists them.
+  </Step>
+  <Step title="Someone decides">
+    **Approve and complete** releases the run, with an optional note recorded alongside the decision.
+    **Reject** stops it, and the results are marked as redlines that must not be sent as-is.
+  </Step>
+  <Step title="The outcome is recorded">
+    The decision travels with the review rather than living in someone's memory of the conversation.
+  </Step>
+</Steps>
+
+## In Drafting
+
+Drafting applies the same positions from the other direction.
+Each section gets a verdict of **Preferred**, **Fallback**, or **Needs attention**, and the draft as a whole gets a risk band weighted by each clause's risk weight.
+A high band reads as high risk with partner sign-off recommended, which is the drafting-side equivalent of the review gate.
+
+A section that hits a walk-away floor is forced to **Needs attention** no matter how well the rest of the clause reads.
+
+## Limitations
+
+- The gate names a level of authority, not a person. There is no routing, no assignment, and no notification to a named approver.
+- In standard contract review the gate is a banner and a set of badges. Only deep review pauses and requires an explicit decision.
+- Conditional rules understand deal value, governing law, paper side, and this clause's severity. Nothing else.
+- Deal value must be entered as a plain number for threshold rules to evaluate.
+- Whether a clause deviates at all is a model judgment. The gate is only as good as the deviation call underneath it.
+- Approval decisions are recorded on the review. They do not create an audit trail elsewhere in the product or block any other surface.
+- Nothing prevents the playbook owner from lowering an approval level and re-running.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Clause Rules" icon="list-check" href="/guides/playbooks/clause-rules">
+    Where approval levels, walk-away floors, and conditional rules are authored.
+  </Card>
+  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+    The review surface the gate appears on.
+  </Card>
+  <Card title="Structure Check" icon="clipboard-check" href="/guides/playbooks/structure-check">
+    Catches rules that can never raise sign-off.
+  </Card>
+  <Card title="Document Comparison" icon="code-compare" href="/guides/document-comparison">
+    Compare two versions and export a Word file with native Track Changes.
+  </Card>
+</CardGroup>

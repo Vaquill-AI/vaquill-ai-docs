@@ -1,0 +1,84 @@
+---
+title: "Troubleshooting"
+sidebarTitle: "8. Troubleshooting"
+description: "Every validation error the builder can raise, what causes it, and how to clear it"
+---
+
+Most builder problems surface as a validation error at publish time. Errors aggregate, so a workflow with three problems reports all three at once.
+
+## Validation errors
+
+<AccordionGroup>
+  <Accordion title="Unknown step type(s): [...]. Re-pick from the step palette." icon="triangle-exclamation">
+    A step in your definition names a step type that is not in the registry. This usually means the workflow was authored against an older build, or was imported from somewhere.
+
+    This error fires on **draft saves too**, not just publish, because the builder cannot render a config form for a step it does not recognize.
+
+    **Fix:** delete the offending step and re-add it from the palette.
+  </Accordion>
+  <Accordion title="A required input is not set" icon="triangle-exclamation">
+    Publishing requires every required field on every step to be either literally filled in or bound to an upstream output.
+
+    Draft saves deliberately allow blanks, so this only appears when you try to publish.
+
+    **Fix:** open the flagged step and either type the value or use the upstream-output picker.
+  </Accordion>
+  <Accordion title="A reference points at a step or field that does not exist" icon="triangle-exclamation">
+    A `{{ step_x.field }}` reference names either a step that is not upstream of the referencing step, or a field that step does not actually emit.
+
+    The usual cause: you deleted or reordered an upstream step and did not re-wire the downstream one. Draft saves tolerate the dangling reference so you do not lose work mid-edit; publish does not.
+
+    **Fix:** re-bind the field with the picker, which only offers fields the source step really emits.
+  </Accordion>
+  <Accordion title="Routes to step '...' which no longer exists" icon="triangle-exclamation">
+    A branch target names a deleted step.
+
+    **Fix:** open the Branching panel on that step and pick a live target.
+  </Accordion>
+  <Accordion title="Routes to '...', which runs before this step (or is this step)" icon="triangle-exclamation">
+    A branch target is at or before the branching step. The executor walks the chain in order, so that target could never fire.
+
+    **Fix:** pick a target that is strictly downstream, or move the branching step earlier.
+  </Accordion>
+  <Accordion title="Step '...' cannot be used inside a loop. Move it outside the loop body." icon="triangle-exclamation">
+    You selected a nested loop, or a side-effect step such as Save to Matter, as the inner step of a Loop Over Documents.
+
+    This is refused at config time rather than at run time so you find out in the builder instead of after an N-times side effect has already fired.
+
+    **Fix:** move the step out of the loop body and run it once on the loop's results.
+  </Accordion>
+</AccordionGroup>
+
+## Common runtime problems
+
+<AccordionGroup>
+  <Accordion title="A retrieval step returns nothing right after an upload" icon="clock">
+    Freshly uploaded documents have to be chunked, embedded, and indexed before retrieval can see them. A retrieval step that runs immediately after an upload finds an empty index.
+
+    **Fix:** insert a **Wait For Document Ingestion** step between the upload and the first retrieval step. It blocks until processing finishes, with a configurable timeout up to 30 minutes.
+  </Accordion>
+  <Accordion title="Build and Run Matrix reports truncated: true" icon="clock">
+    Polling hit the time cap before every cell finished. The matrix itself keeps filling; the step just stopped waiting.
+
+    **Fix:** open the Matrix surface to see the completed cells, and reduce the document count or the column count if you need the step itself to complete within the cap.
+  </Accordion>
+  <Accordion title="A loop reports failures but the run succeeded" icon="circle-info">
+    **Continue on error** is on by default. Individual document failures are recorded and the loop keeps going, so the run completes with a non-zero Failed count.
+
+    **Fix:** check the loop step's per-iteration results to see which documents failed and why. Turn continue-on-error off if you would rather the whole loop fail fast.
+  </Accordion>
+  <Accordion title="The agentic step stopped early" icon="robot">
+    Check Stopped Reason on the step output. Hitting the maximum-steps cap is different from finishing.
+
+    **Fix:** raise the maximum steps, up to 10, or narrow the goal so fewer research rounds are needed.
+  </Accordion>
+  <Accordion title="A run cost far more than the estimate" icon="dollar-sign">
+    Estimates use the median historical cost per step type in your organization. A step type with no history falls back to a coarse per-tier rate, and any step the estimator could not price is listed as uncounted.
+
+    **Fix:** read the per-step breakdown, which labels each line as history-based or fallback. Estimates get sharper as your org accumulates runs.
+  </Accordion>
+</AccordionGroup>
+
+## Still stuck
+
+Email [support@vaquill.ai](mailto:support@vaquill.ai) with a screenshot and the run id. If the docs are wrong rather than the product, we would like to know that too.

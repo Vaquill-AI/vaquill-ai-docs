@@ -1,0 +1,73 @@
+---
+title: "Discovery Response Pack"
+sidebarTitle: "4.1 Discovery Response Pack"
+description: "Turn the opposing party's discovery service into FRCP-compliant draft responses, a privilege log, and an internal sign-off memo"
+---
+
+**Best for:** drafting first-pass responses to an opposing party's discovery set, with FRCP-grounded objections, a privilege log, and an internal memo flagging the responses that need partner sign-off before service.
+
+Upload the interrogatories, requests for production, requests for admission, or a mixed set. You get back responses with request-tied objections rather than boilerplate, plus the two documents you need before anything goes out.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, civil, commercial, employment, IP litigation, personal injury |
+| Runtime | 5-20 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Opposing party's discovery service** | Yes | Exactly 1 | The interrogatories, RFPs, RFAs, or mixed set served on you. PDF or DOCX, **must be text-searchable**, not a scanned image. |
+| **Case-context documents** | No | 0-500 | Complaint, answer, prior pleadings, client documents relevant to the requests. Used to ground factual responses. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / case | Text | No | The response document title. Keep it consistent with your service-of-process and pleading file-naming conventions. |
+| **Party you represent** | Text | **Yes** | Drops into the response caption and the interrogatory verification block. |
+| Case background | Long text | No | A short summary so the responder drafts factual answers tied to the actual matter rather than generic boilerplate. |
+
+## How it runs
+
+<Steps>
+  <Step title="Parse opposing discovery requests">
+    Splits the served document into individual numbered requests and classifies each as an interrogatory, RFP, or RFA. Mixed sets are handled.
+  </Step>
+  <Step title="Draft responses">
+    Produces a response per request, with objections tied to that specific request, post-2015 Rule 34(b)(2)(C) withholding statements where documents are withheld, and factual content grounded in the reference documents where you supplied them.
+  </Step>
+  <Step title="Render response package">
+    Writes the served document, the privilege log, the internal memo, and the citations appendix.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Discovery Responses** | DOCX | The served document: FRCP-compliant responses with request-tied objections, Rule 34(b)(2)(C) withholding statements, and the verification block for interrogatories. |
+| **Internal Review Memo** | DOCX | Attorney work-product memo flagging which responses need partner sign-off: privilege calls, RFA denials carrying FRCP 37(c)(2) exposure, and Rule 33 count warnings. |
+| **Privilege Log** | XLSX | FRCP 26(b)(5) compliant log for documents withheld in the response set. Served on opposing counsel. |
+| **Citations and Authorities Used** | DOCX | Deduplicated appendix of every authority cited. |
+
+## What this will not do
+
+- Serve the responses on opposing counsel or file with the court.
+- Replace partner sign-off, particularly on any RFA denial with its FRCP 37(c)(2) cost-shift exposure, or on any privilege assertion.
+- Identify and authenticate the actual documents to be produced. The workflow narrows scope; it does not search your client's document collection.
+- Verify under oath the truth of the substantive responses. It generates the verification block; the client signs it.
+- Account for judge-specific orders that vary from the default FRCP scheme, such as SDNY individual practices.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Privilege Log Builder" icon="lock" href="/workflows/built-in/privilege-log-builder">
+    A full privilege review over a document population, rather than the log for one response set.
+  </Card>
+  <Card title="US Motion Drafter" icon="gavel" href="/workflows/built-in/us-motion-drafter">
+    For the motion to compel that follows a bad response.
+  </Card>
+</CardGroup>

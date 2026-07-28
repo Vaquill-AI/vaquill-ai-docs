@@ -1,0 +1,90 @@
+---
+title: "Cross-Examination Prep Brief"
+sidebarTitle: "4.4 Cross-Exam Prep"
+description: "Witness-by-witness cross prep with a verified contradiction matrix, impeachment lines, and chapter framing anchored to your case theory"
+---
+
+**Best for:** witness-by-witness cross prep with a contradiction matrix, impeachment lines, and Pozner-Dodd chapter framing anchored to your theory of the case.
+
+Analyses witness statements, identifies contradictions across the record, surfaces bias and motive factors, and proposes impeachment lines for each priority witness. Alleged contradictions are verified against the record before they reach the brief.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Litigation, trial, criminal, civil, family, employment, IP litigation |
+| Runtime | 10-35 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **Witness statements** | Yes | 1-500 | Each witness's sworn statement, declaration, affidavit, or deposition transcript. |
+| **Prior depositions and documents** | No | 0-500 | Earlier sworn statements, police reports, prior depositions, business records, expert reports: the documents you would confront a witness with. |
+
+## Inputs
+
+| Field | Type | Required | What it changes |
+| --- | --- | --- | --- |
+| Matter / case | Text | No | Brief title and file name. Core work product; name it consistently with your privilege-log conventions. |
+| **Which side are you on?** | Select | **Yes** | Prosecution/People · plaintiff · defense · petitioner. Drives tone, burdens, and what counts as a favorable admission. |
+| **Proceeding type** | Select | **Yes** | Trial cross · deposition · evidentiary hearing · grand jury · arbitration. Leading-question scope under FRE 611(c) and the impeachment rules vary by proceeding. |
+| **Theory of the case** | Long text | **Yes** | One paragraph. Anchors every chapter in the brief. Following Pozner and Dodd, chapters with no bearing on the theory get dropped. |
+| Impeachment goals | Multi-select | No | Prior inconsistent statement (FRE 613), bias/interest/motive, prior conviction (FRE 609), character for untruthfulness (FRE 608(b)), sensory or memory defect, contradiction by extrinsic evidence. When set, contradictions matching these angles are ranked first. Leave blank to surface all angles equally. |
+| Motions in limine / pretrial rulings | Long text | No | When set, contradictions whose only admissibility route depends on a barred topic are dropped, and the exclusion is noted in the relevant finding. |
+| Court / judge | Text | No | Surfaced as context only. No judge-specific rule set ships today; it is weighed as style guidance. |
+| Time limit per witness (minutes) | Text | No | When set, the brief produces roughly `minutes ÷ 2.5` top-priority contradictions, so 30 minutes yields about 12. Everything below the line moves to an outliers section so you can see what got triaged out rather than losing it. |
+| What concessions do you need from each witness? | Long text | No | When set, contradictions and admissions that set up those concessions are ordered the way you need them at trial, following the commit / credit / contradict sequence. |
+
+<Tip>
+  The time limit and desired concessions fields are the two that most change the shape of the output. A brief built for a 30-minute cross with three named concessions is a genuinely different document from an unbounded one.
+</Tip>
+
+## How it runs
+
+A matrix-review pipeline with an explicit contradiction-verification stage.
+
+<Steps>
+  <Step title="Prepare, extract, wait">
+    Builds the extraction matrix across witness statements: assertions, bias and motive factors, sensory and memory limitations, and prior statements.
+  </Step>
+  <Step title="Normalize and score">
+    Ranks material by relevance to your case theory and by the impeachment goals you selected.
+  </Step>
+  <Step title="Verify alleged contradictions">
+    Each claimed contradiction is checked against the reference record before it is allowed into the brief. This is why the reference slot matters.
+  </Step>
+  <Step title="Synthesize">
+    Builds chapter framing per witness, applies the in-limine exclusions, and enforces the time-limit triage.
+  </Step>
+  <Step title="Render">
+    Writes the brief, the per-witness detail, and the contradiction matrix.
+  </Step>
+</Steps>
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Cross-Examination Prep Brief** | DOCX | Chapter-framed cross plan per priority witness, anchored to your theory. |
+| **Per-Witness Detail** | DOCX | One section per witness with the full analysis. |
+| **Contradiction Matrix** | XLSX | Side-by-side comparison of inconsistent statements across witnesses, with verbatim quotes and source citations. |
+
+## What this will not do
+
+- Replace trial counsel for the final cross-examination plan or live courtroom judgment calls.
+- Predict how a witness will actually testify, deflect, or perform on the stand.
+- Investigate facts outside the uploaded statements and exhibits, such as background or prior-act discovery.
+- Confirm admissibility of impeachment evidence under your judge's specific in-limine rulings.
+- Replace a mock cross or a witness-prep session with a colleague.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Deposition Transcript Analyzer" icon="file-magnifying-glass" href="/workflows/built-in/deposition-transcript-analyzer">
+    Run this first to mine the transcripts, then bring the output here.
+  </Card>
+  <Card title="Case law research" icon="gavel" href="/guides/case-law-research">
+    For the evidentiary authority behind an impeachment route.
+  </Card>
+</CardGroup>

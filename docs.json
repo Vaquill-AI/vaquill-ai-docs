@@ -27,15 +27,6 @@
     }
   },
   "navigation": {
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Dashboard",
-          "icon": "browser",
-          "href": "https://app.vaquill.ai"
-        }
-      ]
-    },
     "tabs": [
       {
         "tab": "Introduction",
@@ -45,7 +36,8 @@
             "group": "Get Started",
             "icon": "rocket",
             "pages": [
-              "introduction"
+              "introduction",
+              "guides/chat"
             ]
           },
           {
@@ -54,7 +46,24 @@
             "pages": [
               "guides/contract-review",
               "guides/drafting",
+              "guides/templates",
+              "guides/clause-library",
               "guides/playbooks",
+              {
+                "group": "Playbook Reference",
+                "icon": "book-open",
+                "pages": [
+                  "guides/playbooks/templates",
+                  "guides/playbooks/building-a-playbook",
+                  "guides/playbooks/clause-rules",
+                  "guides/playbooks/import-from-contracts",
+                  "guides/playbooks/structure-check",
+                  "guides/playbooks/sign-off-gates",
+                  "guides/playbooks/playbook-health",
+                  "guides/playbooks/drift-suggestions",
+                  "guides/playbooks/versions-and-sharing"
+                ]
+              },
               "guides/document-comparison",
               "guides/document-matrix"
             ]
@@ -65,23 +74,30 @@
             "pages": [
               "guides/compliance-check",
               "guides/dpa-review",
+              "guides/vendor-registry",
               "guides/legal-tools",
-              "guides/tools/nda-triage",
-              "guides/tools/risk-assessment",
-              "guides/tools/document-analyst",
-              "guides/tools/contract-debugger",
-              "guides/tools/redline-analysis",
-              "guides/tools/canned-responses"
+              {
+                "group": "Tool Reference",
+                "icon": "screwdriver-wrench",
+                "pages": [
+                  "guides/tools/nda-triage",
+                  "guides/tools/risk-assessment",
+                  "guides/tools/ocr"
+                ]
+              }
             ]
           },
           {
             "group": "Matters & Workspaces",
-            "icon": "users",
+            "icon": "briefcase",
             "pages": [
               "guides/matters-workspaces",
+              "guides/matter-summary",
+              "guides/matter-facts",
+              "guides/chronology-builder",
               "guides/client-management",
               "guides/team-workspaces",
-              "guides/chronology-builder"
+              "guides/plans-and-limits"
             ]
           },
           {
@@ -96,12 +112,12 @@
             ]
           },
           {
-            "group": "Personalization & Workflows",
+            "group": "Personalization",
             "icon": "sparkles",
             "pages": [
               "guides/skills",
+              "guides/prompt-library",
               "guides/memories",
-              "guides/workflows",
               "guides/mcp-client",
               "guides/inline-threading",
               "guides/conversation-sharing"
@@ -113,11 +129,123 @@
             "pages": [
               "guides/case-law-research",
               "guides/statutes-regulations",
+              "guides/feed",
               "guides/citations",
               "guides/citation-graph",
               "guides/agent-mode",
               "guides/deep-research",
               "guides/answer-verification"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Workflows",
+        "icon": "diagram-project",
+        "groups": [
+          {
+            "group": "Overview",
+            "icon": "compass",
+            "pages": [
+              "workflows/index",
+              "workflows/quickstart",
+              "workflows/running-a-workflow",
+              "workflows/results-and-artifacts"
+            ]
+          },
+          {
+            "group": "Built-in Workflows",
+            "icon": "grid-2",
+            "pages": [
+              "workflows/built-in/index",
+              {
+                "group": "1. Contracts & Commercial",
+                "icon": "file-contract",
+                "pages": [
+                  "workflows/built-in/nda-bulk-review",
+                  "workflows/built-in/msa-vendor-review",
+                  "workflows/built-in/contract-playbook-review",
+                  "workflows/built-in/dpa-reviewer",
+                  "workflows/built-in/obligations-renewal-tracker",
+                  "workflows/built-in/ma-due-diligence"
+                ]
+              },
+              {
+                "group": "2. Compliance & Privacy",
+                "icon": "shield-halved",
+                "pages": [
+                  "workflows/built-in/privacy-data-protection-audit",
+                  "workflows/built-in/compliance-scan-agent",
+                  "workflows/built-in/employment-pack-review"
+                ]
+              },
+              {
+                "group": "3. Research & Analysis",
+                "icon": "brain",
+                "pages": [
+                  "workflows/built-in/cited-qa-document-set",
+                  "workflows/built-in/jurisdiction-comparison-memo",
+                  "workflows/built-in/matter-triage-agent"
+                ]
+              },
+              {
+                "group": "4. Litigation: Discovery & Evidence",
+                "icon": "folder-open",
+                "pages": [
+                  "workflows/built-in/discovery-response-pack",
+                  "workflows/built-in/privilege-log-builder",
+                  "workflows/built-in/deposition-transcript-analyzer",
+                  "workflows/built-in/cross-exam-prep"
+                ]
+              },
+              {
+                "group": "5. Litigation: Drafting & Motions",
+                "icon": "gavel",
+                "pages": [
+                  "workflows/built-in/us-motion-drafter",
+                  "workflows/built-in/complaint-drafter",
+                  "workflows/built-in/answer-to-complaint-drafter",
+                  "workflows/built-in/demand-letter-drafter",
+                  "workflows/built-in/cease-and-desist",
+                  "workflows/built-in/settlement-negotiation-memo"
+                ]
+              },
+              {
+                "group": "6. Landlord & Tenant",
+                "icon": "house",
+                "pages": [
+                  "workflows/built-in/evict-correctly",
+                  "workflows/built-in/respond-to-eviction",
+                  "workflows/built-in/security-deposit-demand"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Workflow Builder",
+            "icon": "wrench",
+            "pages": [
+              "workflows/builder/index",
+              "workflows/builder/generate-from-prompt",
+              "workflows/builder/steps",
+              {
+                "group": "4. Step Reference",
+                "icon": "layer-group",
+                "pages": [
+                  "workflows/builder/steps/document-io",
+                  "workflows/builder/steps/retrieval",
+                  "workflows/builder/steps/extraction",
+                  "workflows/builder/steps/analysis",
+                  "workflows/builder/steps/verification",
+                  "workflows/builder/steps/drafting",
+                  "workflows/builder/steps/routing",
+                  "workflows/builder/steps/output"
+                ]
+              },
+              "workflows/builder/branching-and-loops",
+              "workflows/builder/test-publish-run",
+              "workflows/builder/templates",
+              "workflows/builder/troubleshooting"
             ]
           }
         ]
@@ -169,6 +297,13 @@
             "icon": "puzzle-piece",
             "pages": [
               "integrations/browser/chrome"
+            ]
+          },
+          {
+            "group": "Document Management",
+            "icon": "folder-tree",
+            "pages": [
+              "integrations/dms/imanage"
             ]
           },
           {
@@ -445,6 +580,22 @@
   },
   "redirects": [
     {
+      "source": "/guides/tools/canned-responses",
+      "destination": "/guides/prompt-library"
+    },
+    {
+      "source": "/guides/tools/contract-debugger",
+      "destination": "/guides/contract-review"
+    },
+    {
+      "source": "/guides/tools/redline-analysis",
+      "destination": "/guides/document-comparison"
+    },
+    {
+      "source": "/guides/tools/document-analyst",
+      "destination": "/guides/chat"
+    },
+    {
       "source": "/integrations/mcp",
       "destination": "/integrations/mcp/vaquill"
     },
@@ -461,6 +612,14 @@
       "destination": "/api-reference/statutes/search-us-statutes"
     },
     {
+      "source": "/api-reference/research/:slug*",
+      "destination": "/api-reference/statutes/search-us-statutes"
+    },
+    {
+      "source": "/api-reference/acts-&-legislation/:slug*",
+      "destination": "/api-reference/statutes/search-us-statutes"
+    },
+    {
       "source": "/data-sources",
       "destination": "/api-guide/coverage"
     },
@@ -474,7 +633,19 @@
     },
     {
       "source": "/guides/subscriptions",
-      "destination": "/guides/team-workspaces"
+      "destination": "/guides/plans-and-limits"
+    },
+    {
+      "source": "/pricing",
+      "destination": "/guides/plans-and-limits"
+    },
+    {
+      "source": "/guides/limits",
+      "destination": "/guides/plans-and-limits"
+    },
+    {
+      "source": "/guides/workflows",
+      "destination": "/workflows"
     },
     {
       "source": "/guides/retrieval-strategies",

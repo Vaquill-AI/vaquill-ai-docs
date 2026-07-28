@@ -1,0 +1,83 @@
+---
+title: "Respond to an Eviction"
+sidebarTitle: "6.2 Respond to an Eviction"
+description: "Tenant-side Answer to an unlawful detainer with the right affirmative defenses, your filing deadline, and a proof-of-service template"
+---
+
+<Note>
+  This workflow surfaces in **QuillDraft**, the landlord-tenant product. It is filtered out of the Vaquill in-house gallery.
+</Note>
+
+**Best for:** a tenant who was just served eviction papers and has days to file an Answer. The form, the defenses, and the deadline in one place.
+
+Builds your Answer with the right affirmative defenses, tells you your filing deadline, and gives you a proof-of-service template. These are the steps tenants most often miss before a default judgment is entered.
+
+| | |
+| --- | --- |
+| Category | Litigation |
+| Jurisdiction | US |
+| Practice areas | Landlord-tenant, tenant defense |
+| Runtime | 6-15 minutes |
+
+## What you need
+
+| Slot | Required | Count | What goes in it |
+| --- | --- | --- | --- |
+| **The eviction papers you were served** | No | 0-50 | The summons, complaint, and the notice you received. With these, the Answer responds to the specific allegations, and the drafter uses only the facts in the documents. |
+
+## Inputs
+
+### The case
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| **State where you rent** | Select | **Yes** | Drives your answer deadline, the available defenses, and the form. |
+| **Date you were served** | Date | **Yes** | Your deadline counts from this date in most states. |
+| Response deadline printed on your summons | Date | No | **If your summons states a response date, enter it. That date controls and is used instead of the estimate.** |
+| **Your name** | Party name | **Yes** | Tenant / defendant. |
+| **Rental unit address** | Long text | **Yes** | |
+| **Landlord's name** | Party name | **Yes** | Plaintiff. |
+| Court name | Text | No | From your summons. |
+| Case number | Text | No | From your summons. |
+| **Why is the landlord evicting you?** | Select | **Yes** | Nonpayment of rent · lease violation · no-fault · other. Drives which defenses and notice-defect arguments apply. |
+| Amount the landlord says you owe | Text | No | |
+
+### Defenses
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| Which of these apply to you? | Multi-select | No | Each selection is pleaded as an affirmative defense. **A defense you do not raise in your Answer is usually waived at trial, so select everything that might apply.** |
+| The facts behind what you selected | Long text | No | **Only the facts you provide are used.** The drafter will not invent any. |
+| Is your unit subsidized (Section 8 / public housing)? | Yes/No | No | Subsidized housing has extra notice and termination rules the landlord must follow. |
+| Are you a survivor of domestic violence? | Yes/No | No | VAWA and many state laws bar eviction based on being a DV survivor. |
+| Are you or a household member active-duty military? | Yes/No | No | The Servicemembers Civil Relief Act can pause an eviction. |
+
+## How it runs
+
+A drafting pipeline: `prepare → generate → export`. The state and eviction reason select the form and the available defenses, the drafter responds to the served allegations using only your facts, and all three documents are exported.
+
+## What you get
+
+| Artifact | Format | Contents |
+| --- | --- | --- |
+| **Answer to Unlawful Detainer** | DOCX | The Answer with your affirmative defenses pleaded. |
+| **Deadline and Filing Checklist** | DOCX | Your deadline and the filing steps. |
+| **Proof of Service template** | DOCX | The service document tenants most often forget. |
+
+## What this will not do
+
+- File the Answer with the court or serve it on the landlord for you.
+- Guarantee a defense will succeed or that you will keep possession.
+- Confirm your exact deadline. **The date on your served summons controls.** Verify it.
+- Replace a lawyer or a legal-aid / Right-to-Counsel attorney. Seek one if you can.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Evict a Tenant, Correctly" icon="gavel" href="/workflows/built-in/evict-correctly">
+    The landlord side of the same case.
+  </Card>
+  <Card title="Security Deposit Demand Letter" icon="money-bill" href="/workflows/built-in/security-deposit-demand">
+    For after you move out.
+  </Card>
+</CardGroup>
