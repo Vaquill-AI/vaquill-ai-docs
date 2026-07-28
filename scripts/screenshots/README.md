@@ -27,6 +27,7 @@ export CHROME_BIN="$HOME/Library/Caches/ms-playwright/chromium-<build>/chrome-ma
 node auth.mjs            # writes OUT/auth-state.json (a logged-in storage state)
 node capture.mjs         # top-level surfaces, from the SHOTS list in the file
 node capture_detail.mjs  # detail views, from OUT/detail_urls.json
+node capture_rich.mjs    # interaction states (opened cells, expanded panels)
 node optimize.mjs        # PNG -> WebP q82, capped at 150 KB
 cp "$OUT"/shots/web/*.webp ../../images/
 ```
@@ -47,6 +48,12 @@ Follows Google, GitHub, GitLab and Cloudflare documentation guidance.
 
 Crop to the smallest region that answers the question. Full-app shots belong
 on landing pages, not inside a procedure. Budget roughly 5 images per page.
+
+**Shoot the interaction state, not the landing state.** A screen's resting view
+is rarely the instructive one. The value is in the opened cell, the expanded
+panel, the visible dropdown. `capture_rich.mjs` declares a `steps` function per
+shot that runs before the shutter. Matrix cells expose `data-cell-id`; the
+Review hub hides playbook and markup settings behind **Advanced options**.
 
 ## Gotchas that will cost you an hour
 
