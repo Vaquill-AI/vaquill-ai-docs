@@ -18,15 +18,6 @@ these corpus types.
   **Snapshot date: 2026-07-21.** Statute coverage is always live via
   `/statutes/states` and `/statutes/codes`. Constitutions, court rules and case
   law are an expanding set.
-
-  **Regulations come in two tiers, and the difference matters.** 14 states are
-  ingested from the state's own official publisher and refreshed on a monthly
-  cycle. The remaining 31 come from a dated 2024 corpus with no live refresh
-  path, because those states either publish no free official full text or have
-  not been built yet. Every section from that tier carries `actStatus:
-  "snapshot"` plus the source's own "current through" line, and resolves to
-  `goodLawStatus: "unknown"` rather than being asserted as current law. The
-  matrix below marks them.
 </Info>
 
 ## What's in the corpus
@@ -36,7 +27,7 @@ these corpus types.
     **52 jurisdictions** (all 50 states + DC + Puerto Rico), **1.95M+ sections**. Queryable via the statutes API.
   </Card>
   <Card title="Federal law" icon="landmark">
-    US Code (54,855), CFR (219,745), Federal Register rules (105,579), Executive Orders (3,593), agency guidance (2,509), Federal Rules of Procedure (526), US Constitution (74). Queryable via the statutes API.
+    US Code (54,855), CFR (219,745), Federal Register rules (195,895, 1995-present), Executive Orders (3,620), agency guidance (2,509), Federal Rules of Procedure (541), US Constitution (74). Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
     **51 jurisdictions** (50 states + Puerto Rico), ~7.7K sections, with article/section structure and clickable citations. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
@@ -69,10 +60,10 @@ them.
 |---|---|---|
 | United States Code (USC) | 54,855 | Weekly |
 | Code of Federal Regulations (CFR) | 219,745 | Daily |
-| Federal Register agency rules (final + proposed) | 105,579 | Weekly |
-| Executive Orders (Federal Register Presidential Documents) | 3,593 | Daily |
+| Federal Register agency rules (final + proposed), 1995-present | 195,895 | Weekly |
+| Executive Orders (Federal Register Presidential Documents) | 3,620 | Daily |
 | Agency guidance (SSA rulings, IRS, administrative guidance) | 2,509 | Weekly |
-| Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP) | 526 | Annual |
+| Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) | 541 | Monthly |
 | US Constitution | 74 | On amendment |
 
 ## State and territory matrix

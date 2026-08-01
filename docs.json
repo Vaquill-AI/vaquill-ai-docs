@@ -608,10 +608,6 @@
       "destination": "/api-reference/statutes/search-us-statutes"
     },
     {
-      "source": "/api-reference/ask/:slug*",
-      "destination": "/api-reference/statutes/search-us-statutes"
-    },
-    {
       "source": "/api-reference/research/:slug*",
       "destination": "/api-reference/statutes/search-us-statutes"
     },
