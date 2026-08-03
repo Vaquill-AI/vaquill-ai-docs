@@ -11,7 +11,7 @@ and case law. The **Developer API** (`/statutes/*`) serves statutes, regulations
 constitutions, court rules, and executive actions, scoped with the `corpusType`
 filter; case law is available in the platform. Coverage is queryable live from
 `GET /statutes/coverage` and `GET /statutes/states`; the per-corpus matrix below
-is a snapshot. In total the ingested corpus holds **over 3.8M distinct sections**
+is a snapshot. In total the ingested corpus holds **over 4.8M distinct sections**
 across all of these corpus types, indexed as **more than 9.8M retrieval passages**.
 
 <Info>
@@ -24,7 +24,7 @@ across all of these corpus types, indexed as **more than 9.8M retrieval passages
   Counts on this page are **distinct sections** (one per provision or document),
   the same figures `GET /statutes/coverage` returns. For retrieval, longer sections
   and documents are split into multiple passages, so the underlying index holds far
-  more entries: **about 9.8M passages** across these 3.84M sections. The Federal
+  more entries: **about 9.8M passages** across these 4.8M sections. The Federal
   Register alone (long agency rules, 13-15 passages each) accounts for over half of
   them. That split does not change what the API returns: a lookup by citation still
   resolves to one section with its full text.
@@ -46,7 +46,7 @@ across all of these corpus types, indexed as **more than 9.8M retrieval passages
     **10 states**, ~11.9K rules (civil, criminal, appellate, and local), refreshed weekly. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
-    **45 states**, **1.16M+ rules**, with effective dates and statutory authority. 14 from official publishers (10 refreshed monthly); 31 from a dated 2024 corpus, flagged `actStatus: "snapshot"`. Queryable via the API (`corpusType=REGULATION`).
+    **45 states**, **1.16M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
   </Card>
   <Card title="Case law" icon="scale-balanced">
     Federal opinions from the Supreme Court through the District Courts (all 13 Circuits), plus state appellate and supreme court opinions across all 50 states, with inline citation resolution. Available in the platform.
@@ -88,66 +88,63 @@ Counts are distinct sections (documents), the same figures `/statutes/coverage`
 returns. A dash means that corpus type is not yet ingested for that jurisdiction.
 Sorted by statute volume.
 
-An asterisk (\*) on a regulation count marks the **2024 snapshot tier**: those
-sections carry `actStatus: "snapshot"`, resolve to `goodLawStatus: "unknown"`,
-and are not refreshed. Unmarked regulation counts are ingested from each state's
-own official publisher; see [Refresh cadence](#refresh-cadence) for which ones
-refresh monthly.
+Every regulation count is ingested from that state's own official publisher and
+refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
-| California | 161,439 | 76,155* | 295 | 650 |
-| Mississippi | 158,698 | 35,752* | 304 | - |
+| California | 161,439 | 76,155 | 295 | 650 |
+| Mississippi | 158,698 | 35,752 | 304 | - |
 | Texas | 122,908 | 44,256 | 401 | 1,007 |
-| Indiana | 83,148 | 37,739* | 52 | - |
+| Indiana | 83,148 | 37,739 | 52 | - |
 | Illinois | 72,456 | 54,541 | 162 | 422 |
-| New Jersey | 55,923 | 51,999* | 11 | - |
+| New Jersey | 55,923 | 51,999 | 11 | - |
 | Washington | 53,595 | 51,053 | 147 | - |
-| Nevada | 48,190 | 34,302* | 1 | 1,338 |
-| Alabama | 45,997 | 18,305* | 233 | - |
-| Louisiana | 43,474 | 29,213* | 51 | - |
-| Michigan | 40,658 | 22,963* | 307 | - |
-| New York | 40,102 | 50,266* | 21 | 1,727 |
-| South Dakota | 39,804 | 25,874* | 29 | - |
+| Nevada | 48,190 | 34,302 | 1 | 1,338 |
+| Alabama | 45,997 | 18,305 | 233 | - |
+| Louisiana | 43,474 | 29,213 | 51 | - |
+| Michigan | 40,658 | 22,963 | 307 | - |
+| New York | 40,102 | 50,266 | 21 | 1,727 |
+| South Dakota | 39,804 | 25,874 | 29 | - |
 | Maryland | 39,562 | 12,871 | 24 | 1,220 |
-| Arkansas | 36,936 | 5,556* | 236 | - |
-| Oklahoma | 36,287 | 57,195* | 312 | - |
-| Oregon | 36,204 | 48,708* | 1 | - |
+| Arkansas | 36,936 | 5,556 | 236 | - |
+| Oklahoma | 36,287 | 57,195 | 312 | - |
+| Oregon | 36,204 | 48,708 | 1 | - |
 | New Mexico | 34,465 | 13,274 | 59 | - |
 | Colorado | 34,258 | 610 | 396 | - |
 | Virginia | 33,856 | 22,396 | 123 | - |
 | Ohio | 33,168 | 19,275 | 217 | - |
 | Tennessee | 32,693 | - | 148 | - |
-| Montana | 30,524 | 32,183* | 192 | - |
+| Montana | 30,524 | 32,183 | 192 | - |
 | South Carolina | 29,974 | 6,630 | 230 | - |
-| Missouri | 29,296 | 9,613* | 303 | - |
-| North Dakota | 29,052 | 17,227* | 186 | - |
-| Iowa | 28,223 | 26,605* | 54 | - |
-| Georgia | 28,165 | 18,889* | 79 | - |
+| Missouri | 29,296 | 9,613 | 303 | - |
+| North Dakota | 29,052 | 17,227 | 186 | - |
+| Iowa | 28,223 | 26,605 | 54 | - |
+| Georgia | 28,165 | 18,889 | 79 | - |
 | Minnesota | 27,757 | 15,449 | 138 | 999 |
-| North Carolina | 26,695 | 30,248* | 154 | - |
+| North Carolina | 26,695 | 30,248 | 154 | - |
 | Utah | 26,602 | - | 220 | - |
-| Nebraska | 25,998 | 14,044* | 244 | - |
-| West Virginia | 25,669 | 20,105* | 5 | - |
+| Nebraska | 25,998 | 14,044 | 244 | - |
+| West Virginia | 25,669 | 20,105 | 5 | - |
 | New Hampshire | 25,385 | - | 2 | - |
 | Maine | 25,342 | 1,770 | 106 | - |
-| Florida | 24,866 | 32,791* | 188 | 1,135 |
+| Florida | 24,866 | 32,791 | 188 | 1,135 |
 | Kansas | 24,371 | - | 16 | - |
 | District of Columbia (territory) | 23,695 | - | - | - |
 | Puerto Rico (territory) | 23,649 | - | 102 | - |
-| Vermont | 23,527 | 1,050* | 22 | - |
-| Massachusetts | 23,152 | 24,742* | 5 | - |
+| Vermont | 23,527 | 1,050 | 22 | - |
+| Massachusetts | 23,152 | 24,742 | 5 | - |
 | Idaho | 22,754 | 8,551 | 240 | - |
-| Arizona | 22,684 | 16,463* | 323 | 1,720 |
+| Arizona | 22,684 | 16,463 | 323 | 1,720 |
 | Delaware | 21,741 | - | 196 | - |
-| Rhode Island | 21,115 | 12,070* | 119 | - |
+| Rhode Island | 21,115 | 12,070 | 119 | - |
 | Kentucky | 20,946 | 4,881 | 274 | - |
-| Hawaii | 19,487 | 26,735* | 169 | - |
+| Hawaii | 19,487 | 26,735 | 169 | - |
 | Wisconsin | 18,158 | 17,830 | 14 | - |
-| Alaska | 17,942 | 24,771* | 44 | - |
-| Connecticut | 16,091 | 17,468* | 34 | - |
-| Pennsylvania | 14,547 | 52,702* | 186 | 1,723 |
-| Wyoming | 10,229 | 18,554* | 314 | - |
+| Alaska | 17,942 | 24,771 | 44 | - |
+| Connecticut | 16,091 | 17,468 | 34 | - |
+| Pennsylvania | 14,547 | 52,702 | 186 | 1,723 |
+| Wyoming | 10,229 | 18,554 | 314 | - |
 
 ## Refresh cadence
 
@@ -159,16 +156,11 @@ any jurisdiction.
 |---|---|
 | Federal | See the [Federal table](#federal): daily to weekly, and on amendment for the Constitution. |
 | State statutes | Recurring pull from each state's official source. All 50 states plus DC and Puerto Rico are covered; a few one-time cutovers (for example Puerto Rico) are complete but not yet on an automatic refresh driver. |
-| State regulations, monthly | Pulled monthly from the official publisher: ID, IL, KY, MD, MN, OH, SC, VA, WA, WI. |
-| State regulations, official (not yet automated) | CO, ME, NM, and TX are ingested from the official source (unasterisked below) but not yet on the monthly cycle. |
-| State regulations, 2024 snapshot | The asterisked (\*) rows: a dated 2024 corpus, `actStatus: "snapshot"`, `goodLawStatus: "unknown"`, not refreshed. |
+| State regulations | Pulled monthly from each state's own official publisher, for all 45 states carrying regulations. |
 | State court rules | Weekly, for the states that carry them. |
 | State constitutions | On amendment. |
 
 <Note>
-  California, New Jersey, New York, and Vermont regulations can only ever be
-  served from the 2024 snapshot tier: their administrative codes are published
-  exclusively under commercial licence, with no free official full text.
   Pennsylvania's Consolidated Statutes are complete; its older unconsolidated
   (Purdon's) statutes are a separate later addition, prioritized for backfill.
   Constitutions and court rules roll out state by state.

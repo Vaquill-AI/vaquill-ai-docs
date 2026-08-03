@@ -97,14 +97,6 @@ if (sec.actStatus === "renumbered" && sec.renumberedTo) {
 ```
 </CodeGroup>
 
-<Note>
-  State regulations ingested from the dated 2024 snapshot tier carry
-  `actStatus: "snapshot"` and resolve to `goodLawStatus: "unknown"`. That is by
-  design: those sections are not on a refresh cycle, so we do not claim they are
-  current. Call [`/statutes/coverage`](/api-guide/concepts/jurisdictions) to see
-  which corpora are refreshed versus snapshot.
-</Note>
-
 ## Related
 
 <CardGroup cols={2}>
@@ -118,6 +110,6 @@ if (sec.actStatus === "renumbered" && sec.renumberedTo) {
     Cite only good-law sections and link back to the official source.
   </Card>
   <Card title="Coverage" icon="table" href="/api-guide/coverage">
-    Which corpora are refreshed versus snapshot, per jurisdiction.
+    Which corpora are ingested and how often each refreshes, per jurisdiction.
   </Card>
 </CardGroup>

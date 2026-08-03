@@ -27,7 +27,7 @@ Source: [github.com/Vaquill-AI/integrations/n8n](https://github.com/Vaquill-AI/i
 
 - **Batch statute search** - drop 50 queries into a sheet, get matching US Code, CFR, and state sections in minutes
 - **Automated lookup pipelines** - connect a form to Vaquill for instant statute citations
-- **Regulatory monitoring** - schedule periodic queries against the monthly-refreshed statute corpus
+- **Regulatory monitoring** - schedule periodic queries against a corpus refreshed daily to monthly, depending on the source
 - **Due-diligence checklists** - process compliance lookups in bulk
 - **Client-intake triage** - route incoming statute questions through Vaquill, then forward results to your team
 
@@ -217,7 +217,7 @@ See the [Errors reference](/api-guide/errors) for the full list.
 
 ### Scope by jurisdiction
 
-Change the request body `jurisdiction` field to target a specific code: `"us"` covers federal sources (the US Code and the CFR), and any state code (e.g. `"ca"`, `"ny"`, `"tx"`) restricts the search to that state's statutes. The corpus spans all 50 states, the US Code (54,855 sections across 53 titles), and the CFR (218,932 sections across 49 titles).
+Change the request body `jurisdiction` field to target a specific code: `"us"` covers federal sources (the US Code and the CFR), and any state code (e.g. `"ca"`, `"ny"`, `"tx"`) restricts the search to that state's statutes. The corpus spans all 50 states plus DC and Puerto Rico, the US Code (54,853 sections across 53 titles), and the CFR (219,447 sections across 49 titles).
 
 ### Page through large result sets
 
