@@ -335,6 +335,7 @@
               "api-guide/concepts/corpus-types",
               "api-guide/concepts/jurisdictions",
               "api-guide/concepts/section-ids",
+              "api-guide/concepts/status-and-currency",
               "api-guide/concepts/formats"
             ]
           },
@@ -369,6 +370,7 @@
               "api-guide/recipes/rag-grounding",
               "api-guide/recipes/statute-chatbot",
               "api-guide/recipes/citation-lookup",
+              "api-guide/recipes/browse-hierarchy",
               "api-guide/recipes/compliance-mapping",
               "api-guide/recipes/multi-state-comparison",
               "api-guide/recipes/coverage-monitoring",

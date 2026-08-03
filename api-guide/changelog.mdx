@@ -7,6 +7,150 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-03" description="New endpoint: catalog the bodies of law">
+  ## New endpoint: GET /statutes/laws
+
+  A catalog of the distinct bodies of law available, each a whole corpus within a
+  jurisdiction (a state's statutes, a state's regulations, the US Code, the US
+  Constitution, federal court rules, ...). Every entry carries a stable `key`, its
+  `corpusType` (pass straight to `/statutes/search`), a `lawType` (`statutes`,
+  `regulations`, `constitution`, `court rules`, ...), a human `name`, and a
+  `sectionCount`.
+
+  - `GET /statutes/laws` lists every jurisdiction.
+  - `GET /statutes/laws?jurisdiction=ca` (or `federal`) scopes the list.
+
+  Use it to build a picker of what is queryable or to ground an LLM in the
+  available bodies of law. To drill a state's statutes into its individual codes
+  (Penal, Civil, ...), call `GET /statutes/codes?state=XX`. **Free** (an API key,
+  rate-limited, no credits).
+</Update>
+
+<Update label="2026-08-03" description="Citation resolver now covers constitutions, court rules, and annotated forms">
+  ## Resolve constitutions, court rules, and more citation forms
+
+  `GET /statutes/resolve` (and citation-as-`query` search) now resolves several
+  citation families it previously missed:
+
+  - **US and state constitutions**: `U.S. Const. art. I, § 8`,
+    `U.S. Const. amend. XIV, § 1`, `U.S. Const. pmbl.`, `Cal. Const. art. I, § 7`.
+  - **Federal court rules**: `Fed. R. Civ. P. 12` (incl. a pincite like
+    `Fed. R. Civ. P. 12(b)(6)`), `Fed. R. Crim. P. 11`, `Fed. R. Evid. 702`,
+    `Fed. R. App. P. 4`, `Fed. R. Bankr. P. 9011`, and the compact `FRCP 12` form.
+  - **Annotated / prefixed federal statutes**: `42 U.S.C.A. § 1983` (West),
+    `42 U.S.C.S. § 1983` (Lexis), `Title 42 U.S.C. § 1983`, and a doubled `§§`.
+
+  This is additive and precision-focused: a Bluebook citation names one exact
+  section, so it stays the most reliable way to reach or verify a section. See
+  [Resolve and verify a citation](/api-guide/recipes/citation-lookup).
+</Update>
+
+<Update label="2026-08-03" description="Scope a search to a chapter or part">
+  ## Search within a hierarchy subtree
+
+  `POST /statutes/search` gains two filters that scope a search below a title or
+  code, additive and optional:
+
+  - **`chapter`** (USC/state) and **`part`** (CFR): confine results to one or more
+    chapters or parts, e.g. `titleNumber: 42, chapter: "21"` or
+    `titleNumber: 17, part: "240"`. Both accept a single value or a list.
+
+  These are the search-side of the `parent` object on every result: take a hit's
+  `parent` and pass it straight back to search that section's neighbors. Because a
+  chapter number repeats across every title, `chapter`/`part` must be paired with
+  `titleNumber` or `code` (which `parent` always carries); an unpaired one is
+  rejected with `422`. See [Search within a container](/api-guide/recipes/browse-hierarchy).
+</Update>
+
+<Update label="2026-08-03" description="Search controls, navigable parent, amendment provenance, deeper paging">
+  ## Control what search matches and returns
+
+  `POST /statutes/search` gains two request options, both additive:
+
+  - **`matchType`**: `any` (default) is intent-ranked hybrid search. `all` requires
+    every query term to appear; `phrase` requires the exact phrase. Use the stricter
+    modes when you need precision over recall.
+  - **`excerptChars`**: how much matching text each result carries in `excerpt`
+    (default 500, range 100 to 4000). Raise it for more inline context.
+
+  ## Every result now points to its neighbors
+
+  Each result carries a `parent` object: the ready-made `GET /statutes/divisions`
+  query that lists the section's siblings (its containing chapter or part). Walk up
+  the hierarchy from any hit without constructing the query yourself.
+
+  ## Amendment provenance on statute results
+
+  Statute results now surface amendment history already in the corpus: `sourceCredit`
+  (the source's credit line), `amendmentYears`, `lastAmendedYear`, `amendmentsCount`,
+  `publicLaws` (e.g. `['Pub. L. 102-166']`), and `federalRegisterCitations`. All are
+  nullable and additive; existing fields are unchanged.
+
+  ## Page deeper
+
+  The `offset` cap on `POST /statutes/search` is raised from 40 to 70, so with the
+  largest page size you can reach the entire reranked candidate pool. See
+  [Pagination](/api-guide/pagination).
+</Update>
+
+<Update label="2026-08-03" description="Structured body: Markdown and a pincite subsection tree">
+  ## `/body` can now return a structured subsection tree
+
+  `GET /statutes/section/{actId}/body?structured=true` adds two fields to the body
+  response, at no extra cost:
+
+  - **`markdown`**: the section rendered as nested Markdown lists, one level per
+    subsection depth.
+  - **`subsections`**: a tree parsed by the drafting convention (`(a)` subsection,
+    `(1)` paragraph, `(A)` subparagraph, `(i)` clause). Each node carries its
+    `label`, a `pincite` path (e.g. `(b)(2)`), a full pinpoint `citation` (e.g.
+    `42 U.S.C. § 1983(b)(2)`), its own `text`, and nested `children`.
+
+  Use it to address, deep-link, or quote a specific subsection. It is additive:
+  the default `/body` response is unchanged. See [Response Formats](/api-guide/concepts/formats).
+</Update>
+
+<Update label="2026-08-02" description="Citation resolver and hierarchy browse">
+  ## Two new endpoints: resolve a citation, browse the hierarchy
+
+  - **`GET /statutes/resolve`** (2 credits): resolve a Bluebook citation string
+    (`42 U.S.C. § 1983`, `16 C.F.R. § 444.1`, `Del. Code Ann. tit. 13, § 1301`)
+    straight to the exact section, confirmed, with an official source link. A
+    pinpoint subsection resolves to the parent section and is echoed in
+    `subsection`. `resolved` reports whether the citation is real, so it is the
+    one-call way to verify a citation an LLM produced. See the
+    [citation recipe](/api-guide/recipes/citation-lookup).
+  - **`GET /statutes/divisions`** (1 credit): walk the statutory hierarchy one
+    level at a time, in statutory order. Pass the deepest level you know
+    (`corpusType`, `titleNumber`, `chapter`/`part`, or a state `code`) and get the
+    children below it, down to sections with their `actId`. Supports USC, CFR,
+    STATE, and REGULATION. See the [browse recipe](/api-guide/recipes/browse-hierarchy).
+
+  Both are additive and use the existing API key and credit model.
+</Update>
+
+<Update label="2026-08-02" description="Richer statute results: status, currency, hierarchy, and provenance">
+  ## Statute results now carry status, currency, and fuller metadata
+
+  Every statute result (from `POST /statutes/search`, `GET /statutes/section/{actId}`,
+  and `POST /statutes/sections`) now includes additional fields that were already in the
+  corpus. This is additive: existing fields are unchanged, so no client change is required.
+
+  - **Status and currency**: `actStatus` (`in_force`, `repealed`, `renumbered`,
+    `transferred`, `omitted`, `reserved`, `vacant`, `unconstitutional`), a derived
+    `goodLawStatus` (`good_law` / `not_good_law` / `not_operative` / `unknown`),
+    `currencyNote` (the source's "current through ..." line), and `renumberedTo` /
+    `transferredTo` pointers.
+  - **Fuller hierarchy**: `subchapter` / `subchapterName`, `part` / `partName`,
+    `subpart` / `subpartName`, and `popularName` (e.g. "Truth in Lending Act").
+  - **Provenance**: `issueDate`, `crossReferencesCfr` (parsed CFR references as a
+    list of section strings, e.g. `['1.6011-4']`), and govinfo `granuleId` / `packageId`.
+
+  `goodLawStatus` is conservative: jurisdictions without a reliable repeal signal report
+  `unknown` rather than over-claiming that a section is current.
+
+</Update>
+
 <Update label="2026-07-18" description="Regulations, coverage discovery, and pagination">
   ## Regulations, Federal Register, and agency guidance are now queryable
 
@@ -37,7 +181,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   ## Pagination on POST /statutes/search
 
-  Search now accepts an `offset` parameter (0-40) alongside `limit`, and the response
+  Search now accepts an `offset` parameter (0-70) alongside `limit`, and the response
   includes `offset` and a `hasMore` flag so you can page through results. `total` is the
   count returned on the current page. See [Pagination](/api-guide/pagination).
 

@@ -1,0 +1,123 @@
+---
+title: "Status & Currency"
+description: "Tell whether a statute section is still good law: actStatus, goodLawStatus, currency notes, and renumbering pointers"
+icon: "circle-check"
+---
+
+Every statute result carries status and currency metadata so you can tell, before you rely on a section, whether it is still in force, has been repealed or moved, and how current the text is. These fields appear on `POST /statutes/search`, `GET /statutes/section/{actId}`, and `POST /statutes/sections`.
+
+## actStatus
+
+The raw status of the section, straight from the source structure.
+
+| Value | Meaning |
+|-------|---------|
+| `in_force` | The section is currently operative. |
+| `repealed` | The section has been repealed. |
+| `renumbered` | The section moved to a new number (see `renumberedTo`). |
+| `transferred` | The section moved to a different code or title (see `transferredTo`). |
+| `omitted` | Omitted from the code (often editorially, without repeal). |
+| `reserved` | A reserved or held-open placeholder with no current text. |
+| `vacant` | A vacant number with no content. |
+| `unconstitutional` | Held unconstitutional. |
+
+## goodLawStatus
+
+A derived, conservative verdict that answers "can I rely on this section today?" It is computed on top of `actStatus` and jurisdiction-specific repeal signals.
+
+| Value | Meaning |
+|-------|---------|
+| `good_law` | Operative and current, with a reliable repeal signal for its jurisdiction. |
+| `not_good_law` | Repealed, unconstitutional, or otherwise no longer operative. |
+| `not_operative` | Structurally present but with no operative text (reserved, vacant, omitted). |
+| `unknown` | The jurisdiction has no reliable repeal signal, so we do not claim it is current. |
+
+<Warning>
+  `goodLawStatus` is deliberately conservative. Some jurisdictions do not publish a
+  reliable repeal signal, so their sections resolve to `unknown` rather than
+  over-claiming `good_law`. Treat `unknown` as "verify against the official source,"
+  not as "current." The field is `null` when currency checking is disabled.
+</Warning>
+
+## Currency and move pointers
+
+- **`currencyNote`**: the source's own "current through ..." line, when the publisher provides one. Use it to show how fresh the text is, rather than a bare fetch date.
+- **`renumberedTo`**: when `actStatus` is `renumbered`, a pointer to the new location.
+- **`transferredTo`**: when `actStatus` is `transferred`, a pointer to the new code or title.
+
+Follow `renumberedTo` / `transferredTo` to fetch the section's current home.
+
+## Using it
+
+Gate your product on `goodLawStatus`, surface `currencyNote`, and follow a move pointer when a section has been relocated.
+
+<CodeGroup>
+```python Python
+import requests
+
+BASE_URL = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+def section(act_id: str) -> dict:
+    resp = requests.get(f"{BASE_URL}/statutes/section/{act_id}", headers=HEADERS)
+    resp.raise_for_status()
+    return resp.json()["section"]
+
+sec = section("USC_T42_C21_S1983")
+
+if sec.get("goodLawStatus") == "not_good_law":
+    print(f"Do not rely on {sec['citation']}: {sec.get('actStatus')}")
+elif sec.get("goodLawStatus") == "unknown":
+    print(f"Verify {sec['citation']} against the official source before relying on it.")
+
+# Follow a section that moved.
+if sec.get("actStatus") == "renumbered" and sec.get("renumberedTo"):
+    sec = section(sec["renumberedTo"])
+
+print(sec.get("citation"), "-", sec.get("currencyNote") or "no currency note")
+```
+
+```javascript JavaScript
+const BASE_URL = "https://api.vaquill.ai/api/v1";
+const HEADERS = { Authorization: "Bearer vq_key_..." };
+
+async function section(actId) {
+  const r = await fetch(`${BASE_URL}/statutes/section/${actId}`, { headers: HEADERS });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return (await r.json()).section;
+}
+
+let sec = await section("USC_T42_C21_S1983");
+if (sec.goodLawStatus === "not_good_law") {
+  console.warn(`Do not rely on ${sec.citation}: ${sec.actStatus}`);
+}
+if (sec.actStatus === "renumbered" && sec.renumberedTo) {
+  sec = await section(sec.renumberedTo);
+}
+```
+</CodeGroup>
+
+<Note>
+  State regulations ingested from the dated 2024 snapshot tier carry
+  `actStatus: "snapshot"` and resolve to `goodLawStatus: "unknown"`. That is by
+  design: those sections are not on a refresh cycle, so we do not claim they are
+  current. Call [`/statutes/coverage`](/api-guide/concepts/jurisdictions) to see
+  which corpora are refreshed versus snapshot.
+</Note>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Section Identifiers" icon="hashtag" href="/api-guide/concepts/section-ids">
+    The `actId` handle and the search then section then body workflow.
+  </Card>
+  <Card title="Corpus Types" icon="layer-group" href="/api-guide/concepts/corpus-types">
+    The corpora you can query and how to scope with `corpusType`.
+  </Card>
+  <Card title="Grounding LLMs" icon="shield-halved" href="/api-guide/grounding-llms">
+    Cite only good-law sections and link back to the official source.
+  </Card>
+  <Card title="Coverage" icon="table" href="/api-guide/coverage">
+    Which corpora are refreshed versus snapshot, per jurisdiction.
+  </Card>
+</CardGroup>

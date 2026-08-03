@@ -26,6 +26,61 @@ Use `html` when you are displaying the section in a UI and want its structure
 preserved. Use `plain` when you are feeding the text to an LLM in your stack or
 doing plain-text processing. Always check `available` first.
 
+## Structured text and pincites
+
+Pass `?structured=true` to `GET /statutes/section/{actId}/body` for two more
+representations parsed from the text, at no extra cost:
+
+| Field | Contains |
+|---|---|
+| `markdown` | The body as nested Markdown lists, one level per subsection depth (string or `null`) |
+| `subsections` | A tree of the section's subsections for pincite addressing (array or `null`) |
+
+Each node in `subsections` carries its marker and where it sits:
+
+| Field | Contains |
+|---|---|
+| `label` | The marker as printed, e.g. `(b)` or `(2)` |
+| `pincite` | The marker path from the section root, e.g. `(b)(2)` |
+| `type` | The drafting level: `subsection`, `paragraph`, `subparagraph`, `clause`, or `subclause`. Use it to render the marker style (letters, numbers, roman). |
+| `citation` | The full pinpoint citation when known, e.g. `42 U.S.C. § 1983(b)(2)` |
+| `text` | The node's own text, excluding nested children |
+| `children` | Nested subsections one level deeper (same shape) |
+
+<CodeGroup>
+
+```bash cURL
+curl "https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body?structured=true" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+import requests
+
+data = requests.get(
+    "https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body",
+    headers={"Authorization": "Bearer vq_key_..."},
+    params={"structured": "true"},
+).json()
+
+def walk(nodes, depth=0):
+    for n in nodes:
+        print("  " * depth, n["pincite"], "->", (n["text"] or "")[:60])
+        walk(n["children"], depth + 1)
+
+walk(data["subsections"] or [])
+```
+
+</CodeGroup>
+
+<Note>
+  `subsections` is derived from the section text by the drafting convention
+  (`(a)` subsection, `(1)` paragraph, `(A)` subparagraph, `(i)` clause). It is
+  richest for USC and CFR; a section with no marked subsections returns
+  `subsections: []` with `markdown` equal to the plain text. Use `pincite` or
+  `citation` to deep-link or quote a specific subsection.
+</Note>
+
 ## Source URL fields
 
 Search results and the section metadata object carry a set of source URL fields.

@@ -4,20 +4,28 @@ description: "The deepest US statutes and regulations API, built for grounding A
 icon: "code"
 ---
 
-The Vaquill Developer API is the deepest US statutes and regulations API. Search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance. Every section comes back with a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into your product.
+The Vaquill Developer API is the deepest US statutes and regulations API. Search and retrieve the US Code, the Code of Federal Regulations, all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance. Every section comes back with a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into your product.
 
-## Endpoints at a glance
+## Capabilities
 
-Every path is prefixed with `/api/v1`.
+Every path is prefixed with `/api/v1`. Every result carries a citation, status and currency signals, and a link to the official government source.
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `POST` | `/statutes/search` | Hybrid keyword + semantic search across the corpus |
-| `GET` | `/statutes/section/{actId}` | Section metadata by `actId` |
-| `GET` | `/statutes/section/{actId}/body` | Full section text (HTML + plain) |
-| `GET` | `/statutes/states` | Coverage summary by jurisdiction |
-| `GET` | `/statutes/codes?state=XX` | Statutory codes ingested for one state |
-| `GET` | `/statutes/coverage` | Full coverage matrix + corpus legend |
+| Capability | Endpoint |
+|---|---|
+| Hybrid **semantic + keyword** search, scoped by corpus, jurisdiction, and code | `POST /statutes/search` |
+| Resolve a **Bluebook citation** to its exact section | `GET /statutes/resolve` |
+| **Browse the hierarchy** (titles to chapters or parts to sections) in statutory order | `GET /statutes/divisions` |
+| Section **metadata**, **full text**, and **neighboring sections** | `GET /statutes/section/{actId}`, `.../body`, `.../related` |
+| **Batch** metadata for up to 50 sections in one call | `POST /statutes/sections` |
+| Discover live **coverage**: jurisdictions, codes, and the corpus matrix | `GET /statutes/states`, `/codes`, `/coverage` |
+
+### Corpora
+
+**Federal:** US Code (`USC`), Code of Federal Regulations (`CFR`), Federal Register agency rules (`FEDERAL_REGISTER`), agency guidance (`AGENCY_GUIDANCE`), executive orders (`EXECUTIVE_ACTION`), Federal Rules of Procedure (`FEDERAL_RULES`), and the US Constitution (`CONSTITUTION`).
+
+**State, across 52 jurisdictions:** statutory codes (`STATE`), administrative regulations (`REGULATION`), constitutions (`STATE_CONSTITUTION`), and court rules (`STATE_RULES`).
+
+Scope any search with the `corpusType` token. See [Corpus Types](/api-guide/concepts/corpus-types) for what each holds.
 
 <Note>
   Coverage expands weekly. Call `/statutes/coverage` at runtime to see exactly what is queryable rather than hardcoding jurisdiction counts.
@@ -28,6 +36,9 @@ Every path is prefixed with `/api/v1`.
 <CardGroup cols={2}>
   <Card title="Use cases" icon="lightbulb" href="/api-guide/use-cases">
     Grounding AI, compliance mapping, legal research tools, and more.
+  </Card>
+  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+    Turn a Bluebook citation into the exact section, verified, with full text and an official link.
   </Card>
   <Card title="RAG grounding" icon="robot" href="/api-guide/recipes/rag-grounding">
     Feed authoritative statute text to an LLM in your stack, with citations and source links.
@@ -54,6 +65,8 @@ Every path is prefixed with `/api/v1`.
 ## Positioning
 
 Vaquill complements your existing legal research tools. It is built to ground and power products, always linking back to official government text, not to replace a lawyer or a licensed research service.
+
+It is self-serve and built for developers: create a key in the dashboard and make your first call in minutes, with hybrid semantic plus keyword search over authoritative US primary law and an official source link on every result.
 
 ## Related
 

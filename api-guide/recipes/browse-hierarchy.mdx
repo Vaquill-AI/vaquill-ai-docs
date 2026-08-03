@@ -1,0 +1,162 @@
+---
+title: "Browse the statute hierarchy"
+description: "Walk a code top to bottom with /statutes/divisions: titles, chapters, parts, and sections in statutory order"
+icon: "sitemap"
+---
+
+Search finds the section that answers a question, but it cannot enumerate a code. When you need the *structure*, titles then chapters then sections, in the order a human reads them, use `GET /statutes/divisions`. Each call returns the immediate children of wherever you are, so you can render a tree, build a table of contents, or crawl a whole title without paging through search.
+
+**Endpoint used:** `GET /statutes/divisions` (1 credit per call).
+
+<Note>
+  Browse supports `USC`, `CFR`, `STATE`, and `REGULATION`, the corpora with a clean drill-down tree. Constitutions, court rules, executive actions, the Federal Register, and agency guidance are flatter or heterogeneous; reach those with [`/statutes/search`](/api-guide/quickstart).
+</Note>
+
+## How drilling works
+
+Pass the deepest level you already know, and the response returns the level directly below it.
+
+| You pass | You get back (`level`) |
+|---|---|
+| `corpusType=USC` | the USC `titles` |
+| `corpusType=USC&titleNumber=42` | the `chapters` in Title 42 |
+| `corpusType=USC&titleNumber=42&chapter=21` | the `sections` in Chapter 21 (leaf) |
+| `corpusType=CFR&titleNumber=17` | the `parts` in Title 17 |
+| `corpusType=CFR&titleNumber=17&part=240` | the `sections` in Part 240 (leaf) |
+| `corpusType=STATE&state=tx` | the state's `codes` |
+| `corpusType=STATE&state=tx&code=tx_pe` | the `chapters` in the Texas Penal Code |
+
+Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back as the matching filter (`chapter`, `part`, or `code`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
+
+## One level
+
+<CodeGroup>
+```bash cURL
+curl -G https://api.vaquill.ai/api/v1/statutes/divisions \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "corpusType=USC" \
+  --data-urlencode "titleNumber=42"
+```
+
+```python Python
+import requests
+
+resp = requests.get(
+    "https://api.vaquill.ai/api/v1/statutes/divisions",
+    headers={"Authorization": "Bearer vq_key_..."},
+    params={"corpusType": "USC", "titleNumber": 42},
+)
+data = resp.json()
+print(data["level"], "under", data["parentLabel"])
+for node in data["divisions"]:
+    print(f'  {node["identifier"]}  {node["name"] or ""}  ({node.get("sectionCount")} sections)')
+```
+
+```javascript JavaScript
+const url = new URL("https://api.vaquill.ai/api/v1/statutes/divisions");
+url.searchParams.set("corpusType", "USC");
+url.searchParams.set("titleNumber", "42");
+const data = await (
+  await fetch(url, { headers: { Authorization: "Bearer vq_key_..." } })
+).json();
+for (const node of data.divisions) {
+  console.log(node.identifier, node.name ?? "", `(${node.sectionCount} sections)`);
+}
+```
+</CodeGroup>
+
+A trimmed response:
+
+```json
+{
+  "corpusType": "USC",
+  "level": "chapters",
+  "parentLabel": "Title 42",
+  "divisions": [
+    { "identifier": "21", "name": "Civil Rights", "kind": "chapter", "isLeaf": false, "sectionCount": 62 },
+    { "identifier": "21A", "name": "Privacy Protection", "kind": "chapter", "isLeaf": false, "sectionCount": 9 }
+  ],
+  "count": 2
+}
+```
+
+## Walk a whole title
+
+Drill from a title to its chapters, then each chapter to its sections. Leaf nodes carry the `actId` you use to fetch metadata or full text.
+
+```python Python
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def divisions(**params) -> dict:
+    resp = requests.get(f"{BASE}/statutes/divisions", headers=HEADERS, params=params)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def walk_title(corpus_type: str, title_number: int) -> None:
+    chapters = divisions(corpusType=corpus_type, titleNumber=title_number)
+    for ch in chapters["divisions"]:
+        print(f'Chapter {ch["identifier"]}: {ch["name"] or ""}')
+        sections = divisions(
+            corpusType=corpus_type, titleNumber=title_number, chapter=ch["identifier"]
+        )
+        for sec in sections["divisions"]:
+            # sec["actId"] -> GET /statutes/section/{actId} or .../body
+            print(f'  § {sec["identifier"]}  {sec["name"] or ""}  [{sec["actId"]}]')
+
+
+walk_title("USC", 42)
+```
+
+<Warning>
+  A leaf listing is bounded to keep one call fast, so an unusually large chapter can be truncated. Chapters are small in practice; if you are enumerating a very large flat state code, scope with [`/statutes/search`](/api-guide/concepts/corpus-types) using the `code` filter instead of listing every section at once.
+</Warning>
+
+## Search within a container
+
+Browse and search meet at the `parent` object. Every search result carries a `parent`: the ready-made query that lists its siblings. Its keys (`titleNumber`, `chapter`, `part`, `code`) are also accepted by `POST /statutes/search`, so you can take any hit and run a keyword search confined to its chapter or part, without building the scope yourself.
+
+```python Python
+import requests
+
+BASE = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def search(body: dict) -> dict:
+    resp = requests.post(f"{BASE}/statutes/search", headers=HEADERS, json=body)
+    resp.raise_for_status()
+    return resp.json()
+
+
+# 1. Find one on-point section.
+hit = search({"query": "insider trading", "corpusType": "CFR", "limit": 1})["results"][0]
+
+# 2. Reuse its parent to search only within that part (17 C.F.R. Part 240).
+neighbors = search({"query": "manipulative devices", "limit": 10, **hit["parent"]})
+for r in neighbors["results"]:
+    print(r["actId"], r["citation"])
+```
+
+`chapter` and `part` accept a single value or a list, and must be paired with `titleNumber` (USC/CFR) or `code` (state), which `parent` always includes. A chapter number alone repeats across every title, so an unpaired `chapter`/`part` is rejected with `422`.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Section Identifiers" icon="hashtag" href="/api-guide/concepts/section-ids">
+    The `actId` you get from a leaf node, and how to fetch its metadata and text.
+  </Card>
+  <Card title="Corpus Types" icon="layer-group" href="/api-guide/concepts/corpus-types">
+    The corpora you can browse and how to scope with `corpusType` and `state`.
+  </Card>
+  <Card title="Jurisdictions & State Codes" icon="map-location-dot" href="/api-guide/concepts/jurisdictions">
+    Discover the `code` values that seed a state browse via `/statutes/codes`.
+  </Card>
+  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+    Go straight to a section from a Bluebook citation instead of walking to it.
+  </Card>
+</CardGroup>

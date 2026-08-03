@@ -33,13 +33,9 @@ Ask a legal question, pick your jurisdictions, and get a comparison memo where e
 | --- | --- | --- | --- |
 | Matter / memo title | Text | No | The memo title. |
 | **Legal question** | Long text | **Yes** | Frame it as a question. The workflow decomposes it into two to six narrow sub-questions that become the columns of the comparison matrix. Example: "Are post-employment non-compete covenants enforceable, and if so what limits apply?" |
-| **Jurisdictions** | Multi-select | **Yes** | Federal (USC/CFR) plus 49 states. |
+| **Jurisdictions** | Multi-select | **Yes** | Federal (USC/CFR) plus all 50 states, DC, and Puerto Rico. |
 | Practice area | Select | No | Calibrates the decomposition. An employment non-compete question generates different sub-questions than a commercial assignment question. |
 | Sub-questions (override) | Long text | No | Power-user override. Supply your own column headers, one per line, formatted `Label -- Question`. When supplied, the legal question is not decomposed further. |
-
-<Warning>
-  **DC and Indiana are not supported** and are rejected before the run starts. The remaining 49 states and the federal corpus are available.
-</Warning>
 
 ## How it runs
 
@@ -72,7 +68,6 @@ Ask a legal question, pick your jurisdictions, and get a comparison memo where e
 ## What this will not do
 
 - **Cite case law.** The memo is built from statutes only. Where the statutory text is silent, the answer is honestly labeled "no on-point statute" rather than guessed at.
-- Cover DC or Indiana. Those jurisdictions are rejected before the run starts.
 - Replace primary-source verification. Every citation is verified against its cited section, but pull the underlying section before you rely on it.
 - Detect recent legislative changes that have not yet entered the research base. Recency flags surface only when the cited statute text itself mentions a recent enactment year.
 - Resolve genuine splits with judgment. The memo names the majority rule and the outliers; you decide which authority controls in your venue.

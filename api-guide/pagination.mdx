@@ -11,7 +11,7 @@ Only `POST /statutes/search` is paginated. Two request fields control the window
 | Field | Type | Default | Range | Purpose |
 |-------|------|---------|-------|---------|
 | `limit` | int | 10 | 1 to 50 | Page size, the number of results returned |
-| `offset` | int | 0 | 0 to 40 | Number of results to skip before this page |
+| `offset` | int | 0 | 0 to 70 | Number of results to skip before this page |
 
 ## Response fields
 
@@ -28,10 +28,10 @@ Each search response includes these top-level fields:
 
 ## How deep you can page
 
-The deepest reachable result is `offset + limit`. Because `offset` is capped at `40` (the reranking window), the furthest you can page is offset `40` plus your `limit`. To reach the last results, request the largest page size:
+The deepest reachable result is `offset + limit`. The full candidate pool is ranked once per query and cached, so every page, including deep ones, is a free slice of that ranking with no extra search or rerank. With the largest page size, `offset` up to `70` reaches the entire reranked pool:
 
 ```json
-{ "query": "data breach notification", "limit": 50, "offset": 40 }
+{ "query": "data breach notification", "limit": 50, "offset": 70 }
 ```
 
 <Note>
@@ -65,9 +65,9 @@ def search_all(query, corpus_type=None, state=None, page_size=50):
         results.extend(data["results"])
 
         # Stop when the API says there is no more, or we hit the offset cap.
-        if not data["hasMore"] or offset >= 40:
+        if not data["hasMore"] or offset >= 70:
             break
-        offset = min(offset + page_size, 40)
+        offset = min(offset + page_size, 70)
 
     return results
 
@@ -95,8 +95,8 @@ async function searchAll(query, { corpusType, state, pageSize = 50 } = {}) {
     ).json();
     results.push(...data.results);
 
-    if (!data.hasMore || offset >= 40) break;
-    offset = Math.min(offset + pageSize, 40);
+    if (!data.hasMore || offset >= 70) break;
+    offset = Math.min(offset + pageSize, 70);
   }
   return results;
 }

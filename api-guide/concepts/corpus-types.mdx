@@ -24,9 +24,9 @@ search one jurisdiction's data.
 | `CFR` | Code of Federal Regulations | federal | 219,745 |
 | `CONSTITUTION` | U.S. Constitution (Articles + Amendments) | federal | 74 |
 | `FEDERAL_RULES` | Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) | federal | 541 |
-| `EXECUTIVE_ACTION` | Presidential documents (executive orders, proclamations, memos) | federal | 3,593 |
-| `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | federal | 121,214 |
-| `AGENCY_GUIDANCE` | Agency guidance (SSA rulings, IRS notices, revenue rulings and procedures) | federal | 2,509 |
+| `EXECUTIVE_ACTION` | Presidential documents (executive orders, proclamations, memos) | federal | 3,620 |
+| `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | federal | 195,895 |
+| `AGENCY_GUIDANCE` | Agency guidance (SSA rulings, IRS notices, revenue rulings and procedures) | federal | 2,520 |
 
 ### State-scoped
 
@@ -131,11 +131,75 @@ for (const r of data.results) {
   guessing.
 </Tip>
 
+## Example: Federal Register and agency guidance
+
+Both are **federal**, so they need only a `corpusType`, no `state`.
+`FEDERAL_REGISTER` searches agency rules as published (proposed and final).
+`AGENCY_GUIDANCE` searches sub-regulatory guidance: SSA rulings, IRS notices,
+revenue rulings and procedures, plus a set of primary-sourced **reference
+figures**, the annually adjusted dollar thresholds (for example the Subchapter V
+debt limit, or SALT and CTC values) that do not live in USC or CFR section text.
+
+<CodeGroup>
+
+```bash cURL
+# Agency guidance, including the annually adjusted figure records
+curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "2026 Subchapter V debt limit", "corpusType": "AGENCY_GUIDANCE", "limit": 5}'
+```
+
+```python Python
+import requests
+
+resp = requests.post(
+    "https://api.vaquill.ai/api/v1/statutes/search",
+    headers={"Authorization": "Bearer vq_key_..."},
+    json={
+        "query": "2026 Subchapter V debt limit",
+        "corpusType": "AGENCY_GUIDANCE",
+        "limit": 5,
+    },
+)
+for r in resp.json()["results"]:
+    print(r["citation"], "-", r["title"])
+```
+
+```javascript JavaScript
+const resp = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer vq_key_...",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    query: "2026 Subchapter V debt limit",
+    corpusType: "AGENCY_GUIDANCE",
+    limit: 5,
+  }),
+});
+const data = await resp.json();
+for (const r of data.results) console.log(r.citation, "-", r.title);
+```
+
+</CodeGroup>
+
+Swap `corpusType` to `FEDERAL_REGISTER` to search published agency rules the same way.
+
+<Note>
+  `FEDERAL_REGISTER` and `AGENCY_GUIDANCE` are **search-only**. They are flat, not
+  a title/chapter tree, so `/statutes/divisions` does not browse them, and
+  `/statutes/resolve` parses statute and regulation citations (USC, CFR, state
+  codes), not Federal Register or guidance citations. Reach both through
+  `/statutes/search`, then `/statutes/section/{actId}` and `.../body`.
+</Note>
+
 ## Related
 
 <CardGroup cols={2}>
   <Card title="Jurisdictions & State Codes" icon="map-location-dot" href="/api-guide/concepts/jurisdictions">
-    The 51 jurisdictions, state codes, and how to discover live coverage.
+    The 52 jurisdictions, state codes, and how to discover live coverage.
   </Card>
   <Card title="API Coverage" icon="layer-group" href="/api-guide/coverage">
     The full per-jurisdiction matrix with current section counts.
