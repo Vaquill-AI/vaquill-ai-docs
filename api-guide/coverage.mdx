@@ -166,6 +166,30 @@ any jurisdiction.
   Constitutions and court rules roll out state by state.
 </Note>
 
+## Coming next
+
+Federal corpora being built now. Each one goes through the same pipeline as
+everything above - ingested from the official source, chunked and embedded for
+hybrid search, citation-linked, and put on a recurring refresh - so it lands
+queryable through the same `corpusType` filter.
+
+| Source | What it adds | Official source |
+|---|---|---|
+| Federal Register notices | The third Federal Register document class. We carry final and proposed rules today; notices cover meeting announcements, information collections, agency determinations, and grant availability. | govinfo, federalregister.gov |
+| US Supreme Court Rules | The Rules of the Supreme Court of the United States, alongside the Federal Rules of Procedure already covered. | supremecourt.gov |
+| Public Laws / Statutes at Large | Slip laws as enacted, before codification into the US Code. Lets you cite an act by public law number and trace it to the sections it amended. | govinfo |
+| OLC and Attorney General opinions | Office of Legal Counsel opinions plus formal AG opinions - the executive branch's own binding legal interpretations. | justice.gov/olc |
+| GAO decisions | Comptroller General decisions on appropriations law and bid protests. | gao.gov |
+| Agency sub-regulatory guidance | Interpretive guidance from DOL, EEOC, HHS/OCR, FTC, SEC, and CFPB, rolled out one agency at a time. | Each agency |
+
+<Note>
+  This is a roadmap, not a ship schedule - none of these are queryable yet, and
+  we are not committing to dates. `GET /statutes/coverage` is self-describing:
+  new corpora appear there as they land, so polling it is the reliable way to
+  detect one. See [Coverage monitoring](/api-guide/recipes/coverage-monitoring)
+  for a scheduled diff you can wire up.
+</Note>
+
 ## How to query a jurisdiction
 
 ```bash
