@@ -63,7 +63,9 @@ def search_with_retry(query, max_retries=3):
             json={"query": query}
         )
         if response.status_code == 429:
-            time.sleep(2 ** attempt)
+            # Respect Retry-After when present, else exponential backoff.
+            wait = int(response.headers.get("Retry-After", 2 ** attempt))
+            time.sleep(wait)
             continue
         return response
     raise Exception("Max retries exceeded")

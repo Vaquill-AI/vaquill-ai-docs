@@ -131,7 +131,7 @@ body), the `citation`, and the source URLs.
     {
       "actId": "USC_T42_C21_S1983",
       "citation": "42 U.S.C. § 1983",
-      "citationShort": "42 USC 1983",
+      "citationShort": "42 U.S.C. § 1983",
       "title": "Civil action for deprivation of rights",
       "corpusType": "USC",
       "relevanceScore": 0.82,
@@ -220,9 +220,9 @@ if __name__ == "__main__":
 
 <Warning>
   Ground on the full section text from `/body`, not on the `excerpt` from search.
-  The excerpt is capped at 500 characters and is meant for ranking, not for
-  quoting. Passing only excerpts to the model invites partial or misleading
-  answers.
+  The excerpt defaults to 500 characters (raisable to 4000 via `excerptChars`) and
+  is meant for ranking, not for quoting. Passing only excerpts to the model invites
+  partial or misleading answers.
 </Warning>
 
 ## Why this holds up

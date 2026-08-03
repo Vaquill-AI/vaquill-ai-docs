@@ -320,6 +320,13 @@
         "icon": "code",
         "groups": [
           {
+            "group": "Data Coverage",
+            "icon": "database",
+            "pages": [
+              "api-guide/coverage"
+            ]
+          },
+          {
             "group": "Get Started",
             "icon": "rocket",
             "pages": [
@@ -347,13 +354,6 @@
               "api-guide/rate-limits",
               "api-guide/errors",
               "api-guide/best-practices"
-            ]
-          },
-          {
-            "group": "Data",
-            "icon": "database",
-            "pages": [
-              "api-guide/coverage"
             ]
           },
           {

@@ -32,7 +32,7 @@ Four steps turn a raw question into a grounded, verifiable answer.
   </Step>
 
   <Step title="Fetch the authoritative text">
-    The search `excerpt` is capped at 500 characters, which is enough to rank but not to answer. For each section you plan to cite, call `GET /statutes/section/{actId}/body` to get the full `plain` (or `html`) text. This is the authoritative text the model will reason over.
+    The search `excerpt` defaults to 500 characters (raise it with `excerptChars`, up to 4000), which is enough to rank but not always to answer. For each section you plan to cite, call `GET /statutes/section/{actId}/body` to get the full `plain` (or `html`) text. This is the authoritative text the model will reason over.
   </Step>
 
   <Step title="Construct a grounded prompt">

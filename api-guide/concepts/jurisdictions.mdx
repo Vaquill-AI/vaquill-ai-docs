@@ -74,7 +74,7 @@ data = resp.json()["data"]
 ca = next(j for j in data["jurisdictions"] if j["code"] == "ca")
 print(ca["name"], ca["kind"], ca["sectionCount"])
 print("available corpora:", list(ca["corpora"].keys()))
-# e.g. ['STATE', 'STATE_CONSTITUTION', 'STATE_RULES']
+# e.g. ['STATE', 'REGULATION', 'STATE_CONSTITUTION', 'STATE_RULES']
 ```
 
 ```javascript JavaScript
@@ -87,7 +87,7 @@ const { data } = await resp.json();
 const ca = data.jurisdictions.find((j) => j.code === "ca");
 console.log(ca.name, ca.kind, ca.sectionCount);
 console.log("available corpora:", Object.keys(ca.corpora));
-// e.g. ['STATE', 'STATE_CONSTITUTION', 'STATE_RULES']
+// e.g. ['STATE', 'REGULATION', 'STATE_CONSTITUTION', 'STATE_RULES']
 ```
 
 </CodeGroup>
