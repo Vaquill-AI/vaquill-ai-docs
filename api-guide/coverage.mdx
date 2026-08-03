@@ -11,8 +11,8 @@ and case law. The **Developer API** (`/statutes/*`) serves statutes, regulations
 constitutions, court rules, and executive actions, scoped with the `corpusType`
 filter; case law is available in the platform. Coverage is queryable live from
 `GET /statutes/coverage` and `GET /statutes/states`; the per-corpus matrix below
-is a snapshot. In total the ingested corpus holds **over 3.8M sections** across all
-of these corpus types.
+is a snapshot. In total the ingested corpus holds **over 3.8M distinct sections**
+across all of these corpus types, indexed as **more than 9.8M retrieval passages**.
 
 <Info>
   **Snapshot date: 2026-08-03.** Statute coverage is always live via
@@ -21,12 +21,13 @@ of these corpus types.
 </Info>
 
 <Note>
-  Counts on this page are the ingested-passage totals `GET /statutes/coverage`
-  returns, so they match what you get back live. Most provisions are a single
-  passage; longer sections and documents are split into a few passages internally
-  so retrieval can target the relevant part. That split does not change what the
-  API returns: a lookup by citation still resolves to one section with its full
-  text.
+  Counts on this page are **distinct sections** (one per provision or document),
+  the same figures `GET /statutes/coverage` returns. For retrieval, longer sections
+  and documents are split into multiple passages, so the underlying index holds far
+  more entries: **about 9.8M passages** across these 3.84M sections. The Federal
+  Register alone (long agency rules, 13-15 passages each) accounts for over half of
+  them. That split does not change what the API returns: a lookup by citation still
+  resolves to one section with its full text.
 </Note>
 
 ## What's in the corpus
@@ -83,9 +84,9 @@ them.
 
 ## State and territory matrix
 
-Counts are the ingested-passage totals `/statutes/coverage` returns. A dash means
-that corpus type is not yet ingested for that jurisdiction. Sorted by statute
-volume.
+Counts are distinct sections (documents), the same figures `/statutes/coverage`
+returns. A dash means that corpus type is not yet ingested for that jurisdiction.
+Sorted by statute volume.
 
 An asterisk (\*) on a regulation count marks the **2024 snapshot tier**: those
 sections carry `actStatus: "snapshot"`, resolve to `goodLawStatus: "unknown"`,
