@@ -168,26 +168,69 @@ any jurisdiction.
 
 ## Coming next
 
-Federal corpora being built now. Each one goes through the same pipeline as
-everything above - ingested from the official source, chunked and embedded for
-hybrid search, citation-linked, and put on a recurring refresh - so it lands
-queryable through the same `corpusType` filter.
+Federal corpora we do not serve yet. All of them are work in progress and
+targeted to land by the **start of Q4 2026**. Each goes through the same
+pipeline as everything above - ingested from the official source, chunked and
+embedded for hybrid search, citation-linked, and put on a recurring refresh -
+so it arrives queryable through the same `corpusType` filter.
+
+### Federal law and court rules
 
 | Source | What it adds | Official source |
 |---|---|---|
 | Federal Register notices | The third Federal Register document class. We carry final and proposed rules today; notices cover meeting announcements, information collections, agency determinations, and grant availability. | govinfo, federalregister.gov |
+| Public Laws / Statutes at Large | Slip laws as enacted, before codification into the US Code. Public law numbers appear as a metadata field today, but the acts themselves are not served as documents. | govinfo |
 | US Supreme Court Rules | The Rules of the Supreme Court of the United States, alongside the Federal Rules of Procedure already covered. | supremecourt.gov |
-| Public Laws / Statutes at Large | Slip laws as enacted, before codification into the US Code. Lets you cite an act by public law number and trace it to the sections it amended. | govinfo |
 | OLC and Attorney General opinions | Office of Legal Counsel opinions plus formal AG opinions - the executive branch's own binding legal interpretations. | justice.gov/olc |
 | GAO decisions | Comptroller General decisions on appropriations law and bid protests. | gao.gov |
-| Agency sub-regulatory guidance | Interpretive guidance from DOL, EEOC, HHS/OCR, FTC, SEC, and CFPB, rolled out one agency at a time. | Each agency |
+
+### Tax
+
+Four IRS corpora, none currently served.
+
+| Source | What it adds |
+|---|---|
+| Chief Counsel Advice | Written determinations issued by IRS Chief Counsel to field offices. |
+| Private Letter Rulings | Taxpayer-specific rulings on the application of tax law to a proposed transaction. |
+| Tax Treaty Technical Explanations | Treasury's official article-by-article commentary on each treaty. |
+| US Tax Treaties | The bilateral income and estate tax treaties themselves. |
+
+### Agencies not yet covered
+
+No documents from these agencies are in the corpus today. Counts are the
+document categories planned for each.
+
+| Agency | Categories | Domain |
+|---|---|---|
+| FTC | 5 | Consumer protection and competition |
+| DOJ Antitrust Division | 3 | Merger and conduct enforcement |
+| SEC | 3 | Securities regulation and disclosure |
+| CBP (Customs) | 3 | Import classification, valuation, and admissibility |
+| CFPB | 2 | Consumer financial protection |
+| US Copyright Office | 2 | Registration and copyright practice |
+| DOJ guidance (Justice Manual) | 2 | Federal prosecution and DOJ internal policy |
+| USPTO (MPEP, TMEP) | 2 | Patent and trademark examining procedure |
+| DOL Wage and Hour Division | 2 | Wage, hour, and leave enforcement |
+
+### Other federal guidance
+
+| Source | Domain |
+|---|---|
+| CMS Medicare Manuals | Medicare coverage, billing, and program administration |
+| DOJ ADA Guidance | Disability access and accommodation |
+| EEOC Guidance | Employment discrimination |
+| FDA Guidance Documents | Drug, device, and food regulation |
+| FDA Warning Letters | Enforcement correspondence to regulated entities |
+| HUD Fair Housing | Housing discrimination |
+| OFAC FAQs | Sanctions compliance |
+| USCIS Policy Manual | Immigration benefits adjudication |
 
 <Note>
-  This is a roadmap, not a ship schedule - none of these are queryable yet, and
-  we are not committing to dates. `GET /statutes/coverage` is self-describing:
+  None of these are queryable yet. `GET /statutes/coverage` is self-describing:
   new corpora appear there as they land, so polling it is the reliable way to
-  detect one. See [Coverage monitoring](/api-guide/recipes/coverage-monitoring)
-  for a scheduled diff you can wire up.
+  detect one rather than tracking this page. See
+  [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled
+  diff you can wire up.
 </Note>
 
 ## How to query a jurisdiction
