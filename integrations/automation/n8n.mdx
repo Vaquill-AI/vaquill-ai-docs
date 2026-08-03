@@ -265,7 +265,9 @@ Either way, the same `n8n-workflow.json` import works.
 
 ### Make.com tiers
 
-Make.com is cloud-only. The free tier covers ~1,000 operations per month, which is enough for small batches. Paid plans scale up. Make.com counts each HTTP module call and each sheet row read / written, so a single Vaquill search typically consumes 3 operations (read row, call API, write row).
+Make.com is cloud-only. The free tier covers ~1,000 operations per month, which is enough for small batches. Paid plans scale up.
+
+Make.com counts each HTTP module call and each sheet row read / written, so a single Vaquill search typically consumes 3 operations (read row, call API, write row).
 
 <Tip>
   For large nightly batches, n8n is usually more economical because pricing is per workflow execution, not per node operation.

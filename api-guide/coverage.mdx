@@ -6,18 +6,21 @@ icon: "map-location-dot"
 
 This page lists the US legal data Vaquill has ingested, by corpus type and by
 jurisdiction. Vaquill covers the full stack of US primary law, not just statutes:
-federal law, state statutes, state constitutions, court rules, state regulations,
-and case law. The **Developer API** (`/statutes/*`) serves statutes, regulations,
-constitutions, court rules, and executive actions, scoped with the `corpusType`
-filter; case law is available in the platform. Coverage is queryable live from
-`GET /statutes/coverage` and `GET /statutes/states`; the per-corpus matrix below
-is a snapshot. In total the ingested corpus holds **over 4.8M distinct sections**
-across all of these corpus types, indexed as **more than 9.8M retrieval passages**.
+federal law, state statutes, state constitutions, court rules, and state
+regulations.
+
+The **Developer API** (`/statutes/*`) serves statutes, regulations, constitutions,
+court rules, and executive actions, scoped with the `corpusType` filter.
+
+Coverage is queryable live from `GET /statutes/coverage` and `GET /statutes/states`;
+the per-corpus matrix below is a snapshot. In total the ingested corpus holds
+**over 4.8M distinct sections** across all of these corpus types, indexed as
+**more than 9.8M retrieval passages**.
 
 <Info>
   **Snapshot date: 2026-08-03.** Statute coverage is always live via
-  `/statutes/states` and `/statutes/codes`. Constitutions, court rules and case
-  law are an expanding set.
+  `/statutes/states` and `/statutes/codes`. Constitutions and court rules are an
+  expanding set.
 </Info>
 
 <Note>
@@ -25,8 +28,10 @@ across all of these corpus types, indexed as **more than 9.8M retrieval passages
   the same figures `GET /statutes/coverage` returns. For retrieval, longer sections
   and documents are split into multiple passages, so the underlying index holds far
   more entries: **about 9.8M passages** across these 4.8M sections. The Federal
-  Register alone (long agency rules, 13-15 passages each) accounts for over half of
-  them. That split does not change what the API returns: a lookup by citation still
+  Register alone (long agency rules, 13-15 passages each) accounts for over
+  half of them.
+
+  That split does not change what the API returns: a lookup by citation still
   resolves to one section with its full text.
 </Note>
 
@@ -47,9 +52,6 @@ across all of these corpus types, indexed as **more than 9.8M retrieval passages
   </Card>
   <Card title="State regulations" icon="clipboard-list">
     **45 states**, **1.16M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
-  </Card>
-  <Card title="Case law" icon="scale-balanced">
-    Federal opinions from the Supreme Court through the District Courts (all 13 Circuits), plus state appellate and supreme court opinions across all 50 states, with inline citation resolution. Available in the platform.
   </Card>
 </CardGroup>
 

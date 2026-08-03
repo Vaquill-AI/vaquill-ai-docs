@@ -51,7 +51,9 @@ WhatsApp does not allow direct bot integrations - you connect through a Business
     </Warning>
   </Step>
   <Step title="Activate the WhatsApp Sandbox">
-    Console > **Messaging > Try it out > Send a WhatsApp message**. You will see a sandbox number (typically `+1 (415) 523-8886`) and a join code like `join brave-tiger`. From your personal WhatsApp, send that exact message to the sandbox number. You should receive *"You are all set!"*.
+    Console > **Messaging > Try it out > Send a WhatsApp message**. You will see a sandbox number (typically `+1 (415) 523-8886`) and a join code like `join brave-tiger`.
+
+    From your personal WhatsApp, send that exact message to the sandbox number. You should receive *"You are all set!"*.
 
     The sandbox number becomes your `TWILIO_WHATSAPP_NUMBER`, formatted as `whatsapp:+14155238886`.
   </Step>
@@ -221,7 +223,9 @@ volumes:
 
 <CardGroup cols={2}>
   <Card title="Render" icon="cloud">
-    New Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`. Free tier cold-starts in 30-60s - keep warm with an uptime monitor.
+    New Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
+
+    Free tier cold-starts in 30-60s - keep warm with an uptime monitor.
   </Card>
   <Card title="Railway" icon="train">
     Auto-detects Python. Add env vars under Variables, get a `.up.railway.app` URL.

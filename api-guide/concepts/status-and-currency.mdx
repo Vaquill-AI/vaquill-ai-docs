@@ -33,10 +33,12 @@ A derived, conservative verdict that answers "can I rely on this section today?"
 | `unknown` | The jurisdiction has no reliable repeal signal, so we do not claim it is current. |
 
 <Warning>
-  `goodLawStatus` is deliberately conservative. Some jurisdictions do not publish a
-  reliable repeal signal, so their sections resolve to `unknown` rather than
-  over-claiming `good_law`. Treat `unknown` as "verify against the official source,"
-  not as "current." The field is `null` when currency checking is disabled.
+  `goodLawStatus` is deliberately conservative. Some jurisdictions do not
+  publish a reliable repeal signal, so their sections resolve to `unknown`
+  rather than over-claiming `good_law`.
+
+  Treat `unknown` as "verify against the official source," not as "current."
+  The field is `null` when currency checking is disabled.
 </Warning>
 
 ## Currency and move pointers

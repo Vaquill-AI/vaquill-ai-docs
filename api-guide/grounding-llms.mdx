@@ -54,7 +54,9 @@ A few habits keep grounded answers accurate and cheap.
 
 <AccordionGroup>
   <Accordion title="Scope retrieval to the right corpusType" icon="filter">
-    Searching the entire corpus for a question that only a state penal code can answer pulls in noise that competes for the model's attention. Pass the narrowest `corpusType` that fits (for example `USC` for federal statutes, or `STATE` with `state: "ca"` for California codes). If you are unsure which corpora a jurisdiction has, call `GET /statutes/coverage` and read the `corpora` keys before you search. See [Coverage](/api-guide/coverage).
+    Searching the entire corpus for a question that only a state penal code can answer pulls in noise that competes for the model's attention. Pass the narrowest `corpusType` that fits (for example `USC` for federal statutes, or `STATE` with `state: "ca"` for California codes).
+
+    If you are unsure which corpora a jurisdiction has, call `GET /statutes/coverage` and read the `corpora` keys before you search. See [Coverage](/api-guide/coverage).
   </Accordion>
 
   <Accordion title="Keep the retrieved text verbatim" icon="quote-left">
@@ -66,11 +68,15 @@ A few habits keep grounded answers accurate and cheap.
   </Accordion>
 
   <Accordion title="Treat relevanceScore as a relative rank, not a threshold" icon="ranking-star">
-    `relevanceScore` orders results within a single response. It is not a calibrated confidence score and is not comparable across queries. Do not drop results below a fixed cutoff like `0.5` or trust a high score as proof of relevance. Use it to order what you show, and let the grounded prompt decide whether the sections actually answer the question.
+    `relevanceScore` orders results within a single response. It is not a calibrated confidence score and is not comparable across queries.
+
+    Do not drop results below a fixed cutoff like `0.5` or trust a high score as proof of relevance. Use it to order what you show, and let the grounded prompt decide whether the sections actually answer the question.
   </Accordion>
 
   <Accordion title="Verify the model's citations before showing the answer" icon="circle-check">
-    A grounded model should only cite sections you retrieved, but verify it anyway. Before rendering, check that every `actId` or citation the model used appears in the set you passed in. Drop or flag anything that does not match. This catches the rare case where the model reaches back into its own memory instead of the provided context.
+    A grounded model should only cite sections you retrieved, but verify it anyway. Before rendering, check that every `actId` or citation the model used appears in the set you passed in.
+
+    Drop or flag anything that does not match. This catches the rare case where the model reaches back into its own memory instead of the provided context.
   </Accordion>
 </AccordionGroup>
 

@@ -9,7 +9,9 @@ keywords: ["vaquill signal bot", "signal legal ai", "signal-cli-rest-api", "sign
 A Signal messenger bot for Vaquill, built on the unofficial [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) and the [signalbot](https://github.com/signalbot-org/signalbot) Python framework. Two Docker containers - `signal-cli` (handles the Signal protocol) and `signal-bot` (Python app calling Vaquill) - communicate over a local WebSocket. Source code at [github.com/Vaquill-AI/integrations/signal-bot](https://github.com/Vaquill-AI/integrations/tree/main/signal-bot).
 
 <Warning>
-  Signal does not offer an official bot API. This integration uses the unofficial signal-cli project. **Account ban risk** exists if Signal's anti-abuse systems detect bot-like behavior. Keep volume low, use a dedicated phone number, and pin Docker image versions in production.
+  Signal does not offer an official bot API. This integration uses the unofficial signal-cli project.
+
+  **Account ban risk** exists if Signal's anti-abuse systems detect bot-like behavior. Keep volume low, use a dedicated phone number, and pin Docker image versions in production.
 </Warning>
 
 ## Features

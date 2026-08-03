@@ -56,7 +56,9 @@ You need a Slack app with bot scopes, event subscriptions, two slash commands, a
     Create `/vaquill` and `/vaquill-help` under **Slash Commands**. Use `https://your-domain.com/slack/events` as the Request URL for HTTP mode.
   </Step>
   <Step title="Enable Socket Mode (recommended for dev)">
-    Under **Socket Mode**, toggle it on. When prompted, create an **App-Level Token** with the `connections:write` scope. Copy the token (starts with `xapp-`) - this is your `SLACK_APP_TOKEN`. Skip this step if you want HTTP mode.
+    Under **Socket Mode**, toggle it on. When prompted, create an **App-Level Token** with the `connections:write` scope. Copy the token (starts with `xapp-`) - this is your `SLACK_APP_TOKEN`.
+
+    Skip this step if you want HTTP mode.
   </Step>
   <Step title="Install to workspace and copy credentials">
     Under **OAuth & Permissions**, click **Install to Workspace**. Copy the **Bot User OAuth Token** (starts with `xoxb-`) as `SLACK_BOT_TOKEN`. Under **Basic Information > App Credentials**, copy the **Signing Secret** as `SLACK_SIGNING_SECRET`.
@@ -181,7 +183,9 @@ docker run -d --name vaquill-slack-bot \
     Push the repo, set env vars in the Railway dashboard. Railway provisions an HTTPS domain you can paste into Slack's Request URLs.
   </Card>
   <Card title="Render" icon="cloud">
-    Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`. Free tier sleeps after 15 minutes - slash commands may time out on cold starts.
+    Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
+
+    Free tier sleeps after 15 minutes - slash commands may time out on cold starts.
   </Card>
   <Card title="Fly.io" icon="plane">
     `fly launch`, then `fly secrets set ...` for each env var, then `fly deploy`.

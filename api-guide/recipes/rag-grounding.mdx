@@ -237,9 +237,11 @@ if __name__ == "__main__":
   <Accordion title="Scope narrows retrieval, and narrow retrieval grounds better" icon="crosshairs">
     When you know the question is federal, pass `corpusType: "USC"` or `"CFR"`.
     When it is about one state, pass `corpusType: "STATE"` with the two-letter
-    `state` code. Tighter scope means the top results are more likely to be the
-    governing sections, which makes the grounded answer more precise. Omit both to
-    search the whole corpus.
+    `state` code.
+
+    Tighter scope means the top results are more likely to be the governing
+    sections, which makes the grounded answer more precise. Omit both to search
+    the whole corpus.
   </Accordion>
   <Accordion title="Always link back to the official source" icon="link">
     Every result carries source URLs (`htmlUrl`, `stateHtmlUrl`, `govInfoHtmlUrl`,

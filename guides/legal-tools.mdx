@@ -67,19 +67,27 @@ You reach the hub from **Review** in the sidebar. Every tool lives there as a ta
 
 <AccordionGroup>
   <Accordion title="Input handling and file formats" icon="file-arrow-up">
-    Upload, paste, or import from Google Drive. PDF, Word, plain text, HTML, spreadsheets, presentations, and images are all accepted, and the extraction path is the same one the main document pipeline uses, so a scanned contract is run through the OCR ladder rather than rejected. Uploads are accepted up to 250 MB; the OCR tool caps at 100 MB and 1,000 pages. Analysis reads up to roughly 200,000 characters of document text, with a lower cap on the free tier.
+    Upload, paste, or import from Google Drive. PDF, Word, plain text, HTML, spreadsheets, presentations, and images are all accepted, and the extraction path is the same one the main document pipeline uses, so a scanned contract is run through the OCR ladder rather than rejected.
+
+    Uploads are accepted up to 250 MB; the OCR tool caps at 100 MB and 1,000 pages. Analysis reads up to roughly 200,000 characters of document text, with a lower cap on the free tier.
   </Accordion>
 
   <Accordion title="The Improve button" icon="wand-magic-sparkles">
-    The context boxes are guidance notes, not questions and not documents, so they get their own rewriter. It expands scope, naming the clause types, carve-outs, and risk angles a competent lawyer would want covered, and it is explicitly barred from inventing facts. Party names, amounts, dates, citations, and jurisdictions you did not write come back as bracketed placeholders. Everything you did write, including which side you are on and any threshold you set, is preserved verbatim. If the rewrite fails, your original text is left untouched.
+    The context boxes are guidance notes, not questions and not documents, so they get their own rewriter. It expands scope, naming the clause types, carve-outs, and risk angles a competent lawyer would want covered, and it is explicitly barred from inventing facts.
+
+    Party names, amounts, dates, citations, and jurisdictions you did not write come back as bracketed placeholders. Everything you did write, including which side you are on and any threshold you set, is preserved verbatim. If the rewrite fails, your original text is left untouched.
   </Accordion>
 
   <Accordion title="How long documents are handled" icon="layer-group">
-    Past roughly 12,000 characters, about four pages, a tool stops trying to read the whole document in one pass. It splits the document into sections, evaluates each one in parallel, then synthesizes a single report with a shared glossary of defined terms. This is why a hundred-page agreement completes instead of timing out, and it is also why a long document costs more and takes longer than a short one. Contract Review additionally picks its model by document length, so a three-page NDA does not run on the heavyweight model.
+    Past roughly 12,000 characters, about four pages, a tool stops trying to read the whole document in one pass. It splits the document into sections, evaluates each one in parallel, then synthesizes a single report with a shared glossary of defined terms.
+
+    This is why a hundred-page agreement completes instead of timing out, and it is also why a long document costs more and takes longer than a short one. Contract Review additionally picks its model by document length, so a three-page NDA does not run on the heavyweight model.
   </Accordion>
 
   <Accordion title="Grading vocabulary" icon="traffic-light">
-    The tools deliberately share a color grammar. Green means acceptable with no action, yellow means negotiate, and red means escalate. Risk Assessment adds orange between yellow and red for its high band. Compliance uses Compliant, Partially Compliant, Non-Compliant, and Not Applicable instead, since a requirement is not a negotiating position.
+    The tools deliberately share a color grammar. Green means acceptable with no action, yellow means negotiate, and red means escalate.
+
+    Risk Assessment adds orange between yellow and red for its high band. Compliance uses Compliant, Partially Compliant, Non-Compliant, and Not Applicable instead, since a requirement is not a negotiating position.
   </Accordion>
 
   <Accordion title="Saved analyses and history" icon="clock-rotate-left">

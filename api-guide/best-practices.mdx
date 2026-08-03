@@ -55,7 +55,9 @@ The `actId` (for example `USC_T42_C21_S1983`) is the stable handle for a section
 
 ## Treat relevanceScore as a within-response rank
 
-`relevanceScore` (0 to 1) orders results **within a single response**. It is a relative rank, not a calibrated confidence score. Do not compare scores across different queries and do not use a fixed threshold (for example "drop anything below 0.7") to decide what to keep. To narrow results, tighten `query`, `corpusType`, and `state` instead.
+`relevanceScore` (0 to 1) orders results **within a single response**. It is a relative rank, not a calibrated confidence score.
+
+Do not compare scores across different queries and do not use a fixed threshold (for example "drop anything below 0.7") to decide what to keep. To narrow results, tighten `query`, `corpusType`, and `state` instead.
 
 Browse is ordered differently. `GET /statutes/divisions` returns divisions in statutory (natural) order, the way a person reads a code, not by relevance: `9` sorts before `10`, and `240.9` before `240.10`. Reach for search when you want the most on-point section, and for browse when you want the structure in order.
 
