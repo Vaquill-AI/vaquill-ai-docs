@@ -14,11 +14,11 @@ court rules, and executive actions, scoped with the `corpusType` filter.
 
 Coverage is queryable live from `GET /statutes/coverage` and `GET /statutes/states`;
 the per-corpus matrix below is a snapshot. In total the ingested corpus holds
-**over 4.8M distinct sections** across all of these corpus types, indexed as
+**over 3.8M distinct sections** across all of these corpus types, indexed as
 **more than 9.8M retrieval passages**.
 
 <Info>
-  **Snapshot date: 2026-08-03.** Statute coverage is always live via
+  **Snapshot date: 2026-08-06.** Statute coverage is always live via
   `/statutes/states` and `/statutes/codes`. Constitutions and court rules are an
   expanding set.
 </Info>
@@ -27,7 +27,7 @@ the per-corpus matrix below is a snapshot. In total the ingested corpus holds
   Counts on this page are **distinct sections** (one per provision or document),
   the same figures `GET /statutes/coverage` returns. For retrieval, longer sections
   and documents are split into multiple passages, so the underlying index holds far
-  more entries: **about 9.8M passages** across these 4.8M sections. The Federal
+  more entries: **about 9.8M passages** across these 3.8M sections. The Federal
   Register alone (long agency rules, 13-15 passages each) accounts for over
   half of them.
 
@@ -42,7 +42,7 @@ the per-corpus matrix below is a snapshot. In total the ingested corpus holds
     **52 jurisdictions** (all 50 states + DC + Puerto Rico), **~2.0M sections**. Queryable via the statutes API.
   </Card>
   <Card title="Federal law" icon="landmark">
-    US Code (54,853), CFR (219,447), Federal Register rules (384,794, 1995-present), Executive Orders (3,901), agency guidance (2,584), Federal Rules of Procedure (541), US Constitution (74). Queryable via the statutes API.
+    US Code (54,853), CFR (219,447), Federal Register rules (384,794, 1995-present), Executive Orders (3,901), agency guidance (8,781), Federal Rules of Procedure incl. Supreme Court Rules (589), US Constitution (74). Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
     **51 jurisdictions** (50 states + Puerto Rico), ~7.7K sections, with article/section structure and clickable citations. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
@@ -74,14 +74,31 @@ them.
 | Code of Federal Regulations (CFR) | 219,447 | Daily |
 | Federal Register agency rules (final + proposed), 1995-present | 384,794 | Weekly |
 | Executive Orders (Federal Register Presidential Documents) | 3,901 | Daily |
-| Agency guidance (SSA rulings, IRS, administrative guidance) | 2,584 | Weekly |
-| Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) | 541 | Monthly |
+| Agency guidance (SSA rulings, IRS, DOJ/FTC merger guidance, DOJ antitrust leniency, Copyright Office circulars, the DOJ Justice Manual, USCIS Policy Manual, USPTO MPEP and TMEP, administrative guidance) | 8,781 | Weekly |
+| Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) and Rules of the Supreme Court of the United States | 589 | Monthly |
 | US Constitution | 74 | On amendment |
 
 <Note>
   The Federal Register and Executive Order cadence depends on
   `federalregister.gov`, which has been throttling and rate-limiting traffic in
   2026. That can occasionally push a weekly pull later.
+</Note>
+
+<Note>
+  **Agency guidance** is a registry of named sources, each independently
+  filterable and each with its own `category`, folded into the single
+  `corpusType=AGENCY_GUIDANCE` token: SSA Rulings (1,115), IRS Revenue
+  Procedures/Rulings/Notices/Announcements (1,459), DOJ & FTC Merger
+  Guidelines (2023), the DOJ Antitrust Division Leniency Policy, US Copyright
+  Office Circulars (58), the DOJ Justice Manual (1,548 sections across all 9
+  Titles, citable as "Justice Manual § 9-27.420"), the USCIS Policy Manual
+  (456 chapters across all 12 volumes, citable as "USCIS Policy Manual, Vol.
+  12, Pt. D, Ch. 3"), the USPTO Manual of Patent Examining Procedure (2,024
+  sections across all 29 chapters, citable as "MPEP § 2106") and Trademark
+  Manual of Examining Procedure (2,109 sections across all 19 chapters,
+  citable as "TMEP § 1207.01"), and our own synthesized administrative
+  guidance (SALT cap, CTC, 401(k) limits). New sources land as one registry
+  entry, not a new API token.
 </Note>
 
 ## State and territory matrix
@@ -182,13 +199,13 @@ so it arrives queryable through the same `corpusType` filter.
 |---|---|---|
 | Federal Register notices | The third Federal Register document class. We carry final and proposed rules today; notices cover meeting announcements, information collections, agency determinations, and grant availability. | govinfo, federalregister.gov |
 | Public Laws / Statutes at Large | Slip laws as enacted, before codification into the US Code. Public law numbers appear as a metadata field today, but the acts themselves are not served as documents. | govinfo |
-| US Supreme Court Rules | The Rules of the Supreme Court of the United States, alongside the Federal Rules of Procedure already covered. | supremecourt.gov |
 | OLC and Attorney General opinions | Office of Legal Counsel opinions plus formal AG opinions - the executive branch's own binding legal interpretations. | justice.gov/olc |
 | GAO decisions | Comptroller General decisions on appropriations law and bid protests. | gao.gov |
 
 ### Tax
 
-Four IRS corpora, none currently served.
+Four additional IRS corpora, beyond the IRS notices, revenue procedures, revenue
+rulings, and announcements already served under Agency guidance above.
 
 | Source | What it adds |
 |---|---|
@@ -204,15 +221,20 @@ document categories planned for each.
 
 | Agency | Categories | Domain |
 |---|---|---|
-| FTC | 5 | Consumer protection and competition |
-| DOJ Antitrust Division | 3 | Merger and conduct enforcement |
+| FTC | 4 | Consumer protection and competition |
+| DOJ Antitrust Division | 1 | Merger and conduct enforcement |
 | SEC | 3 | Securities regulation and disclosure |
 | CBP (Customs) | 3 | Import classification, valuation, and admissibility |
 | CFPB | 2 | Consumer financial protection |
-| US Copyright Office | 2 | Registration and copyright practice |
-| DOJ guidance (Justice Manual) | 2 | Federal prosecution and DOJ internal policy |
-| USPTO (MPEP, TMEP) | 2 | Patent and trademark examining procedure |
 | DOL Wage and Hour Division | 2 | Wage, hour, and leave enforcement |
+
+<Note>
+  DOJ & FTC Merger Guidelines and the DOJ Antitrust Division Leniency Policy
+  are now covered (see Agency guidance above), reducing FTC's and DOJ
+  Antitrust's remaining planned categories. US Copyright Office Circulars,
+  the DOJ Justice Manual, the USCIS Policy Manual, and USPTO MPEP/TMEP are
+  all fully covered and no longer appear in this table.
+</Note>
 
 ### Other federal guidance
 
@@ -225,7 +247,6 @@ document categories planned for each.
 | FDA Warning Letters | Enforcement correspondence to regulated entities |
 | HUD Fair Housing | Housing discrimination |
 | OFAC FAQs | Sanctions compliance |
-| USCIS Policy Manual | Immigration benefits adjudication |
 
 <Note>
   None of these are queryable yet. `GET /statutes/coverage` is self-describing:

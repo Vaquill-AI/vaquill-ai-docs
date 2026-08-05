@@ -23,10 +23,10 @@ search one jurisdiction's data.
 | `USC` | United States Code (federal statutes) | federal | 54,853 |
 | `CFR` | Code of Federal Regulations | federal | 219,447 |
 | `CONSTITUTION` | U.S. Constitution (Articles + Amendments) | federal | 74 |
-| `FEDERAL_RULES` | Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) | federal | 541 |
+| `FEDERAL_RULES` | Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) and Rules of the Supreme Court of the United States. Filter to one set with `source` (see below). | federal | 589 |
 | `EXECUTIVE_ACTION` | Presidential documents (executive orders, proclamations, memos) | federal | 3,901 |
 | `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | federal | 384,794 |
-| `AGENCY_GUIDANCE` | Agency guidance (SSA rulings, IRS notices, revenue rulings and procedures) | federal | 2,584 |
+| `AGENCY_GUIDANCE` | Agency guidance (SSA rulings, IRS notices/rulings/procedures, DOJ/FTC merger guidance, DOJ antitrust leniency policy, Copyright Office circulars, the DOJ Justice Manual, USCIS Policy Manual, USPTO MPEP and TMEP). Filter to one source with `source` (see below). | federal | 8,781 |
 
 ### State-scoped
 
@@ -136,9 +136,13 @@ for (const r of data.results) {
 Both are **federal**, so they need only a `corpusType`, no `state`.
 `FEDERAL_REGISTER` searches agency rules as published (proposed and final).
 `AGENCY_GUIDANCE` searches sub-regulatory guidance: SSA rulings, IRS notices,
-revenue rulings and procedures, plus a set of primary-sourced **reference
-figures**, the annually adjusted dollar thresholds (for example the Subchapter V
-debt limit, or SALT and CTC values) that do not live in USC or CFR section text.
+revenue rulings and procedures, DOJ & FTC Merger Guidelines, the DOJ Antitrust
+Division Leniency Policy, US Copyright Office Circulars, the DOJ Justice
+Manual, the USCIS Policy Manual, the USPTO Manual of Patent Examining
+Procedure (MPEP) and Trademark Manual of Examining Procedure (TMEP), plus a
+set of primary-sourced **reference figures**, the annually adjusted dollar
+thresholds (for example the Subchapter V debt limit, or SALT and CTC values)
+that do not live in USC or CFR section text.
 
 <CodeGroup>
 
@@ -194,6 +198,31 @@ Swap `corpusType` to `FEDERAL_REGISTER` to search published agency rules the sam
   codes), not Federal Register or guidance citations. Reach both through
   `/statutes/search`, then `/statutes/section/{actId}` and `.../body`.
 </Note>
+
+## Filtering to one named source
+
+`FEDERAL_RULES` and `AGENCY_GUIDANCE` each fold several independently
+filterable bodies of law into one token. Every result carries a `source` field
+naming which one it came from; pass that value back as the `source` search
+filter to scope to just it.
+
+- `FEDERAL_RULES` sources: `frcp`, `frcrp`, `fre`, `frap`, `frbp`, `sct` (Rules
+  of the Supreme Court of the United States).
+- `AGENCY_GUIDANCE` sources: `ssa_ruling`, `irs_rev_proc`, `irs_notice`,
+  `irs_rev_rul`, `irs_announcement`, `merger_guidelines` (DOJ & FTC Merger
+  Guidelines), `doj_leniency` (DOJ Antitrust Division Leniency Policy),
+  `copyright_circular` (US Copyright Office Circulars), `doj_justice_manual`
+  (DOJ Justice Manual), `uscis_policy_manual` (USCIS Policy Manual), `mpep`
+  (USPTO Manual of Patent Examining Procedure), `tmep` (USPTO Trademark
+  Manual of Examining Procedure), or `administrative_guidance`.
+
+```json
+{ "query": "petition for writ of certiorari", "corpusType": "FEDERAL_RULES", "source": "sct" }
+```
+
+`source` accepts a single value or a list, so `source: ["frcp", "sct"]`
+searches those two sets in one call. An unrecognized value is rejected with
+`422` rather than silently returning nothing.
 
 ## Related
 

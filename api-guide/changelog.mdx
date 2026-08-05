@@ -7,6 +7,58 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-06" description="USPTO MPEP and TMEP now covered">
+  ## USPTO patent and trademark manuals join Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers the USPTO Manual of Patent
+  Examining Procedure (MPEP, 2,024 sections across all 29 chapters, citable
+  as "MPEP § 2106") and the Trademark Manual of Examining Procedure (TMEP,
+  2,109 sections across all 19 chapters, citable as "TMEP § 1207.01") --
+  sources not commonly indexed elsewhere. Filter to just one with `source=mpep` or
+  `source=tmep`. See [Coverage](/api-guide/coverage#federal) for the updated
+  count.
+</Update>
+
+<Update label="2026-08-06" description="DOJ Justice Manual now covered">
+  ## DOJ Justice Manual joins Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers the DOJ Justice Manual (1,548
+  sections across all 9 Titles), citable by section as "Justice Manual §
+  9-27.420" -- a source not commonly indexed elsewhere. Filter to just it with
+  `source=doj_justice_manual`. See [Coverage](/api-guide/coverage#federal)
+  for the updated count.
+</Update>
+
+<Update label="2026-08-06" description="USCIS Policy Manual now covered">
+  ## USCIS Policy Manual joins Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers the USCIS Policy Manual (456
+  chapters across all 12 volumes), citable by chapter as "USCIS Policy
+  Manual, Vol. 12, Pt. D, Ch. 3" -- a source not commonly indexed elsewhere. Filter
+  to just it with `source=uscis_policy_manual`. See
+  [Coverage](/api-guide/coverage#federal) for the updated count.
+</Update>
+
+<Update label="2026-08-06" description="Rules of the Supreme Court of the United States now covered">
+  ## Supreme Court Rules join Federal Rules of Procedure
+
+  `/statutes/resolve` and `corpusType=FEDERAL_RULES` search now cover the
+  Rules of the Supreme Court of the United States (`Sup. Ct. R. N`), ingested
+  from the official supremecourt.gov committee print alongside the five
+  Federal Rules of Procedure sets already served. See
+  [Coverage](/api-guide/coverage#federal) for the updated count.
+</Update>
+
+<Update label="2026-08-06" description="New agency-guidance sources: Merger Guidelines, DOJ Leniency Policy, Copyright Circulars">
+  ## New sources under Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers the DOJ & FTC Merger Guidelines
+  (2023), the DOJ Antitrust Division Leniency Policy, and US Copyright Office
+  Circulars, each independently filterable and citation-labeled, folded into
+  the same `AGENCY_GUIDANCE` token you already query. See
+  [Coverage](/api-guide/coverage#federal) for the updated count.
+</Update>
+
 <Update label="2026-08-03" description="New endpoint: catalog the bodies of law">
   ## New endpoint: GET /statutes/laws
 
