@@ -572,6 +572,14 @@
       "destination": "/api-reference/statutes/search-us-statutes"
     },
     {
+      "source": "/api-reference/statutes/list-us-state-codes",
+      "destination": "/api-reference/statutes/list-state-codes"
+    },
+    {
+      "source": "/api-reference/statutes/list-us-statutes-coverage",
+      "destination": "/api-reference/statutes/list-us-jurisdictions"
+    },
+    {
       "source": "/api-reference/citations/:slug*",
       "destination": "/api-reference/statutes/search-us-statutes"
     },

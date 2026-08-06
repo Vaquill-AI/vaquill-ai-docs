@@ -1,0 +1,9 @@
+---
+openapi: POST /api/v1/statutes/sections
+description: "Fetch metadata for up to 50 sections in one call by actId, instead of one request per section."
+---
+
+Pass a list of up to 50 `actId` values and get back the full metadata object
+for each - the same shape `GET /statutes/section/{actId}` returns, batched.
+Any id that does not resolve comes back in a `notFound` list rather than
+failing the whole request, and misses are not charged.

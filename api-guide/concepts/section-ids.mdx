@@ -39,6 +39,13 @@ it, and pass it back unchanged.
     `GET /statutes/section/{actId}/body` returns the section's full text.
     Returned only when text is available.
   </Step>
+  <Step title="Optional: fetch its neighbors">
+    `GET /statutes/section/{actId}/related` returns the section's immediate
+    statutory neighbors - the previous and next section within the same
+    container (chapter, part, or code). This is not numeric adjacency; it's
+    what a lawyer would actually turn to next when reading a section in
+    context.
+  </Step>
 </Steps>
 
 ## Result and hierarchy fields
@@ -163,6 +170,22 @@ console.log(body.available ? body.plain.slice(0, 500) : "text unavailable");
   endpoint returns text only when it is available. Check `available` before
   reading `html` or `plain`.
 </Tip>
+
+## Finding a section's neighbors
+
+`GET /statutes/section/{actId}/related` returns the sections immediately
+before and after the one you already have, within the same container:
+
+```bash cURL
+curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/related \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+The response carries `previous` and `next` arrays (each a full section
+object, same shape as a search result) plus a `container` label naming what
+they're neighbors within (e.g. the enclosing chapter or part). Useful for
+"show me the surrounding sections" without a second search call - reading
+§ 1983 alongside §§ 1981-1982 and 1985 in one request, for example.
 
 ## Related
 

@@ -1,0 +1,12 @@
+---
+openapi: GET /api/v1/statutes/divisions
+description: "Walk the statutory hierarchy one level at a time - titles to chapters to parts to sections - without constructing the query yourself."
+---
+
+Pass the deepest level you know (`corpusType`, `titleNumber`, `chapter`/`part`,
+or a state `code`) and get the children directly below it, in statutory
+order, down to sections with their `actId`. Supports `USC`, `CFR`, `STATE`,
+and `REGULATION`. Each result's `parent` field on `/statutes/search` is a
+ready-made query into this endpoint - pass it straight back to browse that
+section's siblings. See
+[Browse the hierarchy](/api-guide/recipes/browse-hierarchy).

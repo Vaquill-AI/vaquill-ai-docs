@@ -21,6 +21,25 @@ Every path is prefixed with `/api/v1`. Every result carries a citation, status a
 | **Batch** metadata for up to 50 sections in one call | `POST /statutes/sections` |
 | Discover live **coverage**: jurisdictions, codes, and the corpus matrix | `GET /statutes/states`, `/codes`, `/coverage` |
 
+### Credit costs
+
+| Endpoint | Credits |
+|---|---|
+| `POST /statutes/search` | 4 |
+| `GET /statutes/section/{actId}/body` | 6 |
+| `GET /statutes/section/{actId}` | 2 |
+| `GET /statutes/section/{actId}/related` | 2 |
+| `GET /statutes/resolve` | 2 |
+| `POST /statutes/sections` (batch) | 2 per section returned; misses in `notFound` are not charged |
+| `GET /statutes/divisions` | 1 |
+| `GET /statutes/states`, `/codes`, `/coverage`, `/laws` | Free |
+
+<Note>
+  `creditsConsumed` on every response reports what was actually billed, which
+  can be less than the list price above on a partial or refunded result (for
+  example, a `404` on `/statutes/section/{actId}` is not charged).
+</Note>
+
 ### Corpora
 
 **Federal:** US Code (`USC`), Code of Federal Regulations (`CFR`), Federal Register agency rules (`FEDERAL_REGISTER`), agency guidance (`AGENCY_GUIDANCE`), executive orders (`EXECUTIVE_ACTION`), Federal Rules of Procedure (`FEDERAL_RULES`), and the US Constitution (`CONSTITUTION`).
