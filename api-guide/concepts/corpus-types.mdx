@@ -21,12 +21,12 @@ search one jurisdiction's data.
 | Token | Contains | Scope | ~Size |
 |---|---|---|---|
 | `USC` | United States Code (federal statutes) | federal | 54,853 |
-| `CFR` | Code of Federal Regulations | federal | 219,447 |
+| `CFR` | Code of Federal Regulations, incl. the Federal Acquisition Regulation (FAR, 48 C.F.R. ch. 1, 5,537 sections) and Defense FAR Supplement (DFARS, ch. 2, 2,877 sections) - cite `FAR 52.219-14` or `DFARS 252.225-7001` directly, or filter with `source` (see below) | federal | 219,447 |
 | `CONSTITUTION` | U.S. Constitution (Articles + Amendments) | federal | 74 |
 | `FEDERAL_RULES` | Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) and Rules of the Supreme Court of the United States. Filter to one set with `source` (see below). | federal | 589 |
 | `EXECUTIVE_ACTION` | Presidential documents (executive orders, proclamations, memos) | federal | 3,901 |
 | `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | federal | 384,794 |
-| `AGENCY_GUIDANCE` | Agency guidance (SSA rulings, IRS notices/rulings/procedures, DOJ/FTC merger guidance, DOJ antitrust leniency policy, Copyright Office circulars, the DOJ Justice Manual, USCIS Policy Manual, USPTO MPEP and TMEP). Filter to one source with `source` (see below). | federal | 8,781 |
+| `AGENCY_GUIDANCE` | Agency guidance (SSA rulings, IRS notices/rulings/procedures, DOJ/FTC merger guidance, DOJ antitrust leniency policy, Copyright Office circulars, the DOJ Justice Manual, USCIS Policy Manual, USPTO MPEP and TMEP, DFARS PGI). Filter to one source with `source` (see below). | federal | 8,781 |
 
 ### State-scoped
 
@@ -201,20 +201,26 @@ Swap `corpusType` to `FEDERAL_REGISTER` to search published agency rules the sam
 
 ## Filtering to one named source
 
-`FEDERAL_RULES` and `AGENCY_GUIDANCE` each fold several independently
+`FEDERAL_RULES`, `CFR`, and `AGENCY_GUIDANCE` each fold several independently
 filterable bodies of law into one token. Every result carries a `source` field
 naming which one it came from; pass that value back as the `source` search
 filter to scope to just it.
 
 - `FEDERAL_RULES` sources: `frcp`, `frcrp`, `fre`, `frap`, `frbp`, `sct` (Rules
   of the Supreme Court of the United States).
+- `CFR` sources: `far` (Federal Acquisition Regulation, 48 C.F.R. ch. 1) and
+  `dfars` (Defense FAR Supplement, ch. 2). These split the *existing* Title 48
+  data by chapter; they are not a separate ingest, and every other `CFR`
+  result (all other titles, plus non-FAR/DFARS Title 48 chapters) has a null
+  `source`.
 - `AGENCY_GUIDANCE` sources: `ssa_ruling`, `irs_rev_proc`, `irs_notice`,
   `irs_rev_rul`, `irs_announcement`, `merger_guidelines` (DOJ & FTC Merger
   Guidelines), `doj_leniency` (DOJ Antitrust Division Leniency Policy),
   `copyright_circular` (US Copyright Office Circulars), `doj_justice_manual`
   (DOJ Justice Manual), `uscis_policy_manual` (USCIS Policy Manual), `mpep`
   (USPTO Manual of Patent Examining Procedure), `tmep` (USPTO Trademark
-  Manual of Examining Procedure), or `administrative_guidance`.
+  Manual of Examining Procedure), `dfars_pgi` (DFARS PGI - Procedures,
+  Guidance, and Information), or `administrative_guidance`.
 
 ```json
 { "query": "petition for writ of certiorari", "corpusType": "FEDERAL_RULES", "source": "sct" }

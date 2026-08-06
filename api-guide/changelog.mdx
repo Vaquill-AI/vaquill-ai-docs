@@ -7,6 +7,25 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-06" description="FAR/DFARS-native citation resolution, plus DFARS PGI">
+  ## FAR and DFARS are now natively citable, and DFARS PGI joins Agency guidance
+
+  The Federal Acquisition Regulation (FAR, 48 C.F.R. ch. 1) and Defense FAR
+  Supplement (DFARS, ch. 2) were already in the corpus as part of `CFR`
+  (Title 48). `/statutes/resolve` and citation-shaped search queries now
+  accept the forms practitioners actually use -- `FAR 52.219-14`,
+  `DFARS 252.225-7001`, with or without periods or a pinpoint subsection --
+  and resolve them straight to the existing CFR record. Filter to just FAR or
+  just DFARS within `corpusType=CFR` with `source=far` / `source=dfars`.
+
+  `corpusType=AGENCY_GUIDANCE` now also covers DFARS PGI (Procedures,
+  Guidance, and Information), DoD's own non-codified procedural companion to
+  the DFARS, citable as "PGI 225.370". Filter to just it with
+  `source=dfars_pgi`. See [Coverage](/api-guide/coverage#federal) for the
+  updated counts and [Corpus Types](/api-guide/concepts/corpus-types) for the
+  full `source` list.
+</Update>
+
 <Update label="2026-08-06" description="USPTO MPEP and TMEP now covered">
   ## USPTO patent and trademark manuals join Agency guidance
 
