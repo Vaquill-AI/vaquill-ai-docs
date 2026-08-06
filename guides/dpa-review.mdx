@@ -4,7 +4,7 @@ description: "Read one vendor's Data Processing Addendum in place: roles, transf
 icon: "shield-check"
 ---
 
-DPA Review is the interactive, one document at a time pass over a Data Processing Addendum. You attach the vendor's DPA to their record, run the analysis, and Vaquill reads the agreement and fills in the things you would otherwise be highlighting by hand: who is the controller and who is the processor, what transfer mechanism the agreement relies on, every sub-processor it names, the breach notice window, the audit terms, the deletion period, and an assessed risk tier with a one line reason.
+DPA Review is the interactive, one document at a time pass over a Data Processing Addendum. You attach the vendor's DPA to their record, run the analysis, and Vaquill AI reads the agreement and fills in the things you would otherwise be highlighting by hand: who is the controller and who is the processor, what transfer mechanism the agreement relies on, every sub-processor it names, the breach notice window, the audit terms, the deletion period, and an assessed risk tier with a one line reason.
 
 The result lands on the vendor record itself, not in a separate report you have to remember to open. Six months later, when a customer asks which of your vendors touch health data under a US transfer, the answer is already sitting in the registry.
 
@@ -28,7 +28,7 @@ There are two entry points, depending on whether the vendor already exists.
 
 <Steps>
   <Step title="Start from the DPA, if the vendor is new">
-    On the Vendors and Sub-processors page, open **Import** and choose **From a DPA (AI)**. Pick the file, and Vaquill uploads it, reads it, and proposes a vendor entry.
+    On the Vendors and Sub-processors page, open **Import** and choose **From a DPA (AI)**. Pick the file, and Vaquill AI uploads it, reads it, and proposes a vendor entry.
 
     The proposal opens in the normal vendor form so you can correct anything before saving. Nothing is written to the registry until you confirm it, by design: a wrong compliance registry is worse than an empty one.
   </Step>
@@ -117,7 +117,7 @@ See the [Vendor and Sub-processor Registry](/guides/vendor-registry) guide for t
 
 <AccordionGroup>
   <Accordion title="Negotiate it clause by clause" icon="file-contract">
-    [Contract Review](/guides/contract-review) with a [playbook](/guides/playbooks) gives you positions, fallbacks, and redlines instead of extracted facts. Vaquill ships controller-side and processor-side DPA playbooks with standard positions on breach windows, sub-processor approval and objection rights, audit, deletion, and transfer mechanisms, plus escalation triggers for the terms that should not pass quietly.
+    [Contract Review](/guides/contract-review) with a [playbook](/guides/playbooks) gives you positions, fallbacks, and redlines instead of extracted facts. Vaquill AI ships controller-side and processor-side DPA playbooks with standard positions on breach windows, sub-processor approval and objection rights, audit, deletion, and transfer mechanisms, plus escalation triggers for the terms that should not pass quietly.
   </Accordion>
   <Accordion title="Check it against a regulation" icon="clipboard-check">
     [Compliance Check](/guides/compliance-check) scores a document against a named regulation with per-requirement status and article-level references. Use it when the question is "does this satisfy Article 28" rather than "what does this say".

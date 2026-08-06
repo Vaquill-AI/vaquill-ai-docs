@@ -1,12 +1,12 @@
 ---
-title: "Grounding LLMs with Vaquill"
+title: "Grounding LLMs with Vaquill AI"
 description: "Why and how to ground model answers in retrieved, authoritative US statutory text"
 icon: "shield-halved"
 ---
 
 Generic language models are fluent about the law but not reliable about it. Ask one for a statute and it will often invent a plausible citation, misquote the text, or blend two unrelated sections into one confident paragraph. For legal work that is not a rough edge, it is a liability.
 
-Grounding fixes this. Instead of asking the model what the law says, you retrieve the authoritative sections first, hand the model their verbatim text, and require it to answer only from what you provided and cite every claim. Vaquill is built for exactly this loop: every section comes back with a citation, full text, and a link to the official government source, so your users can verify the answer against the primary record.
+Grounding fixes this. Instead of asking the model what the law says, you retrieve the authoritative sections first, hand the model their verbatim text, and require it to answer only from what you provided and cite every claim. Vaquill AI is built for exactly this loop: every section comes back with a citation, full text, and a link to the official government source, so your users can verify the answer against the primary record.
 
 <Note>
   This page is the conceptual companion to the runnable [RAG grounding recipe](/api-guide/recipes/rag-grounding). Read this to understand the pattern, then follow the recipe for copy-paste code.
@@ -202,7 +202,7 @@ The grounding discipline does not change: the tool returns verbatim text with ci
     Build a multi-turn chatbot that stays grounded across a conversation.
   </Card>
   <Card title="MCP tool" icon="plug" href="/api-guide/recipes/mcp-tool">
-    Expose Vaquill statute lookups as tools inside an agent framework.
+    Expose Vaquill AI statute lookups as tools inside an agent framework.
   </Card>
   <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
     Scope queries, cache coverage, verify citations, and handle errors well.

@@ -6,7 +6,7 @@ icon: "signal-messenger"
 keywords: ["vaquill signal bot", "signal legal ai", "signal-cli-rest-api", "signalbot", "signal rag bot"]
 ---
 
-A Signal messenger bot for Vaquill, built on the unofficial [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) and the [signalbot](https://github.com/signalbot-org/signalbot) Python framework. Two Docker containers - `signal-cli` (handles the Signal protocol) and `signal-bot` (Python app calling Vaquill) - communicate over a local WebSocket. Source code at [github.com/Vaquill-AI/integrations/signal-bot](https://github.com/Vaquill-AI/integrations/tree/main/signal-bot).
+A Signal messenger bot for Vaquill AI, built on the unofficial [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) and the [signalbot](https://github.com/signalbot-org/signalbot) Python framework. Two Docker containers - `signal-cli` (handles the Signal protocol) and `signal-bot` (Python app calling Vaquill AI) - communicate over a local WebSocket. Source code at [github.com/Vaquill-AI/integrations/signal-bot](https://github.com/Vaquill-AI/integrations/tree/main/signal-bot).
 
 <Warning>
   Signal does not offer an official bot API. This integration uses the unofficial signal-cli project.
@@ -113,7 +113,7 @@ Open the returned URL (or scan the QR), then in your Signal mobile app go to **S
     curl -X POST "http://localhost:8080/v2/send" \
       -H "Content-Type: application/json" \
       -d '{
-        "message": "Hello from Vaquill!",
+        "message": "Hello from Vaquill AI!",
         "number": "+15551234567",
         "recipients": ["+15559876543"]
       }'
@@ -150,7 +150,7 @@ See [`.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/signal
 | `clear` | Clear conversation history |
 | `hi` / `hello` | Start a fresh conversation |
 
-Any other text is treated as a legal question and routed to Vaquill.
+Any other text is treated as a legal question and routed to Vaquill AI.
 
 ## Deployment
 

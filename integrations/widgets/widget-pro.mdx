@@ -6,7 +6,7 @@ icon: "sparkles"
 keywords: ["vaquill widget pro", "voice legal chat", "multi thread chat widget", "legal AI sidebar", "TTS legal chat", "STT legal chat", "gamification legal chat"]
 ---
 
-The heavyweight Vaquill widget. A Next.js 15 + React 19 chat surface with a persistent conversation sidebar, voice mode (TTS + STT), cross-tab sync via BroadcastChannel, gamification (XP and streaks), and multiple citation display modes. Use this when you want a Vaquill-style full experience embedded in your site rather than the minimal proxy widget.
+The heavyweight Vaquill AI widget. A Next.js 15 + React 19 chat surface with a persistent conversation sidebar, voice mode (TTS + STT), cross-tab sync via BroadcastChannel, gamification (XP and streaks), and multiple citation display modes. Use this when you want a Vaquill-style full experience embedded in your site rather than the minimal proxy widget.
 
 Source: [github.com/Vaquill-AI/integrations/vaquill-widget-pro](https://github.com/Vaquill-AI/integrations/tree/main/vaquill-widget-pro).
 
@@ -28,13 +28,13 @@ Source: [github.com/Vaquill-AI/integrations/vaquill-widget-pro](https://github.c
 
 ## Status and caveats
 
-The chat-completion plumbing in `src/lib/ai/vaquill-client.ts` talks to the Vaquill app's chat backend for both streaming and non-streaming paths. A few legacy endpoints from the upstream RAG-widget fork are stubbed and degrade gracefully: per-message feedback persists only to the local session cache, citation-by-id lookup and file uploads throw a clear "not supported" error, and agent-settings return Vaquill-flavoured defaults.
+The chat-completion plumbing in `src/lib/ai/vaquill-client.ts` talks to the Vaquill AI app's chat backend for both streaming and non-streaming paths. A few legacy endpoints from the upstream RAG-widget fork are stubbed and degrade gracefully: per-message feedback persists only to the local session cache, citation-by-id lookup and file uploads throw a clear "not supported" error, and agent-settings return Vaquill-flavoured defaults.
 
 <Warning>
   The server-side session map lives in process memory. On Vercel cold starts or multi-instance deployments it resets. The React UI's IndexedDB / localStorage is the durable copy, so users do not lose history, but server-side `getConversationMessages` returns empty for a cold instance until at least one turn is sent.
 </Warning>
 
-The `AgentCapability` enum (`fastest-responses`, `optimal-choice`, `advanced-reasoning`, `complex-tasks`) maps onto Vaquill's `mode`: the first two go to `standard`, the latter two go to `deep`.
+The `AgentCapability` enum (`fastest-responses`, `optimal-choice`, `advanced-reasoning`, `complex-tasks`) maps onto Vaquill AI's `mode`: the first two go to `standard`, the latter two go to `deep`.
 
 ## Prerequisites
 

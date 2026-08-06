@@ -5,7 +5,7 @@ icon: "brain"
 ---
 
 Turn a user question into a grounded, citable answer. You retrieve the governing
-sections from Vaquill, pull their full text, and pass that text to an LLM in your
+sections from Vaquill AI, pull their full text, and pass that text to an LLM in your
 stack with strict instructions: answer only from the provided sources, cite every
 claim, and link back to the official government source. This is the classic
 retrieve-then-ground (RAG) loop, and it is the single most reliable way to keep a
@@ -14,8 +14,8 @@ legal assistant from making things up.
 **Endpoints used:** `POST /statutes/search` (retrieve), `GET /statutes/section/{actId}/body` (full text).
 
 <Info>
-  Vaquill provides the authoritative text and the source links. The LLM in your
-  stack does the reasoning. Vaquill does not replace a lawyer or a licensed
+  Vaquill AI provides the authoritative text and the source links. The LLM in your
+  stack does the reasoning. Vaquill AI does not replace a lawyer or a licensed
   research service, and every answer should carry a link back to the official
   government text so a reader can verify it.
 </Info>

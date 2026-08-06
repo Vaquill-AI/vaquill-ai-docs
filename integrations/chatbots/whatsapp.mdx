@@ -6,7 +6,7 @@ icon: "whatsapp"
 keywords: ["vaquill whatsapp bot", "whatsapp legal ai", "twilio whatsapp bot", "whatsapp rag bot", "whatsapp business api"]
 ---
 
-A WhatsApp bot that bridges Twilio to the Vaquill `/ask` API. Users message a WhatsApp number, Twilio forwards to your FastAPI server, the bot calls Vaquill, and the answer (with cited sources) returns asynchronously to avoid Twilio's 15-second timeout. Source code at [github.com/Vaquill-AI/integrations/whatsapp-bot](https://github.com/Vaquill-AI/integrations/tree/main/whatsapp-bot).
+A WhatsApp bot that bridges Twilio to the Vaquill `/ask` API. Users message a WhatsApp number, Twilio forwards to your FastAPI server, the bot calls Vaquill AI, and the answer (with cited sources) returns asynchronously to avoid Twilio's 15-second timeout. Source code at [github.com/Vaquill-AI/integrations/whatsapp-bot](https://github.com/Vaquill-AI/integrations/tree/main/whatsapp-bot).
 
 ## Features
 
@@ -182,7 +182,7 @@ The most-used env vars. Full list in the [repo `.env.example`](https://github.co
 | `/language` / `/language en` | View or switch reply language |
 | `/clear` | Clear conversation history |
 | `/feedback <message>` | Send feedback to operators |
-| `/about` | Vaquill info |
+| `/about` | Vaquill AI info |
 | `/settings` | View current language, mode, and limits |
 
 Any non-slash message is treated as a legal question.

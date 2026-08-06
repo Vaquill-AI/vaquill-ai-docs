@@ -33,16 +33,14 @@
         "icon": "book",
         "groups": [
           {
-            "group": "Get Started",
-            "icon": "rocket",
+            "group": "GET STARTED",
             "pages": [
               "introduction",
               "guides/chat"
             ]
           },
           {
-            "group": "Contracts & Drafting",
-            "icon": "file-contract",
+            "group": "CONTRACTS & DRAFTING",
             "pages": [
               "guides/contract-review",
               "guides/drafting",
@@ -50,8 +48,7 @@
               "guides/clause-library",
               "guides/playbooks",
               {
-                "group": "Playbook Reference",
-                "icon": "book-open",
+                "group": "PLAYBOOK REFERENCE",
                 "pages": [
                   "guides/playbooks/templates",
                   "guides/playbooks/building-a-playbook",
@@ -69,16 +66,14 @@
             ]
           },
           {
-            "group": "Compliance & Legal Tools",
-            "icon": "toolbox",
+            "group": "COMPLIANCE & LEGAL TOOLS",
             "pages": [
               "guides/compliance-check",
               "guides/dpa-review",
               "guides/vendor-registry",
               "guides/legal-tools",
               {
-                "group": "Tool Reference",
-                "icon": "screwdriver-wrench",
+                "group": "TOOL REFERENCE",
                 "pages": [
                   "guides/tools/nda-triage",
                   "guides/tools/risk-assessment",
@@ -88,8 +83,7 @@
             ]
           },
           {
-            "group": "Matters & Workspaces",
-            "icon": "briefcase",
+            "group": "MATTERS & WORKSPACES",
             "pages": [
               "guides/matters-workspaces",
               "guides/matter-summary",
@@ -101,8 +95,7 @@
             ]
           },
           {
-            "group": "Documents & Ingestion",
-            "icon": "file-arrow-up",
+            "group": "DOCUMENTS & INGESTION",
             "pages": [
               "guides/document-search",
               "guides/documents",
@@ -112,8 +105,7 @@
             ]
           },
           {
-            "group": "Personalization",
-            "icon": "sparkles",
+            "group": "PERSONALIZATION",
             "pages": [
               "guides/skills",
               "guides/prompt-library",
@@ -124,8 +116,7 @@
             ]
           },
           {
-            "group": "Research",
-            "icon": "brain",
+            "group": "RESEARCH",
             "pages": [
               "guides/case-law-research",
               "guides/statutes-regulations",
@@ -144,8 +135,7 @@
         "icon": "diagram-project",
         "groups": [
           {
-            "group": "Overview",
-            "icon": "compass",
+            "group": "OVERVIEW",
             "pages": [
               "workflows/index",
               "workflows/quickstart",
@@ -154,13 +144,11 @@
             ]
           },
           {
-            "group": "Built-in Workflows",
-            "icon": "grid-2",
+            "group": "BUILT-IN WORKFLOWS",
             "pages": [
               "workflows/built-in/index",
               {
-                "group": "1. Contracts & Commercial",
-                "icon": "file-contract",
+                "group": "1. CONTRACTS & COMMERCIAL",
                 "pages": [
                   "workflows/built-in/nda-bulk-review",
                   "workflows/built-in/msa-vendor-review",
@@ -171,8 +159,7 @@
                 ]
               },
               {
-                "group": "2. Compliance & Privacy",
-                "icon": "shield-halved",
+                "group": "2. COMPLIANCE & PRIVACY",
                 "pages": [
                   "workflows/built-in/privacy-data-protection-audit",
                   "workflows/built-in/compliance-scan-agent",
@@ -180,8 +167,7 @@
                 ]
               },
               {
-                "group": "3. Research & Analysis",
-                "icon": "brain",
+                "group": "3. RESEARCH & ANALYSIS",
                 "pages": [
                   "workflows/built-in/cited-qa-document-set",
                   "workflows/built-in/jurisdiction-comparison-memo",
@@ -189,8 +175,7 @@
                 ]
               },
               {
-                "group": "4. Litigation: Discovery & Evidence",
-                "icon": "folder-open",
+                "group": "4. LITIGATION: DISCOVERY & EVIDENCE",
                 "pages": [
                   "workflows/built-in/discovery-response-pack",
                   "workflows/built-in/privilege-log-builder",
@@ -199,8 +184,7 @@
                 ]
               },
               {
-                "group": "5. Litigation: Drafting & Motions",
-                "icon": "gavel",
+                "group": "5. LITIGATION: DRAFTING & MOTIONS",
                 "pages": [
                   "workflows/built-in/us-motion-drafter",
                   "workflows/built-in/complaint-drafter",
@@ -211,8 +195,7 @@
                 ]
               },
               {
-                "group": "6. Landlord & Tenant",
-                "icon": "house",
+                "group": "6. LANDLORD & TENANT",
                 "pages": [
                   "workflows/built-in/evict-correctly",
                   "workflows/built-in/respond-to-eviction",
@@ -222,15 +205,13 @@
             ]
           },
           {
-            "group": "Workflow Builder",
-            "icon": "wrench",
+            "group": "WORKFLOW BUILDER",
             "pages": [
               "workflows/builder/index",
               "workflows/builder/generate-from-prompt",
               "workflows/builder/steps",
               {
-                "group": "4. Step Reference",
-                "icon": "layer-group",
+                "group": "4. STEP REFERENCE",
                 "pages": [
                   "workflows/builder/steps/document-io",
                   "workflows/builder/steps/retrieval",
@@ -255,23 +236,20 @@
         "icon": "plug",
         "groups": [
           {
-            "group": "Overview",
-            "icon": "plug",
+            "group": "OVERVIEW",
             "pages": [
               "integrations/index"
             ]
           },
           {
-            "group": "MCP Servers",
-            "icon": "plug",
+            "group": "MCP SERVERS",
             "pages": [
               "integrations/mcp/index",
               "integrations/mcp/vaquill"
             ]
           },
           {
-            "group": "Chatbots",
-            "icon": "comments",
+            "group": "CHATBOTS",
             "pages": [
               "integrations/chatbots/index",
               "integrations/chatbots/slack",
@@ -283,8 +261,7 @@
             ]
           },
           {
-            "group": "Widgets",
-            "icon": "window",
+            "group": "WIDGETS",
             "pages": [
               "integrations/widgets/index",
               "integrations/widgets/embedded-chat",
@@ -293,22 +270,19 @@
             ]
           },
           {
-            "group": "Browser",
-            "icon": "puzzle-piece",
+            "group": "BROWSER",
             "pages": [
               "integrations/browser/chrome"
             ]
           },
           {
-            "group": "Document Management",
-            "icon": "folder-tree",
+            "group": "DOCUMENT MANAGEMENT",
             "pages": [
               "integrations/dms/imanage"
             ]
           },
           {
-            "group": "Automation",
-            "icon": "gears",
+            "group": "AUTOMATION",
             "pages": [
               "integrations/automation/n8n"
             ]
@@ -320,15 +294,13 @@
         "icon": "code",
         "groups": [
           {
-            "group": "Data Coverage",
-            "icon": "database",
+            "group": "DATA COVERAGE",
             "pages": [
               "api-guide/coverage"
             ]
           },
           {
-            "group": "Get Started",
-            "icon": "rocket",
+            "group": "GET STARTED",
             "pages": [
               "api-guide/overview",
               "api-guide/quickstart",
@@ -336,8 +308,7 @@
             ]
           },
           {
-            "group": "Core Concepts",
-            "icon": "book-open",
+            "group": "CORE CONCEPTS",
             "pages": [
               "api-guide/concepts/corpus-types",
               "api-guide/concepts/jurisdictions",
@@ -347,8 +318,7 @@
             ]
           },
           {
-            "group": "Working with the API",
-            "icon": "gears",
+            "group": "WORKING WITH THE API",
             "pages": [
               "api-guide/pagination",
               "api-guide/rate-limits",
@@ -357,15 +327,13 @@
             ]
           },
           {
-            "group": "Grounding AI",
-            "icon": "shield-halved",
+            "group": "GROUNDING AI",
             "pages": [
               "api-guide/grounding-llms"
             ]
           },
           {
-            "group": "Recipes",
-            "icon": "flask",
+            "group": "RECIPES",
             "pages": [
               "api-guide/recipes/rag-grounding",
               "api-guide/recipes/statute-chatbot",
@@ -379,15 +347,13 @@
             ]
           },
           {
-            "group": "Use Cases",
-            "icon": "lightbulb",
+            "group": "USE CASES",
             "pages": [
               "api-guide/use-cases"
             ]
           },
           {
-            "group": "Resources",
-            "icon": "clock-rotate-left",
+            "group": "RESOURCES",
             "pages": [
               "api-guide/changelog"
             ]
