@@ -14,8 +14,8 @@ court rules, and executive actions, scoped with the `corpusType` filter.
 
 Coverage is queryable live from `GET /statutes/coverage` and `GET /statutes/states`;
 the per-corpus matrix below is a snapshot. In total the ingested corpus holds
-**over 3.8M distinct sections** across all of these corpus types, indexed as
-**more than 9.8M retrieval passages**.
+**over 3.86M distinct sections** across all of these corpus types, indexed as
+**more than 9.9M retrieval passages**.
 
 <Info>
   **Snapshot date: 2026-08-06.** Statute coverage is always live via
@@ -27,7 +27,7 @@ the per-corpus matrix below is a snapshot. In total the ingested corpus holds
   Counts on this page are **distinct sections** (one per provision or document),
   the same figures `GET /statutes/coverage` returns. For retrieval, longer sections
   and documents are split into multiple passages, so the underlying index holds far
-  more entries: **about 9.8M passages** across these 3.8M sections. The Federal
+  more entries: **about 9.9M passages** across these 3.86M sections. The Federal
   Register alone (long agency rules, 13-15 passages each) accounts for over
   half of them.
 
@@ -42,7 +42,7 @@ the per-corpus matrix below is a snapshot. In total the ingested corpus holds
     **52 jurisdictions** (all 50 states + DC + Puerto Rico), **~2.0M sections**. Queryable via the statutes API.
   </Card>
   <Card title="Federal law" icon="landmark">
-    US Code (54,853), CFR (219,447), Federal Register rules (384,794, 1995-present), Executive Orders (3,901), agency guidance (8,781), Federal Rules of Procedure incl. Supreme Court Rules (589), US Constitution (74). Queryable via the statutes API.
+    US Code (54,853), CFR (219,447), Federal Register rules (384,794, 1994-present), Executive Orders (3,901, 2015-present), agency guidance (21,026), Federal Rules of Procedure incl. Supreme Court Rules (589), US Constitution (74). Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
     **51 jurisdictions** (50 states + Puerto Rico), ~7.7K sections, with article/section structure and clickable citations. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
@@ -74,9 +74,9 @@ them.
 | Code of Federal Regulations (CFR) | 219,447 | Daily |
 | ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 (within CFR above) | 5,537 | Daily |
 | ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 (within CFR above) | 2,877 | Daily |
-| Federal Register agency rules (final + proposed), 1995-present | 384,794 | Weekly |
-| Executive Orders (Federal Register Presidential Documents) | 3,901 | Daily |
-| Agency guidance (SSA rulings, IRS, DOJ/FTC merger guidance, DOJ antitrust leniency, Copyright Office circulars, the DOJ Justice Manual, USCIS Policy Manual, USPTO MPEP and TMEP, administrative guidance) | 8,781 | Weekly |
+| Federal Register agency rules (final + proposed), 1994-present | 384,794 | Weekly |
+| Executive Orders (Federal Register Presidential Documents), 2015-present | 3,901 | Daily |
+| Agency guidance (SSA (Social Security Administration) rulings, IRS (Internal Revenue Service), DOJ (Department of Justice)/FTC (Federal Trade Commission) merger guidance, DOJ antitrust leniency, Copyright Office circulars, the DOJ Justice Manual, USCIS (U.S. Citizenship and Immigration Services) Policy Manual, USPTO (U.S. Patent and Trademark Office) MPEP (Manual of Patent Examining Procedure) and TMEP (Trademark Manual of Examining Procedure), DFARS (Defense Federal Acquisition Regulation Supplement) PGI (Procedures, Guidance, and Information), CFTC (Commodity Futures Trading Commission) Staff Letters, FinCEN (Financial Crimes Enforcement Network) rulings and guidance, Federal Reserve/OCC (Office of the Comptroller of the Currency)/FDIC (Federal Deposit Insurance Corporation) banking guidance, CPSC (Consumer Product Safety Commission) Advisory Opinions and Small Entity Compliance Guides, BIS (Bureau of Industry and Security) Advisory Opinions, DDTC (Directorate of Defense Trade Controls) Commodity Jurisdiction Determinations and Guidance, FCC (Federal Communications Commission) Declaratory Rulings, FERC (Federal Energy Regulatory Commission) Policy Statements, DOE (Department of Energy) Appliance Standards Guidance, HHS (Department of Health and Human Services) OCR (Office for Civil Rights) HIPAA (Health Insurance Portability and Accountability Act) guidance materials/resolution agreements/FAQs, administrative guidance) | 21,026 | Weekly |
 | Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) and Rules of the Supreme Court of the United States | 589 | Monthly |
 | US Constitution | 74 | On amendment |
 
@@ -90,7 +90,7 @@ them.
   **Agency guidance** is a registry of named sources, each independently
   filterable and each with its own `category`, folded into the single
   `corpusType=AGENCY_GUIDANCE` token: SSA Rulings (1,115), IRS Revenue
-  Procedures/Rulings/Notices/Announcements (1,459), DOJ & FTC Merger
+  Procedures/Rulings/Notices/Announcements (1,459, 2015-present), DOJ & FTC Merger
   Guidelines (2023), the DOJ Antitrust Division Leniency Policy, US Copyright
   Office Circulars (58), the DOJ Justice Manual (1,548 sections across all 9
   Titles, citable as "Justice Manual § 9-27.420"), the USCIS Policy Manual
@@ -98,9 +98,50 @@ them.
   12, Pt. D, Ch. 3"), the USPTO Manual of Patent Examining Procedure (2,024
   sections across all 29 chapters, citable as "MPEP § 2106") and Trademark
   Manual of Examining Procedure (2,109 sections across all 19 chapters,
-  citable as "TMEP § 1207.01"), and our own synthesized administrative
-  guidance (SALT cap, CTC, 401(k) limits). New sources land as one registry
-  entry, not a new API token.
+  citable as "TMEP § 1207.01"), DFARS PGI (397 documents across all 47 Parts,
+  citable as "PGI 225.370"), CFTC Staff Letters (942 no-action, exemptive,
+  interpretative, and advisory letters, 2008-present, citable as "CFTC Letter
+  No. 26-17" and filterable by regulation part or topic tag), Federal Reserve
+  Supervision and Regulation (SR) / Consumer Affairs (CA) Letters (336
+  letters back to 1990, citable as "SR 21-4 / CA 21-2"), OCC Bulletins (606
+  back to 1994), OCC Interpretive Letters (448 reachable online, 1996-present,
+  citable as "OCC Interpretive Letter No. 1188"), FDIC Financial Institution
+  Letters (2,313 back to 1994, spanning both FDIC's active and inactive FIL
+  indexes so superseded letters stay queryable with `act_status=superseded`),
+  FinCEN Administrative Rulings (86 rulings back to 1988, citable as "FinCEN
+  Ruling FIN-2009-R001") and FinCEN Guidance (127 documents including alerts,
+  advisories, notices, bulletins, and fact sheets, citable as "FinCEN
+  Guidance FIN-2019-G001"), CPSC Office of General Counsel Advisory Opinions
+  (139 opinions with a legible text layer, 1973-2012, citable as "CPSC OGC
+  Advisory Opinion No. 82" -- a historical interpretive archive, not
+  currently updated guidance), BIS (Bureau of Industry and Security)
+  Advisory Opinions interpreting the Export Administration Regulations (33
+  opinions, 2003-2023, citable as "BIS Advisory Opinion, 09/25/23: Export
+  guidance and BIS interpretation of 'gene' related to ECCN 1C353"), DDTC
+  (Directorate of Defense Trade Controls) Commodity Jurisdiction
+  Determinations (5,879 ITAR/USML-vs-EAR rulings on whether a specific item
+  falls under the U.S. Munitions List or the Commerce Control List, 2010-
+  present, from DDTC's own published XLSX export) and DDTC Guidance (7 named
+  documents including Guidelines for Preparing Agreements and the DDTC ITAR
+  Risk Matrix), CPSC Small Entity Compliance Guides (34
+  actively maintained per-rule guides, citable as "CPSC Small Entity
+  Compliance Guide: Safety Standard for Neck Floats (90 FR 58096)"), FCC
+  Declaratory Rulings (169 rulings resolving a petitioner's request for the
+  Commission to interpret a statute, rule, or order in a specific factual
+  context, citable as "DA-26-680: {title} (07/07/26)"), FERC Policy
+  Statements (45 statements back to 1996, FERC's generally-applicable
+  interpretive vehicle -- deliberately narrower than the docket-based
+  eLibrary universe of case-specific orders -- citable by the real
+  practitioner "___ FERC ¶ _____" Reports form when paginated into a bound
+  volume), DOE Appliance Standards Guidance and FAQs (60 final,
+  non-archived documents interpreting the Energy Policy and Conservation
+  Act program, draft guidance excluded, citable as "DOE Appliance Standards
+  Guidance: {question} ({date})"), HHS Office for Civil Rights HIPAA
+  guidance materials (41 documents), resolution agreements and civil money
+  penalties (140 enforcement actions), and HIPAA FAQs (444 distinct
+  questions, deduplicated from HHS's own cross-listed topic pages), and our
+  own synthesized administrative guidance (SALT cap, CTC, 401(k) limits).
+  New sources land as one registry entry, not a new API token.
 </Note>
 
 ## State and territory matrix
@@ -166,6 +207,26 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | Connecticut | 16,091 | 17,468 | 34 | - |
 | Pennsylvania | 14,547 | 52,702 | 186 | 1,723 |
 | Wyoming | 10,229 | 18,554 | 314 | - |
+
+## State agency guidance
+
+State-issued regulatory guidance (bulletins, circular letters) that
+interprets state law - the state-scoped analog of Agency guidance above.
+Unlike statutes, regulations, constitutions, and court rules, this is not on
+a comprehensive 52-jurisdiction rollout: it lands state by state, and some
+states may never be built. Queryable via `corpusType=STATE_AGENCY_GUIDANCE`,
+paired with `state`.
+
+| State | Source | Documents | Refresh |
+|---|---|---|---|
+| Illinois | Dept. of Insurance Company Bulletins | 136 | Not yet on a refresh driver |
+
+<Note>
+  This corpus is a pilot. It does not include NAIC (National Association of
+  Insurance Commissioners) model law text, which is a copyrighted, commercially
+  sold publication, not open government primary law - only each state's own
+  published bulletin, issued under that state's own authority, is in scope.
+</Note>
 
 ## Refresh cadence
 
@@ -286,7 +347,7 @@ curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
   -d '{"query": "stormwater discharge permit", "corpusType": "REGULATION", "state": "wa"}'
 ```
 
-Each column in the matrix above maps to a `corpusType` filter on `/statutes/search`: statutes to `STATE`, regulations to `REGULATION`, constitutions to `STATE_CONSTITUTION`, and court rules to `STATE_RULES`. Federal Register agency rules use `FEDERAL_REGISTER` and agency guidance uses `AGENCY_GUIDANCE`.
+Each column in the matrix above maps to a `corpusType` filter on `/statutes/search`: statutes to `STATE`, regulations to `REGULATION`, constitutions to `STATE_CONSTITUTION`, and court rules to `STATE_RULES`. Federal Register agency rules use `FEDERAL_REGISTER` and agency guidance uses `AGENCY_GUIDANCE`. State agency guidance (the section above) uses `STATE_AGENCY_GUIDANCE`, paired with `state`.
 
 <CardGroup cols={2}>
   <Card title="API Reference" icon="code" href="/api-reference/statutes/search-us-statutes">

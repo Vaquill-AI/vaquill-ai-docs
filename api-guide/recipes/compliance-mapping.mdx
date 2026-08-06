@@ -113,6 +113,38 @@ async function search(query, corpusType, { state, limit = 5 } = {}) {
   one.
 </Tip>
 
+## Narrowing to one named source
+
+`AGENCY_GUIDANCE` is not one body of guidance, it is a registry: SSA rulings,
+IRS notices/procedures/rulings, DOJ & FTC Merger Guidelines, the DOJ Antitrust
+Leniency Policy, Copyright Office Circulars, the DOJ Justice Manual, the USCIS
+Policy Manual, USPTO MPEP/TMEP, CFTC Staff Letters, FinCEN rulings and
+guidance, Federal Reserve/OCC/FDIC banking guidance, DFARS PGI, and NLRB
+memoranda all live under the same `corpusType`. `FEDERAL_RULES` and `CFR`
+similarly fold in several sets (the Federal Rules of Procedure plus Supreme
+Court Rules; FAR and DFARS within CFR Title 48).
+
+If you already know an obligation is, say, an FCTC swaps-clearing question or
+a BSA/AML question, skip the broader sweep and add `source` to go straight to
+that one registry entry instead of ranking it against everything else in the
+corpus:
+
+```json
+{
+  "query": "digital asset margin collateral",
+  "corpusType": "AGENCY_GUIDANCE",
+  "source": "cftc_staff_letter",
+  "limit": 5
+}
+```
+
+Every result already carries its own `source`, so a hit from a broad sweep
+tells you which registry entry to scope a follow-up query to. See
+[Filtering to one named source](/api-guide/concepts/corpus-types#filtering-to-one-named-source)
+for the full list of `source` values and which corpus each belongs to; an
+unrecognized value is rejected with `422` rather than silently matching
+nothing.
+
 ## Step 2 and 3: collect, fetch text, and group
 
 ```python Python

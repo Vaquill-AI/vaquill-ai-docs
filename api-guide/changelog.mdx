@@ -7,6 +7,116 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-06" description="FCC, FERC, and DOE interpretive guidance now covered">
+  ## FCC, FERC, and DOE join Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers three federal agencies'
+  interpretive-guidance vehicles. FCC Declaratory
+  Rulings (169 rulings, discovered from the FCC's own EDOCS "Commission
+  Documents" listing, citable as "DA-26-680: {title} (07/07/26)",
+  `source=fcc_declaratory_ruling`) resolve a petitioner's request for the
+  Commission to state its interpretation of a statute, rule, or order in a
+  specific factual context. FERC Policy Statements (45 statements back to
+  1996, citable by the real practitioner "___ FERC ¶ _____" Reports form
+  when a statement has been paginated into a bound volume, falling back to
+  "Docket No. {docket} ({date}): {title}" otherwise,
+  `source=ferc_policy_statement`) are FERC's generally-applicable
+  interpretive vehicle, deliberately narrower than the docket-based
+  eLibrary universe of case-specific orders. DOE Appliance Standards
+  Guidance and FAQs (60 final, non-archived documents, citable as "DOE
+  Appliance Standards Guidance: {question} ({date})",
+  `source=doe_appliance_guidance`) interpret the Energy Policy and
+  Conservation Act program DOE administers; documents the source itself
+  marks "draft" are excluded, never ingested as if they were settled
+  guidance. See [Coverage](/api-guide/coverage#federal) for the updated
+  count.
+</Update>
+
+<Update label="2026-08-06" description="BIS and DDTC export control guidance now covered">
+  ## BIS Advisory Opinions and DDTC export control guidance join Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers export control interpretive
+  guidance from the two federal agencies that administer nearly all U.S.
+  export controls. BIS (Bureau of
+  Industry and Security, U.S. Department of Commerce) Advisory Opinions
+  interpreting the Export Administration Regulations (33 opinions,
+  2003-2023, citable as "BIS Advisory Opinion, 09/25/23: Export guidance and
+  BIS interpretation of 'gene' related to ECCN 1C353",
+  `source=bis_advisory_opinion`) are a curated, agency-discretion archive.
+  DDTC (Directorate of Defense Trade Controls, U.S. Department of State)
+  Commodity Jurisdiction Determinations (5,879 ITAR/USML-vs-EAR rulings,
+  2010-present, citable as "DDTC Commodity Jurisdiction Determination:
+  {product} ({manufacturer}), {date}", `source=ddtc_commodity_jurisdiction`)
+  and DDTC Policy Guidance (7 named documents including Guidelines for
+  Preparing Agreements and the ITAR Compliance Program Guidelines and Risk
+  Matrix, `source=ddtc_guidance`) are both sourced directly from DDTC's own
+  public portal. See [Coverage](/api-guide/coverage#federal) for the updated
+  count.
+</Update>
+
+<Update label="2026-08-06" description="CPSC Advisory Opinions and Small Entity Compliance Guides now covered">
+  ## CPSC Advisory Opinions and Small Entity Compliance Guides join Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers two Consumer Product Safety
+  Commission sources. CPSC Office of General Counsel
+  Advisory Opinions (139 opinions with a legible text layer, 1973-2012,
+  citable as "CPSC OGC Advisory Opinion No. 82", `source=cpsc_advisory_opinion`)
+  are a historical interpretive archive: the program has not issued a new
+  public opinion in over a decade, so this is not presented as current
+  guidance. CPSC Small Entity Compliance Guides (34 actively maintained
+  per-rule guides required under SBREFA, citable as "CPSC Small Entity
+  Compliance Guide: Safety Standard for Neck Floats (90 FR 58096)",
+  `source=cpsc_secg`) track new safety-standard final rules as CPSC
+  publishes them. CPSC's recall notices (product recalls, safety alerts) are
+  news/safety-communication content, not legal-interpretive text, and remain
+  out of scope. See [Coverage](/api-guide/coverage#federal) for the updated
+  count.
+</Update>
+
+<Update label="2026-08-06" description="FinCEN Administrative Rulings and Guidance now covered">
+  ## FinCEN Administrative Rulings and Guidance join Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers FinCEN's BSA/AML interpretive
+  material. FinCEN Administrative
+  Rulings (86 rulings back to 1988, each with precedential value, citable as
+  "FinCEN Ruling FIN-2009-R001", `source=fincen_ruling`) and FinCEN Guidance
+  (127 alerts, advisories, notices, bulletins, and fact sheets, citable as
+  "FinCEN Guidance FIN-2019-G001", `source=fincen_guidance`). Corporate
+  Transparency Act beneficial-ownership guidance and Anti-Money Laundering
+  Act of 2020 material are not yet covered (they live on separate FinCEN hub
+  pages). See [Coverage](/api-guide/coverage#federal) for the updated count.
+</Update>
+
+<Update label="2026-08-06" description="Federal Reserve / OCC / FDIC banking guidance now covered">
+  ## Federal Reserve, OCC, and FDIC banking guidance join Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers four banking-regulator
+  sources: Federal Reserve Supervision and
+  Regulation (SR) / Consumer Affairs (CA) Letters (336 letters back to
+  1990, citable as "SR 21-4 / CA 21-2", `source=frb_sr_letter`), OCC
+  Bulletins (606 back to 1994, `source=occ_bulletin`), OCC Interpretive
+  Letters (448 reachable online from 1996-present, citable as "OCC
+  Interpretive Letter No. 1188", `source=occ_interpretive_letter`), and
+  FDIC Financial Institution Letters (2,313 back to 1994, spanning both
+  FDIC's active and inactive FIL indexes so superseded letters stay
+  queryable with `act_status=superseded` rather than silently dropped,
+  `source=fdic_fil`). See [Coverage](/api-guide/coverage#federal) for the
+  updated count.
+</Update>
+
+<Update label="2026-08-06" description="CFTC Staff Letters now covered">
+  ## CFTC Staff Letters join Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers CFTC Staff Letters (942
+  no-action, exemptive, interpretative, and advisory letters, 2008-present),
+  citable as "CFTC Letter No. 26-17".
+  Each letter carries the regulation parts and topic tags CFTC itself
+  publishes, filterable via the standard search fields. Filter to just this
+  source with `source=cftc_staff_letter`. Pre-2008 letters are not yet
+  covered (CFTC's own site does not browse them separately today). See
+  [Coverage](/api-guide/coverage#federal) for the updated count.
+</Update>
+
 <Update label="2026-08-06" description="FAR/DFARS-native citation resolution, plus DFARS PGI">
   ## FAR and DFARS are now natively citable, and DFARS PGI joins Agency guidance
 
@@ -32,8 +142,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `corpusType=AGENCY_GUIDANCE` now also covers the USPTO Manual of Patent
   Examining Procedure (MPEP, 2,024 sections across all 29 chapters, citable
   as "MPEP § 2106") and the Trademark Manual of Examining Procedure (TMEP,
-  2,109 sections across all 19 chapters, citable as "TMEP § 1207.01") --
-  sources not commonly indexed elsewhere. Filter to just one with `source=mpep` or
+  2,109 sections across all 19 chapters, citable as "TMEP § 1207.01").
+  Filter to just one with `source=mpep` or
   `source=tmep`. See [Coverage](/api-guide/coverage#federal) for the updated
   count.
 </Update>
@@ -43,7 +153,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   `corpusType=AGENCY_GUIDANCE` now also covers the DOJ Justice Manual (1,548
   sections across all 9 Titles), citable by section as "Justice Manual §
-  9-27.420" -- a source not commonly indexed elsewhere. Filter to just it with
+  9-27.420". Filter to just it with
   `source=doj_justice_manual`. See [Coverage](/api-guide/coverage#federal)
   for the updated count.
 </Update>
@@ -53,7 +163,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   `corpusType=AGENCY_GUIDANCE` now also covers the USCIS Policy Manual (456
   chapters across all 12 volumes), citable by chapter as "USCIS Policy
-  Manual, Vol. 12, Pt. D, Ch. 3" -- a source not commonly indexed elsewhere. Filter
+  Manual, Vol. 12, Pt. D, Ch. 3". Filter
   to just it with `source=uscis_policy_manual`. See
   [Coverage](/api-guide/coverage#federal) for the updated count.
 </Update>

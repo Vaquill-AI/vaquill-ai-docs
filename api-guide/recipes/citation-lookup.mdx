@@ -22,6 +22,9 @@ to expand a citation your users typed into full, linkable law.
   - US Constitution: `U.S. Const. art. I, § 8`, `U.S. Const. amend. XIV, § 1`
   - State constitution: `Cal. Const. art. I, § 7`
   - Federal court rule: `Fed. R. Civ. P. 12`, `Fed. R. Evid. 702`
+  - Federal Acquisition Regulation / DFARS: `FAR 52.219-14`, `DFARS 252.225-7001`
+    (with or without periods, and with a pinpoint like `FAR 52.219-14(b)`) —
+    resolves straight into the existing CFR Title 48 records, no separate corpus
 
   Scope `corpusType` (and `state`) when the citation names the corpus, so a
   same-numbered section in another corpus cannot rank first.
@@ -288,7 +291,10 @@ if __name__ == "__main__":
     `corpusType: "CFR"`; `... U.S.C. ...` means `"USC"`; a state code section
     means `"STATE"` with the two-letter `state`. `titleNumber` is accepted only
     with `USC` or `CFR` and can pin the title further. Scoping keeps a same-numbered
-    section in the wrong corpus from ranking first.
+    section in the wrong corpus from ranking first. `FAR`/`DFARS` citations are
+    `corpusType: "CFR"` too (they are Title 48); add `source: "far"` or
+    `source: "dfars"` if you want to also exclude every other CFR title from the
+    ranking, not just confirm the match.
   </Accordion>
   <Accordion title="404 on the body" icon="rotate-left">
     If `GET /statutes/section/{actId}/body` cannot return text, it responds with
