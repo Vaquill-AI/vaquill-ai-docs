@@ -14,7 +14,7 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
 
 <Steps>
   <Step title="Fetch the coverage matrix">
-    The response is wrapped as `{ "data": {...}, "meta": {...} }`. Inside `data` you get a `corpusTypes` legend and a `jurisdictions` array, where each jurisdiction carries a `corpora` object mapping a corpusType token to its ingested chunk count.
+    The response is wrapped as `{ "data": {...}, "meta": {...} }`. Inside `data` you get a `corpusTypes` legend and a `jurisdictions` array, where each jurisdiction carries a `corpora` object mapping a corpusType token to its ingested section count (the same distinct-section count [Coverage](/api-guide/coverage) shows, not the larger passage/chunk count used internally for retrieval).
 
     <CodeGroup>
     ```bash cURL
@@ -115,7 +115,7 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
             prev = old[code]
             for token, count in corpora.items():
                 if token not in prev:
-                    changes.append(f"{code}: new corpus {token} ({count} chunks)")
+                    changes.append(f"{code}: new corpus {token} ({count} sections)")
                 elif count > prev[token]:
                     delta = count - prev[token]
                     changes.append(
@@ -166,7 +166,7 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
 
     ```text
     2 coverage change(s) detected:
-      - va: new corpus REGULATION (22400 chunks)
+      - va: new corpus REGULATION (22400 sections)
       - tx: STATE grew by 1840 (120967 -> 122807)
     ```
   </Step>

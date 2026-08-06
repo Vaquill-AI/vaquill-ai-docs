@@ -26,7 +26,7 @@ search one jurisdiction's data.
 | `FEDERAL_RULES` | Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) and Rules of the Supreme Court of the United States. Filter to one set with `source` (see below). | federal | 589 |
 | `EXECUTIVE_ACTION` | Presidential documents (executive orders, proclamations, memos) | federal | 3,901 |
 | `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | federal | 384,794 |
-| `AGENCY_GUIDANCE` | Agency guidance (SSA (Social Security Administration) rulings, IRS (Internal Revenue Service) notices/rulings/procedures, DOJ (Department of Justice)/FTC (Federal Trade Commission) merger guidance, DOJ antitrust leniency policy, Copyright Office circulars, the DOJ Justice Manual, USCIS (U.S. Citizenship and Immigration Services) Policy Manual, USPTO (U.S. Patent and Trademark Office) MPEP (Manual of Patent Examining Procedure) and TMEP (Trademark Manual of Examining Procedure), DFARS (Defense Federal Acquisition Regulation Supplement) PGI (Procedures, Guidance, and Information), CFTC (Commodity Futures Trading Commission) Staff Letters, FinCEN (Financial Crimes Enforcement Network) rulings and guidance, Federal Reserve SR (Supervision and Regulation)/CA (Consumer Affairs) Letters, OCC (Office of the Comptroller of the Currency) Bulletins and Interpretive Letters, FDIC (Federal Deposit Insurance Corporation) Financial Institution Letters, CPSC (Consumer Product Safety Commission) Advisory Opinions and Small Entity Compliance Guides, BIS (Bureau of Industry and Security) Advisory Opinions, DDTC (Directorate of Defense Trade Controls) Commodity Jurisdiction Determinations and Policy Guidance, FCC (Federal Communications Commission) Declaratory Rulings, FERC (Federal Energy Regulatory Commission) Policy Statements, DOE (Department of Energy) Appliance Standards Guidance, HHS (Department of Health and Human Services) OCR (Office for Civil Rights) HIPAA (Health Insurance Portability and Accountability Act) guidance). Filter to one source with `source` (see below). | federal | 21,026 |
+| `AGENCY_GUIDANCE` | Sub-regulatory agency guidance - 28 named sources across 15 agencies (SSA, IRS, DOJ, FTC, Copyright Office, USCIS, USPTO, DFARS, CFTC, FinCEN, Federal Reserve, OCC, FDIC, CPSC, BIS, DDTC, FCC, FERC, DOE, HHS OCR, and more). Full list in [API Coverage](/api-guide/coverage#federal). Filter to one source with `source` (see below). | federal | 21,026 |
 | `SENTENCING_GUIDELINES` | U.S. Sentencing Guidelines (U.S.S.G.), the federal sentencing commission's guideline manual | federal | 302 |
 | `US_TAX_TREATY` | U.S. bilateral income and estate tax treaties, citable by article, plus Treasury's Technical Explanations (article-by-article commentary on each treaty) | federal | 119 |
 
@@ -138,26 +138,13 @@ for (const r of data.results) {
 
 Both are **federal**, so they need only a `corpusType`, no `state`.
 `FEDERAL_REGISTER` searches agency rules as published (proposed and final).
-`AGENCY_GUIDANCE` searches sub-regulatory guidance: SSA rulings, IRS notices,
-revenue rulings and procedures, DOJ & FTC Merger Guidelines, the DOJ Antitrust
-Division Leniency Policy, US Copyright Office Circulars, the DOJ Justice
-Manual, the USCIS Policy Manual, the USPTO Manual of Patent Examining
-Procedure (MPEP) and Trademark Manual of Examining Procedure (TMEP), DFARS
-PGI, CFTC Staff Letters (no-action, exemptive, interpretative, and advisory
-letters, 2008-present), FinCEN Administrative Rulings and Guidance, Federal
-Reserve Supervision and Regulation (SR) / Consumer Affairs (CA) Letters,
-OCC Bulletins and Interpretive Letters, FDIC Financial Institution
-Letters (FILs), CPSC Office of General Counsel Advisory Opinions (a
-historical interpretive archive, 1973-2012), CPSC Small Entity
-Compliance Guides (actively maintained, one per qualifying final rule),
-BIS Advisory Opinions interpreting the Export Administration Regulations,
-DDTC Commodity Jurisdiction Determinations and Policy Guidance
-(ITAR/USML vs. EAR/CCL rulings and named guidance documents such as
-Guidelines for Preparing Agreements), FCC Declaratory Rulings, FERC Policy
-Statements, and DOE Appliance Standards Guidance and FAQs, plus a set of
-primary-sourced **reference figures**,
-the annually adjusted dollar thresholds (for example the Subchapter V debt
-limit, or SALT and CTC values) that do not live in USC or CFR section text.
+`AGENCY_GUIDANCE` searches sub-regulatory guidance across 28 named sources
+(SSA rulings, IRS notices, DOJ/FTC merger guidance, USPTO's MPEP/TMEP, CFTC
+Staff Letters, FinCEN rulings, banking-regulator letters, and more - full
+list in [API Coverage](/api-guide/coverage#federal)), plus a set of
+primary-sourced **reference figures**: annually adjusted dollar thresholds
+(for example the Subchapter V debt limit, or SALT and CTC values) that
+don't live in USC or CFR section text.
 
 <CodeGroup>
 
@@ -228,32 +215,42 @@ filter to scope to just it.
   data by chapter; they are not a separate ingest, and every other `CFR`
   result (all other titles, plus non-FAR/DFARS Title 48 chapters) has a null
   `source`.
-- `AGENCY_GUIDANCE` sources: `ssa_ruling`, `irs_rev_proc`, `irs_notice`,
-  `irs_rev_rul`, `irs_announcement`, `merger_guidelines` (DOJ & FTC Merger
-  Guidelines), `doj_leniency` (DOJ Antitrust Division Leniency Policy),
-  `copyright_circular` (US Copyright Office Circulars), `doj_justice_manual`
-  (DOJ Justice Manual), `uscis_policy_manual` (USCIS Policy Manual), `mpep`
-  (USPTO Manual of Patent Examining Procedure), `tmep` (USPTO Trademark
-  Manual of Examining Procedure), `dfars_pgi` (DFARS PGI - Procedures,
-  Guidance, and Information), `cftc_staff_letter` (CFTC Staff Letters -
-  no-action, exemptive, interpretative, and advisory letters),
-  `fincen_ruling` (FinCEN Administrative Rulings), `fincen_guidance` (FinCEN
-  Guidance - alerts, advisories, notices, bulletins, and fact sheets),
-  `frb_sr_letter` (Federal Reserve Supervision and Regulation (SR) /
-  Consumer Affairs (CA) Letters), `occ_bulletin` (OCC Bulletins),
-  `occ_interpretive_letter` (OCC Interpretive Letters), `fdic_fil` (FDIC
-  Financial Institution Letters), `cpsc_advisory_opinion` (CPSC Office of
-  General Counsel Advisory Opinions, a historical archive, 1973-2012),
-  `cpsc_secg` (CPSC Small Entity Compliance Guides), `fcc_declaratory_ruling`
-  (FCC Declaratory Rulings), `ferc_policy_statement` (FERC Policy Statements),
-  `doe_appliance_guidance` (DOE Appliance Standards Guidance and FAQs),
-  `bis_advisory_opinion` (BIS Advisory Opinions interpreting the Export
-  Administration Regulations), `ddtc_commodity_jurisdiction` (DDTC Commodity
-  Jurisdiction Determinations - ITAR/USML vs. EAR/CCL rulings),
-  `ddtc_guidance` (DDTC Policy Guidance Documents), `hhs_ocr_hipaa_guidance`
-  (HHS OCR HIPAA Guidance Materials), `hhs_ocr_resolution_agreement` (HHS OCR
-  HIPAA Resolution Agreements and Civil Money Penalties), `hhs_ocr_hipaa_faq`
-  (HHS OCR HIPAA FAQs), or `administrative_guidance`.
+- `AGENCY_GUIDANCE` sources:
+
+  | `source` value | Name |
+  |---|---|
+  | `ssa_ruling` | SSA Rulings |
+  | `irs_rev_proc` | IRS Revenue Procedures |
+  | `irs_notice` | IRS Notices |
+  | `irs_rev_rul` | IRS Revenue Rulings |
+  | `irs_announcement` | IRS Announcements |
+  | `merger_guidelines` | DOJ & FTC Merger Guidelines |
+  | `doj_leniency` | DOJ Antitrust Division Leniency Policy |
+  | `copyright_circular` | US Copyright Office Circulars |
+  | `doj_justice_manual` | DOJ Justice Manual |
+  | `uscis_policy_manual` | USCIS Policy Manual |
+  | `mpep` | USPTO Manual of Patent Examining Procedure |
+  | `tmep` | USPTO Trademark Manual of Examining Procedure |
+  | `dfars_pgi` | DFARS PGI (Procedures, Guidance, and Information) |
+  | `cftc_staff_letter` | CFTC Staff Letters (no-action, exemptive, interpretative, advisory) |
+  | `fincen_ruling` | FinCEN Administrative Rulings |
+  | `fincen_guidance` | FinCEN Guidance (alerts, advisories, notices, bulletins, fact sheets) |
+  | `frb_sr_letter` | Federal Reserve SR / CA Letters |
+  | `occ_bulletin` | OCC Bulletins |
+  | `occ_interpretive_letter` | OCC Interpretive Letters |
+  | `fdic_fil` | FDIC Financial Institution Letters |
+  | `cpsc_advisory_opinion` | CPSC OGC Advisory Opinions (historical archive, 1973-2012) |
+  | `cpsc_secg` | CPSC Small Entity Compliance Guides |
+  | `fcc_declaratory_ruling` | FCC Declaratory Rulings |
+  | `ferc_policy_statement` | FERC Policy Statements |
+  | `doe_appliance_guidance` | DOE Appliance Standards Guidance and FAQs |
+  | `bis_advisory_opinion` | BIS Advisory Opinions (Export Administration Regulations) |
+  | `ddtc_commodity_jurisdiction` | DDTC Commodity Jurisdiction Determinations (ITAR/USML vs. EAR/CCL) |
+  | `ddtc_guidance` | DDTC Policy Guidance Documents |
+  | `hhs_ocr_hipaa_guidance` | HHS OCR HIPAA Guidance Materials |
+  | `hhs_ocr_resolution_agreement` | HHS OCR HIPAA Resolution Agreements and Civil Money Penalties |
+  | `hhs_ocr_hipaa_faq` | HHS OCR HIPAA FAQs |
+  | `administrative_guidance` | Vaquill-synthesized administrative guidance |
 
 ```json
 { "query": "petition for writ of certiorari", "corpusType": "FEDERAL_RULES", "source": "sct" }

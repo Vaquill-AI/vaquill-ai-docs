@@ -42,34 +42,7 @@ Validation errors (422) include field-level details:
 
 ## Rate Limiting
 
-Limits are enforced per API key and scale with your plan. Every `429` response includes a `Retry-After` header.
-
-| Plan | Per minute | Per hour | Per day |
-|------|-----------|----------|---------|
-| API | 30 | 500 | 2,000 |
-| API Business | 150 | 2,500 | 10,000 |
-
-On `429`, implement exponential backoff:
-
-```python
-import time
-import requests
-
-def search_with_retry(query, max_retries=3):
-    for attempt in range(max_retries):
-        response = requests.post(
-            "https://api.vaquill.ai/api/v1/statutes/search",
-            headers={"Authorization": "Bearer vq_key_..."},
-            json={"query": query}
-        )
-        if response.status_code == 429:
-            # Respect Retry-After when present, else exponential backoff.
-            wait = int(response.headers.get("Retry-After", 2 ** attempt))
-            time.sleep(wait)
-            continue
-        return response
-    raise Exception("Max retries exceeded")
-```
+Limits are enforced per API key and scale with your plan. Every `429` response includes a `Retry-After` header. See [Rate limits](/api-guide/rate-limits) for the per-plan table and a full backoff implementation.
 
 ## Troubleshooting
 
@@ -82,3 +55,14 @@ def search_with_retry(query, max_retries=3):
     Set `Content-Type: application/json`. Check the `loc` field in the response to find the problematic field.
   </Accordion>
 </AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
+    Per-plan request limits and a full backoff implementation.
+  </Card>
+  <Card title="Authentication" icon="key" href="/api-guide/authentication">
+    Create and manage your API key.
+  </Card>
+</CardGroup>
