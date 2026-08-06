@@ -441,16 +441,8 @@
     },
     "links": [
       {
-        "header": "Quick Links",
+        "header": "Company",
         "items": [
-          {
-            "label": "Dashboard",
-            "href": "https://app.vaquill.ai"
-          },
-          {
-            "label": "Pricing",
-            "href": "https://vaquill.ai/pricing"
-          },
           {
             "label": "About",
             "href": "https://vaquill.ai/about"
@@ -460,66 +452,54 @@
             "href": "https://vaquill.ai/contact"
           },
           {
-            "label": "Brand Assets",
-            "href": "https://vaquill.ai/brand"
+            "label": "Data Sources & Credits",
+            "href": "https://vaquill.ai/partners"
+          },
+          {
+            "label": "Blog",
+            "href": "https://vaquill.ai/blog"
+          },
+          {
+            "label": "Engineering",
+            "href": "https://vaquill.ai/engineering"
+          }
+        ]
+      },
+      {
+        "header": "Developers",
+        "items": [
+          {
+            "label": "Statutes API",
+            "href": "https://vaquill.ai/legal-api"
+          },
+          {
+            "label": "MCP Servers",
+            "href": "https://vaquill.ai/mcp"
           },
           {
             "label": "API Reference",
             "href": "/api-reference/statutes/search-us-statutes"
+          },
+          {
+            "label": "Open US Law Dataset",
+            "href": "https://vaquill.ai/open-us-law"
+          },
+          {
+            "label": "Open US Law (GitHub)",
+            "href": "https://github.com/Vaquill-AI/open-us-law"
           }
         ]
       },
       {
-        "header": "Features",
+        "header": "Founders",
         "items": [
           {
-            "label": "Agent Mode",
-            "href": "https://vaquill.ai/features/agent-mode"
+            "label": "Arshita Anand",
+            "href": "https://www.linkedin.com/in/arshita-anand"
           },
           {
-            "label": "Skills",
-            "href": "https://vaquill.ai/features/skills"
-          },
-          {
-            "label": "Memories",
-            "href": "https://vaquill.ai/features/memories"
-          },
-          {
-            "label": "AI Legal Research",
-            "href": "https://vaquill.ai/features/legal-research"
-          },
-          {
-            "label": "Compliance Check",
-            "href": "https://vaquill.ai/features/compliance-check"
-          },
-          {
-            "label": "Chronology Builder",
-            "href": "https://vaquill.ai/features/chronology-builder"
-          }
-        ]
-      },
-      {
-        "header": "Use Cases",
-        "items": [
-          {
-            "label": "Litigation Lawyers",
-            "href": "https://vaquill.ai/use-case/litigation-lawyers"
-          },
-          {
-            "label": "Corporate Lawyers",
-            "href": "https://vaquill.ai/use-case/corporate-lawyers"
-          },
-          {
-            "label": "Law Firms",
-            "href": "https://vaquill.ai/use-case/law-firms"
-          },
-          {
-            "label": "Legal Tech Developers",
-            "href": "https://vaquill.ai/use-case/legal-tech-developers"
-          },
-          {
-            "label": "Solo Practitioners",
-            "href": "https://vaquill.ai/use-case/solo-practitioners"
+            "label": "Priyansh Khodiyar",
+            "href": "https://www.linkedin.com/in/zriyansh"
           }
         ]
       },
@@ -535,12 +515,32 @@
             "href": "https://vaquill.ai/terms"
           },
           {
+            "label": "DPA",
+            "href": "https://vaquill.ai/dpa"
+          },
+          {
             "label": "Cookie Policy",
             "href": "https://vaquill.ai/cookies"
           },
           {
             "label": "Refund Policy",
             "href": "https://vaquill.ai/refund-policy"
+          },
+          {
+            "label": "Delete My Data",
+            "href": "https://vaquill.ai/delete-data"
+          },
+          {
+            "label": "Security",
+            "href": "https://vaquill.ai/security"
+          },
+          {
+            "label": "Accessibility",
+            "href": "https://vaquill.ai/accessibility"
+          },
+          {
+            "label": "Do Not Sell or Share My Personal Information",
+            "href": "https://vaquill.ai/privacy#do-not-sell"
           }
         ]
       }
