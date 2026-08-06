@@ -4,6 +4,8 @@ description: "Walk a code top to bottom with /statutes/divisions: titles, chapte
 icon: "sitemap"
 ---
 
+**What this gets you:** a table of contents for any code or title - render a browsable tree of a law in your product, the way a person would flip through it, instead of only ever surfacing single sections from search.
+
 Search finds the section that answers a question, but it cannot enumerate a code. When you need the *structure*, titles then chapters then sections, in the order a human reads them, use `GET /statutes/divisions`. Each call returns the immediate children of wherever you are, so you can render a tree, build a table of contents, or crawl a whole title without paging through search.
 
 **Endpoint used:** `GET /statutes/divisions` (1 credit per call).

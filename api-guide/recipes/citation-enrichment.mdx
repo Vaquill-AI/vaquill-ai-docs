@@ -4,6 +4,8 @@ description: "Search a batch of topics or citations, take the best match, and at
 icon: "database"
 ---
 
+**What this gets you:** turn a messy spreadsheet or database of topics and half-formed citations into a clean table of verified law, each row backed by a real citation and an official source link, without doing it by hand.
+
 If you keep a list of topics or rough citations, you can ground each one against authoritative text. This recipe walks a batch of inputs, searches each one, takes the best match, and attaches the canonical citation, an excerpt, and the official government source URL back onto your record. It paces requests to respect the rate limit and backs off on a `429`.
 
 **Endpoints used:** `POST /statutes/search`. Optionally `GET /statutes/section/{actId}/body` when you want full text rather than the excerpt.

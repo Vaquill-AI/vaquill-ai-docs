@@ -4,6 +4,8 @@ description: "Give an AI agent authoritative statute search, either through the 
 icon: "plug"
 ---
 
+**What this gets you:** any AI agent - Claude, Cursor, or one you built - gains the ability to look up real US law on its own, mid-conversation, with citations, instead of guessing from training data.
+
 Grounding an AI agent in authoritative legal text is one of the most common uses of this API. There are two ways to do it: connect an MCP-compatible client to the hosted Vaquill MCP server, or wrap the REST API as a tool your own agent can call. Both return citations and source links, so answers stay grounded in official government text.
 
 **Endpoints used:** `POST /statutes/search` for the custom-tool path. The hosted server path needs no direct REST calls from you.

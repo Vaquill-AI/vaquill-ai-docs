@@ -4,6 +4,8 @@ description: "Poll the coverage endpoint on a schedule and diff snapshots to det
 icon: "chart-line"
 ---
 
+**What this gets you:** an early-warning system for your own product - know automatically the moment a state or agency you depend on gets new coverage, instead of finding out by accident.
+
 The corpus grows every week. This recipe polls the `GET /statutes/coverage` endpoint on a schedule, saves a snapshot of each jurisdiction's `corpora` counts, and diffs it against the previous snapshot so you can react when a jurisdiction gains a new corpus (for example a state adding regulations) or an existing corpus expands.
 
 **Endpoints used:** `GET /statutes/coverage`.

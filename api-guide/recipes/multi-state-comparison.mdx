@@ -4,6 +4,8 @@ description: "Run the same query across several state codes and assemble a side-
 icon: "scale-balanced"
 ---
 
+**What this gets you:** a 50-state comparison table for any rule, built automatically instead of by hand - useful for due diligence, multi-state compliance, or any "how does this vary by state" question.
+
 Many legal questions are really the same question asked of many jurisdictions: how does each state handle security deposits, non-competes, or breach notice? This recipe runs one query with `corpusType=STATE` across a list of `state` codes, keeps the top section per state, and assembles a comparison table of state to citation to excerpt and source link.
 
 **Endpoints used:** `GET /statutes/coverage` to pick states, then `POST /statutes/search`.

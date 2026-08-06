@@ -4,9 +4,22 @@
   "name": "Vaquill AI",
   "description": "Legal AI suite for in-house counsel, with a US statutes API. Look up the US Code, the CFR, and all 50 state statute codes, and integrate statute data into your product.",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#6E3730",
+    "light": "#8C4A3F",
+    "dark": "#5A2D27"
+  },
+  "background": {
+    "color": {
+      "light": "#F4F1EC"
+    }
+  },
+  "fonts": {
+    "heading": {
+      "family": "Geist"
+    },
+    "body": {
+      "family": "Geist"
+    }
   },
   "logo": {
     "light": "/logo/light.png",
@@ -14,6 +27,24 @@
     "href": "https://vaquill.ai"
   },
   "favicon": "/favicon.png",
+  "metadata": {
+    "timestamp": true
+  },
+  "search": {
+    "prompt": "Search docs, guides, and the API reference..."
+  },
+  "errors": {
+    "404": {
+      "redirect": false,
+      "title": "Page not found",
+      "description": "That page doesn't exist, or the URL changed. Try the search bar above, or head back to the [homepage](/introduction)."
+    }
+  },
+  "banner": {
+    "content": "New: DOJ Justice Manual, USCIS Policy Manual, USPTO MPEP/TMEP, and DFARS PGI are now in the API. See [what's covered](/api-guide/coverage).",
+    "dismissible": true,
+    "type": "info"
+  },
   "seo": {
     "indexing": "all",
     "metatags": {
