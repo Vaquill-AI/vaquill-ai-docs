@@ -6,6 +6,10 @@ icon: "chart-line"
 
 **What this gets you:** an early-warning system for your own product - know automatically the moment a state or agency you depend on gets new coverage, instead of finding out by accident.
 
+<Tip>
+  Looking for **section-level** changes within a corpus you already have (an amendment, a repeal) rather than a brand new corpus appearing? [Law Change Alerts](/api-guide/alerts) does that natively, with a webhook or email per change and a before/after diff, no polling required. Keep reading if what you want is this recipe's job: detecting when a jurisdiction gains a whole new corpus.
+</Tip>
+
 The corpus grows every week. This recipe polls the `GET /statutes/coverage` endpoint on a schedule, saves a snapshot of each jurisdiction's `corpora` counts, and diffs it against the previous snapshot so you can react when a jurisdiction gains a new corpus (for example a state adding regulations) or an existing corpus expands.
 
 **Endpoints used:** `GET /statutes/coverage`.
@@ -181,6 +185,9 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="Law Change Alerts" icon="bell" href="/api-guide/alerts">
+    Section-level change notifications with a webhook or email, no polling.
+  </Card>
   <Card title="Compare a rule across states" icon="scale-balanced" href="/api-guide/recipes/multi-state-comparison">
     Run one query across several states and assemble a comparison table.
   </Card>

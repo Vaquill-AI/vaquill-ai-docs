@@ -1,0 +1,48 @@
+---
+title: "Data & Privacy"
+description: "What the Vaquill API stores about your requests, and for how long"
+icon: "shield-halved"
+---
+
+This page covers the developer API (`api.vaquill.ai`) only, not the Vaquill AI chat product. The two are separate systems with separate data handling: chat is built to retain conversation history by design, since that's the product. The API is not. It exists to serve you statute and regulation text, and it is built to keep as little of your traffic as possible.
+
+The short version: your query text (the `query` on `/statutes/search`, or any other request body or parameter) is never written to a database or a log. It exists in memory for the length of the request, and then it's gone.
+
+## What's stored
+
+| Data | Contains | Where | Retention |
+|---|---|---|---|
+| API key | A SHA-256 hash (used to authenticate you), a separately encrypted copy (so the dashboard can show it to you again), and a short display prefix like `vq_key_ab12...` | Primary database, encrypted at rest | Until you revoke the key |
+| Search and request content | Nothing. Query text, request bodies, and parameters are not persisted. | - | Exists only for the duration of the request |
+| Usage counters | Aggregate call counts per key, per day, per endpoint. No query content. | Ephemeral cache | 48 hours |
+| Billing ledger | User ID, credit amount, a short endpoint label (for example `statutes.search`), timestamp. No query content. | Primary database | Kept as your permanent billing record |
+| Law Change Alerts watch | Webhook URL, an encrypted webhook secret, email address, the board you're watching | Primary database, secret encrypted at rest | Until you delete the watch |
+| Webhook delivery attempts | Status code, success or failure, a short error string, attempt number. Not the delivered payload body. | Primary database | 90 days, deleted automatically every week |
+| Request observability | Route template, status code, response time. No request or response bodies. | Error monitoring and internal logs | Sampled: 1% of successful calls, 100% of errors |
+
+<Note>
+  Error monitoring for this API runs with personally identifiable information (PII) collection disabled, so error reports don't carry request bodies, headers, or query strings.
+</Note>
+
+## Why webhook secrets and delivery status are the exception
+
+Two things in that table look like they hold onto more than "nothing": your webhook secret, and the status of each delivery attempt. Both are necessary to the feature itself, not incidental collection.
+
+The webhook secret is what lets Vaquill AI sign each delivery with `X-Vaquill-Signature` so you can verify it came from us. It's stored encrypted and is never returned by any endpoint once you set it. See [Law Change Alerts](/api-guide/alerts) for how the signature works.
+
+Delivery attempts (status code, success, a short error string) exist so `GET /watches/{watchId}/deliveries` can show you your own webhook's health, the same way a payments provider shows you delivery logs for its webhooks. The delivered payload itself (the actual change data) is never stored there. It's live and only in the request we sent you.
+
+## What we don't do (yet)
+
+There's no self-serve control today to set a custom retention window or request early deletion of your account's records. If your organization needs that (a shorter window, a signed data processing agreement, or deletion on request) for a compliance review or an RFP, email [support](mailto:contact@vaquill.ai) and we'll work it out directly. This is worth asking for; enterprise legal-AI buyers increasingly expect it, and we'd rather hear the requirement than have you guess at it.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api-guide/authentication">
+    How API keys work and how to rotate them.
+  </Card>
+  <Card title="Law Change Alerts" icon="bell" href="/api-guide/alerts">
+    Webhook signing, delivery history, and what a subscription stores.
+  </Card>
+</CardGroup>

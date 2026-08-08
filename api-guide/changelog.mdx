@@ -7,6 +7,31 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-07" description="New: Law Change Alerts, with section-level diffs">
+  ## Subscribe to a jurisdiction or corpus and get notified when it changes
+
+  A new, free capability: `GET /boards` lists every source you can watch
+  (a jurisdiction's statutes, a corpus like the Federal Register or the
+  eCFR), and `POST /watches` subscribes you to one on a webhook, an email
+  address, or both. When that source refreshes with real changes, you get a
+  signed webhook delivery (`X-Vaquill-Event: board.updated`,
+  `X-Vaquill-Signature` when a secret is set) and/or an email naming the
+  exact sections that were added, amended, or removed -- not just a count.
+
+  `GET /watches/{watchId}/changes` lists that same detail on demand, scoped
+  to your watch's own lifetime. For any `amended` section where `hasDiff`
+  is `true`, `GET /watches/{watchId}/changes/{changeId}/diff` returns the
+  section's text before and after that specific change, so you can show
+  exactly what moved rather than sending someone back to reread the whole
+  section.
+
+  `PATCH /watches/{watchId}` pauses, resumes, or rotates a destination.
+  `POST /watches/{watchId}/test` fires a one-off test delivery before you
+  rely on it. `GET /watches/{watchId}/deliveries` is webhook delivery
+  history. See the [Law Change Alerts guide](/api-guide/alerts) for the
+  full walkthrough, payload shape, and signature verification.
+</Update>
+
 <Update label="2026-08-06" description="FCC, FERC, and DOE interpretive guidance now covered">
   ## FCC, FERC, and DOE join Agency guidance
 

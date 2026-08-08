@@ -335,7 +335,8 @@
             "pages": [
               "api-guide/overview",
               "api-guide/quickstart",
-              "api-guide/authentication"
+              "api-guide/authentication",
+              "api-guide/data-privacy"
             ]
           },
           {
@@ -346,6 +347,12 @@
               "api-guide/concepts/section-ids",
               "api-guide/concepts/status-and-currency",
               "api-guide/concepts/formats"
+            ]
+          },
+          {
+            "group": "LAW CHANGE ALERTS",
+            "pages": [
+              "api-guide/alerts"
             ]
           },
           {

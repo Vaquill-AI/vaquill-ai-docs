@@ -20,6 +20,7 @@ Every path is prefixed with `/api/v1`. Every result carries a citation, status a
 | Section **metadata**, **full text**, and **neighboring sections** | `GET /statutes/section/{actId}`, `.../body`, `.../related` |
 | **Batch** metadata for up to 50 sections in one call | `POST /statutes/sections` |
 | Discover live **coverage**: jurisdictions, codes, and the corpus matrix | `GET /statutes/states`, `/codes`, `/coverage` |
+| **Subscribe** to a jurisdiction or corpus and get a webhook or email when it changes, section by section, with before/after text on amendments | `GET /boards`, `POST /watches`, `GET /watches/{id}/changes`, `.../diff` |
 
 ### Credit costs
 
@@ -33,6 +34,7 @@ Every path is prefixed with `/api/v1`. Every result carries a citation, status a
 | `POST /statutes/sections` (batch) | 2 per section returned; misses in `notFound` are not charged |
 | `GET /statutes/divisions` | 1 |
 | `GET /statutes/states`, `/codes`, `/coverage`, `/laws` | Free |
+| `/boards` and `/watches` (Law Change Alerts, every endpoint) | Free |
 
 <Note>
   `creditsConsumed` on every response reports what was actually billed, which
@@ -70,6 +72,9 @@ Scope any search with the `corpusType` token. See [Corpus Types](/api-guide/conc
   <Card title="Statute chatbot" icon="comments" href="/api-guide/recipes/statute-chatbot">
     Answer statute questions in your product, grounded in official text.
   </Card>
+  <Card title="Law Change Alerts" icon="bell" href="/api-guide/alerts">
+    Get a webhook or email the moment a jurisdiction or corpus changes, with the exact sections and a before/after diff.
+  </Card>
 </CardGroup>
 
 ## Get started
@@ -80,6 +85,9 @@ Scope any search with the `corpusType` token. See [Corpus Types](/api-guide/conc
   </Card>
   <Card title="Authentication" icon="key" href="/api-guide/authentication">
     Create an API key and authenticate every request.
+  </Card>
+  <Card title="Data & Privacy" icon="shield-halved" href="/api-guide/data-privacy">
+    What the API stores about your requests, and for how long.
   </Card>
 </CardGroup>
 

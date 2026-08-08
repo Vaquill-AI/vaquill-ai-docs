@@ -1,0 +1,256 @@
+---
+title: "Law Change Alerts"
+description: "Subscribe to a jurisdiction or corpus and get a webhook or email the moment it changes, down to the exact section"
+icon: "bell"
+---
+
+Corpus data updates on its own refresh cadence (daily for the Federal Register, weekly for most state codes, and so on). Law Change Alerts let you subscribe to a **board** (a tracked source, identified by `corpusType` + `state`) and get notified automatically whenever it refreshes with real changes, instead of polling on your own schedule.
+
+Every alert names the exact sections that changed, not just a count, and you can fetch the old text next to the new text for any section that was amended.
+
+Every path below is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header. All endpoints in this guide are **free**: authenticated and rate-limited, but not credit-metered.
+
+## Boards and watches
+
+A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`. Watching a board does not change how often it refreshes.
+
+A **watch** is your subscription to one board, on one or more channels (webhook, email, or both).
+
+<CodeGroup>
+```bash cURL
+curl https://api.vaquill.ai/api/v1/boards \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+import requests
+
+boards = requests.get(
+    "https://api.vaquill.ai/api/v1/boards",
+    headers={"Authorization": "Bearer vq_key_..."},
+).json()["data"]["boards"]
+
+for b in boards:
+    print(b["corpusType"], b.get("state"), b["label"], b["cadence"])
+```
+</CodeGroup>
+
+```json
+{
+  "data": {
+    "boards": [
+      {"corpusType": "state", "state": "wa", "label": "Washington statutes", "cadence": "weekly"},
+      {"corpusType": "federal_register", "label": "Federal Register", "cadence": "daily"}
+    ]
+  },
+  "meta": { "processingTimeMs": 12.4, "creditsConsumed": 0 }
+}
+```
+
+## Create a watch
+
+`POST /watches` with the board's `corpusType` (and `state`, for a state board) plus a `channel`.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/watches \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "corpusType": "state",
+    "state": "wa",
+    "channel": "webhook",
+    "webhookUrl": "https://example.com/hooks/vaquill",
+    "webhookSecret": "a-secret-only-you-know"
+  }'
+```
+
+```python Python
+import requests
+
+resp = requests.post(
+    "https://api.vaquill.ai/api/v1/watches",
+    headers={
+        "Authorization": "Bearer vq_key_...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "corpusType": "state",
+        "state": "wa",
+        "channel": "webhook",
+        "webhookUrl": "https://example.com/hooks/vaquill",
+        "webhookSecret": "a-secret-only-you-know",
+    },
+)
+watch = resp.json()["data"]
+```
+</CodeGroup>
+
+- **`channel`**: `webhook`, `email`, or `both`. `webhookUrl` is required for `webhook`/`both`; `emailAddress` is required for `email`/`both`.
+- **`webhookSecret`** (optional): stored encrypted, never returned. When set, every delivery is HMAC-signed (see below).
+- `webhookUrl` is validated against an SSRF blocklist (loopback, private, and link-local ranges, plus cloud metadata endpoints) at creation and again on every dispatch.
+- `404` if the `corpusType`/`state` pair does not match a real, enabled board. `409` if you already have a watch on that board for that channel.
+
+`GET /watches` lists your own watches. `PATCH /watches/{watchId}` pauses (`isActive: false`), resumes, or rotates a destination without losing history. `DELETE /watches/{watchId}` removes it.
+
+## Receiving a webhook delivery
+
+A delivery is a `POST` to your `webhookUrl`:
+
+```
+Headers:
+  Content-Type: application/json
+  X-Vaquill-Event: board.updated
+  X-Vaquill-Signature: sha256=<hex>   (only when webhookSecret is set)
+
+Body:
+{
+  "event": "board.updated",
+  "corpusType": "state",
+  "state": "wa",
+  "boardLabel": "Washington statutes",
+  "rowsAdded": 4,
+  "rowsUpdated": 2,
+  "rowsDeleted": 0,
+  "refreshLogId": 4412,
+  "changes": [
+    {"changeKind": "amended", "actId": "wa-regs-296-17-31018", "citation": "WAC 296-17-31018", "title": "Retrospective rating"}
+  ],
+  "changesOverflowCount": 0,
+  "deliveryId": "9f2b1e0a-...:4412",
+  "firedAt": "2026-08-07T04:10:00Z"
+}
+```
+
+<Note>
+  `changes` is capped at 10 items; `changesOverflowCount` is the true count beyond that. `changeKind` is `added`, `amended`, or `removed`. `citation`/`title` are null for corpora that don't carry them, so fall back to `actId`.
+</Note>
+
+<Tip>
+  `deliveryId` is stable per watch per refresh event, even across our own internal retries, so you can dedup safely on your end.
+</Tip>
+
+To verify a signed delivery, compute `HMAC-SHA256(webhookSecret, raw_request_body_bytes)` and compare it, constant-time, to the hex digest after `sha256=` in `X-Vaquill-Signature`. Compute it over the **raw bytes you received**, before parsing JSON.
+
+```python Python
+import hashlib
+import hmac
+
+def verify_signature(secret: str, raw_body: bytes, header_value: str) -> bool:
+    expected = hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
+    got = header_value.removeprefix("sha256=")
+    return hmac.compare_digest(expected, got)
+```
+
+An `email`/`both` channel watch gets an email instead (or in addition), naming the same changed sections.
+
+## Test before you rely on it
+
+`POST /watches/{watchId}/test` fires a one-off delivery, sent with `X-Vaquill-Event: board.test` so your handler can tell it apart from a real update. Not persisted to delivery history, and does not affect the watch's real last-notified state. Limited to one test per watch every 30 seconds.
+
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/watches/{watchId}/test \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+`GET /watches/{watchId}/deliveries` returns webhook delivery history (attempt number, status code, success, error), newest first. Email-only watches always return an empty list here.
+
+## What changed, and the diff
+
+`GET /watches/{watchId}/changes` lists exactly which sections a board added, amended, or removed, newest first, scoped to the watch's own lifetime (a change from before you subscribed never appears, matching your delivery history).
+
+<CodeGroup>
+```bash cURL
+curl "https://api.vaquill.ai/api/v1/watches/{watchId}/changes?limit=50" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+changes = requests.get(
+    f"https://api.vaquill.ai/api/v1/watches/{watch_id}/changes",
+    headers={"Authorization": "Bearer vq_key_..."},
+    params={"limit": 50},
+).json()["data"]["changes"]
+```
+</CodeGroup>
+
+```json
+{
+  "data": {
+    "changes": [
+      {
+        "id": 91,
+        "refreshLogId": 4412,
+        "corpusType": "state_regulation",
+        "state": "wa",
+        "changeKind": "amended",
+        "actId": "wa-regs-296-17-31018",
+        "citation": "WAC 296-17-31018",
+        "title": "Retrospective rating",
+        "detectedAt": "2026-08-07T04:10:00Z",
+        "hasDiff": true
+      }
+    ]
+  },
+  "meta": { "processingTimeMs": 12.0, "creditsConsumed": 0 }
+}
+```
+
+When `hasDiff` is `true`, call `GET /watches/{watchId}/changes/{changeId}/diff` for the section's text before and after that specific change:
+
+<CodeGroup>
+```bash cURL
+curl https://api.vaquill.ai/api/v1/watches/{watchId}/changes/91/diff \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+diff = requests.get(
+    f"https://api.vaquill.ai/api/v1/watches/{watch_id}/changes/91/diff",
+    headers={"Authorization": "Bearer vq_key_..."},
+).json()["data"]
+
+if diff["hasBefore"] and diff["hasAfter"]:
+    print(diff["beforeText"])
+    print(diff["afterText"])
+```
+</CodeGroup>
+
+```json
+{
+  "data": {
+    "changeId": 91,
+    "changeKind": "amended",
+    "beforeText": "An application for approval of a new drug...",
+    "afterText": "An application for approval of a new drug or amended new drug...",
+    "hasBefore": true,
+    "hasAfter": true
+  },
+  "meta": { "processingTimeMs": 41.0, "creditsConsumed": 0 }
+}
+```
+
+<Note>
+  `hasDiff` (on the change) and `hasBefore`/`hasAfter` (on the diff) can legitimately be `false`: an `added` change has nothing to diff against, and a handful of sources track only *that* a section changed, not the text itself (see below). Check the flags rather than assuming both sides are always present.
+</Note>
+
+<Warning>
+  A small number of sources (`corpusType=cfr`, and any change from before this feature shipped) report real `added`/`amended`/`removed` events but never a diff -- `hasDiff` stays `false` for them by design, not by bug. Everything else, including every state corpus, reports a real diff for every `amended` change.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Monitor corpus coverage" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
+    A DIY alternative for detecting when a jurisdiction gains an entirely new corpus, rather than a section-level change within one you already watch.
+  </Card>
+  <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
+    Per-plan limits and how to back off on a 429.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/api-guide/errors">
+    How error responses are shaped, and what each status code means.
+  </Card>
+  <Card title="Coverage" icon="table" href="/api-guide/coverage">
+    The jurisdiction and corpus matrix you're choosing a board from.
+  </Card>
+</CardGroup>
