@@ -7,6 +7,22 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-08" description="NLRB General Counsel and Advice Memoranda now covered">
+  ## NLRB joins Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers the National Labor Relations
+  Board's two guidance vehicles. General Counsel Memoranda (300 memos, the
+  full archive back to 1973) are citable as `NLRB General Counsel
+  Memorandum GC 22-04`; a rescinded memo carries `actStatus=rescinded` and
+  a `supersededBy` pointer to the memo that rescinded it, and the rescinding
+  memo itself lists every memo it rescinded. Division of Advice Memoranda
+  (339 memos) are citable as `NLRB Division of Advice Memorandum, Case No.
+  13-CA-182757 (Savage Fueling)`; this is a rolling 10-year window, not the
+  full ~2,500-2,600-document archive back to 1969, which remains a future
+  addition. Filter to either with `source=nlrb_gc_memo` or
+  `source=nlrb_advice_memo`.
+</Update>
+
 <Update label="2026-08-07" description="New: Law Change Alerts, with section-level diffs">
   ## Subscribe to a jurisdiction or corpus and get notified when it changes
 

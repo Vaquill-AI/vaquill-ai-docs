@@ -26,7 +26,7 @@ search one jurisdiction's data.
 | `FEDERAL_RULES` | Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) and Rules of the Supreme Court of the United States. Filter to one set with `source` (see below). | federal | 589 |
 | `EXECUTIVE_ACTION` | Presidential documents (executive orders, proclamations, memos) | federal | 3,901 |
 | `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | federal | 384,794 |
-| `AGENCY_GUIDANCE` | Sub-regulatory agency guidance - 28 named sources across 15 agencies (SSA, IRS, DOJ, FTC, Copyright Office, USCIS, USPTO, DFARS, CFTC, FinCEN, Federal Reserve, OCC, FDIC, CPSC, BIS, DDTC, FCC, FERC, DOE, HHS OCR, and more). Full list in [API Coverage](/api-guide/coverage#federal). Filter to one source with `source` (see below). | federal | 21,026 |
+| `AGENCY_GUIDANCE` | Sub-regulatory agency guidance - 30 named sources across 16 agencies (SSA, IRS, DOJ, FTC, Copyright Office, USCIS, USPTO, DFARS, NLRB, CFTC, FinCEN, Federal Reserve, OCC, FDIC, CPSC, BIS, DDTC, FCC, FERC, DOE, HHS OCR, and more). Full list in [API Coverage](/api-guide/coverage#federal). Filter to one source with `source` (see below). | federal | 21,674 |
 | `SENTENCING_GUIDELINES` | U.S. Sentencing Guidelines (U.S.S.G.), the federal sentencing commission's guideline manual | federal | 302 |
 | `US_TAX_TREATY` | U.S. bilateral income and estate tax treaties, citable by article, plus Treasury's Technical Explanations (article-by-article commentary on each treaty) | federal | 119 |
 
@@ -36,7 +36,7 @@ search one jurisdiction's data.
 |---|---|---|---|
 | `STATE` | State statutory codes | state | ~2.0M across 52 jurisdictions (50 states + DC + PR) |
 | `REGULATION` | State administrative regulations | state | ~1.16M across 45 states (all official-source, refreshed monthly) |
-| `STATE_CONSTITUTION` | State constitutions | state | ~11.0K across 51 jurisdictions (50 states + PR) |
+| `STATE_CONSTITUTION` | State constitutions | state | ~20.5K across 51 jurisdictions (50 states + PR) |
 | `STATE_RULES` | State court rules (civil, criminal, appellate, local) | state | ~11.9K across 10 states |
 | `STATE_AGENCY_GUIDANCE` | State-issued regulatory guidance (Department of Insurance bulletins and circular letters) - the state-scoped analog of `AGENCY_GUIDANCE`. Not a comprehensive 52-jurisdiction rollout; lands state by state. | state | 2,828 across 5 states (CA, IL, NY, TX, FL) |
 
@@ -138,9 +138,10 @@ for (const r of data.results) {
 
 Both are **federal**, so they need only a `corpusType`, no `state`.
 `FEDERAL_REGISTER` searches agency rules as published (proposed and final).
-`AGENCY_GUIDANCE` searches sub-regulatory guidance across 28 named sources
-(SSA rulings, IRS notices, DOJ/FTC merger guidance, USPTO's MPEP/TMEP, CFTC
-Staff Letters, FinCEN rulings, banking-regulator letters, and more - full
+`AGENCY_GUIDANCE` searches sub-regulatory guidance across 30 named sources
+(SSA rulings, IRS notices, DOJ/FTC merger guidance, USPTO's MPEP/TMEP, NLRB
+General Counsel and Advice Memoranda, CFTC Staff Letters, FinCEN rulings,
+banking-regulator letters, and more - full
 list in [API Coverage](/api-guide/coverage#federal)), plus a set of
 primary-sourced **reference figures**: annually adjusted dollar thresholds
 (for example the Subchapter V debt limit, or SALT and CTC values) that
@@ -232,6 +233,8 @@ filter to scope to just it.
   | `mpep` | USPTO Manual of Patent Examining Procedure |
   | `tmep` | USPTO Trademark Manual of Examining Procedure |
   | `dfars_pgi` | DFARS PGI (Procedures, Guidance, and Information) |
+  | `nlrb_gc_memo` | NLRB General Counsel Memoranda |
+  | `nlrb_advice_memo` | NLRB Division of Advice Memoranda (rolling 10-year window, not the full archive) |
   | `cftc_staff_letter` | CFTC Staff Letters (no-action, exemptive, interpretative, advisory) |
   | `fincen_ruling` | FinCEN Administrative Rulings |
   | `fincen_guidance` | FinCEN Guidance (alerts, advisories, notices, bulletins, fact sheets) |

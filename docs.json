@@ -407,7 +407,7 @@
   "navbar": {
     "links": [
       {
-        "label": "GitHub",
+        "label": "Open US Law Dataset",
         "href": "https://github.com/Vaquill-AI",
         "icon": "github"
       },
