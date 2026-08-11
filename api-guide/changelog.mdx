@@ -7,6 +7,34 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-11" description="Search ranks current law above superseded and rescinded versions">
+  ## Dead law no longer competes with live law on relevance alone
+
+  Search now ranks a provision's current text above superseded or rescinded
+  versions of the same provision.
+
+  Eight `actStatus` values carried no ranking penalty, so 44,199 passages were
+  ordered as though they were current law: 29,901 `superseded`, 12,041
+  `rescinded`, and smaller counts of `revoked`, `expired`, `deleted`,
+  `recodified`, `unconstitutional` and `rejected`. The effect was largest
+  wherever a corpus keeps prior versions as their own addressable records, so
+  a court rule with a version history or a rescinded state regulation was
+  where you were most likely to see it. A superseded version is near-identical
+  to the live one by construction, which is precisely what makes a relevance
+  score unable to separate the two.
+
+  **Dead law is still returned and still searchable.** That is deliberate:
+  research routinely needs the text that was in force when the events
+  happened, so a repealed section is a legitimate result rather than noise. It
+  now ranks below live law of comparable relevance instead of being hidden,
+  and every result still carries `actStatus` and `goodLawStatus`, so you can
+  filter it out or surface it on purpose.
+
+  No request or response shape changed, and there is nothing to update on your
+  side. If you were relying on the previous ordering to reach prior versions,
+  filter on `actStatus` explicitly.
+</Update>
+
 <Update label="2026-08-08" description="NLRB General Counsel and Advice Memoranda now covered">
   ## NLRB joins Agency guidance
 

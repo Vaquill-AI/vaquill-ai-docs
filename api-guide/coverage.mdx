@@ -13,15 +13,15 @@ The **Developer API** (`/statutes/*`) serves statutes, regulations, constitution
 court rules, and executive actions, scoped with the `corpusType` filter.
 
 Coverage is queryable live from `GET /statutes/coverage` and `GET /statutes/states`;
-the per-corpus matrix below is a snapshot as of **2026-08-08**. In total the
-ingested corpus holds **over 3.87M distinct sections** across all of these
-corpus types, indexed as **nearly 10M retrieval passages**.
+the per-corpus matrix below was last updated **2026-08-11**. In total the
+ingested corpus holds **over 3.9M distinct sections** across all of these
+corpus types, indexed as **over 10.3M retrieval passages**.
 
 <Note>
   Counts on this page are **distinct sections** (one per provision or document),
   the same figures `GET /statutes/coverage` returns. For retrieval, longer sections
   and documents are split into multiple passages, so the underlying index holds far
-  more entries: **about 10.0M passages** across these 3.87M sections. The Federal
+  more entries: **about 10.4M passages** across these 3.9M sections. The Federal
   Register alone (long agency rules, 13-15 passages each) accounts for over
   half of them.
 
@@ -42,10 +42,10 @@ corpus types, indexed as **nearly 10M retrieval passages**.
     **51 jurisdictions** (50 states + Puerto Rico), ~12.7K sections, with article/section structure and clickable citations for the large majority of states. Two states (data-availability gaps in the underlying source, not a parsing issue) remain partially covered. All 50 states completed migration off a third-party transcription source onto each state's own official publisher as of 2026-08-08. A backend data-quality cleanup is queued to physically remove a small residue of superseded duplicate records left over from that migration (already excluded from every API response, so this does not affect correctness of the current, correct sections, only index tidiness). Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
-    **10 states**, ~11.9K rules (civil, criminal, appellate, and local), refreshed weekly. Queryable via the API (`corpusType=STATE_RULES`).
+    **28 states**, ~28.4K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
-    **45 states**, **1.16M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
+    **46 states**, **1.16M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
   </Card>
 </CardGroup>
 
@@ -64,7 +64,7 @@ them.
 | Federal Register agency rules (final + proposed), 1994-present | 384,794 | Weekly |
 | Executive Orders (Federal Register Presidential Documents), 2015-present | 3,901 | Daily |
 | Agency guidance — 30 named sources across 16 agencies (see table below) | 21,674 | Weekly |
-| Federal Rules of Procedure (FRCP, FRCrP, FRE, FRAP, FRBP, incl. Supplemental Admiralty and Social Security Rules) and Rules of the Supreme Court of the United States | 589 | Monthly |
+| Federal Rules of Procedure — Civil (FRCP), Criminal (FRCrP), Evidence (FRE), Appellate (FRAP) and Bankruptcy (FRBP), incl. Supplemental Admiralty and Social Security Rules — and Rules of the Supreme Court of the United States | 589 | Monthly |
 | US Constitution | 74 | On amendment |
 | US Sentencing Guidelines (U.S.S.G.) | 302 | Annual |
 | US Tax Treaties (bilateral income and estate tax treaties, citable by article) and Treasury's Technical Explanations (article-by-article commentary) | 119 | As treaties are signed |
@@ -82,37 +82,37 @@ not a new API token.
 
 | Source | Docs | Coverage | Citable as |
 |---|---|---|---|
-| SSA Rulings | 1,115 | — | — |
-| IRS Revenue Procedures/Rulings/Notices/Announcements | 1,459 | 2015-present | — |
-| DOJ & FTC Merger Guidelines | — | 2023 | — |
+| Social Security Administration (SSA) Rulings | 1,115 | — | — |
+| Internal Revenue Service (IRS) Revenue Procedures/Rulings/Notices/Announcements | 1,459 | 2015-present | — |
+| Department of Justice (DOJ) & Federal Trade Commission (FTC) Merger Guidelines | — | 2023 | — |
 | DOJ Antitrust Division Leniency Policy | — | — | — |
 | US Copyright Office Circulars | 58 | — | — |
 | DOJ Justice Manual | 1,548 sections, 9 Titles | — | "Justice Manual § 9-27.420" |
-| USCIS Policy Manual | 456 chapters, 12 volumes | — | "USCIS Policy Manual, Vol. 12, Pt. D, Ch. 3" |
-| USPTO Manual of Patent Examining Procedure (MPEP) | 2,024 sections, 29 chapters | — | "MPEP § 2106" |
+| US Citizenship and Immigration Services (USCIS) Policy Manual | 456 chapters, 12 volumes | — | "USCIS Policy Manual, Vol. 12, Pt. D, Ch. 3" |
+| US Patent and Trademark Office (USPTO) Manual of Patent Examining Procedure (MPEP) | 2,024 sections, 29 chapters | — | "MPEP § 2106" |
 | USPTO Trademark Manual of Examining Procedure (TMEP) | 2,109 sections, 19 chapters | — | "TMEP § 1207.01" |
-| DFARS PGI | 397 documents, 47 Parts | — | "PGI 225.370" |
-| NLRB General Counsel Memoranda | 300 | 1973-present | "NLRB General Counsel Memorandum GC 22-04" |
+| DFARS Procurement Guidance and Information (PGI) | 397 documents, 47 Parts | — | "PGI 225.370" |
+| National Labor Relations Board (NLRB) General Counsel Memoranda | 300 | 1973-present | "NLRB General Counsel Memorandum GC 22-04" |
 | NLRB Division of Advice Memoranda | 339 | Rolling 10-year window | "NLRB Division of Advice Memorandum, Case No. 13-CA-182757 (Savage Fueling)" |
-| CFTC Staff Letters (no-action, exemptive, interpretative, advisory) | 942 | 2008-present | "CFTC Letter No. 26-17"; filterable by regulation part or topic tag |
-| Federal Reserve SR / CA Letters | 336 | Since 1990 | "SR 21-4 / CA 21-2" |
-| OCC Bulletins | 606 | Since 1994 | — |
+| Commodity Futures Trading Commission (CFTC) Staff Letters (no-action, exemptive, interpretative, advisory) | 942 | 2008-present | "CFTC Letter No. 26-17"; filterable by regulation part or topic tag |
+| Federal Reserve Supervision and Regulation (SR) / Consumer Affairs (CA) Letters | 336 | Since 1990 | "SR 21-4 / CA 21-2" |
+| Office of the Comptroller of the Currency (OCC) Bulletins | 606 | Since 1994 | — |
 | OCC Interpretive Letters | 448 | 1996-present | "OCC Interpretive Letter No. 1188" |
-| FDIC Financial Institution Letters | 2,313 | Since 1994 | Spans active + inactive FIL indexes; superseded letters queryable with `act_status=superseded` |
-| FinCEN Administrative Rulings | 86 | Since 1988 | "FinCEN Ruling FIN-2009-R001" |
+| Federal Deposit Insurance Corporation (FDIC) Financial Institution Letters (FILs) | 2,313 | Since 1994 | Spans active + inactive FIL indexes; superseded letters queryable with `act_status=superseded` |
+| Financial Crimes Enforcement Network (FinCEN) Administrative Rulings | 86 | Since 1988 | "FinCEN Ruling FIN-2009-R001" |
 | FinCEN Guidance (alerts, advisories, notices, bulletins, fact sheets) | 127 | — | "FinCEN Guidance FIN-2019-G001" |
-| CPSC Office of General Counsel Advisory Opinions | 139 | 1973-2012 | "CPSC OGC Advisory Opinion No. 82" — historical archive, not currently updated |
-| BIS Advisory Opinions (Export Administration Regulations) | 33 | 2003-2023 | "BIS Advisory Opinion, 09/25/23: Export guidance and BIS interpretation of 'gene' related to ECCN 1C353" |
-| DDTC Commodity Jurisdiction Determinations (ITAR/USML vs. EAR) | 5,879 | 2010-present | From DDTC's own published XLSX export |
+| Consumer Product Safety Commission (CPSC) Office of General Counsel (OGC) Advisory Opinions | 139 | 1973-2012 | "CPSC OGC Advisory Opinion No. 82" — historical archive, not currently updated |
+| Bureau of Industry and Security (BIS) Advisory Opinions (Export Administration Regulations, EAR) | 33 | 2003-2023 | "BIS Advisory Opinion, 09/25/23: Export guidance and BIS interpretation of 'gene' related to ECCN 1C353" |
+| Directorate of Defense Trade Controls (DDTC) Commodity Jurisdiction Determinations (International Traffic in Arms Regulations / US Munitions List vs. EAR) | 5,879 | 2010-present | From DDTC's own published XLSX export |
 | DDTC Guidance (incl. Guidelines for Preparing Agreements, ITAR Risk Matrix) | 7 | — | — |
 | CPSC Small Entity Compliance Guides | 34 | — | "CPSC Small Entity Compliance Guide: Safety Standard for Neck Floats (90 FR 58096)" |
-| FCC Declaratory Rulings | 169 | — | "DA-26-680: {title} (07/07/26)" |
-| FERC Policy Statements | 45 | Since 1996 | "___ FERC ¶ _____" (bound-volume Reports form) |
-| DOE Appliance Standards Guidance and FAQs | 60 | — | "DOE Appliance Standards Guidance: {question} ({date})"; draft guidance excluded |
-| HHS OCR HIPAA guidance materials | 41 | — | — |
+| Federal Communications Commission (FCC) Declaratory Rulings | 169 | — | "DA-26-680: {title} (07/07/26)" |
+| Federal Energy Regulatory Commission (FERC) Policy Statements | 45 | Since 1996 | "___ FERC ¶ _____" (bound-volume Reports form) |
+| Department of Energy (DOE) Appliance Standards Guidance and FAQs | 60 | — | "DOE Appliance Standards Guidance: {question} ({date})"; draft guidance excluded |
+| Health and Human Services (HHS) Office for Civil Rights (OCR) guidance on the Health Insurance Portability and Accountability Act (HIPAA) | 41 | — | — |
 | HHS OCR resolution agreements and civil money penalties | 140 | — | — |
 | HHS OCR HIPAA FAQs (deduplicated from HHS's cross-listed topic pages) | 444 | — | — |
-| Vaquill-synthesized administrative guidance | SALT cap, CTC, 401(k) limits | — | — |
+| Vaquill-synthesized administrative guidance | State and local tax (SALT) cap, Child Tax Credit (CTC), 401(k) limits | — | — |
 
 <Note>
   FERC Policy Statements are FERC's generally-applicable interpretive
@@ -131,57 +131,57 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
-| California | 161,439 | 76,155 | 525 | 650 |
-| Mississippi | 158,698 | 35,752 | 642 | - |
+| California | 161,439 | 76,155 | 525 | 1,521 |
+| Mississippi | 158,698 | 35,752 | 642 | 784 |
 | Texas | 122,908 | 44,256 | 658 | 1,007 |
-| Indiana | 83,148 | 37,739 | 254 | - |
-| Illinois | 72,456 | 54,541 | 328 | 422 |
+| Indiana | 83,148 | 37,739 | 254 | 879 |
+| Illinois | 72,456 | 54,541 | 328 | 839 |
 | New Jersey | 55,923 | 51,999 | 344 | - |
-| Washington | 53,595 | 51,053 | 560 | - |
+| Washington | 53,595 | 51,053 | 560 | 1,182 |
 | Nevada | 48,190 | 34,302 | 303 | 1,338 |
 | Alabama | 45,997 | 18,305 | 614 | - |
 | Louisiana | 43,474 | 29,213 | 293 | - |
 | Michigan | 40,658 | 22,963 | 348 | - |
-| New York | 40,102 | 50,266 | 548 | 1,727 |
+| New York | 40,102 | 50,266 | 548 | 1,885 |
 | South Dakota | 39,804 | 25,874 | 293 | - |
 | Maryland | 39,562 | 12,871 | 545 | 1,220 |
 | Arkansas | 36,936 | 5,556 | 807 | - |
 | Oklahoma | 36,287 | 57,195 | 956 | - |
-| Oregon | 36,204 | 48,708 | 469 | - |
+| Oregon | 36,204 | 48,708 | 469 | 632 |
 | New Mexico | 34,465 | 13,274 | 376 | - |
 | Colorado | 34,258 | 610 | 967 | - |
-| Virginia | 33,856 | 22,396 | 300 | - |
+| Virginia | 33,856 | 22,396 | 300 | 358 |
 | Ohio | 33,168 | 19,275 | 606 | - |
-| Tennessee | 32,693 | - | 319 | - |
-| Montana | 30,524 | 32,183 | 357 | - |
-| South Carolina | 29,974 | 6,630 | 175 | - |
+| Tennessee | 32,693 | - | 319 | 626 |
+| Montana | 30,524 | 32,183 | 357 | 238 |
+| South Carolina | 29,974 | 6,630 | 175 | 557 |
 | Missouri | 29,296 | 9,613 | 1,007 | - |
-| North Dakota | 29,052 | 17,227 | 203 | - |
+| North Dakota | 29,052 | 17,227 | 203 | 2,246 |
 | Iowa | 28,223 | 26,605 | 190 | - |
 | Georgia | 28,165 | 18,889 | 358 | - |
-| Minnesota | 27,757 | 15,449 | 279 | 999 |
+| Minnesota | 27,757 | 15,449 | 279 | 958 |
 | North Carolina | 26,695 | 30,248 | 331 | - |
-| Utah | 26,602 | - | 207 | - |
+| Utah | 26,602 | - | 207 | 919 |
 | Nebraska | 25,998 | 14,044 | 548 | - |
 | West Virginia | 25,669 | 20,105 | 274 | - |
-| New Hampshire | 25,385 | - | 162 | - |
-| Maine | 25,342 | 1,770 | 153 | - |
-| Florida | 24,866 | 32,791 | 588 | 1,135 |
+| New Hampshire | 25,385 | - | 162 | 970 |
+| Maine | 25,342 | 1,770 | 153 | 722 |
+| Florida | 24,866 | 32,791 | 588 | 936 |
 | Kansas | 24,371 | - | 292 | - |
 | District of Columbia (territory) | 23,695 | - | - | - |
 | Puerto Rico (territory) | 23,649 | - | 107 | - |
 | Vermont | 23,527 | 1,050 | 150 | - |
-| Massachusetts | 23,152 | 24,742 | 187 | - |
-| Idaho | 22,754 | 8,551 | 485 | - |
-| Arizona | 22,684 | 16,463 | 772 | 1,720 |
+| Massachusetts | 23,152 | 24,742 | 187 | 970 |
+| Idaho | 22,754 | 8,551 | 485 | 766 |
+| Arizona | 22,684 | 16,463 | 772 | 1,718 |
 | Delaware | 21,741 | 22,481 | 241 | - |
-| Rhode Island | 21,115 | 12,070 | 120 | - |
+| Rhode Island | 21,115 | 12,070 | 120 | 1,033 |
 | Kentucky | 20,946 | 4,881 | 289 | - |
-| Hawaii | 19,487 | 26,735 | 363 | - |
-| Wisconsin | 18,158 | 17,830 | 256 | - |
-| Alaska | 17,942 | 24,771 | 214 | - |
+| Hawaii | 19,487 | 26,735 | 363 | 1,259 |
+| Wisconsin | 18,158 | 17,830 | 256 | 395 |
+| Alaska | 17,942 | 24,771 | 214 | 763 |
 | Connecticut | 16,091 | 17,468 | 166 | - |
-| Pennsylvania | 14,547 | 52,702 | 235 | 1,723 |
+| Pennsylvania | 14,547 | 52,702 | 235 | 1,722 |
 | Wyoming | 10,229 | 18,554 | 471 | - |
 
 ## State agency guidance
@@ -202,10 +202,10 @@ paired with `state`.
 | Florida | Office of Insurance Regulation Informational Memoranda | 43 | Weekly |
 | Georgia | Office of Commissioner of Insurance and Safety Fire Bulletins | 66 | Weekly |
 | Ohio | Dept. of Insurance Bulletins | 112 | Weekly |
-| Virginia | SCC Bureau of Insurance Administrative Letters | 89 | Weekly |
-| Washington | OIC Technical Assistance Advisories and Emergency Orders | 24 | Weekly |
+| Virginia | State Corporation Commission (SCC) Bureau of Insurance Administrative Letters | 89 | Weekly |
+| Washington | Office of the Insurance Commissioner (OIC) Technical Assistance Advisories and Emergency Orders | 24 | Weekly |
 | New Jersey | Dept. of Banking and Insurance Bulletins | 441 | Weekly |
-| Michigan | DIFS Insurance Bulletins | 145 | Weekly |
+| Michigan | Department of Insurance and Financial Services (DIFS) Insurance Bulletins | 145 | Weekly |
 | North Carolina | Dept. of Insurance Bulletins | 120 | Weekly |
 | Wisconsin | Office of the Commissioner of Insurance Bulletins | 232 | Weekly |
 | Connecticut | Insurance Department Bulletins | 369 | Weekly |
@@ -224,15 +224,16 @@ paired with `state`.
 ## Refresh cadence
 
 How often each corpus is re-pulled from its official source. The counts above are
-a snapshot; call `/statutes/coverage` or `/statutes/states` for the live count of
-any jurisdiction.
+current as of the date at the top of this page and grow between updates; call
+`/statutes/coverage` or `/statutes/states` for the live count of any
+jurisdiction.
 
 | Corpus | Cadence |
 |---|---|
 | Federal | See the [Federal table](#federal): daily to weekly, and on amendment for the Constitution. |
 | State statutes | Recurring pull from each state's official source. All 50 states plus DC and Puerto Rico are covered; a few one-time cutovers (for example Puerto Rico) are complete but not yet on an automatic refresh driver. |
-| State regulations | Pulled monthly from each state's own official publisher, for all 45 states carrying regulations. |
-| State court rules | Weekly, for the states that carry them. |
+| State regulations | Pulled monthly from each state's own official publisher, for all 46 states carrying regulations. |
+| State court rules | Monthly, for the states that carry them. Court rules change less often than statutes, and when they do the change is procedural and effective on a published date rather than immediately. |
 | State constitutions | Monthly, all jurisdictions in one pass (constitutions change on the order of years via ballot-measure amendments, not weeks, so this is deliberately lower-frequency than statutes/regulations). |
 
 <Note>

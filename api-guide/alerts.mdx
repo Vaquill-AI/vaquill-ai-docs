@@ -88,10 +88,56 @@ watch = resp.json()["data"]
 
 - **`channel`**: `webhook`, `email`, or `both`. `webhookUrl` is required for `webhook`/`both`; `emailAddress` is required for `email`/`both`.
 - **`webhookSecret`** (optional): stored encrypted, never returned. When set, every delivery is HMAC-signed (see below).
+- **`webhookAuth`** (optional): a credential we send on every delivery, so your gateway can authenticate us. See [Authenticating our deliveries](#authenticating-our-deliveries).
 - `webhookUrl` is validated against an SSRF blocklist (loopback, private, and link-local ranges, plus cloud metadata endpoints) at creation and again on every dispatch.
 - `404` if the `corpusType`/`state` pair does not match a real, enabled board. `409` if you already have a watch on that board for that channel.
 
 `GET /watches` lists your own watches. `PATCH /watches/{watchId}` pauses (`isActive: false`), resumes, or rotates a destination without losing history. `DELETE /watches/{watchId}` removes it.
+
+## Authenticating our deliveries
+
+There are two independent mechanisms, and choosing between them starts with noticing they answer different questions.
+
+| | `webhookSecret` | `webhookAuth` |
+| --- | --- | --- |
+| Answers | Is this body intact and from Vaquill? | Is this caller allowed in? |
+| Sends | `X-Vaquill-Signature: sha256=<hex>` | `Authorization`, or a header you name |
+| Checked by | Your handler, recomputing an HMAC | Your gateway, before your code runs |
+
+Most teams reach for `webhookAuth` first, because it works with middleware they already have. Set neither, either, or both.
+
+| `scheme` | What arrives at your endpoint |
+| --- | --- |
+| `bearer` | `Authorization: Bearer <secret>` |
+| `basic` | `Authorization: Basic <secret>` (encode `user:password` yourself) |
+| `header` | `<headerName>: <secret>`, e.g. `X-Api-Key: <secret>` |
+| `none` | No credential header. Sending this removes a stored one. |
+
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/watches \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "corpusType": "state",
+    "state": "wa",
+    "channel": "webhook",
+    "webhookUrl": "https://example.com/hooks/vaquill",
+    "webhookAuth": {"scheme": "header", "headerName": "X-Api-Key", "secret": "k_live_..."}
+  }'
+```
+
+<Note>
+  The credential is stored encrypted and never returned. `GET /watches` shows only `{"scheme": "...", "headerName": "...", "hasSecret": true}`, so you can confirm what is configured without us handing the secret back.
+</Note>
+
+**Rotating and removing.** `webhookAuth` is sent as a whole object rather than field by field, because a scheme without a credential is a broken config, not a partial edit.
+
+- Change the credential: same `scheme`, new `secret`.
+- Rename the header, keep the token: same `scheme`, new `headerName`, and **omit `secret`**.
+- Change scheme: send `secret` again. We will not reuse a bearer token as a raw header value, because that is a guess about your intent that would fail at your endpoint with nothing explaining why.
+- Turn it off: `{"scheme": "none"}`, which also deletes the stored credential.
+
+`headerName` cannot be `Authorization` (use `bearer` or `basic`), a transport header, or one of ours (`X-Vaquill-*`). Those are rejected at registration with a `400` rather than failing silently at delivery time.
 
 ## Receiving a webhook delivery
 
@@ -130,7 +176,11 @@ Body:
   `deliveryId` is stable per watch per refresh event, even across our own internal retries, so you can dedup safely on your end.
 </Tip>
 
-To verify a signed delivery, compute `HMAC-SHA256(webhookSecret, raw_request_body_bytes)` and compare it, constant-time, to the hex digest after `sha256=` in `X-Vaquill-Signature`. Compute it over the **raw bytes you received**, before parsing JSON.
+### Verifying the signature
+
+`X-Vaquill-Signature` is a real HMAC, not a token echoed back. It is present only when you set `webhookSecret`; if you want a static credential your gateway can check instead, that is [`webhookAuth`](#authenticating-our-deliveries).
+
+Compute `HMAC-SHA256(webhookSecret, raw_request_body_bytes)` and compare it, constant-time, to the hex digest after `sha256=`. Compute it over the **raw bytes you received**, before parsing JSON: re-serializing the parsed object changes key order and whitespace, and the digest will not match.
 
 ```python Python
 import hashlib
@@ -192,9 +242,62 @@ changes = requests.get(
       }
     ]
   },
-  "meta": { "processingTimeMs": 12.0, "creditsConsumed": 0 }
+  "meta": { "processingTimeMs": 12.0, "creditsConsumed": 0, "cursor": 91, "hasMore": false }
 }
 ```
+
+### Polling
+
+You can poll this endpoint as often as you like, including alongside a webhook or email watch.
+
+<Note>
+  **There is no "last checked" state to interfere with.** Notifications fire when a corpus refresh completes, not by comparing against a stored watermark, and this endpoint writes nothing. Polling cannot suppress, advance, or double-fire a delivery. (`lastNotifiedAt` on a watch records the outcome of the last delivery attempt, for your visibility. It is never an input to what gets sent.)
+</Note>
+
+To fetch only what is new, pass `sinceId` with the `meta.cursor` from your previous page. Ids are a monotonic sequence, so this is exact: it cannot skip a change or return one twice, and it is immune to clock skew.
+
+<CodeGroup>
+```bash cURL
+curl "https://api.vaquill.ai/api/v1/watches/{watchId}/changes?sinceId=91&order=asc&limit=200" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+cursor = load_cursor()  # highest id you have processed, or None
+
+while True:
+    page = requests.get(
+        f"https://api.vaquill.ai/api/v1/watches/{watch_id}/changes",
+        headers={"Authorization": "Bearer vq_key_..."},
+        params={"sinceId": cursor, "order": "asc", "limit": 200},
+    ).json()
+
+    for change in page["data"]["changes"]:
+        handle(change)
+
+    # Null on an empty page, so an idle poll keeps the cursor you already hold.
+    if page["meta"]["cursor"] is not None:
+        cursor = page["meta"]["cursor"]
+        save_cursor(cursor)
+
+    if not page["meta"]["hasMore"]:
+        break
+```
+</CodeGroup>
+
+| Parameter | Notes |
+| --- | --- |
+| `sinceId` | Return changes with an `id` greater than this. The cursor to build on. |
+| `since` | ISO-8601 timestamp, strictly after. Coarser (one refresh writes many rows at the same instant), but useful if all you kept was a `detectedAt` from a webhook body. Combines with `sinceId`. |
+| `changeKind` | `added`, `amended`, or `removed`. Repeat for several: `?changeKind=added&changeKind=amended`. |
+| `order` | `desc` (default) for a recent-activity view; `asc` when catching up from a cursor. |
+| `limit` | 1 to 200, default 50. |
+
+`meta.hasMore` is true when the page filled to `limit`, so keep calling with the new cursor until it is false. Use `order=asc` while catching up: walking forward means a page that hits `limit` leaves the gap at a known end.
+
+<Tip>
+  Running both channels is a reasonable design: take the webhook as the low-latency path, and poll on a slow timer as a backstop for deliveries your endpoint missed while it was down. Dedup on the change `id`, or on `deliveryId` for whole webhook payloads.
+</Tip>
 
 When `hasDiff` is `true`, call `GET /watches/{watchId}/changes/{changeId}/diff` for the section's text before and after that specific change:
 
