@@ -4,17 +4,14 @@ description: "Corpora Vaquill AI is building next, what is deliberately out of s
 icon: "map"
 ---
 
-This page lists what is coming to the corpus and what is not.
-Everything here goes through the same pipeline as the data already in the API: ingested from the official government source, chunked and embedded for hybrid search, citation-linked, and put on a recurring refresh.
-So each item arrives queryable through the same `corpusType` filter, with no new integration work on your side.
+What is coming to the corpus, and what is not.
 
-For what is queryable **today**, see [Coverage](/api-guide/coverage).
-For what has already shipped, see the [Changelog](/api-guide/changelog).
+Everything here ships through the same pipeline as the current data: official government source, chunked and embedded, citation-linked, on a recurring refresh. Each lands behind the same `corpusType` filter, so there is nothing to integrate.
+
+Queryable today: [Coverage](/api-guide/coverage). Already shipped: [Changelog](/api-guide/changelog).
 
 <Note>
-  Dates are targets, not commitments.
-  `GET /statutes/coverage` is self-describing: new corpora appear there as they land, so polling it is the reliable way to detect one rather than tracking this page.
-  See [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled diff you can wire up.
+  Dates are targets, not commitments. Poll `GET /statutes/coverage` to detect new corpora rather than tracking this page, and see [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled diff.
 </Note>
 
 ## Completing existing coverage
@@ -25,13 +22,19 @@ Both are rolling out state by state on the same pipeline and the same refresh ca
 | Corpus | Today | Target |
 |---|---|---|
 | State regulations (`REGULATION`) | 46 states | All 52 jurisdictions |
-| State court rules (`STATE_RULES`) | 28 states | Broad state coverage, prioritized by demand |
+| State court rules (`STATE_RULES`) | 28 states | All 52 jurisdictions |
 
 Pennsylvania's Consolidated Statutes are complete; its older unconsolidated (Purdon's) statutes are a separate later addition, prioritized for backfill.
 
 ## Federal law and court rules
 
-Targeted to land by the **start of Q4 2026**.
+Targeted to land by the **start of Q4 2026**, with the exception noted below.
+
+<Note>
+  Federal local rules are the largest item in this table by a wide margin,
+  since they mean roughly 200 separate courts each publishing their own set,
+  mostly as PDFs, with no common schema. Expect it to trail the other three.
+</Note>
 
 | Source | What it adds | Official source |
 |---|---|---|
@@ -39,6 +42,7 @@ Targeted to land by the **start of Q4 2026**.
 | Public Laws / Statutes at Large | Slip laws as enacted, before codification into the US Code. Public law numbers appear as a metadata field today, but the acts themselves are not served as documents. | govinfo |
 | OLC and Attorney General opinions | Office of Legal Counsel (OLC) opinions plus formal Attorney General (AG) opinions, the executive branch's own binding legal interpretations. | justice.gov/olc |
 | GAO decisions | Government Accountability Office (GAO) decisions of the Comptroller General on appropriations law and bid protests. | gao.gov |
+| Federal local rules | The local rules of the 94 district courts, the 13 circuits, and the bankruptcy courts, adopted under 28 U.S.C. 2071 and Federal Rule of Civil Procedure 83. These modify the national Federal Rules in every district, so the national rules alone are an incomplete picture of what governs a filing. Citable in their own form, for example `N.D. Cal. Civ. L.R. 7-2`. | uscourts.gov and each court's own site |
 
 ## Tax
 
@@ -102,28 +106,24 @@ Counts are the document categories planned for each.
 
 ## Out of scope
 
-Being explicit about what we will not build is as useful as listing what we will.
-If you need any of the below, we are not the right supplier and would rather tell you now.
+Deliberate exclusions, not gaps. If you need one of these, we are not your supplier.
 
-**General case law and court dockets.**
-Deliberately out of scope, not a gap we are closing.
-Vaquill AI is a primary-law corpus: statutes, regulations, constitutions, court rules, and agency material.
+| Not building | Why |
+|---|---|
+| General case law and court dockets | We are a primary-law corpus: statutes, regulations, constitutions, court rules, agency material. |
+| Judge-specific procedural material (standing orders, chambers procedures, individual practice rules) | See the court-material line below. |
+| Practice notes and practice directions | A Commonwealth instrument with no direct US federal equivalent. The closest analogues are local rules and court-wide general orders. |
+| Municipal and county ordinances | Public-domain text, but locked in three commercial publisher platforms with no comprehensive source. |
+| Standards incorporated by reference into the CFR (ASTM, NFPA, ISO) | Published by private standards bodies. Courts have held only non-commercial dissemination is fair use, which is incompatible with a paid API. |
+| NAIC model law text | A copyrighted, commercially sold publication, not open government primary law. Each state's own insurance bulletins are in scope and covered as a pilot. |
 
-**Judge-specific and court-specific procedural material.**
-Standing orders, individual judges' practice rules, chambers procedures, and scheduling preferences.
-In the US these are issued per judge across 94 federal district courts and every state trial court, with no central publication, so there is no authoritative source to ingest.
-Court rules that are formally adopted and published by a court system, including local rules at the state level, are in scope and covered today for the states in the [Coverage](/api-guide/coverage) matrix.
+### The line on court material
 
-**Municipal and county ordinances.**
-The text is public domain, but it sits behind three commercial publisher platforms and there is no comprehensive source.
+**We carry rules a court formally adopts and publishes as binding on everyone appearing before it. We do not carry an individual judge's preferences.**
 
-**Standards incorporated by reference into the CFR.**
-Material such as ASTM, NFPA and ISO standards cited by regulation but published by private standards bodies.
-Courts have held that only non-commercial dissemination of these is fair use, which makes them incompatible with a paid API.
+Formally adopted rules are stable, citable, published under statutory authority, and amended on a visible cycle. That covers the Federal Rules and Supreme Court Rules today, the state court rules in the [Coverage](/api-guide/coverage) matrix, and the federal local rules above.
 
-**Model law text from the National Association of Insurance Commissioners (NAIC).**
-A copyrighted, commercially sold publication rather than open government primary law.
-Each state's own published insurance bulletins, issued under that state's own authority, are in scope and covered as a pilot.
+Judge-specific material fails every one of those tests: over 1,500 judges, no consistent location, no citation form, revised or voided silently on rotation. We could ingest it. We could not keep it honest, and a confidently stale answer is worse than none.
 
 ## Related
 

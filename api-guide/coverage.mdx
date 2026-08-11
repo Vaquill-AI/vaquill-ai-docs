@@ -4,29 +4,14 @@ description: "Exactly which US jurisdictions and corpus types the Vaquill statut
 icon: "map-location-dot"
 ---
 
-This page lists the US legal data Vaquill AI has ingested, by corpus type and by
-jurisdiction. Vaquill AI covers the full stack of US primary law, not just statutes:
-federal law, state statutes, state constitutions, court rules, and state
-regulations.
+Every US jurisdiction and corpus type the API has ingested: federal law, state statutes, constitutions, court rules, and regulations, each scoped with the `corpusType` filter.
 
-The **Developer API** (`/statutes/*`) serves statutes, regulations, constitutions,
-court rules, and executive actions, scoped with the `corpusType` filter.
-
-Coverage is queryable live from `GET /statutes/coverage` and `GET /statutes/states`;
-the per-corpus matrix below was last updated **2026-08-11**. In total the
-ingested corpus holds **over 3.9M distinct sections** across all of these
-corpus types, indexed as **over 10.4M retrieval passages**.
+**Over 3.9M distinct sections, indexed as over 10.4M retrieval passages.** Figures below are a **2026-08-11** snapshot; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
 
 <Note>
-  Counts on this page are **distinct sections** (one per provision or document),
-  the same figures `GET /statutes/coverage` returns. For retrieval, longer sections
-  and documents are split into multiple passages, so the underlying index holds far
-  more entries: **about 10.4M passages** (live: 10,390,669) across these 3.9M sections (live: 3,904,841). The Federal
-  Register alone (long agency rules, 13-15 passages each) accounts for over
-  half of them.
+  Counts here are **distinct sections**, one per provision or document, matching what `GET /statutes/coverage` returns. Longer documents split into several passages for retrieval, so the index holds more entries than sections, over half of them Federal Register rules at 13-15 passages each.
 
-  That split does not change what the API returns: a lookup by citation still
-  resolves to one section with its full text.
+  That does not change what you get back: a citation lookup still resolves to one section with its full text.
 </Note>
 
 ## What's in the corpus
@@ -39,7 +24,7 @@ corpus types, indexed as **over 10.4M retrieval passages**.
     **9 corpora, ~687K sections** — US Code, CFR, Federal Register rules, Executive Orders, agency guidance, court rules, the Constitution, and more. See the [Federal table](#federal) for the full breakdown. Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
-    **51 jurisdictions** (50 states + Puerto Rico), ~12.7K sections, with article/section structure and clickable citations for the large majority of states. Two states (data-availability gaps in the underlying source, not a parsing issue) remain partially covered. All 50 states completed migration off a third-party transcription source onto each state's own official publisher as of 2026-08-08. A backend data-quality cleanup is queued to physically remove a small residue of superseded duplicate records left over from that migration (already excluded from every API response, so this does not affect correctness of the current, correct sections, only index tidiness). Queryable via the API (`corpusType=STATE_CONSTITUTION`).
+    **51 jurisdictions** (50 states + Puerto Rico), ~12.7K sections, with article/section structure and clickable citations. Every state is sourced from its own official publisher. Two states remain partially covered, a data-availability gap in the source rather than a parsing issue. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
     **28 states**, ~28.7K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
