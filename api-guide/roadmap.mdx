@@ -1,0 +1,143 @@
+---
+title: "Roadmap"
+description: "Corpora Vaquill AI is building next, what is deliberately out of scope, and how to detect new coverage programmatically"
+icon: "map"
+---
+
+This page lists what is coming to the corpus and what is not.
+Everything here goes through the same pipeline as the data already in the API: ingested from the official government source, chunked and embedded for hybrid search, citation-linked, and put on a recurring refresh.
+So each item arrives queryable through the same `corpusType` filter, with no new integration work on your side.
+
+For what is queryable **today**, see [Coverage](/api-guide/coverage).
+For what has already shipped, see the [Changelog](/api-guide/changelog).
+
+<Note>
+  Dates are targets, not commitments.
+  `GET /statutes/coverage` is self-describing: new corpora appear there as they land, so polling it is the reliable way to detect one rather than tracking this page.
+  See [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled diff you can wire up.
+</Note>
+
+## Completing existing coverage
+
+Two corpus types are live but not yet across all 52 jurisdictions.
+Both are rolling out state by state on the same pipeline and the same refresh cadence as the states already covered.
+
+| Corpus | Today | Target |
+|---|---|---|
+| State regulations (`REGULATION`) | 45 states | All 52 jurisdictions |
+| State court rules (`STATE_RULES`) | 10 states | Broad state coverage, prioritized by demand |
+
+Pennsylvania's Consolidated Statutes are complete; its older unconsolidated (Purdon's) statutes are a separate later addition, prioritized for backfill.
+
+## Federal law and court rules
+
+Targeted to land by the **start of Q4 2026**.
+
+| Source | What it adds | Official source |
+|---|---|---|
+| Federal Register notices | The third Federal Register document class. We carry final and proposed rules today; notices cover meeting announcements, information collections, agency determinations, and grant availability. | govinfo, federalregister.gov |
+| Public Laws / Statutes at Large | Slip laws as enacted, before codification into the US Code. Public law numbers appear as a metadata field today, but the acts themselves are not served as documents. | govinfo |
+| OLC and Attorney General opinions | Office of Legal Counsel opinions plus formal AG opinions, the executive branch's own binding legal interpretations. | justice.gov/olc |
+| GAO decisions | Comptroller General decisions on appropriations law and bid protests. | gao.gov |
+
+## Tax
+
+Two additional IRS corpora, beyond the IRS notices, revenue procedures, revenue rulings and announcements already served under agency guidance.
+
+| Source | What it adds |
+|---|---|
+| Chief Counsel Advice | Written determinations issued by IRS Chief Counsel to field offices. |
+| Private Letter Rulings | Taxpayer-specific rulings on the application of tax law to a proposed transaction. |
+
+## Administrative adjudication
+
+A new corpus type: the record of what federal agencies actually decided, as opposed to what the rules say.
+These are public domain under 17 U.S.C. 105 and are genuinely under-aggregated, since each body publishes into its own silo with no shared format or API.
+
+| Body | What it adds |
+|---|---|
+| SEC administrative proceedings | The full order stream, including AAERs and Rule 102(e) accountant disqualifications. Roughly 18,400 proceedings since the early 2000s. |
+| DOL OALJ, ARB and BRB | Administrative law judge decisions plus the Administrative Review Board and Benefits Review Board, across an 80+ case-type taxonomy (SOX, AIR21, STAA, ERA, OSH, OFCCP, LCA, black lung, longshore). |
+| NLRB ALJ and Board decisions | Extends the NLRB General Counsel and Division of Advice memoranda already in the corpus. |
+| MSPB | Precedential and nonprecedential decisions. |
+| FDIC, OCC and Federal Reserve | Enforcement actions and consent orders. Extends the guidance from these agencies already in the corpus. |
+
+On customer demand: OSHRC, FMSHRC, FERC, CFTC reparations, BIA, Tax Court, ASBCA/CBCA, EPA Environmental Appeals Board, FTC administrative decisions, and HHS DAB.
+
+## Federal regulatory dockets
+
+Rulemaking dockets and the public comment record behind a rule, sourced from three official, documented government APIs.
+
+| Source | What it adds |
+|---|---|
+| regulations.gov | Federal rulemaking dockets, documents, and public comments across participating agencies. |
+| FCC ECFS | Telecom proceeding filings, with filers, documents and submission types. |
+| SEC EDGAR comment letters | SEC staff comment letters (`UPLOAD`) and filer correspondence (`CORRESP`). |
+
+## Agencies not yet covered
+
+No documents from these agencies are in the corpus today.
+Counts are the document categories planned for each.
+
+| Agency | Categories | Domain |
+|---|---|---|
+| FTC | 4 | Consumer protection and competition |
+| DOJ Antitrust Division | 1 | Merger and conduct enforcement |
+| SEC | 3 | Securities regulation and disclosure |
+| CBP (Customs) | 3 | Import classification, valuation, and admissibility |
+| CFPB | 2 | Consumer financial protection |
+| DOL Wage and Hour Division | 2 | Wage, hour, and leave enforcement |
+
+## Other federal guidance
+
+| Source | Domain |
+|---|---|
+| CMS Medicare Manuals | Medicare coverage, billing, and program administration |
+| DOJ ADA Guidance | Disability access and accommodation |
+| EEOC Guidance | Employment discrimination |
+| FDA Guidance Documents | Drug, device, and food regulation |
+| FDA Warning Letters | Enforcement correspondence to regulated entities |
+| HUD Fair Housing | Housing discrimination |
+| OFAC FAQs | Sanctions compliance |
+
+## Out of scope
+
+Being explicit about what we will not build is as useful as listing what we will.
+If you need any of the below, we are not the right supplier and would rather tell you now.
+
+**General case law and court dockets.**
+Deliberately out of scope, not a gap we are closing.
+Vaquill AI is a primary-law corpus: statutes, regulations, constitutions, court rules, and agency material.
+
+**Judge-specific and court-specific procedural material.**
+Standing orders, individual judges' practice rules, chambers procedures, and scheduling preferences.
+In the US these are issued per judge across 94 federal district courts and every state trial court, with no central publication, so there is no authoritative source to ingest.
+Court rules that are formally adopted and published by a court system, including local rules at the state level, are in scope and covered today for the states in the [Coverage](/api-guide/coverage) matrix.
+
+**Municipal and county ordinances.**
+The text is public domain, but it sits behind three commercial publisher platforms and there is no comprehensive source.
+
+**Standards incorporated by reference into the CFR.**
+Material such as ASTM, NFPA and ISO standards cited by regulation but published by private standards bodies.
+Courts have held that only non-commercial dissemination of these is fair use, which makes them incompatible with a paid API.
+
+**NAIC model law text.**
+A copyrighted, commercially sold publication rather than open government primary law.
+Each state's own published insurance bulletins, issued under that state's own authority, are in scope and covered as a pilot.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Coverage" icon="table" href="/api-guide/coverage">
+    Everything queryable today, with live per-jurisdiction counts.
+  </Card>
+  <Card title="Changelog" icon="clock-rotate-left" href="/api-guide/changelog">
+    What has already shipped, in date order.
+  </Card>
+  <Card title="Coverage monitoring" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
+    Poll `/statutes/coverage` on a schedule and diff it, so you detect new corpora automatically.
+  </Card>
+  <Card title="Corpus types" icon="layer-group" href="/api-guide/concepts/corpus-types">
+    What each `corpusType` token holds.
+  </Card>
+</CardGroup>

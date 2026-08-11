@@ -34,7 +34,7 @@ Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by pas
 
 <CodeGroup>
 ```bash cURL
-curl -G https://api.vaquill.ai/api/v1/statutes/divisions \
+curl -G https://api.vaquill.ai/api/v1/us/statutes/divisions \
   -H "Authorization: Bearer vq_key_..." \
   --data-urlencode "corpusType=USC" \
   --data-urlencode "titleNumber=42"
@@ -44,7 +44,7 @@ curl -G https://api.vaquill.ai/api/v1/statutes/divisions \
 import requests
 
 resp = requests.get(
-    "https://api.vaquill.ai/api/v1/statutes/divisions",
+    "https://api.vaquill.ai/api/v1/us/statutes/divisions",
     headers={"Authorization": "Bearer vq_key_..."},
     params={"corpusType": "USC", "titleNumber": 42},
 )
@@ -55,7 +55,7 @@ for node in data["divisions"]:
 ```
 
 ```javascript JavaScript
-const url = new URL("https://api.vaquill.ai/api/v1/statutes/divisions");
+const url = new URL("https://api.vaquill.ai/api/v1/us/statutes/divisions");
 url.searchParams.set("corpusType", "USC");
 url.searchParams.set("titleNumber", "42");
 const data = await (

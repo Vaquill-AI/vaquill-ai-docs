@@ -27,7 +27,7 @@ import time
 import requests
 
 def search_with_retry(payload, max_retries=5):
-    url = "https://api.vaquill.ai/api/v1/statutes/search"
+    url = "https://api.vaquill.ai/api/v1/us/statutes/search"
     headers = {
         "Authorization": "Bearer vq_key_...",
         "Content-Type": "application/json",
@@ -49,7 +49,7 @@ data = search_with_retry({"query": "data breach notification"})
 
 ```javascript JavaScript
 async function searchWithRetry(payload, maxRetries = 5) {
-  const url = "https://api.vaquill.ai/api/v1/statutes/search";
+  const url = "https://api.vaquill.ai/api/v1/us/statutes/search";
   const headers = {
     Authorization: "Bearer vq_key_...",
     "Content-Type": "application/json",

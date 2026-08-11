@@ -218,7 +218,7 @@ Set environment variables under **Web App > Configuration > Application settings
 Test the Vaquill API directly to isolate bot issues:
 
 ```bash
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_your_key" \
   -H "Content-Type: application/json" \
   -d '{"query": "civil action for deprivation of rights", "country_code": "US"}'

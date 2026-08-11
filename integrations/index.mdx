@@ -53,7 +53,7 @@ Every integration is a thin wrapper: take input from the surface (Slack message,
 ```mermaid
 flowchart LR
     A["**User surface**<br/>Slack, Discord, Teams,<br/>browser, webhook"] --> B["**Integration runtime**<br/>Python / Node / Edge"]
-    B -->|"POST /api/v1/statutes/search"| C["**Vaquill statutes API**"]
+    B -->|"POST /api/v1/us/statutes/search"| C["**Vaquill statutes API**"]
     C --> D["**Statute retrieval**<br/>US Code · CFR · 50 state codes"]
     D -.->|"matching sections"| B
     B -.-> A
@@ -70,7 +70,7 @@ One API key (`vq_key_...`) from your [dashboard](https://app.vaquill.ai/settings
 To add a surface we do not ship (Outlook, Notion, a CRM, an internal portal):
 
 1. Generate a key in your [dashboard](https://app.vaquill.ai/settings).
-2. `POST /api/v1/statutes/search` with `{ "query": "..." }` and `Authorization: Bearer vq_key_...`.
+2. `POST /api/v1/us/statutes/search` with `{ "query": "..." }` and `Authorization: Bearer vq_key_...`.
 3. Render the returned statute sections (title, code, section number, text).
 4. Pass filters (jurisdiction, code) to narrow results.
 

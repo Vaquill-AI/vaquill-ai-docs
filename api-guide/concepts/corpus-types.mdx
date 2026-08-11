@@ -38,7 +38,7 @@ search one jurisdiction's data.
 | `REGULATION` | State administrative regulations | state | ~1.16M across 45 states (all official-source, refreshed monthly) |
 | `STATE_CONSTITUTION` | State constitutions | state | ~20.5K across 51 jurisdictions (50 states + PR) |
 | `STATE_RULES` | State court rules (civil, criminal, appellate, local) | state | ~11.9K across 10 states |
-| `STATE_AGENCY_GUIDANCE` | State-issued regulatory guidance (Department of Insurance bulletins and circular letters) - the state-scoped analog of `AGENCY_GUIDANCE`. Not a comprehensive 52-jurisdiction rollout; lands state by state. | state | 2,828 across 5 states (CA, IL, NY, TX, FL) |
+| `STATE_AGENCY_GUIDANCE` | State-issued regulatory guidance (Department of Insurance bulletins and circular letters) - the state-scoped analog of `AGENCY_GUIDANCE`. Not a comprehensive 52-jurisdiction rollout; lands state by state. | state | 5,833 across 18 states (CA, IL, NY, TX, FL, GA, OH, VA, WA, NJ, MA, MI, NC, WI, CT, MD, MN, IN) |
 
 <Info>
   These are approximate totals and expand weekly. The exact per-jurisdiction
@@ -81,7 +81,7 @@ rules. Here is Washington's environmental regulations:
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "stormwater discharge permit", "corpusType": "REGULATION", "state": "wa", "limit": 5}'
@@ -91,7 +91,7 @@ curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
 import requests
 
 resp = requests.post(
-    "https://api.vaquill.ai/api/v1/statutes/search",
+    "https://api.vaquill.ai/api/v1/us/statutes/search",
     headers={"Authorization": "Bearer vq_key_..."},
     json={
         "query": "stormwater discharge permit",
@@ -106,7 +106,7 @@ for r in data["results"]:
 ```
 
 ```javascript JavaScript
-const resp = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
   method: "POST",
   headers: {
     Authorization: "Bearer vq_key_...",
@@ -151,7 +151,7 @@ don't live in USC or CFR section text.
 
 ```bash cURL
 # Agency guidance, including the annually adjusted figure records
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "2026 Subchapter V debt limit", "corpusType": "AGENCY_GUIDANCE", "limit": 5}'
@@ -161,7 +161,7 @@ curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
 import requests
 
 resp = requests.post(
-    "https://api.vaquill.ai/api/v1/statutes/search",
+    "https://api.vaquill.ai/api/v1/us/statutes/search",
     headers={"Authorization": "Bearer vq_key_..."},
     json={
         "query": "2026 Subchapter V debt limit",
@@ -174,7 +174,7 @@ for r in resp.json()["results"]:
 ```
 
 ```javascript JavaScript
-const resp = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
   method: "POST",
   headers: {
     Authorization: "Bearer vq_key_...",

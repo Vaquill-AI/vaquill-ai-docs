@@ -174,7 +174,7 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | Massachusetts | 23,152 | 24,742 | 187 | - |
 | Idaho | 22,754 | 8,551 | 485 | - |
 | Arizona | 22,684 | 16,463 | 772 | 1,720 |
-| Delaware | 21,741 | - | 241 | - |
+| Delaware | 21,741 | 22,481 | 241 | - |
 | Rhode Island | 21,115 | 12,070 | 120 | - |
 | Kentucky | 20,946 | 4,881 | 289 | - |
 | Hawaii | 19,487 | 26,735 | 363 | - |
@@ -200,6 +200,19 @@ paired with `state`.
 | New York | DFS (Department of Financial Services) Insurance Circular Letters | 1,199 | Weekly |
 | Texas | Dept. of Insurance Commissioner's Bulletins | 1,254 | Weekly |
 | Florida | Office of Insurance Regulation Informational Memoranda | 43 | Weekly |
+| Georgia | Office of Commissioner of Insurance and Safety Fire Bulletins | 66 | Weekly |
+| Ohio | Dept. of Insurance Bulletins | 112 | Weekly |
+| Virginia | SCC Bureau of Insurance Administrative Letters | 89 | Weekly |
+| Washington | OIC Technical Assistance Advisories and Emergency Orders | 24 | Weekly |
+| New Jersey | Dept. of Banking and Insurance Bulletins | 441 | Weekly |
+| Michigan | DIFS Insurance Bulletins | 145 | Weekly |
+| North Carolina | Dept. of Insurance Bulletins | 120 | Weekly |
+| Wisconsin | Office of the Commissioner of Insurance Bulletins | 232 | Weekly |
+| Connecticut | Insurance Department Bulletins | 369 | Weekly |
+| Maryland | Insurance Administration Bulletins | 675 | Weekly |
+| Minnesota | Dept. of Commerce Insurance Bulletins | 34 | Weekly |
+| Indiana | Dept. of Insurance Bulletins | 281 | Weekly |
+| Massachusetts | Division of Insurance Bulletins | 417 | Weekly |
 
 <Note>
   This corpus is a pilot. It does not include NAIC (National Association of
@@ -230,74 +243,14 @@ any jurisdiction.
 
 ## Coming next
 
-Federal corpora we do not serve yet. All of them are work in progress and
-targeted to land by the **start of Q4 2026**. Each goes through the same
-pipeline as everything above - ingested from the official source, chunked and
-embedded for hybrid search, citation-linked, and put on a recurring refresh -
-so it arrives queryable through the same `corpusType` filter.
-
-### Federal law and court rules
-
-| Source | What it adds | Official source |
-|---|---|---|
-| Federal Register notices | The third Federal Register document class. We carry final and proposed rules today; notices cover meeting announcements, information collections, agency determinations, and grant availability. | govinfo, federalregister.gov |
-| Public Laws / Statutes at Large | Slip laws as enacted, before codification into the US Code. Public law numbers appear as a metadata field today, but the acts themselves are not served as documents. | govinfo |
-| OLC and Attorney General opinions | Office of Legal Counsel opinions plus formal AG opinions - the executive branch's own binding legal interpretations. | justice.gov/olc |
-| GAO decisions | Comptroller General decisions on appropriations law and bid protests. | gao.gov |
-
-### Tax
-
-Two additional IRS corpora, beyond the IRS notices, revenue procedures, revenue
-rulings, and announcements already served under Agency guidance above.
-
-| Source | What it adds |
-|---|---|
-| Chief Counsel Advice | Written determinations issued by IRS Chief Counsel to field offices. |
-| Private Letter Rulings | Taxpayer-specific rulings on the application of tax law to a proposed transaction. |
+This page covers what is queryable today. Corpora that are planned but not yet
+served, along with what is deliberately out of scope, live on the
+[Roadmap](/api-guide/roadmap).
 
 <Note>
-  US Tax Treaties and Treasury's Technical Explanations of each treaty are
-  now covered (see the Federal table above), no longer planned items.
-</Note>
-
-### Agencies not yet covered
-
-No documents from these agencies are in the corpus today. Counts are the
-document categories planned for each.
-
-| Agency | Categories | Domain |
-|---|---|---|
-| FTC | 4 | Consumer protection and competition |
-| DOJ Antitrust Division | 1 | Merger and conduct enforcement |
-| SEC | 3 | Securities regulation and disclosure |
-| CBP (Customs) | 3 | Import classification, valuation, and admissibility |
-| CFPB | 2 | Consumer financial protection |
-| DOL Wage and Hour Division | 2 | Wage, hour, and leave enforcement |
-
-<Note>
-  DOJ & FTC Merger Guidelines and the DOJ Antitrust Division Leniency Policy
-  are now covered (see Agency guidance above), reducing FTC's and DOJ
-  Antitrust's remaining planned categories. US Copyright Office Circulars,
-  the DOJ Justice Manual, the USCIS Policy Manual, and USPTO MPEP/TMEP are
-  all fully covered and no longer appear in this table.
-</Note>
-
-### Other federal guidance
-
-| Source | Domain |
-|---|---|
-| CMS Medicare Manuals | Medicare coverage, billing, and program administration |
-| DOJ ADA Guidance | Disability access and accommodation |
-| EEOC Guidance | Employment discrimination |
-| FDA Guidance Documents | Drug, device, and food regulation |
-| FDA Warning Letters | Enforcement correspondence to regulated entities |
-| HUD Fair Housing | Housing discrimination |
-| OFAC FAQs | Sanctions compliance |
-
-<Note>
-  None of these are queryable yet. `GET /statutes/coverage` is self-describing:
-  new corpora appear there as they land, so polling it is the reliable way to
-  detect one rather than tracking this page. See
+  `GET /statutes/coverage` is self-describing: new corpora appear there as they
+  land, so polling it is the reliable way to detect one rather than tracking
+  either page. See
   [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled
   diff you can wire up.
 </Note>
@@ -306,25 +259,25 @@ document categories planned for each.
 
 ```bash
 # Self-describing coverage matrix: every corpusType and its per-jurisdiction counts
-curl https://api.vaquill.ai/api/v1/statutes/coverage \
+curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
   -H "Authorization: Bearer vq_key_..."
 
 # Live coverage with current section counts
-curl https://api.vaquill.ai/api/v1/statutes/states \
+curl https://api.vaquill.ai/api/v1/us/statutes/states \
   -H "Authorization: Bearer vq_key_..."
 
 # Statutory codes for one state (e.g. Mississippi)
-curl "https://api.vaquill.ai/api/v1/statutes/codes?state=ms" \
+curl "https://api.vaquill.ai/api/v1/us/statutes/codes?state=ms" \
   -H "Authorization: Bearer vq_key_..."
 
 # Search within a state
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "landlord retaliation", "corpusType": "STATE", "state": "ms"}'
 
 # Search state regulations (corpusType REGULATION, paired with a state)
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "stormwater discharge permit", "corpusType": "REGULATION", "state": "wa"}'

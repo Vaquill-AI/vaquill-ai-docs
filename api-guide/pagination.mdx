@@ -47,7 +47,7 @@ This loop walks every reachable page, stopping when `hasMore` is `false` or the 
 import requests
 
 def search_all(query, corpus_type=None, state=None, page_size=50):
-    url = "https://api.vaquill.ai/api/v1/statutes/search"
+    url = "https://api.vaquill.ai/api/v1/us/statutes/search"
     headers = {
         "Authorization": "Bearer vq_key_...",
         "Content-Type": "application/json",
@@ -77,7 +77,7 @@ print(len(sections))
 
 ```javascript JavaScript
 async function searchAll(query, { corpusType, state, pageSize = 50 } = {}) {
-  const url = "https://api.vaquill.ai/api/v1/statutes/search";
+  const url = "https://api.vaquill.ai/api/v1/us/statutes/search";
   const headers = {
     Authorization: "Bearer vq_key_...",
     "Content-Type": "application/json",

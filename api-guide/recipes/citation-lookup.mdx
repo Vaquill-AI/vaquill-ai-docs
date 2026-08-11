@@ -47,7 +47,7 @@ to expand a citation your users typed into full, linkable law.
 
 <CodeGroup>
 ```bash cURL
-curl -G https://api.vaquill.ai/api/v1/statutes/resolve \
+curl -G https://api.vaquill.ai/api/v1/us/statutes/resolve \
   -H "Authorization: Bearer vq_key_..." \
   --data-urlencode "cite=42 U.S.C. § 1983"
 ```
@@ -56,7 +56,7 @@ curl -G https://api.vaquill.ai/api/v1/statutes/resolve \
 import requests
 
 resp = requests.get(
-    "https://api.vaquill.ai/api/v1/statutes/resolve",
+    "https://api.vaquill.ai/api/v1/us/statutes/resolve",
     headers={"Authorization": "Bearer vq_key_..."},
     params={"cite": "42 U.S.C. § 1983"},
 )
@@ -69,7 +69,7 @@ else:
 ```
 
 ```javascript JavaScript
-const url = new URL("https://api.vaquill.ai/api/v1/statutes/resolve");
+const url = new URL("https://api.vaquill.ai/api/v1/us/statutes/resolve");
 url.searchParams.set("cite", "42 U.S.C. § 1983");
 const data = await (
   await fetch(url, { headers: { Authorization: "Bearer vq_key_..." } })
@@ -115,13 +115,13 @@ If you would rather control each step, or add your own match tolerance, run the 
 
 ```bash cURL
 # A CFR citation: scope corpusType to CFR
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "17 CFR 240.10b5-1", "corpusType": "CFR", "limit": 3}'
 
 # A USC citation: scope corpusType to USC
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "42 U.S.C. 1983", "corpusType": "USC", "limit": 3}'

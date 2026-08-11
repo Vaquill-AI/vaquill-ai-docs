@@ -79,7 +79,7 @@ Edit `extension/js/config.js`:
 The extension calls a single endpoint:
 
 ```
-POST https://api.vaquill.ai/api/v1/statutes/search
+POST https://api.vaquill.ai/api/v1/us/statutes/search
 Authorization: Bearer vq_key_...
 Content-Type: application/json
 ```
@@ -107,7 +107,7 @@ extension/
   js/
     config.js            API URL, defaults, suggested questions
     session.js           Storage manager (API key, chat history)
-    background.js        Service worker - calls POST /api/v1/statutes/search
+    background.js        Service worker - calls POST /api/v1/us/statutes/search
     popup.js             Search UI logic, source rendering
     markdown.js          Lightweight markdown-to-HTML renderer
     options.js           Settings page logic

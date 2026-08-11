@@ -54,13 +54,13 @@ legal assistant from making things up.
 
 ```bash cURL
 # 1. Retrieve candidate sections (scope to USC when the question is federal)
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "employer retaliation whistleblower protection", "corpusType": "USC", "limit": 3}'
 
 # 2. Fetch the full text of one result by its actId
-curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body \
+curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body \
   -H "Authorization: Bearer vq_key_..."
 ```
 

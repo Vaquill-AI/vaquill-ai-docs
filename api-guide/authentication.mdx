@@ -31,7 +31,7 @@ Keys use the `vq_key_` prefix and are tied to your account.
 
 <CodeGroup>
 ```bash cURL
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{"query": "data breach notification"}'
@@ -41,7 +41,7 @@ curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
 import requests
 
 response = requests.post(
-    "https://api.vaquill.ai/api/v1/statutes/search",
+    "https://api.vaquill.ai/api/v1/us/statutes/search",
     headers={
         "Authorization": "Bearer vq_key_your_api_key_here",
         "Content-Type": "application/json"
@@ -51,7 +51,7 @@ response = requests.post(
 ```
 
 ```javascript JavaScript
-const response = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+const response = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
   method: "POST",
   headers: {
     "Authorization": "Bearer vq_key_your_api_key_here",
@@ -62,7 +62,7 @@ const response = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
 ```
 
 ```go Go
-req, _ := http.NewRequest("POST", "https://api.vaquill.ai/api/v1/statutes/search", body)
+req, _ := http.NewRequest("POST", "https://api.vaquill.ai/api/v1/us/statutes/search", body)
 req.Header.Set("Authorization", "Bearer vq_key_your_api_key_here")
 req.Header.Set("Content-Type", "application/json")
 ```

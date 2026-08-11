@@ -18,7 +18,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
 
     <CodeGroup>
     ```bash cURL
-    curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+    curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
       -H "Authorization: Bearer vq_key_..." \
       -H "Content-Type: application/json" \
       -d '{"query": "civil rights deprivation under color of law", "corpusType": "USC", "limit": 5}'
@@ -28,7 +28,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     import requests
 
     resp = requests.post(
-        "https://api.vaquill.ai/api/v1/statutes/search",
+        "https://api.vaquill.ai/api/v1/us/statutes/search",
         headers={
             "Authorization": "Bearer vq_key_...",
             "Content-Type": "application/json",
@@ -45,7 +45,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
 
     ```javascript JavaScript
-    const resp = await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+    const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
       method: "POST",
       headers: {
         "Authorization": "Bearer vq_key_...",
@@ -105,11 +105,11 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     <CodeGroup>
     ```bash cURL
     # Metadata
-    curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983 \
+    curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983 \
       -H "Authorization: Bearer vq_key_..."
 
     # Full text
-    curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body \
+    curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body \
       -H "Authorization: Bearer vq_key_..."
     ```
 
@@ -120,12 +120,12 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     act_id = "USC_T42_C21_S1983"
 
     meta = requests.get(
-        f"https://api.vaquill.ai/api/v1/statutes/section/{act_id}",
+        f"https://api.vaquill.ai/api/v1/us/statutes/section/{act_id}",
         headers=headers,
     ).json()
 
     body = requests.get(
-        f"https://api.vaquill.ai/api/v1/statutes/section/{act_id}/body",
+        f"https://api.vaquill.ai/api/v1/us/statutes/section/{act_id}/body",
         headers=headers,
     ).json()
 
@@ -139,14 +139,14 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
 
     const meta = await (
       await fetch(
-        `https://api.vaquill.ai/api/v1/statutes/section/${actId}`,
+        `https://api.vaquill.ai/api/v1/us/statutes/section/${actId}`,
         { headers },
       )
     ).json();
 
     const body = await (
       await fetch(
-        `https://api.vaquill.ai/api/v1/statutes/section/${actId}/body`,
+        `https://api.vaquill.ai/api/v1/us/statutes/section/${actId}/body`,
         { headers },
       )
     ).json();
@@ -165,7 +165,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
 
     <CodeGroup>
     ```bash cURL
-    curl https://api.vaquill.ai/api/v1/statutes/coverage \
+    curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
       -H "Authorization: Bearer vq_key_..."
     ```
 
@@ -173,7 +173,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     import requests
 
     cov = requests.get(
-        "https://api.vaquill.ai/api/v1/statutes/coverage",
+        "https://api.vaquill.ai/api/v1/us/statutes/coverage",
         headers={"Authorization": "Bearer vq_key_..."},
     ).json()["data"]
 
@@ -185,7 +185,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```javascript JavaScript
     const cov = (
       await (
-        await fetch("https://api.vaquill.ai/api/v1/statutes/coverage", {
+        await fetch("https://api.vaquill.ai/api/v1/us/statutes/coverage", {
           headers: { Authorization: "Bearer vq_key_..." },
         })
       ).json()

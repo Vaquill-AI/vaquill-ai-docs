@@ -47,25 +47,25 @@ This is the backbone of a RegTech or compliance-mapping feature.
 
 ```bash cURL
 # Federal regulations (CFR)
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "data breach notification timeline", "corpusType": "CFR", "limit": 5}'
 
 # Federal Register agency rules
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "data breach notification timeline", "corpusType": "FEDERAL_REGISTER", "limit": 5}'
 
 # Agency guidance
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "data breach notification timeline", "corpusType": "AGENCY_GUIDANCE", "limit": 5}'
 
 # A specific state's administrative regulations (e.g. Washington)
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "data breach notification timeline", "corpusType": "REGULATION", "state": "wa", "limit": 5}'

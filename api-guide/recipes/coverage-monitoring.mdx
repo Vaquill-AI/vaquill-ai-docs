@@ -24,7 +24,7 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
 
     <CodeGroup>
     ```bash cURL
-    curl https://api.vaquill.ai/api/v1/statutes/coverage \
+    curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
       -H "Authorization: Bearer vq_key_..."
     ```
 
@@ -32,7 +32,7 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
     import requests
 
     resp = requests.get(
-        "https://api.vaquill.ai/api/v1/statutes/coverage",
+        "https://api.vaquill.ai/api/v1/us/statutes/coverage",
         headers={"Authorization": "Bearer vq_key_..."},
     )
     cov = resp.json()["data"]

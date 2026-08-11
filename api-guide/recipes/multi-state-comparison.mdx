@@ -41,7 +41,7 @@ Many legal questions are really the same question asked of many jurisdictions: h
 
     <CodeGroup>
     ```bash cURL
-    curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+    curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
       -H "Authorization: Bearer vq_key_..." \
       -H "Content-Type: application/json" \
       -d '{"query": "security deposit return deadline", "corpusType": "STATE", "state": "ca", "limit": 3}'

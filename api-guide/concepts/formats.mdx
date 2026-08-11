@@ -50,7 +50,7 @@ Each node in `subsections` carries its marker and where it sits:
 <CodeGroup>
 
 ```bash cURL
-curl "https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body?structured=true" \
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body?structured=true" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
@@ -58,7 +58,7 @@ curl "https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body?stru
 import requests
 
 data = requests.get(
-    "https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body",
+    "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body",
     headers={"Authorization": "Bearer vq_key_..."},
     params={"structured": "true"},
 ).json()

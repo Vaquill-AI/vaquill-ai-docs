@@ -79,17 +79,17 @@ metadata, then fetch its body.
 
 ```bash cURL
 # 1. Search
-curl -X POST https://api.vaquill.ai/api/v1/statutes/search \
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
   -d '{"query": "civil action for deprivation of rights", "corpusType": "USC", "limit": 1}'
 
 # 2. Fetch metadata for the returned actId
-curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983 \
+curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983 \
   -H "Authorization: Bearer vq_key_..."
 
 # 3. Fetch full text
-curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/body \
+curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body \
   -H "Authorization: Bearer vq_key_..."
 ```
 
@@ -100,7 +100,7 @@ headers = {"Authorization": "Bearer vq_key_..."}
 
 # 1. Search
 search = requests.post(
-    "https://api.vaquill.ai/api/v1/statutes/search",
+    "https://api.vaquill.ai/api/v1/us/statutes/search",
     headers=headers,
     json={
         "query": "civil action for deprivation of rights",
@@ -112,14 +112,14 @@ act_id = search["results"][0]["actId"]
 
 # 2. Fetch metadata
 section = requests.get(
-    f"https://api.vaquill.ai/api/v1/statutes/section/{act_id}",
+    f"https://api.vaquill.ai/api/v1/us/statutes/section/{act_id}",
     headers=headers,
 ).json()["section"]
 print(section["citation"], "-", section["displayPath"])
 
 # 3. Fetch full text
 body = requests.get(
-    f"https://api.vaquill.ai/api/v1/statutes/section/{act_id}/body",
+    f"https://api.vaquill.ai/api/v1/us/statutes/section/{act_id}/body",
     headers=headers,
 ).json()
 print(body["plain"][:500] if body["available"] else "text unavailable")
@@ -130,7 +130,7 @@ const headers = { Authorization: "Bearer vq_key_..." };
 
 // 1. Search
 const search = await (
-  await fetch("https://api.vaquill.ai/api/v1/statutes/search", {
+  await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
     method: "POST",
     headers: { ...headers, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -146,7 +146,7 @@ const actId = search.results[0].actId;
 const section = (
   await (
     await fetch(
-      `https://api.vaquill.ai/api/v1/statutes/section/${actId}`,
+      `https://api.vaquill.ai/api/v1/us/statutes/section/${actId}`,
       { headers },
     )
   ).json()
@@ -156,7 +156,7 @@ console.log(section.citation, "-", section.displayPath);
 // 3. Fetch full text
 const body = await (
   await fetch(
-    `https://api.vaquill.ai/api/v1/statutes/section/${actId}/body`,
+    `https://api.vaquill.ai/api/v1/us/statutes/section/${actId}/body`,
     { headers },
   )
 ).json();
@@ -177,7 +177,7 @@ console.log(body.available ? body.plain.slice(0, 500) : "text unavailable");
 before and after the one you already have, within the same container:
 
 ```bash cURL
-curl https://api.vaquill.ai/api/v1/statutes/section/USC_T42_C21_S1983/related \
+curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/related \
   -H "Authorization: Bearer vq_key_..."
 ```
 

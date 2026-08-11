@@ -58,7 +58,7 @@ which searches you can scope.
 <CodeGroup>
 
 ```bash cURL
-curl https://api.vaquill.ai/api/v1/statutes/coverage \
+curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
   -H "Authorization: Bearer vq_key_..."
 ```
 
@@ -66,7 +66,7 @@ curl https://api.vaquill.ai/api/v1/statutes/coverage \
 import requests
 
 resp = requests.get(
-    "https://api.vaquill.ai/api/v1/statutes/coverage",
+    "https://api.vaquill.ai/api/v1/us/statutes/coverage",
     headers={"Authorization": "Bearer vq_key_..."},
 )
 data = resp.json()["data"]
@@ -79,7 +79,7 @@ print("available corpora:", list(ca["corpora"].keys()))
 ```
 
 ```javascript JavaScript
-const resp = await fetch("https://api.vaquill.ai/api/v1/statutes/coverage", {
+const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/coverage", {
   headers: { Authorization: "Bearer vq_key_..." },
 });
 const { data } = await resp.json();
@@ -101,7 +101,7 @@ into its named codes so you can see how that state is structured.
 <CodeGroup>
 
 ```bash cURL
-curl "https://api.vaquill.ai/api/v1/statutes/codes?state=ca" \
+curl "https://api.vaquill.ai/api/v1/us/statutes/codes?state=ca" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
@@ -109,7 +109,7 @@ curl "https://api.vaquill.ai/api/v1/statutes/codes?state=ca" \
 import requests
 
 resp = requests.get(
-    "https://api.vaquill.ai/api/v1/statutes/codes",
+    "https://api.vaquill.ai/api/v1/us/statutes/codes",
     headers={"Authorization": "Bearer vq_key_..."},
     params={"state": "ca"},
 )
@@ -121,7 +121,7 @@ for code in data["codes"]:
 
 ```javascript JavaScript
 const resp = await fetch(
-  "https://api.vaquill.ai/api/v1/statutes/codes?state=ca",
+  "https://api.vaquill.ai/api/v1/us/statutes/codes?state=ca",
   { headers: { Authorization: "Bearer vq_key_..." } },
 );
 const { data } = await resp.json();

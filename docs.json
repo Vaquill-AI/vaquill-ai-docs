@@ -327,7 +327,9 @@
           {
             "group": "DATA COVERAGE",
             "pages": [
-              "api-guide/coverage"
+              "api-guide/coverage",
+              "api-guide/roadmap",
+              "api-guide/changelog"
             ]
           },
           {
@@ -388,12 +390,6 @@
             "group": "USE CASES",
             "pages": [
               "api-guide/use-cases"
-            ]
-          },
-          {
-            "group": "RESOURCES",
-            "pages": [
-              "api-guide/changelog"
             ]
           }
         ]
