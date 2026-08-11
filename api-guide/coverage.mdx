@@ -15,13 +15,13 @@ court rules, and executive actions, scoped with the `corpusType` filter.
 Coverage is queryable live from `GET /statutes/coverage` and `GET /statutes/states`;
 the per-corpus matrix below was last updated **2026-08-11**. In total the
 ingested corpus holds **over 3.9M distinct sections** across all of these
-corpus types, indexed as **over 10.3M retrieval passages**.
+corpus types, indexed as **over 10.4M retrieval passages**.
 
 <Note>
   Counts on this page are **distinct sections** (one per provision or document),
   the same figures `GET /statutes/coverage` returns. For retrieval, longer sections
   and documents are split into multiple passages, so the underlying index holds far
-  more entries: **about 10.4M passages** across these 3.9M sections. The Federal
+  more entries: **about 10.4M passages** (live: 10,390,669) across these 3.9M sections (live: 3,904,841). The Federal
   Register alone (long agency rules, 13-15 passages each) accounts for over
   half of them.
 
@@ -36,16 +36,16 @@ corpus types, indexed as **over 10.3M retrieval passages**.
     **52 jurisdictions** (all 50 states + DC + Puerto Rico), **~2.0M sections**. Queryable via the statutes API.
   </Card>
   <Card title="Federal law" icon="landmark">
-    **9 corpora, ~685K sections** — US Code, CFR, Federal Register rules, Executive Orders, agency guidance, court rules, the Constitution, and more. See the [Federal table](#federal) for the full breakdown. Queryable via the statutes API.
+    **9 corpora, ~687K sections** — US Code, CFR, Federal Register rules, Executive Orders, agency guidance, court rules, the Constitution, and more. See the [Federal table](#federal) for the full breakdown. Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
     **51 jurisdictions** (50 states + Puerto Rico), ~12.7K sections, with article/section structure and clickable citations for the large majority of states. Two states (data-availability gaps in the underlying source, not a parsing issue) remain partially covered. All 50 states completed migration off a third-party transcription source onto each state's own official publisher as of 2026-08-08. A backend data-quality cleanup is queued to physically remove a small residue of superseded duplicate records left over from that migration (already excluded from every API response, so this does not affect correctness of the current, correct sections, only index tidiness). Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
-    **28 states**, ~28.4K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
+    **28 states**, ~28.7K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
-    **46 states**, **1.16M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
+    **46 states**, **1.18M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
   </Card>
 </CardGroup>
 
@@ -58,12 +58,12 @@ them.
 | Corpus | Sections | Refresh |
 |---|---|---|
 | United States Code (USC) | 54,853 | Weekly |
-| Code of Federal Regulations (CFR) | 219,447 | Daily |
+| Code of Federal Regulations (CFR) | 219,392 | Daily |
 | ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 (within CFR above) | 5,537 | Daily |
 | ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 (within CFR above) | 2,877 | Daily |
-| Federal Register agency rules (final + proposed), 1994-present | 384,794 | Weekly |
-| Executive Orders (Federal Register Presidential Documents), 2015-present | 3,901 | Daily |
-| Agency guidance — 30 named sources across 16 agencies (see table below) | 21,674 | Weekly |
+| Federal Register agency rules (final + proposed), 1994-present | 385,860 | Weekly |
+| Executive Orders (Federal Register Presidential Documents), 2015-present | 3,808 | Daily |
+| Agency guidance — 30 named sources across 16 agencies (see table below) | 21,684 | Weekly |
 | Federal Rules of Procedure — Civil (FRCP), Criminal (FRCrP), Evidence (FRE), Appellate (FRAP) and Bankruptcy (FRBP), incl. Supplemental Admiralty and Social Security Rules — and Rules of the Supreme Court of the United States | 589 | Monthly |
 | US Constitution | 74 | On amendment |
 | US Sentencing Guidelines (U.S.S.G.) | 302 | Annual |
@@ -131,58 +131,58 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
-| California | 161,439 | 76,155 | 525 | 1,521 |
-| Mississippi | 158,698 | 35,752 | 642 | 784 |
-| Texas | 122,908 | 44,256 | 658 | 1,007 |
-| Indiana | 83,148 | 37,739 | 254 | 879 |
-| Illinois | 72,456 | 54,541 | 328 | 839 |
-| New Jersey | 55,923 | 51,999 | 344 | - |
-| Washington | 53,595 | 51,053 | 560 | 1,182 |
-| Nevada | 48,190 | 34,302 | 303 | 1,338 |
-| Alabama | 45,997 | 18,305 | 614 | - |
-| Louisiana | 43,474 | 29,213 | 293 | - |
-| Michigan | 40,658 | 22,963 | 348 | - |
-| New York | 40,102 | 50,266 | 548 | 1,885 |
-| South Dakota | 39,804 | 25,874 | 293 | - |
-| Maryland | 39,562 | 12,871 | 545 | 1,220 |
-| Arkansas | 36,936 | 5,556 | 807 | - |
-| Oklahoma | 36,287 | 57,195 | 956 | - |
-| Oregon | 36,204 | 48,708 | 469 | 632 |
-| New Mexico | 34,465 | 13,274 | 376 | - |
-| Colorado | 34,258 | 610 | 967 | - |
-| Virginia | 33,856 | 22,396 | 300 | 358 |
-| Ohio | 33,168 | 19,275 | 606 | - |
-| Tennessee | 32,693 | - | 319 | 626 |
-| Montana | 30,524 | 32,183 | 357 | 238 |
+| California | 161,439 | 76,155 | 362 | 1,521 |
+| Mississippi | 158,698 | 35,752 | 600 | 784 |
+| Texas | 122,908 | 44,256 | 401 | 1,016 |
+| Indiana | 83,148 | 37,739 | 247 | 879 |
+| Illinois | 72,456 | 53,776 | 140 | 852 |
+| New Jersey | 55,923 | 51,999 | 205 | - |
+| Washington | 53,595 | 51,053 | 268 | 1,182 |
+| Nevada | 48,190 | 34,302 | 233 | 1,338 |
+| Alabama | 45,997 | 18,305 | 381 | - |
+| Louisiana | 43,474 | 29,213 | 325 | - |
+| Michigan | 40,658 | 22,963 | 307 | - |
+| New York | 40,140 | 50,266 | 220 | 1,885 |
+| South Dakota | 39,805 | 28,988 | 270 | - |
+| Maryland | 39,562 | 12,871 | 303 | 1,220 |
+| Arkansas | 36,936 | 5,556 | 702 | - |
+| Oklahoma | 36,287 | 57,195 | 456 | - |
+| Oregon | 36,204 | 48,708 | 414 | 632 |
+| New Mexico | 34,465 | 13,274 | 265 | - |
+| Colorado | 34,258 | 917 | 575 | - |
+| Virginia | 33,856 | 22,396 | 130 | 358 |
+| Ohio | 33,168 | 30,010 | 226 | - |
+| Tennessee | 32,693 | - | 149 | 626 |
+| Montana | 30,524 | 32,183 | 161 | 238 |
 | South Carolina | 29,974 | 6,630 | 175 | 557 |
-| Missouri | 29,296 | 9,613 | 1,007 | - |
+| Missouri | 29,296 | 9,613 | 402 | - |
 | North Dakota | 29,052 | 17,227 | 203 | 2,246 |
 | Iowa | 28,223 | 26,605 | 190 | - |
-| Georgia | 28,165 | 18,889 | 358 | - |
-| Minnesota | 27,757 | 15,449 | 279 | 958 |
-| North Carolina | 26,695 | 30,248 | 331 | - |
-| Utah | 26,602 | - | 207 | 919 |
-| Nebraska | 25,998 | 14,044 | 548 | - |
-| West Virginia | 25,669 | 20,105 | 274 | - |
-| New Hampshire | 25,385 | - | 162 | 970 |
-| Maine | 25,342 | 1,770 | 153 | 722 |
-| Florida | 24,866 | 32,791 | 588 | 936 |
-| Kansas | 24,371 | - | 292 | - |
+| Georgia | 28,165 | 18,889 | 287 | - |
+| Minnesota | 27,757 | 15,449 | 137 | 999 |
+| North Carolina | 26,695 | 30,248 | 155 | - |
+| Utah | 26,602 | - | 189 | 919 |
+| Nebraska | 25,998 | 14,044 | 208 | - |
+| West Virginia | 25,669 | 20,105 | 204 | - |
+| New Hampshire | 25,385 | - | 156 | 970 |
+| Maine | 25,342 | 3,005 | 153 | 722 |
+| Florida | 24,866 | 32,791 | 213 | 1,135 |
+| Kansas | 24,371 | - | 213 | - |
 | District of Columbia (territory) | 23,695 | - | - | - |
-| Puerto Rico (territory) | 23,649 | - | 107 | - |
-| Vermont | 23,527 | 1,050 | 150 | - |
-| Massachusetts | 23,152 | 24,742 | 187 | 970 |
-| Idaho | 22,754 | 8,551 | 485 | 766 |
-| Arizona | 22,684 | 16,463 | 772 | 1,718 |
-| Delaware | 21,741 | 22,481 | 241 | - |
-| Rhode Island | 21,115 | 12,070 | 120 | 1,033 |
-| Kentucky | 20,946 | 4,881 | 289 | - |
-| Hawaii | 19,487 | 26,735 | 363 | 1,259 |
-| Wisconsin | 18,158 | 17,830 | 256 | 395 |
+| Puerto Rico (territory) | 23,649 | - | 102 | - |
+| Vermont | 23,527 | 1,050 | 98 | - |
+| Massachusetts | 23,152 | 24,742 | 100 | 970 |
+| Idaho | 22,754 | 8,551 | 234 | 766 |
+| Arizona | 22,684 | 16,463 | 323 | 1,720 |
+| Delaware | 21,741 | 1,164 | 207 | - |
+| Rhode Island | 21,115 | 12,070 | 118 | 1,033 |
+| Kentucky | 20,946 | 4,881 | 274 | - |
+| Hawaii | 19,437 | 26,735 | 159 | 1,259 |
+| Wisconsin | 18,158 | 17,830 | 161 | 395 |
 | Alaska | 17,942 | 24,771 | 214 | 763 |
-| Connecticut | 16,091 | 17,468 | 166 | - |
-| Pennsylvania | 14,547 | 52,702 | 235 | 1,722 |
-| Wyoming | 10,229 | 18,554 | 471 | - |
+| Connecticut | 16,091 | 17,468 | 146 | - |
+| Pennsylvania | 14,547 | 52,702 | 213 | 1,723 |
+| Wyoming | 10,229 | 18,554 | 135 | - |
 
 ## State agency guidance
 
