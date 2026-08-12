@@ -6,7 +6,7 @@ icon: "map-location-dot"
 
 Every US jurisdiction and corpus type the API has ingested: federal law, state statutes, constitutions, court rules, and regulations, each scoped with the `corpusType` filter.
 
-**Over 3.9M distinct sections, indexed as over 10.4M retrieval passages.** Figures below are a **2026-08-11** snapshot; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
+**Over 3.9M distinct sections, indexed as over 10.4M retrieval passages.** Figures below are a **2026-08-12** snapshot; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
 
 <Note>
   Counts here are **distinct sections**, one per provision or document, matching what `GET /statutes/coverage` returns. Longer documents split into several passages for retrieval, so the index holds more entries than sections, over half of them Federal Register rules at 13-15 passages each.
@@ -27,7 +27,7 @@ Every US jurisdiction and corpus type the API has ingested: federal law, state s
     **51 jurisdictions** (50 states + Puerto Rico), ~12.7K sections, with article/section structure and clickable citations. Every state is sourced from its own official publisher. Two states remain partially covered, a data-availability gap in the source rather than a parsing issue. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
-    **28 states**, ~28.7K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
+    **40 jurisdictions** (39 states + DC + Puerto Rico), ~40.4K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
     **46 states**, **1.18M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
@@ -117,17 +117,17 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
 | California | 161,439 | 76,155 | 362 | 1,521 |
-| Mississippi | 158,698 | 35,752 | 600 | 784 |
-| Texas | 122,908 | 44,256 | 401 | 1,016 |
+| Mississippi | 158,698 | 35,752 | 600 | 794 |
+| Texas | 122,908 | 44,256 | 401 | 1,007 |
 | Indiana | 83,148 | 37,739 | 247 | 879 |
-| Illinois | 72,456 | 53,776 | 140 | 852 |
+| Illinois | 72,456 | 53,776 | 140 | 839 |
 | New Jersey | 55,923 | 51,999 | 205 | - |
 | Washington | 53,595 | 51,053 | 268 | 1,182 |
 | Nevada | 48,190 | 34,302 | 233 | 1,338 |
 | Alabama | 45,997 | 18,305 | 381 | - |
-| Louisiana | 43,474 | 29,213 | 325 | - |
-| Michigan | 40,658 | 22,963 | 307 | - |
-| New York | 40,140 | 50,266 | 220 | 1,885 |
+| Louisiana | 43,474 | 29,213 | 325 | 481 |
+| Michigan | 40,658 | 22,963 | 307 | 1,025 |
+| New York | 40,140 | 50,266 | 220 | 1,088 |
 | South Dakota | 39,805 | 28,988 | 270 | - |
 | Maryland | 39,562 | 12,871 | 303 | 1,220 |
 | Arkansas | 36,936 | 5,556 | 702 | - |
@@ -136,38 +136,38 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | New Mexico | 34,465 | 13,274 | 265 | - |
 | Colorado | 34,258 | 917 | 575 | - |
 | Virginia | 33,856 | 22,396 | 130 | 358 |
-| Ohio | 33,168 | 30,010 | 226 | - |
+| Ohio | 33,168 | 30,010 | 226 | 1,167 |
 | Tennessee | 32,693 | - | 149 | 626 |
 | Montana | 30,524 | 32,183 | 161 | 238 |
 | South Carolina | 29,974 | 6,630 | 175 | 557 |
 | Missouri | 29,296 | 9,613 | 402 | - |
 | North Dakota | 29,052 | 17,227 | 203 | 2,246 |
-| Iowa | 28,223 | 26,605 | 190 | - |
+| Iowa | 28,223 | 26,605 | 190 | 1,294 |
 | Georgia | 28,165 | 18,889 | 287 | - |
-| Minnesota | 27,757 | 15,449 | 137 | 999 |
-| North Carolina | 26,695 | 30,248 | 155 | - |
+| Minnesota | 27,757 | 15,449 | 137 | 958 |
+| North Carolina | 26,695 | 30,248 | 155 | 495 |
 | Utah | 26,602 | - | 189 | 919 |
 | Nebraska | 25,998 | 14,044 | 208 | - |
-| West Virginia | 25,669 | 20,105 | 204 | - |
+| West Virginia | 25,669 | 20,105 | 204 | 1,116 |
 | New Hampshire | 25,385 | - | 156 | 970 |
 | Maine | 25,342 | 3,005 | 153 | 722 |
-| Florida | 24,866 | 32,791 | 213 | 1,135 |
-| Kansas | 24,371 | - | 213 | - |
-| District of Columbia (territory) | 23,695 | - | - | - |
-| Puerto Rico (territory) | 23,649 | - | 102 | - |
+| Florida | 24,866 | 32,791 | 213 | 936 |
+| Kansas | 24,371 | - | 213 | 434 |
+| District of Columbia (territory) | 23,695 | - | - | 1,128 |
+| Puerto Rico (territory) | 23,649 | - | 102 | 1,528 |
 | Vermont | 23,527 | 1,050 | 98 | - |
 | Massachusetts | 23,152 | 24,742 | 100 | 970 |
 | Idaho | 22,754 | 8,551 | 234 | 766 |
-| Arizona | 22,684 | 16,463 | 323 | 1,720 |
-| Delaware | 21,741 | 1,164 | 207 | - |
+| Arizona | 22,684 | 16,463 | 323 | 1,718 |
+| Delaware | 21,741 | 1,164 | 207 | 1,385 |
 | Rhode Island | 21,115 | 12,070 | 118 | 1,033 |
 | Kentucky | 20,946 | 4,881 | 274 | - |
 | Hawaii | 19,437 | 26,735 | 159 | 1,259 |
 | Wisconsin | 18,158 | 17,830 | 161 | 395 |
 | Alaska | 17,942 | 24,771 | 214 | 763 |
-| Connecticut | 16,091 | 17,468 | 146 | - |
-| Pennsylvania | 14,547 | 52,702 | 213 | 1,723 |
-| Wyoming | 10,229 | 18,554 | 135 | - |
+| Connecticut | 16,091 | 17,468 | 146 | 1,723 |
+| Pennsylvania | 14,547 | 52,702 | 213 | 1,722 |
+| Wyoming | 10,229 | 18,554 | 135 | 1,010 |
 
 ## State agency guidance
 
@@ -198,6 +198,28 @@ paired with `state`.
 | Minnesota | Dept. of Commerce Insurance Bulletins | 34 | Weekly |
 | Indiana | Dept. of Insurance Bulletins | 281 | Weekly |
 | Massachusetts | Division of Insurance Bulletins | 417 | Weekly |
+| Utah | Insurance Department Bulletins and Orders of the Commissioner | 168 | Weekly |
+| Delaware | Dept. of Insurance Bulletins (seven subject series, current and archived) | 303 | Weekly |
+| Vermont | Dept. of Financial Regulation Insurance Bulletins | 187 | Weekly |
+| West Virginia | Offices of the Insurance Commissioner Bulletins + pre-2020 Informational Letters | 174 | Weekly |
+| Hawaii | Insurance Division Commissioner's Memoranda | 168 | Weekly |
+| Rhode Island | DBR Insurance Bulletins, Guidance Documents and Notices | 134 | Weekly |
+| District of Columbia | DISB Insurance Bulletins and Notices | 23 | Weekly |
+| Wyoming | Dept. of Insurance Memoranda and Bulletins | 62 | Weekly |
+| South Dakota | Division of Insurance Bulletins | 27 | Weekly |
+| Arizona | Dept. of Insurance and Financial Institutions Regulatory Bulletins and Circular Letters (insurance series only) | 199 | Weekly |
+| Nevada | Division of Insurance Bulletins | 199 | Weekly |
+| Oklahoma | Insurance Department Bulletins | 144 | Weekly |
+| Iowa | Insurance Division Commissioner's Bulletins | 83 | Weekly |
+| Kansas | Insurance Department Bulletins | 79 | Weekly |
+| Kentucky | Dept. of Insurance Bulletins | 232 | Weekly |
+| Missouri | Dept. of Commerce and Insurance Bulletins (incl. Division of Workers' Compensation tax memoranda) | 106 | Weekly |
+| Oregon | Division of Financial Regulation Bulletins (insurance series only) | 92 | Weekly |
+| Tennessee | Dept. of Commerce and Insurance Bulletins (1983-present, three archive eras) | 173 | Weekly |
+| Maine | Bureau of Insurance Bulletins | 228 | Weekly |
+| New Hampshire | Insurance Department Bulletins | 177 | Weekly |
+| Nebraska | DOI Insurance Guidance Documents and Company Bulletins | 120 | Weekly |
+| Idaho | Dept. of Insurance Bulletins (July 2016 to present; earlier series rescinded by the Department) | 75 | Weekly |
 
 <Note>
   This corpus is a pilot. It does not include NAIC (National Association of
@@ -216,7 +238,7 @@ jurisdiction.
 | Corpus | Cadence |
 |---|---|
 | Federal | See the [Federal table](#federal): daily to weekly, and on amendment for the Constitution. |
-| State statutes | Recurring pull from each state's official source. All 50 states plus DC and Puerto Rico are covered; a few one-time cutovers (for example Puerto Rico) are complete but not yet on an automatic refresh driver. |
+| State statutes | Recurring pull from each state's official source. All 50 states plus DC and Puerto Rico are covered; a few one-time cutovers are complete but not yet on an automatic refresh driver, Puerto Rico's statutes among them. (Puerto Rico's court RULES are on the normal cycle; only its statutes sit outside it.) |
 | State regulations | Pulled monthly from each state's own official publisher, for all 46 states carrying regulations. |
 | State court rules | Monthly, for the states that carry them. Court rules change less often than statutes, and when they do the change is procedural and effective on a published date rather than immediately. |
 | State constitutions | Monthly, all jurisdictions in one pass (constitutions change on the order of years via ballot-measure amendments, not weeks, so this is deliberately lower-frequency than statutes/regulations). |

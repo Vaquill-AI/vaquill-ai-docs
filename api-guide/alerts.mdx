@@ -4,7 +4,7 @@ description: "Subscribe to a jurisdiction or corpus and get a webhook or email t
 icon: "bell"
 ---
 
-Corpus data updates on its own refresh cadence (daily for the Federal Register, weekly for most state codes, and so on). Law Change Alerts let you subscribe to a **board** (a tracked source, identified by `corpusType` + `state`) and get notified automatically whenever it refreshes with real changes, instead of polling on your own schedule.
+Corpus data updates on its own refresh cadence (daily for the Federal Register and the eCFR, weekly for the US Code and agency guidance, monthly for state codes, regulations, and court rules). Law Change Alerts let you subscribe to a **board** (a tracked source, identified by `corpusType` + `state`) and get notified automatically whenever it refreshes with real changes, instead of polling on your own schedule.
 
 Every alert names the exact sections that changed, not just a count, and you can fetch the old text next to the new text for any section that was amended.
 
@@ -14,7 +14,9 @@ Every path below is prefixed with `/api/v1` and every request needs an `Authoriz
 
 A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`. Watching a board does not change how often it refreshes.
 
-A **watch** is your subscription to one board, on one or more channels (webhook, email, or both).
+A **watch** is your subscription to one board, on one or more channels (webhook, email, or both). By default a watch covers the whole board; see [Narrow a watch to a citation](#narrow-a-watch-to-a-citation) to follow one title or part instead.
+
+Two fields on each board tell you whether narrowing is available. **`scopable`** is `true` when `POST /watches` accepts a `scope` for that source. It is `false` for sources whose documents are not citations, such as the Federal Register, where an item is a numbered document rather than a section of a code, so there is no title or part to narrow by. **`scopeBrowseCorpus`** is the `corpusType` to pass to [`GET /statutes/divisions`](/api-reference) if you want to enumerate a source's titles, chapters and parts. Note that it is deliberately a different vocabulary from the board's own `corpusType`: a board is `cfr`, and `/statutes/divisions` wants `CFR`. When `scopable` is `true` and `scopeBrowseCorpus` is `null`, narrowing works but there is no endpoint that lists that source's hierarchy for you.
 
 <CodeGroup>
 ```bash cURL
@@ -39,8 +41,10 @@ for b in boards:
 {
   "data": {
     "boards": [
-      {"corpusType": "state", "state": "wa", "label": "Washington statutes", "cadence": "weekly"},
-      {"corpusType": "federal_register", "label": "Federal Register", "cadence": "daily"}
+      {"corpusType": "state", "state": "wa", "label": "State statutes WA", "cadence": "monthly",
+       "scopable": true, "scopeBrowseCorpus": "STATE"},
+      {"corpusType": "federal_register", "label": "Federal Register", "cadence": "daily",
+       "scopable": false, "scopeBrowseCorpus": null}
     ]
   },
   "meta": { "processingTimeMs": 12.4, "creditsConsumed": 0 }
@@ -90,9 +94,57 @@ watch = resp.json()["data"]
 - **`webhookSecret`** (optional): stored encrypted, never returned. When set, every delivery is HMAC-signed (see below).
 - **`webhookAuth`** (optional): a credential we send on every delivery, so your gateway can authenticate us. See [Authenticating our deliveries](#authenticating-our-deliveries).
 - `webhookUrl` is validated against an SSRF blocklist (loopback, private, and link-local ranges, plus cloud metadata endpoints) at creation and again on every dispatch.
-- `404` if the `corpusType`/`state` pair does not match a real, enabled board. `409` if you already have a watch on that board for that channel.
+- `404` if the `corpusType`/`state` pair does not match a real, enabled board. `409` if you already have a watch on that board, for that channel, with that same `scope`. Two different scopes on the same board and channel are two separate watches, which is how you follow several parts at once.
 
 `GET /watches` lists your own watches. `PATCH /watches/{watchId}` pauses (`isActive: false`), resumes, or rotates a destination without losing history. `DELETE /watches/{watchId}` removes it.
+
+## Narrow a watch to a citation
+
+Watching an entire source can be more than you want. The Federal regulations refresh daily and change constantly, and a watch on all of `cfr` will tell you about every one of them. If you only care about 21 CFR part 314, say so:
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/watches \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "corpusType": "cfr",
+    "channel": "webhook",
+    "webhookUrl": "https://example.com/hooks/vaquill",
+    "scope": {"title": "21", "part": "314"}
+  }'
+```
+
+```python Python
+resp = requests.post(
+    "https://api.vaquill.ai/api/v1/watches",
+    headers={
+        "Authorization": "Bearer vq_key_...",
+        "Content-Type": "application/json",
+    },
+    json={
+        "corpusType": "cfr",
+        "channel": "webhook",
+        "webhookUrl": "https://example.com/hooks/vaquill",
+        "scope": {"title": "21", "part": "314"},
+    },
+)
+```
+</CodeGroup>
+
+`scope` takes four optional keys, from broadest to narrowest: **`title`**, **`chapter`**, **`part`**, **`section`**. Omit `scope` entirely to watch the whole source, which is the default and what every watch created before this feature does.
+
+Two rules keep a scope from matching more than you meant. **`title` is required** whenever you set any narrower level, because a bare part number appears in many unrelated titles. **`section` also needs `chapter` or `part`.** Both are rejected with a `400` naming the problem.
+
+Values may be sent as strings or numbers, and are stored lowercased. A section written with a dot and one written with an underscore are the same section, so `"221.2"` and `"221_2"` both match. The watch echoes back exactly what we stored, so read `scope` from the response rather than assuming your input was kept verbatim.
+
+<Note>
+A scoped watch is silent when nothing inside its scope changed. It does not send an empty "the source was updated" notification on every refresh that touched some other part of the corpus, because that is the noise you narrowed the watch to avoid. Silence means nothing in your scope moved.
+</Note>
+
+Everything else follows the scope too. Deliveries carry a `scope` field so a receiver can tell which of its watches fired, `changes` contains only what is inside it, and `GET /watches/{watchId}/changes` applies the same filter, so the read-back never disagrees with what we sent you. Email subjects name the scope, so `eCFR (title 21, part 314) was updated` rather than the same line for every alert you hold on that source.
+
+Sending a `scope` to a source where `scopable` is `false` returns a `400` listing the sources that do accept one.
 
 ## Authenticating our deliveries
 

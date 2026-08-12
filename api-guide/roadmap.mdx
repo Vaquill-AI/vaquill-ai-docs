@@ -16,13 +16,20 @@ Queryable today: [Coverage](/api-guide/coverage). Already shipped: [Changelog](/
 
 ## Completing existing coverage
 
-Two corpus types are live but not yet across all 52 jurisdictions.
-Both are rolling out state by state on the same pipeline and the same refresh cadence as the states already covered.
+Three corpus types are live but not yet across all 52 jurisdictions.
+All are rolling out state by state on the same pipeline and the same refresh cadence as the states already covered.
 
 | Corpus | Today | Target |
 |---|---|---|
 | State regulations (`REGULATION`) | 46 states | All 52 jurisdictions |
-| State court rules (`STATE_RULES`) | 28 states | All 52 jurisdictions |
+| State court rules (`STATE_RULES`) | 40 jurisdictions | Broad coverage; several states publish no qualifying government source |
+| State agency guidance (`STATE_AGENCY_GUIDANCE`) | 40 jurisdictions, 8,986 documents | Broad coverage; a minority of states publish no browsable bulletin archive |
+
+State agency guidance is each insurance regulator's own bulletins and circular
+letters, the state-level analog of federal `AGENCY_GUIDANCE`. Two states
+(Pennsylvania, Colorado) have been confirmed to publish no cleanly scopable
+insurance-only archive and are not currently planned; South Carolina's is
+JavaScript-only and remains open.
 
 Pennsylvania's Consolidated Statutes are complete; its older unconsolidated (Purdon's) statutes are a separate later addition, prioritized for backfill.
 
@@ -115,7 +122,7 @@ Deliberate exclusions, not gaps. If you need one of these, we are not your suppl
 | Practice notes and practice directions | A Commonwealth instrument with no direct US federal equivalent. The closest analogues are local rules and court-wide general orders. |
 | Municipal and county ordinances | Public-domain text, but locked in three commercial publisher platforms with no comprehensive source. |
 | Standards incorporated by reference into the CFR (ASTM, NFPA, ISO) | Published by private standards bodies. Courts have held only non-commercial dissemination is fair use, which is incompatible with a paid API. |
-| NAIC model law text | A copyrighted, commercially sold publication, not open government primary law. Each state's own insurance bulletins are in scope and covered as a pilot. |
+| NAIC model law text | A copyrighted, commercially sold publication, not open government primary law. Each state's own insurance bulletins are in scope and are now covered across 40 jurisdictions under `STATE_AGENCY_GUIDANCE`. |
 
 ### The line on court material
 

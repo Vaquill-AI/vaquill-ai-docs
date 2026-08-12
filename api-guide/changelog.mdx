@@ -7,6 +7,131 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-12" description="Watch a citation instead of a whole source">
+  ## Scoped alerts: watch a citation, not a source
+
+  `POST /watches` and `PATCH /watches/{watchId}` now accept an optional
+  **`scope`** so an alert can follow one title, chapter, part or section
+  instead of an entire corpus. Watching `cfr` meant every change to every
+  federal regulation; now it can mean 21 CFR part 314.
+
+  ```json
+  { "corpusType": "cfr", "channel": "webhook",
+    "webhookUrl": "https://example.com/hooks/vaquill",
+    "scope": { "title": "21", "part": "314" } }
+  ```
+
+  A scoped alert stays quiet when nothing inside its scope changed, rather
+  than sending an empty "the source was updated" on every refresh. Deliveries
+  carry the `scope`, `changes` contains only what falls inside it, and
+  `GET /watches/{watchId}/changes` applies the same filter so the read-back
+  agrees with what we sent.
+
+  `GET /boards` gained **`scopable`** (whether that source accepts a scope)
+  and **`scopeBrowseCorpus`** (the `corpusType` to pass to
+  `GET /statutes/divisions` to enumerate its titles and parts). Sources whose
+  documents are numbered items rather than citations, such as the Federal
+  Register, are not scopable.
+
+  **Nothing changes for existing alerts.** An omitted `scope` means the whole
+  source, exactly as before, and every watch created before today keeps
+  behaving identically. See [Alerts](/api-guide/alerts#narrow-a-watch-to-a-citation).
+</Update>
+
+<Update label="2026-08-12" description="Nine new response fields: version history, currency and amendment provenance">
+  ## Follow a superseded section to the text that replaced it
+
+  Sections now return the provenance the corpus has always stored. Nine fields,
+  all additive, all optional: nothing in your existing integration changes.
+
+  | Field | What it carries |
+  |---|---|
+  | `supersededBy` | `actId` of the section that replaced this one |
+  | `supersedes` | `actId` of the earlier version this one replaced |
+  | `effectiveDate` | when THIS version took effect |
+  | `priorEffectiveDates` | earlier effective dates on record |
+  | `history` | the publisher's own credit line, verbatim |
+  | `amendmentHistory` | structured amendment entries, where recorded separately |
+  | `sourceNote` | the publisher's source note |
+  | `currentThrough` | the date the publisher states the text is current through |
+  | `ruleSet` | for court rules, the rule family |
+
+  **The one that changes what you can build: `supersededBy`.** A section with
+  `actStatus=superseded` used to be a dead end. You could tell it was not
+  current law, but nothing in the response pointed at what replaced it. Now:
+
+  ```
+  GET /statutes/section/SRULES_ND_NDSUPCTADMINR_R46_V20050504_20160801
+    actStatus     "superseded"
+    effectiveDate "5/4/2005"
+    history       "Effective 5/4/2005; Superseded 8/1/2016"
+    supersededBy  "SRULES_ND_NDSUPCTADMINR_R46"
+
+  GET /statutes/section/SRULES_ND_NDSUPCTADMINR_R46
+    actStatus     "in_force"
+  ```
+
+  Point-in-time research is one hop in either direction.
+
+  `currentThrough` is set on every US Code section, so a currency check no
+  longer depends on the publisher having written prose. `ruleSet` matters more
+  than it looks for court rules: rule numbers repeat across families, and a
+  Civil Rule 12 and a Criminal Rule 12 both exist in most states, so this is
+  what tells them apart.
+
+  Every field is omitted when the publisher does not record it, rather than
+  returned empty. Absence means the source is silent, never that we did not
+  look.
+</Update>
+
+<Update label="2026-08-12" description="State court rules expand from 10 to 40 jurisdictions">
+  ## Court rules: 10 jurisdictions to 40
+
+  `corpusType=STATE_RULES` now covers **40 jurisdictions and about 40,400
+  rules**, up from 10 states and roughly 13,000. Added: AK, CT, DC, DE, HI, IA,
+  ID, IN, KS, LA, MA, ME, MI, MS, MT, NC, ND, NH, OH, OR, PR, RI, SC, TN, UT,
+  VA, WA, WI, WV, WY.
+
+  Every jurisdiction is ingested from its own court system or legislature,
+  and New York was re-sourced onto `nycourts.gov` from a third-party
+  publisher. Coverage spans civil, criminal, appellate, evidence, professional
+  conduct and local rules; the District of Columbia alone carries 21 separately
+  numbered rule families across its Superior Court divisions.
+
+  Rules are refreshed monthly and carry `actStatus`, `goodLawStatus`,
+  `amendmentYears`, `amendmentsCount` and `lastAmendedYear` where the publisher
+  prints them. Amendment coverage varies by source and is a property of the
+  publisher, not the ingest: some courts print a dated credit under every rule,
+  others print none at all.
+
+  A handful of states publish no consolidated rules text from a government
+  source, and several codify their rules into the statute book instead, where
+  they are already served under `corpusType=STATE`. Call
+  `GET /statutes/coverage` for the live per-jurisdiction picture rather than
+  assuming a state is missing.
+</Update>
+
+<Update label="2026-08-12" description="State insurance regulator guidance expands to 40 jurisdictions">
+  ## State agency guidance now covers 40 jurisdictions
+
+  `STATE_AGENCY_GUIDANCE` holds each state insurance regulator's own bulletins and
+  circular letters: the interpretive and enforcement guidance that sits between the
+  statute and the regulation. It is the state-level analog of federal
+  `AGENCY_GUIDANCE`, and it is queryable with `corpusType=STATE_AGENCY_GUIDANCE`
+  paired with a `state`.
+
+  Coverage is now **8,986 documents across 40 jurisdictions**, up from 5 states.
+  Per-jurisdiction counts are in [API Coverage](/api-guide/coverage#state-agency-guidance),
+  and `GET /statutes/coverage` always returns the live figures.
+
+  Every document is sourced from the issuing regulator's own government site. Where a
+  state's official index is itself incomplete, the confirmed subset ships and the gap
+  is recorded rather than backfilled from a third-party aggregator.
+
+  A small number of states publish no browsable bulletin archive at all; those are
+  documented as such rather than partially ingested.
+</Update>
+
 <Update label="2026-08-11" description="Search ranks current law above superseded and rescinded versions">
   ## Dead law no longer competes with live law on relevance alone
 
