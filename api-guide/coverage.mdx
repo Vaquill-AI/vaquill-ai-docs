@@ -27,7 +27,7 @@ Every US jurisdiction and corpus type the API has ingested: federal law, state s
     **51 jurisdictions** (50 states + Puerto Rico), ~12.7K sections, with article/section structure and clickable citations. Every state is sourced from its own official publisher. Two states remain partially covered, a data-availability gap in the source rather than a parsing issue. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
-    **40 jurisdictions** (39 states + DC + Puerto Rico), ~40.4K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
+    **42 jurisdictions** (41 states + DC + Puerto Rico), ~42K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
     **46 states**, **1.18M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
@@ -124,7 +124,7 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | New Jersey | 55,923 | 51,999 | 205 | - |
 | Washington | 53,595 | 51,053 | 268 | 1,182 |
 | Nevada | 48,190 | 34,302 | 233 | 1,338 |
-| Alabama | 45,997 | 18,305 | 381 | - |
+| Alabama | 45,997 | 18,305 | 381 | 870 |
 | Louisiana | 43,474 | 29,213 | 325 | 481 |
 | Michigan | 40,658 | 22,963 | 307 | 1,025 |
 | New York | 40,140 | 50,266 | 220 | 1,088 |
@@ -147,7 +147,7 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | Minnesota | 27,757 | 15,449 | 137 | 958 |
 | North Carolina | 26,695 | 30,248 | 155 | 495 |
 | Utah | 26,602 | - | 189 | 919 |
-| Nebraska | 25,998 | 14,044 | 208 | - |
+| Nebraska | 25,998 | 14,044 | 208 | 734 |
 | West Virginia | 25,669 | 20,105 | 204 | 1,116 |
 | New Hampshire | 25,385 | - | 156 | 970 |
 | Maine | 25,342 | 3,005 | 153 | 722 |
@@ -212,11 +212,20 @@ paired with `state`.
 | Oklahoma | Insurance Department Bulletins | 144 | Weekly |
 | Iowa | Insurance Division Commissioner's Bulletins | 83 | Weekly |
 | Kansas | Insurance Department Bulletins | 79 | Weekly |
-| Kentucky | Dept. of Insurance Bulletins | 232 | Weekly |
 | Missouri | Dept. of Commerce and Insurance Bulletins (incl. Division of Workers' Compensation tax memoranda) | 106 | Weekly |
 | Oregon | Division of Financial Regulation Bulletins (insurance series only) | 92 | Weekly |
 | Tennessee | Dept. of Commerce and Insurance Bulletins (1983-present, three archive eras) | 173 | Weekly |
 | Maine | Bureau of Insurance Bulletins | 228 | Weekly |
+| Puerto Rico | Oficina del Comisionado de Seguros Cartas Normativas and Cartas Circulares (Spanish, the enacted language) | 1,641 | Weekly |
+| Alaska | Division of Insurance Bulletins | 398 | Weekly |
+| Arkansas | Insurance Department Bulletins and Directives | 359 | Weekly |
+| South Carolina | Department of Insurance Bulletins | 319 | Weekly |
+| New Mexico | Office of Superintendent of Insurance Bulletins | 274 | Weekly |
+| Mississippi | Insurance Department Bulletins | 240 | Weekly |
+| North Dakota | Insurance Department Bulletins and Commissioner Directives | 235 | Weekly |
+| Kentucky | Department of Insurance Bulletins and Advisory Opinions | 232 | Weekly |
+| Alabama | Department of Insurance Bulletins | 207 | Weekly |
+| Montana | Commissioner of Securities and Insurance Advisory Memos (insurance series only) | 149 | Weekly |
 | New Hampshire | Insurance Department Bulletins | 177 | Weekly |
 | Nebraska | DOI Insurance Guidance Documents and Company Bulletins | 120 | Weekly |
 | Idaho | Dept. of Insurance Bulletins (July 2016 to present; earlier series rescinded by the Department) | 75 | Weekly |
