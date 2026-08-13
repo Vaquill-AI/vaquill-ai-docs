@@ -6,7 +6,7 @@ icon: "map-location-dot"
 
 Every US jurisdiction and corpus type the API has ingested: federal law, state statutes, constitutions, court rules, and regulations, each scoped with the `corpusType` filter.
 
-**Over 3.9M distinct sections, indexed as over 10.4M retrieval passages.** Figures below are a **2026-08-12** snapshot; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
+**Over 3.9M distinct sections, indexed as over 10.5M retrieval passages.** Figures below are a **2026-08-12** snapshot; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
 
 <Note>
   Counts here are **distinct sections**, one per provision or document, matching what `GET /statutes/coverage` returns. Longer documents split into several passages for retrieval, so the index holds more entries than sections, over half of them Federal Register rules at 13-15 passages each.
@@ -24,13 +24,13 @@ Every US jurisdiction and corpus type the API has ingested: federal law, state s
     **9 corpora, ~687K sections** — US Code, CFR, Federal Register rules, Executive Orders, agency guidance, court rules, the Constitution, and more. See the [Federal table](#federal) for the full breakdown. Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
-    **51 jurisdictions** (50 states + Puerto Rico), ~12.7K sections, with article/section structure and clickable citations. Every state is sourced from its own official publisher. Two states remain partially covered, a data-availability gap in the source rather than a parsing issue. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
+    **51 jurisdictions** (50 states + Puerto Rico), ~13.7K sections, with article/section structure and clickable citations. Most are sourced from the state's own official publisher; a small number come from an open mirror where no reproducible official source was found, and those carry no `sourceUrl` rather than pointing at a third party. Two states remain partially covered, a data-availability gap in the source rather than a parsing issue. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
-    **42 jurisdictions** (41 states + DC + Puerto Rico), ~42K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. All ingested from each state's own official court or legislature publisher. Queryable via the API (`corpusType=STATE_RULES`).
+    **43 jurisdictions** (41 states + DC + Puerto Rico), ~43.5K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. 41 of the 43 are ingested from the state's own court system or legislature; Arizona and Maryland come from the commercial portal each state designates, because neither judiciary publishes consolidated rule text itself. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
-    **46 states**, **1.18M+ rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
+    **46 states**, **~1.17M rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
   </Card>
 </CardGroup>
 
@@ -43,7 +43,7 @@ them.
 | Corpus | Sections | Refresh |
 |---|---|---|
 | United States Code (USC) | 54,853 | Weekly |
-| Code of Federal Regulations (CFR) | 219,392 | Daily |
+| Code of Federal Regulations (CFR) | 219,424 | Daily |
 | ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 (within CFR above) | 5,537 | Daily |
 | ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 (within CFR above) | 2,877 | Daily |
 | Federal Register agency rules (final + proposed), 1994-present | 385,860 | Weekly |
@@ -117,57 +117,100 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
 | California | 161,439 | 76,155 | 362 | 1,521 |
-| Mississippi | 158,698 | 35,752 | 600 | 794 |
-| Texas | 122,908 | 44,256 | 401 | 1,007 |
+| Mississippi | 158,698 | 35,752 | 319 | 794 |
+| Texas | 122,908 | 44,256 | 401 | 1,016 |
 | Indiana | 83,148 | 37,739 | 247 | 879 |
-| Illinois | 72,456 | 53,776 | 140 | 839 |
-| New Jersey | 55,923 | 51,999 | 205 | - |
-| Washington | 53,595 | 51,053 | 268 | 1,182 |
-| Nevada | 48,190 | 34,302 | 233 | 1,338 |
+| Illinois | 72,456 | 54,567 | 171 | 852 |
+| New Jersey | 56,092 | 51,999 | 216 | - [4] |
+| Washington | 53,595 | 51,014 | 282 | 1,182 |
+| Nevada | 48,190 | 34,302 | 234 | 1,338 |
 | Alabama | 45,997 | 18,305 | 381 | 870 |
-| Louisiana | 43,474 | 29,213 | 325 | 481 |
+| Louisiana | 43,569 | 29,213 | 328 | 481 |
 | Michigan | 40,658 | 22,963 | 307 | 1,025 |
-| New York | 40,140 | 50,266 | 220 | 1,088 |
-| South Dakota | 39,805 | 28,988 | 270 | - |
-| Maryland | 39,562 | 12,871 | 303 | 1,220 |
-| Arkansas | 36,936 | 5,556 | 702 | - |
-| Oklahoma | 36,287 | 57,195 | 456 | - |
-| Oregon | 36,204 | 48,708 | 414 | 632 |
-| New Mexico | 34,465 | 13,274 | 265 | - |
-| Colorado | 34,258 | 917 | 575 | - |
-| Virginia | 33,856 | 22,396 | 130 | 358 |
-| Ohio | 33,168 | 30,010 | 226 | 1,167 |
-| Tennessee | 32,693 | - | 149 | 626 |
-| Montana | 30,524 | 32,183 | 161 | 238 |
-| South Carolina | 29,974 | 6,630 | 175 | 557 |
-| Missouri | 29,296 | 9,613 | 402 | - |
+| New York | 40,140 | 50,266 | 212 | 1,088 |
+| South Dakota | 39,805 | 28,988 | 294 | - [3] |
+| Maryland | 39,562 | 12,829 | 312 | 1,220 |
+| Arkansas | 36,936 | 5,556 | 702 | - [1] |
+| Oklahoma | 36,287 | 57,195 | 546 | - [3] |
+| Oregon | 36,204 | 48,708 | 415 | 632 |
+| New Mexico | 34,465 | 13,270 | 299 | - [1] |
+| Colorado | 34,258 | 610 | 407 | - [2] |
+| Virginia | 33,856 | 22,395 | 134 | 358 |
+| Ohio | 33,168 | 19,914 | 267 | 1,167 |
+| Tennessee | 32,693 | - | 153 | 626 |
+| Montana | 30,524 | 32,183 | 196 | 238 |
+| South Carolina | 29,974 | 6,611 | 242 | 557 |
+| Missouri | 29,309 | 9,613 | 446 | - [5] |
 | North Dakota | 29,052 | 17,227 | 203 | 2,246 |
+| Wyoming | 28,860 | 18,554 | 315 | 1,010 |
 | Iowa | 28,223 | 26,605 | 190 | 1,294 |
-| Georgia | 28,165 | 18,889 | 287 | - |
-| Minnesota | 27,757 | 15,449 | 137 | 958 |
+| Georgia | 28,165 | 18,889 | 366 | 1,174 |
+| Minnesota | 27,757 | 15,441 | 139 | 999 |
 | North Carolina | 26,695 | 30,248 | 155 | 495 |
 | Utah | 26,602 | - | 189 | 919 |
-| Nebraska | 25,998 | 14,044 | 208 | 734 |
-| West Virginia | 25,669 | 20,105 | 204 | 1,116 |
-| New Hampshire | 25,385 | - | 156 | 970 |
-| Maine | 25,342 | 3,005 | 153 | 722 |
-| Florida | 24,866 | 32,791 | 213 | 936 |
-| Kansas | 24,371 | - | 213 | 434 |
+| Nebraska | 25,998 | 14,044 | 448 | 734 |
+| West Virginia | 25,669 | 20,105 | 209 | 1,116 |
+| New Hampshire | 25,385 | - | 158 | 970 |
+| Maine | 25,342 | 1,718 | 153 | 722 |
+| Florida | 24,866 | 32,791 | 218 | 1,135 |
+| Kansas | 24,371 | - | 229 | 434 |
 | District of Columbia (territory) | 23,695 | - | - | 1,128 |
 | Puerto Rico (territory) | 23,649 | - | 102 | 1,528 |
-| Vermont | 23,527 | 1,050 | 98 | - |
-| Massachusetts | 23,152 | 24,742 | 100 | 970 |
-| Idaho | 22,754 | 8,551 | 234 | 766 |
-| Arizona | 22,684 | 16,463 | 323 | 1,718 |
-| Delaware | 21,741 | 1,164 | 207 | 1,385 |
+| Vermont | 23,527 | 1,050 | 120 | - [1] |
+| Massachusetts | 23,152 | 24,742 | 105 | 970 |
+| Idaho | 22,754 | 8,551 | 240 | 766 |
+| Arizona | 22,684 | 16,463 | 646 | 1,720 |
+| Delaware | 21,741 | 1,164 | 226 | 1,385 |
 | Rhode Island | 21,115 | 12,070 | 118 | 1,033 |
-| Kentucky | 20,946 | 4,881 | 274 | - |
-| Hawaii | 19,437 | 26,735 | 159 | 1,259 |
-| Wisconsin | 18,158 | 17,830 | 161 | 395 |
-| Alaska | 17,942 | 24,771 | 214 | 763 |
-| Connecticut | 16,091 | 17,468 | 146 | 1,723 |
-| Pennsylvania | 14,547 | 52,702 | 213 | 1,722 |
-| Wyoming | 10,229 | 18,554 | 135 | 1,010 |
+| Kentucky | 20,946 | 4,854 | 274 | - [1] |
+| Hawaii | 19,437 | 26,735 | 171 | 1,259 |
+| Wisconsin | 18,158 | 17,821 | 175 | 395 |
+| Alaska | 17,942 | 24,771 | 243 | 763 |
+| Connecticut | 16,091 | 17,468 | 174 | 1,723 |
+| Pennsylvania | 15,619 | 52,702 | 213 | 1,723 |
+
+### Why nine jurisdictions show no court rules
+
+Every gap is a source problem rather than a coverage decision, and each has a
+different cause. Statutes, regulations and constitutions for these
+jurisdictions are unaffected.
+
+**[1] No government-published consolidated text** — Arkansas, Kentucky, New
+Mexico, Vermont.
+Each publishes its *amendment stream* (promulgation orders, rule changes,
+proposed amendments) on the judiciary's own site, but licenses the consolidated
+current text to a commercial publisher: Thomson Reuters for Kentucky,
+LexisNexis for Vermont, and the Lexum "Norma" platform for Arkansas and New
+Mexico. Vermont's judiciary says so in its own words, noting that all Vermont
+court rules "are available through LexisNexis" and that it "does not administer
+the LexisNexis website." Arkansas is the subtle one: its rules sit at
+`opinions.arcourts.gov`, a `.gov` host, but the pages are the vendor's platform
+served under the state's domain. The rule text is a government edict and in the
+public domain; what is missing is a government-published compilation.
+
+**[2] Only rule-change orders are published** — Colorado.
+The judiciary posts adopted and proposed rule changes, not consolidated text.
+The most recent government compilation is the Office of Legislative Legal
+Services' 2023 edition, with no 2024, 2025 or 2026 successor. Ingesting a
+three-year-old snapshot would serve superseded procedure as current law, so it
+is deliberately not ingested.
+
+**[3] Already served under `corpusType=STATE`** — Oklahoma, South Dakota.
+Both codify their rules of court into the statute book (Okla. Stat. tit. 12;
+SDCL tits. 15, 19 and 23A). Those rules are already in the corpus, cited the way
+the state cites them (`SDCL 15-6-12(b)`). Ingesting them again under
+`STATE_RULES` would be duplicate coverage, not new coverage.
+
+**[4] Technical block** — New Jersey.
+The judiciary publishes its rules as per-chapter PDFs, but `njcourts.gov` sits
+behind a bot-protection layer that refuses those file paths. An engineering
+problem rather than a sourcing or policy one, and it is queued.
+
+**[5] Publisher policy** — Missouri.
+Missouri prohibits automated access to its judicial websites under Court
+Operating Rule 2.02, and its `robots.txt` opts out of AI crawlers. We honor
+that. The route to Missouri coverage is a licence from the Office of State
+Courts Administrator, not a workaround.
 
 ## State agency guidance
 

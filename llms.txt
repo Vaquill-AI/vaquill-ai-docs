@@ -13,7 +13,7 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 ## API: Core Concepts
 
 - [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 11 corpusType tokens (USC, CFR, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, AGENCY_GUIDANCE), federal vs state scope, and how to filter a search.
-- [Jurisdictions and State Codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The 51 jurisdictions, 2-letter state codes, and discovering what is queryable via /statutes/coverage.
+- [Jurisdictions and State Codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The 52 jurisdictions, 2-letter state codes, and discovering what is queryable via /statutes/coverage.
 - [Section Identifiers](https://www.vaquill.ai/docs/api-guide/concepts/section-ids): The actId format and the search then section then body workflow.
 - [Response Formats](https://www.vaquill.ai/docs/api-guide/concepts/formats): HTML, PDF, XML, plain text, DOCX, and official government source links.
 

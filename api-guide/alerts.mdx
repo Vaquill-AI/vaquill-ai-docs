@@ -144,7 +144,26 @@ A scoped watch is silent when nothing inside its scope changed. It does not send
 
 Everything else follows the scope too. Deliveries carry a `scope` field so a receiver can tell which of its watches fired, `changes` contains only what is inside it, and `GET /watches/{watchId}/changes` applies the same filter, so the read-back never disagrees with what we sent you. Email subjects name the scope, so `eCFR (title 21, part 314) was updated` rather than the same line for every alert you hold on that source.
 
-Sending a `scope` to a source where `scopable` is `false` returns a `400` listing the sources that do accept one.
+Sending a hierarchy `scope` to a source where `scopable` is `false` returns a `400` listing the sources that do accept one.
+
+### Or watch one exact section
+
+A hierarchy scope cannot express two things: a single section unambiguously, and any narrowing at all of a source whose act_ids carry no title. Missouri's look like `STATE_MO_C407_S407.822` (chapter and section, no title) because Missouri organizes by chapter, and a hierarchy scope requires `title`.
+
+So a scope may instead name one section outright, using the `actId` that search results and change events already return:
+
+```json
+{ "scope": { "actId": "CFR_T21_P314_S314_50" } }
+```
+
+- **Mutually exclusive with the hierarchy form.** An act_id already encodes title, part and section, so sending both is a `400` rather than a scope that contradicts itself.
+- **Case-sensitive**, and copied verbatim: act_ids are mixed case (`STATE_LA_Crevised-statutes_T14_S112.11`).
+- **Validated when you create the watch.** An act_id we do not hold, or one belonging to a different source, is a `400`. That is deliberate: an unchecked typo would be a watch that can never fire, and silence from a scoped watch is indistinguishable from a quiet source.
+- **Works on every source**, including the flat ones where `scopable` is `false`. It is the only way to follow a single Federal Register document or one Justice Manual chapter.
+
+<Tip>
+  If a section is renumbered its act_id changes, and the watch stops matching. You are not left guessing: renumbering emits a `removed` event carrying the OLD act_id, so the watch fires once on the way out.
+</Tip>
 
 ## Authenticating our deliveries
 
@@ -212,7 +231,7 @@ Body:
   "rowsDeleted": 0,
   "refreshLogId": 4412,
   "changes": [
-    {"changeKind": "amended", "actId": "wa-regs-296-17-31018", "citation": "WAC 296-17-31018", "title": "Retrospective rating"}
+    {"changeKind": "amended", "actId": "CFR_T33_P100_S100_901", "citation": "33 C.F.R. § 100.901 (2026)", "title": "Special local regulations"}
   ],
   "changesOverflowCount": 0,
   "deliveryId": "9f2b1e0a-...:4412",
@@ -286,9 +305,9 @@ changes = requests.get(
         "corpusType": "state_regulation",
         "state": "wa",
         "changeKind": "amended",
-        "actId": "wa-regs-296-17-31018",
-        "citation": "WAC 296-17-31018",
-        "title": "Retrospective rating",
+        "actId": "CFR_T33_P100_S100_901",
+        "citation": "33 C.F.R. § 100.901 (2026)",
+        "title": "Special local regulations",
         "detectedAt": "2026-08-07T04:10:00Z",
         "hasDiff": true
       }
