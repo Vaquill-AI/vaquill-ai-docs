@@ -291,9 +291,9 @@ jurisdiction.
 |---|---|
 | Federal | See the [Federal table](#federal): daily to weekly, and on amendment for the Constitution. |
 | State statutes | Recurring pull from each state's official source. All 50 states plus DC and Puerto Rico are covered; a few one-time cutovers are complete but not yet on an automatic refresh driver, Puerto Rico's statutes among them. (Puerto Rico's court RULES are on the normal cycle; only its statutes sit outside it.) |
-| State regulations | Pulled monthly from each state's own official publisher, for all 46 states carrying regulations. |
+| State regulations | 46 states carry regulations. **15 of them are on an automatic monthly refresh**; the rest were ingested as one-time cutovers and are not yet on a recurring driver, so their text is as of the ingest date. Call `/statutes/coverage` for what is present, and treat the refresh cadence as per-state rather than uniform. |
 | State court rules | Monthly, for the states that carry them. Court rules change less often than statutes, and when they do the change is procedural and effective on a published date rather than immediately. |
-| State constitutions | Monthly, all jurisdictions in one pass (constitutions change on the order of years via ballot-measure amendments, not weeks, so this is deliberately lower-frequency than statutes/regulations). |
+| State constitutions | Monthly per jurisdiction, spread across the month rather than one pass (constitutions change on the order of years via ballot-measure amendments, not weeks, so this is deliberately lower-frequency than statutes/regulations). |
 
 <Note>
   Pennsylvania's Consolidated Statutes are complete; its older unconsolidated
