@@ -1,0 +1,19 @@
+---
+title: "Invalid request"
+description: "422 invalid-request"
+icon: "triangle-exclamation"
+---
+
+**`422`** `invalid-request`
+
+The request body or query string does not match the published schema. The problem document carries an `errors` array naming each rejected field: `location` says where, `message` says what was wrong, `type` gives the machine-readable reason.
+
+## What to do
+
+Fix the fields listed and resend. Unknown fields are rejected rather than ignored, so a typo in a field name shows up here instead of silently doing nothing, and a value from an enum we do not publish is refused at the edge rather than failing inside a job later.
+
+<Note>
+The value you sent is deliberately not echoed back. A draft body that failed one constraint would otherwise be copied verbatim into an error response and into logs on both sides.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

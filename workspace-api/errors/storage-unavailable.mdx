@@ -1,0 +1,17 @@
+---
+title: "Storage unavailable"
+description: "503 storage-unavailable"
+icon: "database"
+---
+
+**`503`** `storage-unavailable`
+
+Object storage could not be reached, so nothing can be uploaded, downloaded or signed for download right now.
+
+## What to do
+
+Retry with exponential backoff. This is our outage and not a problem with your request, which is why it is a `503` and not a client error: reporting it as your fault would send you off debugging a call that was fine.
+
+An upload session interrupted by this can normally be resumed by requesting fresh part URLs once storage returns, since part links are short lived by design and are meant to be re-signed.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

@@ -1,0 +1,23 @@
+---
+title: "Internal error"
+description: "500 internal-error"
+icon: "bug"
+---
+
+**`500`** `internal-error`
+
+Something failed on our side and we do not know what. This is the one error in the taxonomy that carries no diagnosis, deliberately: the original exception text is never put on the wire, because it would describe our internals to a caller who cannot act on it and could not be withdrawn once shipped.
+
+Your request did not complete. Whether anything was written before the failure is not knowable from this response.
+
+## What to do
+
+Retry with backoff. If the call was a launch, send the **same** `Idempotency-Key` you used the first time, which is exactly the case that header exists for: if the operation was in fact created before the failure, you get it back rather than a second billed job.
+
+If it keeps happening, contact support and quote the `requestId` from the response body, or the `X-Request-ID` header. It is logged against your call on our side, along with the exception, so it turns the conversation into a lookup.
+
+<Note>
+An unhandled failure raises an alert on our side the moment it happens. You are not the only one who knows.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

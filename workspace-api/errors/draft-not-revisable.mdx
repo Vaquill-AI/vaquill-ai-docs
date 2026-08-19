@@ -1,0 +1,19 @@
+---
+title: "Draft cannot be revised"
+description: "409 draft-not-revisable"
+icon: "pen-slash"
+---
+
+**`409`** `draft-not-revisable`
+
+The draft cannot be the input to the work you asked for. Either it is still being generated, so there is nothing settled to revise, or it has no body text yet.
+
+## What to do
+
+If it is still generating, poll the operation that started it and send your revision once that finishes. If it is empty, generate or write a body first. Improving an empty document would produce a contract invented out of nothing, which is why it is refused rather than attempted.
+
+<Note>
+Nothing is wrong with your payload, which is why this is a `409` and not a `422`. The identical request succeeds once the draft reaches a revisable state, so retry the same call rather than editing it.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

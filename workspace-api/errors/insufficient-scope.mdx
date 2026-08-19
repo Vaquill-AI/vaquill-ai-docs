@@ -1,0 +1,15 @@
+---
+title: "Insufficient scope"
+description: "403 insufficient-scope"
+icon: "shield-halved"
+---
+
+**`403`** `insufficient-scope`
+
+The credential is valid, and it does not carry every scope this operation needs. The problem document lists exactly what is missing in `requiredScopes`, and the `WWW-Authenticate` response header repeats it.
+
+## What to do
+
+Issue a replacement credential carrying those scopes from the automation console, then swap it in. Scopes cannot be widened on a credential that already exists, so a retry will never succeed and there is no second call that grants them. Grant the narrowest set that covers what your integration actually does: a credential that can only read is a credential that cannot delete a matter by accident.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

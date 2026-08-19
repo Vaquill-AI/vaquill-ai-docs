@@ -1,0 +1,177 @@
+---
+title: "Workflows"
+description: "Run Vaquill's multi-step legal workflows headlessly and collect their artifacts"
+icon: "diagram-project"
+---
+
+A workflow is a multi-step pipeline over several documents in one matter. It takes a set of documents in named roles, a handful of answers up front, and produces finished deliverables: an executive summary, a per-document detail pack, a privilege log. `nda-bulk-review` takes a stack of NDAs and your side of the table, and writes a portfolio risk summary plus per-document redline suggestions.
+
+Four calls cover the whole surface. List the catalog, launch a run, poll the operation, fetch the artifacts.
+
+## The catalog is fixed, and there is no create endpoint
+
+```bash
+curl "https://api.vaquill.ai/workspace/v1/workflows" \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+Workflow definitions are code we ship, identical for every organization. Nothing in this API creates, edits or deletes one, and no such endpoint is coming: a definition points at the orchestrator that executes it, so a new workflow is a release rather than a row. Your `workflowId` is always an id from this list, for example `nda-bulk-review`.
+
+<Note>
+Only **active** definitions are listed. A retired one still resolves for old runs so their results stay readable, but it cannot be launched, and a request naming one gets the same `404 workflow-not-found` as a typo. That is deliberate: telling the two apart would publish the fact that a workflow used to exist.
+</Note>
+
+The response is the standard page envelope, `data` plus `pagination`, with `limit` defaulting to 50 (maximum 200) and `offset` to 0. The catalog is small and in memory today, so one page is normally the whole thing.
+
+Each definition publishes everything a launch needs, so you can validate a payload locally instead of discovering the shape from `422`s:
+
+```json
+{
+  "id": "nda-bulk-review",
+  "title": "NDA Bulk Review",
+  "description": "Review a stack of NDAs against your positions and summarize the portfolio risk.",
+  "category": "inhouse",
+  "estimatedMinutesMin": 3,
+  "estimatedMinutesMax": 12,
+  "documentSlots": [
+    { "role": "subject", "label": "NDAs to review",
+      "minCount": 1, "maxCount": 500, "required": true },
+    { "role": "playbook", "label": "Your playbook (optional)",
+      "minCount": 0, "maxCount": 1, "required": false }
+  ],
+  "inputs": [
+    { "key": "reviewer_position", "label": "Which side are you on?",
+      "fieldType": "select", "required": true,
+      "options": ["Receiving Party", "Disclosing Party", "Mutual / Either Side"] }
+  ],
+  "artifacts": [
+    { "key": "executive_summary", "label": "Executive Summary",
+      "contentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
+  ]
+}
+```
+
+`documentSlots` tells you which roles the workflow accepts and how many of each. `inputs` is the question set, with `fieldType`, `required` and, for a `select`, the exact `options` accepted. Both the `key` you send and, for a select, the `option` value are matched exactly, case and spacing included: `Receiving Party` is accepted and `receiving party` is a `422`. `artifacts` names the deliverables **before anything has been run**, which is what lets you wire up the download side of your integration in the same sitting. `estimatedMinutesMin` and `estimatedMinutesMax` are what to size your polling against. `bestFor` and `limitations` are written for a human deciding whether this is the right tool.
+
+## Launching a run
+
+```bash
+curl -X POST "https://api.vaquill.ai/workspace/v1/matters/mat_.../workflows/nda-bulk-review/runs" \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: 8f1c2b4e-9a10-4d5f-8e2b-1c7d3a6f0b91" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Q2 NDA refresh",
+    "documents": [
+      { "documentId": "doc_...", "role": "subject", "position": 0 },
+      { "documentId": "doc_...", "role": "subject", "position": 1 }
+    ],
+    "inputs": { "reviewer_position": "Receiving Party" }
+  }'
+```
+
+Every field in the body is optional to the request model itself, because what is genuinely required is declared by the definition rather than by the endpoint. `documents` carries `documentId` plus a `role` (one of `subject`, `playbook`, `reference`, `exhibit`, `opposing`, `context`, defaulting to `subject`) and a `position` (defaulting to `0`). Order is yours: a workflow that reasons about "the first exhibit" means the one you put first. `inputs` is a free-form object keyed by the `key` values the definition published. `title` is optional and defaults to the workflow's own name.
+
+Unknown fields are rejected rather than ignored, so a misspelled key in the body is a `422` and not a silently dropped value. Documents must already exist in that matter and have finished ingesting.
+
+`Idempotency-Key` is optional here, as on the other six launch endpoints. Sending one makes a retry after a timeout free instead of a second billed run. See [Idempotency](/workspace-api/concepts/idempotency).
+
+The answer is `202` with an [operation](/workspace-api/concepts/operations) of type `workflow.run`, and its `resource` already names the run:
+
+```json
+{
+  "id": "op_...",
+  "type": "workflow.run",
+  "status": "queued",
+  "matterId": "mat_...",
+  "resource": {
+    "kind": "workflowRun",
+    "id": "wfr_...",
+    "url": "/v1/matters/mat_.../workflow-runs/wfr_..."
+  }
+}
+```
+
+So you never have to wait for completion to learn the run id. Poll `GET /v1/operations/{operationId}` for the outcome, and honor `Retry-After`.
+
+### Inputs are validated before anything starts
+
+A workflow declares its inputs, and sending the wrong ones is refused up front with `422` and type `workflow-inputs-rejected`. It fires for any of:
+
+- a required input missing, or present but blank
+- a `select` value that is not one of the definition's `options`, spelling and case included
+- too few documents in a required role, or more than that role's `maxCount`
+
+The message is the definition's own and names the offending field. The check runs **before** the run is created and before the operation is minted, so a rejected launch starts nothing, costs nothing, and does not consume the `Idempotency-Key` you sent. Fix the payload and resend with the same key.
+
+<Tip>
+`workflow-inputs-rejected` is avoidable entirely. Read the definition once at startup, cache `inputs`, `options` and `documentSlots`, and validate against them before you call.
+</Tip>
+
+Two other refusals are worth handling on the launch path:
+
+| Status | Type | Cause |
+| --- | --- | --- |
+| 413 | `run-too-large` | More than **100 documents** in one run. The problem document carries `limit` and `requested` |
+| 429 | `concurrency-limit-reached` | Your organization already has **5** workflow runs unfinished. Retryable |
+
+<Warning>
+The per-run document ceiling is the API's, not the definition's, and the two can differ. `nda-bulk-review` advertises `maxCount: 500` on its subject slot, but a single API run still refuses more than 100 documents. Batch across runs rather than raising the slot count you read from the catalog.
+</Warning>
+
+## Reading a run
+
+```bash
+curl "https://api.vaquill.ai/workspace/v1/matters/mat_.../workflow-runs/wfr_..." \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+The run carries `workflowId`, `title`, `status`, `progressPercent`, an optional `progressMessage`, the `artifacts` produced so far, and `startedAt` / `completedAt` timestamps.
+
+`status` is the same five values as an operation: `queued`, `running`, `succeeded`, `failed`, `cancelled`. Internally a workflow moves through eight, four of which name a stage rather than an outcome (`preparing`, `extracting`, `synthesizing`, `rendering`). Those all read as `running`, which is why `progressPercent` and `progressMessage` are the fields that tell you how far along it is.
+
+This endpoint and the operation both answer the same question, so poll one of them, not both. The operation is the general path and works for every kind of job; the run resource is what you read when you want the artifact list.
+
+Artifacts appear here as `key`, `label`, `contentType` and a nullable `sizeBytes`. **There is no URL on them.** Fetching one is a separate call, on purpose: listing and signing being one step would let a link be minted for a credential that was revoked between the two.
+
+## Downloading an artifact
+
+```bash
+curl "https://api.vaquill.ai/workspace/v1/matters/mat_.../workflow-runs/wfr_.../artifact?key=executive_summary" \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+`key` is required, and it is the definition's own name for the deliverable, the same string `workflows.list` publishes before you have ever run the workflow.
+
+This endpoint returns **JSON, not bytes**:
+
+```json
+{
+  "key": "executive_summary",
+  "url": "https://...",
+  "expiresAt": "2026-08-19T10:15:00Z"
+}
+```
+
+`url` is a short-lived signed URL, good for **15 minutes**, that you then `GET` yourself with no `Authorization` header. Follow it promptly or re-request it; do not store it.
+
+<Note>
+This is the opposite of `GET /v1/matters/{matterId}/documents/{documentId}/download`, which streams the original bytes through the API and hands out no URL. The difference is what the bytes are. A document download is a client's confidential original; a workflow artifact is a deliverable the worker has already rendered and stored, and the object key never crosses the wire in either direction, so a guessed key cannot reach anything else.
+</Note>
+
+A `409 export-not-available` means this run has no artifact under that key: usually the run has not succeeded yet. Poll the operation first, then fetch.
+
+## Scopes
+
+| Call | Scope |
+| --- | --- |
+| `GET /v1/workflows` | `workflows:read` |
+| `GET /v1/matters/{matterId}/workflow-runs/{runId}` | `workflows:read` |
+| `POST /v1/matters/{matterId}/workflows/{workflowId}/runs` | `workflows:run` |
+| `GET /v1/matters/{matterId}/workflow-runs/{runId}/artifact` | `exports:read` |
+
+<Warning>
+The artifact download costs **`exports:read`**, not `workflows:read`. The deliverable is a rendered document built from the matter's contents, so pulling it out of the workspace is the same risk class as any other export. A credential with `workflows:read` and `workflows:run` can start runs and watch them finish, and still get a `403 insufficient-scope` on the file.
+</Warning>
+
+`workflows:run` does not imply `workflows:read`, so a credential that only starts runs cannot enumerate the catalog. Most integrations want both, plus `exports:read` if they collect the output.

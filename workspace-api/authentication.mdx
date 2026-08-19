@@ -1,0 +1,104 @@
+---
+title: "Authentication"
+description: "Workspace credentials, scopes, and the acting user"
+icon: "key"
+---
+
+The Workspace API authenticates with an organization-owned credential that begins `vq_ws_`.
+
+```bash
+curl https://api.vaquill.ai/workspace/v1/matters \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+## Creating a credential
+
+<Steps>
+  <Step title="Open the automation console">
+    Sign in to Vaquill and go to **Automation** in the sidebar. You must be an **owner** of the organization; members cannot provision API access.
+  </Step>
+  <Step title="Enable the Workspace API">
+    This creates an installation owned by your organization, not by you personally. It keeps working if you later leave the organization.
+  </Step>
+  <Step title="Create a credential">
+    Give it a name that says what will use it, for example `billing-sync` or `intake-bot`. Choose an expiry.
+
+    <Warning>
+    The credential is shown **once** and is never retrievable. There is no reveal endpoint, deliberately: this credential reaches privileged client material. Store it in your secrets manager before closing the dialog.
+    </Warning>
+  </Step>
+</Steps>
+
+Everything your integration does afterwards is headless. Managing credentials is not: listing, issuing and revoking all run through the console and need a signed-in organization owner, and a `vq_ws_` credential cannot call them. That is deliberate. A credential that could mint credentials would make revoking one meaningless.
+
+There is no rotate operation. Rotating means issuing a second credential, deploying it, then revoking the first, which is the same sequence with none of the ambiguity about which one is live.
+
+## Credential properties
+
+| Property | Value |
+| --- | --- |
+| Prefix | `vq_ws_` |
+| Length | 42 characters, including a checksum |
+| Storage | Hashed. We cannot recover it, and neither can support |
+| Expiry | Required. Maximum 180 days |
+| Limit | 5 active credentials per installation |
+
+<Note>
+The last six characters are a checksum, so a truncated or mistyped credential is rejected before it reaches our database. If you get `invalid-credential` immediately on a key you just pasted, check for a copy that cut off the end.
+</Note>
+
+## Scopes
+
+A credential carries scopes in the form `resource:action`. Write implies read on the same resource; `run` does not, so a reporting integration can be given read access without the ability to start billable work.
+
+```
+clients:read      clients:write
+matters:read      matters:write
+documents:read    documents:write    documents:download
+drafting:read     drafting:run
+review:read       review:run
+compare:read      compare:run
+playbooks:read    playbooks:write
+matrices:read     matrices:write     matrices:run
+workflows:read    workflows:run
+exports:create    exports:read
+operations:read
+```
+
+Most integrations want far less than this. A good default is the narrowest set that makes your first call work, widened when a `403` tells you exactly what is missing.
+
+<Note>
+The scope vocabulary is slightly wider than the list above, because it was frozen before every capability shipped. A few names are accepted but govern no endpoint yet. Granting one is harmless and grants nothing, so build against the list above.
+</Note>
+
+<Note>
+Folders have no scope of their own. They are governed by `matters:read` and `matters:write`, because a folder is an organizing device for matter work rather than a resource in its own right.
+</Note>
+
+<Note>
+`documents:download` is separate from `documents:read` on purpose. Listing document metadata and pulling an original confidential file are different risks, so an integration that only checks ingestion status need not be able to retrieve originals.
+</Note>
+
+A request missing a required scope gets `403` with an `insufficient-scope` problem document naming the scopes it needed.
+
+## Attributing actions to a person
+
+If the work your integration does is initiated by one of your users, send their identifier:
+
+```
+X-Vaquill-Acting-User: jane@yourfirm.com
+```
+
+It is accepted on every operation, including over MCP, where it is set once on the connection. You will not find it in the generated reference: it is read by a layer that sits in front of the routes, so no individual operation declares it. This page is its documentation.
+
+It is recorded on the audit trail for that action, verbatim. It is optional, and when it is absent the action is recorded as an autonomous service, which is the honest description of a job nobody in particular asked for.
+
+Any identifier works: an email, a directory DN, your own user id. Surrounding whitespace is trimmed and the rest is stored exactly as sent, which is why there are two rules: at most 200 characters, and no control characters. A value breaking either is refused with `400 acting-user-rejected` rather than repaired, because a shortened or scrubbed identifier is a different identifier presented as your assertion.
+
+<Warning>
+This value is **asserted by your system and not authenticated by us**. We record it as your assertion and never present it as a verified Vaquill identity, and we do not check it against your organization's members. If your firm needs cryptographic attribution of a named person for an ethical wall, talk to us before relying on this.
+</Warning>
+
+## Revoking
+
+Revoke from the automation console or with `DELETE /api/v1/workspace/credentials/{credentialId}`. Revocation takes effect immediately, including for requests already in flight against a cached credential.

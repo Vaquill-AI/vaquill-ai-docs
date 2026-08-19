@@ -1,0 +1,19 @@
+---
+title: "Rate limit exceeded"
+description: "429 rate-limited"
+icon: "gauge-high"
+---
+
+**`429`** `rate-limited`
+
+Too many requests for this credential in the current window. The budget is per credential and per operation kind, so heavy reading does not consume your ability to write.
+
+## What to do
+
+Read the `Retry-After` response header and wait that many seconds before the next attempt. It is a machine-readable interval because the caller here is a backend, so honoring it is genuinely the whole fix. See [Rate limits](/workspace-api/concepts/rate-limits).
+
+<Note>
+The budget is keyed on the credential, so every process sharing one credential draws down the same window. If several workers call in parallel, add jitter to the wait or they will all come back on the same second and refuse each other again.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

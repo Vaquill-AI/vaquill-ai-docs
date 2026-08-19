@@ -1,0 +1,15 @@
+---
+title: "Folder not found"
+description: "404 folder-not-found"
+icon: "folder"
+---
+
+**`404`** `folder-not-found`
+
+No folder with that id belongs to your organization. This is raised wherever a folder is named, not only when you fetch one: as a list filter, and as the parent of a folder you are creating.
+
+## What to do
+
+Take the id from `GET /v1/folders` and resend. Note that an unrecognized folder is refused here rather than dropped, deliberately. A bad filter that was ignored would return every document in the matter and read as a folder that contains everything, and a bad parent that was ignored would create your folder at the root while reporting success.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

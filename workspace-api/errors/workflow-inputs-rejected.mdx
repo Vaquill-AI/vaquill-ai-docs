@@ -1,0 +1,15 @@
+---
+title: "Workflow inputs rejected"
+description: "422 workflow-inputs-rejected"
+icon: "sliders"
+---
+
+**`422`** `workflow-inputs-rejected`
+
+The request parsed, and the workflow refused what it asked for: a required input missing, or a document slot that does not match what the workflow expects.
+
+## What to do
+
+The `detail` is the workflow's own message and it names the input at fault, so read it literally. Then check the workflow definition from `GET /v1/workflows/{workflowId}` for the inputs it requires and the roles it expects documents to fill. Attaching two documents where one role is defined, or omitting a role that is not optional, are the two usual causes.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

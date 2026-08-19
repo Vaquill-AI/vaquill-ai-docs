@@ -1,0 +1,19 @@
+---
+title: "Document content not available"
+description: "409 document-not-readable"
+icon: "file-circle-xmark"
+---
+
+**`409`** `document-not-readable`
+
+The document exists and we cannot serve its content. Either ingestion has not finished, so there is no extracted text yet, or the document has no stored file behind it at all.
+
+## What to do
+
+Read the document's own status, or poll the operation its upload returned, and ask again once ingestion has succeeded. If the status says the document is ready and this persists, the file was never stored: an upload session that was started and never completed leaves a row with nothing behind it, and so does a document created from text rather than from a file. Upload it again in that case.
+
+<Note>
+This is not a `404`. The document is real and yours; only its content is unavailable, so the fix is to wait or to re-upload, never to go hunting for the id.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

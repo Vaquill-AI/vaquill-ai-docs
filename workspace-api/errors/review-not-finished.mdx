@@ -1,0 +1,19 @@
+---
+title: "Review not finished"
+description: "409 review-not-finished"
+icon: "hourglass-half"
+---
+
+**`409`** `review-not-finished`
+
+The review exists and has not produced anything to act on yet. The `detail` names the status it is in.
+
+## What to do
+
+Poll the operation that started the review and export once it reports success. A review has to finish successfully before there is a marked-up contract to hand back.
+
+<Note>
+Only the export refuses. Reading the review itself answers `200` at any point, with the current status and whatever findings exist so far, because "not finished" is a true and useful answer to "show me the review". Poll that endpoint if you want progress rather than a file.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

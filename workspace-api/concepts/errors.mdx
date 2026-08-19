@@ -1,0 +1,86 @@
+---
+title: "Errors"
+description: "RFC 9457 problem documents, and what each type means"
+icon: "triangle-exclamation"
+---
+
+Every error is `application/problem+json`, following [RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457).
+
+```json
+{
+  "type": "https://docs.vaquill.ai/workspace-api/errors/insufficient-scope",
+  "title": "Insufficient scope",
+  "status": 403,
+  "detail": "This credential does not carry `review:run`.",
+  "instance": "/workspace/v1/matters/mat_.../reviews",
+  "requestId": "req_ee238473ea99491dbb0a9b9799177c9f"
+}
+```
+
+`type`, `title`, `status`, `detail` and `instance` are always present. `requestId` is present on anything that reached our application. A `422` adds `errors`, and some types add fields of their own, named on their pages.
+
+Branch on `type`, never on `detail`. The slug is stable; the wording may improve.
+
+**The `type` is a real URL.** Open it and it lands on a page for that exact error: what it means, and what to do about it. Every one of the 49 types has one.
+
+## Always quote the requestId
+
+Every response carries `requestId`, in the body on an error and in the `X-Request-ID` header. It is minted by us and appears in our logs against your call. Quoting it turns a support conversation from a timestamp hunt into a lookup.
+
+<Note>
+If you send your own `X-Request-ID`, we echo it back as `X-Correlation-ID` and log it alongside ours. We never adopt it as our identifier, so the id you quote to support is always one we minted, and two of your calls can never collapse onto one of ours. Your value is echoed only if it is at most 128 printable characters; anything else is dropped silently rather than altered.
+</Note>
+
+## Common types
+
+| Status | Type | What to do |
+| --- | --- | --- |
+| 400 | `idempotency-key-required` | You sent the header **empty**. Send a real value, or omit it entirely, which is allowed |
+| 400 | `idempotency-key-too-long` | Over 255 characters. A UUID is well inside |
+| 401 | `invalid-credential` | Check for truncation, expiry or revocation |
+| 401 | `wrong-product-credential` | You sent a `vq_key_` Data API key. Use a `vq_ws_` credential |
+| 403 | `insufficient-scope` | The response names the scopes needed. Issue a new credential |
+| 403 | `installation-inactive` | The installation was suspended or revoked |
+| 404 | `matter-not-found` and friends | See below |
+| 409 | `document-not-readable` | The document has no extracted text yet. Poll its ingestion operation |
+| 422 | `invalid-request` | Field-level detail is in `errors[]` |
+| 422 | `idempotency-key-reused` | Same key, different payload |
+| 409 | `export-not-available` | The thing you are exporting has not finished, or produced nothing to export |
+| 413 | `file-too-large`, `run-too-large`, `export-too-large` | Split the work. The message states the limit you crossed |
+| 429 | `rate-limited` | Honor `Retry-After`. See [Rate limits](/workspace-api/concepts/rate-limits) |
+| 429 | `concurrency-limit-reached` | Too many of your jobs are already running. Wait for one to finish, do not just slow down |
+| 503 | `credential-store-unavailable`, `dispatch-unavailable`, `storage-unavailable` | Ours, not yours. Retry with backoff |
+
+<Warning>
+A `503 credential-store-unavailable` is deliberately **not** a `401`. During an outage on our side we will not tell you your credential is bad, because that would send you off rotating a credential that was never the problem.
+</Warning>
+
+## Why not-found is uninformative
+
+A resource in another organization, a resource that never existed, and a malformed id all return the **same** `404`, byte for byte.
+
+This is deliberate. If they differed, the status code would become a way to test whether a matter exists in someone else's organization. The cost is that a genuine typo is slightly harder to diagnose; the `instance` field echoes the path you sent, which is usually enough.
+
+## Validation errors
+
+A `422` carries an `errors[]` array:
+
+```json
+{
+  "type": "https://docs.vaquill.ai/workspace-api/errors/invalid-request",
+  "title": "Invalid request",
+  "status": 422,
+  "errors": [
+    { "location": "body.name", "message": "String should have at least 1 character",
+      "type": "string_too_short" }
+  ]
+}
+```
+
+Unknown fields are rejected rather than ignored, so a typo in a field name is a `422` and not a silently dropped value.
+
+## The full list
+
+There are 48 error types in all. Most are the specific not-found and conflict types for one resource, and they read exactly as you would expect: `draft-not-found`, `matrix-not-found`, `upload-not-completable`, `review-not-finished`. The capability pages name the ones that particular capability can raise.
+
+The general rule holds everywhere: `4xx` slugs describe something you can fix, `5xx` and `503` slugs describe something we have to fix, and nothing in either group is worth parsing out of the `detail` string.

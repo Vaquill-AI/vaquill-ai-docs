@@ -1,0 +1,15 @@
+---
+title: "Matrix not found"
+description: "404 matrix-not-found"
+icon: "table-cells"
+---
+
+**`404`** `matrix-not-found`
+
+No matrix with that id is readable under the matter in the path. Another organization's matrix, one under a different matter of your own, and a malformed id are one answer, so no caller can probe for matrices it cannot already see.
+
+## What to do
+
+List the matrices on the matter you meant and take the id from the response. Matrix ids look like `mtx_` plus 32 hex characters. Row, column and cell ids are separate namespaces (`row_`, `col_`, `cel_`) and none of them can stand in for a matrix id.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

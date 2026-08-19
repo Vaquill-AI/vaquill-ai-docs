@@ -1,0 +1,187 @@
+---
+title: "Document matrices"
+description: "Ask the same set of questions across many documents at once"
+icon: "table-cells"
+---
+
+A matrix is a spreadsheet the extractor fills in. **Rows are documents, columns are questions, and each cell is one answer with citations back into that document.**
+
+It is the right tool for "tell me the liability cap in all 200 of these vendor contracts". It is the wrong tool for "what changed between v2 and v3 of this contract", which is a [comparison](/workspace-api/compare).
+
+Every path below is prefixed with `https://api.vaquill.ai/workspace/v1`, and every call carries `Authorization: Bearer vq_ws_...`.
+
+## Two calls, two scopes
+
+Building the grid and running it are deliberately separate. A create writes one pending cell per document per column and costs nothing; a run makes one model call per cell and costs money. `matrices:write` buys the first and `matrices:run` buys the second, so a credential that assembles matrices for a human to approve cannot spend anything. Reading needs `matrices:read`.
+
+## Creating a matrix
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Vendor contract portfolio review",
+       "documentIds":["doc_...","doc_...","doc_..."],
+       "columns":[
+         {"label":"Liability cap",
+          "question":"What is the aggregate limitation of liability, and what does it apply to?",
+          "columnType":"money"},
+         {"label":"Auto-renews",
+          "question":"Does this agreement renew automatically at the end of the term?",
+          "columnType":"yes_no"}
+       ]}'
+```
+
+Only `title` is required. `description`, `documentIds` and `columns` are all optional, and this is not a launch, so it does not take `Idempotency-Key`.
+
+Answers **`201`** with the whole matrix, including the minted `rows` and `columns` with their ids. Nothing is extracted yet.
+
+### Columns
+
+Each column carries a `label` (the heading), a `question` (the prompt run against every document), and a `columnType`.
+
+The `columnType` vocabulary is `free_text`, `single_select`, `date`, `money`, `yes_no` and `party_name`. There is no `text`, `number` or `boolean`; those are the three guesses that produce a `422`. `free_text` is the default. `options` is required when the type is `single_select` and ignored otherwise, and `instructions` adds guidance scoped to that one column, for example how to treat a missing value.
+
+The `question` is the prompt, so write it the way you would ask a paralegal. "Liability cap" as a question yields worse answers than "What is the aggregate limitation of liability, and what does it apply to?".
+
+At most 60 columns per matrix. Documents times columns is the number of billable extractions a run performs, so the two ceilings multiply and it is worth doing that arithmetic before you create the grid.
+
+### Rows
+
+Every id in `documentIds` must be in the matter named in the path and must have **finished ingesting**. A still-ingesting document is refused rather than queued, because retrieval over a document with no chunks yet returns a confident "not in this document" for every column, which is one paid call per cell to learn nothing and is indistinguishable in the result from a genuine absence.
+
+A duplicate id is refused rather than silently de-duplicated. It would otherwise mean two identical rows you are billed for twice.
+
+Row order is the order you named the documents in, not database order.
+
+<Warning>
+There is no route that edits a matrix. Rows and columns are fixed at create, so a matrix created with an empty `documentIds` or `columns` can never gain any. Send the full grid in the create call.
+</Warning>
+
+## Running it
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../runs \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+The body is optional and its only field is `force`. This is a launch, so it takes `Idempotency-Key` and answers `202` with an [operation](/workspace-api/concepts/operations) of type `matrix.run`. Poll `GET /v1/operations/{operationId}`.
+
+The operation's `progress` counts **cells**, with `unit: "cells"`. Read the unit rather than assuming: `{done: 43, total: 100}` means something very different for cells than for documents, and `total` is the whole grid rather than only the part this run touches, so a re-run's progress bar does not go backwards.
+
+### What a re-run does to existing cells
+
+An empty body re-runs every cell that has **not produced an answer**: cells that never ran, cells that failed, and cells that ran and found nothing. Cells that already hold an answer are left alone, so re-running after a partial failure is cheap and safe.
+
+`{"force": true}` re-runs everything, including cells that already answered, and overwrites their answers. That is the only way to pick up a question that was edited after the first run, and it is charged like any other run.
+
+<Note>
+Re-running is idempotent per cell rather than additive: a cell is unique on its row and column, so a second run replaces the answer in place instead of adding a second one.
+</Note>
+
+## Reading the grid
+
+```bash
+curl https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_... \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+The matrix carries its `columns` and `rows` inline, plus `cellCount`, `pendingCellCount` and `errorCellCount`. Rows and columns are inlined because a cell names only a `rowId` and a `columnId`; without them a client would have to page the whole grid to interpret a single answer.
+
+Watch `pendingCellCount` for completion and `errorCellCount` for cells that failed. They are different questions, and neither is the same as a cell that succeeded with nothing to report.
+
+## Reading the cells
+
+```bash
+curl "https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../cells?limit=200&offset=0" \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+`limit` runs from 1 to 200 and defaults to 50; `offset` defaults to 0. The response is `{data, pagination}` with `limit`, `offset`, `total` and `hasMore`. Cells come back in creation order, which is row-major across the grid.
+
+A cell is:
+
+```json
+{
+  "id": "cel_...",
+  "rowId": "row_...",
+  "columnId": "col_...",
+  "status": "succeeded",
+  "answer": "USD 2,000,000 aggregate",
+  "citations": [
+    { "quote": "aggregate liability shall not exceed two million dollars (USD 2,000,000)",
+      "page": 12, "chunkId": "..." }
+  ],
+  "confidence": 0.94,
+  "extractedAt": "2026-08-19T10:04:11Z"
+}
+```
+
+Only `id`, `rowId`, `columnId` and `status` are guaranteed. `answer`, `confidence` and `extractedAt` are null until the cell has been extracted, and `citations` is empty until then. Resolve `rowId` and `columnId` against the matrix's `rows` and `columns` to know which document and which question a cell belongs to.
+
+<Note>
+A matrix archived in the web app while a run was pending reports that run as `cancelled`. Nothing further happens to it, and there is no separate archived status on this API: the five public values are all there are.
+</Note>
+
+### Cell status
+
+A cell uses the same five values as an operation. The distinction worth writing code around is between the two `succeeded` rows below, and between them and `failed`.
+
+| Status | Meaning |
+| --- | --- |
+| `queued` | Not extracted yet |
+| `running` | Being extracted now |
+| `succeeded`, `answer` present | The document says this |
+| `succeeded`, `answer` null | The extraction ran and this document does not say. A finding, not a failure |
+| `failed` | The extraction itself broke. This is what `errorCellCount` counts |
+| `cancelled` | The cell was deliberately not run, so there is no result to wait for |
+
+Treating a null answer as an error is the most common way to misread a matrix. Across 200 leases, "no termination clause found in this one" is frequently the answer you were looking for.
+
+### Citations are verified, which is why an answer can be missing
+
+Every citation carries a `quote`, and optionally the `page` it appears on and the `chunkId` it came from.
+
+Before a cell is saved, each quote is checked to be a **literal substring of the passage it cites**. Quotes that fail that check are dropped, and they are dropped silently because a fabricated quote is not evidence of anything. So a citation you can see here has been checked. That is the property that makes it worth publishing at all.
+
+The check then feeds back into the answer itself. If the model claimed an answer but no citation survived verification, or if an unverified quote leaked into the answer text, the cell is downgraded: it comes back `succeeded` with a null answer instead of with a confident, ungrounded one.
+
+<Note>
+This is a deliberate trade. A matrix over 200 leases will show you a few blanks that a human would have filled in, and in exchange no cell asserts a term with a quote that is not in the document. If you need the borderline cases, look at `confidence` on the cells that did answer and read the low ones yourself.
+</Note>
+
+## Sizing a run
+
+Two ceilings, both refused with `413 run-too-large` before anything is written or charged. The problem document carries `limit`, `requested` and `unit`, so you can batch without discovering the ceiling by bisection.
+
+| Ceiling | Value | Refused at |
+| --- | --- | --- |
+| Documents in one create | 250 | `POST .../matrices` |
+| Cells in one run | 6,000 | `POST .../matrices/{matrixId}/runs` |
+
+Cells is rows times columns, so 200 documents times 30 questions is 6,000 and the next question over the line is refused. Nothing is truncated to fit: starting the first 6,000 cells and reporting success would hand you a grid that looks finished and is not, which no field in the response could tell you about.
+
+Split a run that is too large by building more than one matrix over subsets of the documents.
+
+## Concurrency
+
+`429 concurrency-limit-reached` means **three matrix runs are already in flight**, which is the cap. A run holds its slot from the `202` until the last cell finishes.
+
+<Warning>
+This one cap is counted per **person**, not per organization and not per credential. The rows this API creates are attributed to a real user, the owner who provisioned the installation, so your API runs and that person's own matrix runs in the web app draw on the same three slots. An integration can be refused with no API run outstanding at all, because someone was running a matrix in a browser. The other concurrency caps on this API count per organization; only this one works this way.
+</Warning>
+
+It is not the same thing as the rate limiter. The rate limiter counts requests per minute; this counts unfinished jobs, and an integration well inside its request budget can still hold the whole worker pool with three fan-outs of thousands of cells each. Wait for a run to finish, or poll the operations you already started, then retry. Nothing was written, so the retry is a fresh launch.
+
+<Warning>
+`503 run-guard-unavailable` means the guard that decides the above could not be consulted, so the run was refused. It fails closed on purpose: failing open would remove the only bound on concurrent expensive work at exactly the moment our infrastructure was struggling. Retry with backoff.
+</Warning>
+
+## What is not here
+
+There is no endpoint that lists a matter's matrices, and none that updates or deletes one. Keep the `matrixId` from the create response.
+
+Conditional columns, where one column only runs when another answered a certain way, are not part of this API. They key on a column id that does not exist until the create returns, so a dependency cannot be expressed in the same call that mints both columns.

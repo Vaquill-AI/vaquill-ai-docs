@@ -1,0 +1,15 @@
+---
+title: "Idempotency-Key too long"
+description: "400 idempotency-key-too-long"
+icon: "text-width"
+---
+
+**`400`** `idempotency-key-too-long`
+
+The `Idempotency-Key` you sent is longer than the API will store. The `detail` names both the maximum and the length we received.
+
+## What to do
+
+Generate a shorter key. A UUID is well inside the limit and is what most integrations use. Do not trim an existing key to fit: two long keys that differ only past the cut point would collapse onto one value, and your retry would come back holding somebody else's operation. Mint a fresh short key per logical launch instead.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

@@ -1,0 +1,15 @@
+---
+title: "Export not available"
+description: "409 export-not-available"
+icon: "file-circle-question"
+---
+
+**`409`** `export-not-available`
+
+The thing you asked to export exists, and the file behind it does not. Either the run that would have produced it has not finished, or it finished and produced nothing to put in that file, or the artifact you named is not one this run wrote.
+
+## What to do
+
+Poll the operation that started the comparison, review or workflow run and export once it has succeeded. If it has already succeeded, check that the artifact key or format you asked for is one this run actually produces, and that the source material behind it is still available: a review whose input has been purged cannot be re-rendered, and a new review is the only route to a fresh export.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

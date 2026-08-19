@@ -1,0 +1,15 @@
+---
+title: "Review not found"
+description: "404 review-not-found"
+icon: "magnifying-glass"
+---
+
+**`404`** `review-not-found`
+
+No review with that id is readable under the matter in the path. Another organization's review, one under a different matter, and an id that was never a review all read the same. An id that belongs to some other kind of background job lands here as well, because that is not a review you may not see, it is not a review.
+
+## What to do
+
+List the reviews on the matter you meant, or use the id the launch operation reported. Review ids look like `rev_` plus 32 hex characters, and the operation id that started the review (`op_...`) is a different thing and cannot be substituted for it.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

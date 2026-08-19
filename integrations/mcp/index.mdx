@@ -8,11 +8,18 @@ keywords: ["mcp server legal", "claude legal mcp", "cursor legal research", "vs 
 
 The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants call external tools. The Vaquill MCP exposes Vaquill AI's US statute corpus: the US Code, the CFR, all 50 state statute codes plus DC and Puerto Rico, the U.S. Constitution, the Federal Rules, and Executive Orders.
 
+There are two Vaquill MCP servers, and they expose completely different things.
+
 <CardGroup cols={1}>
   <Card title="Vaquill MCP" icon="scale-balanced" href="/integrations/mcp/vaquill">
     Search and retrieve US statutes: the US Code, the CFR, all 50 state codes plus DC and Puerto Rico, the U.S. Constitution, the Federal Rules, and Executive Orders. Backed by the Vaquill statutes API.
   </Card>
+  <Card title="Workspace MCP" icon="briefcase" href="/workspace-api/mcp">
+    Your own matters, documents and work product: create matters, upload and read documents, run a playbook review, generate drafts, build matrices. Backed by the Legal Workspace API and gated by its scopes.
+  </Card>
 </CardGroup>
+
+The two share no credential and no host. A statutes key is refused by the Workspace server and the reverse is also true, so pick the one that matches what you want the assistant to reach.
 
 ## What it covers
 

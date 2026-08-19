@@ -1,0 +1,15 @@
+---
+title: "Comparison not found"
+description: "404 comparison-not-found"
+icon: "code-compare"
+---
+
+**`404`** `comparison-not-found`
+
+No comparison with that id is readable under the matter in the path. Comparisons live inside a matter, so a valid comparison id under the wrong matter reads exactly like an id that does not exist, as does one belonging to another organization.
+
+## What to do
+
+List `GET /v1/matters/{matterId}/comparisons` for the matter you meant and take the id from there. If you kept the id from a launch response, keep the matter id alongside it: the pair is what identifies a comparison, and holding only the `cmp_` id is what usually produces this error later.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

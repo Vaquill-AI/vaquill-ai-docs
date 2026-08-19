@@ -1,0 +1,15 @@
+---
+title: "Export too large"
+description: "413 export-too-large"
+icon: "file-export"
+---
+
+**`413`** `export-too-large`
+
+The file rendered past the ceiling for an inline response, so it was discarded rather than truncated. The problem document carries `limit` and `sizeBytes`, so you can see how far over it went.
+
+## What to do
+
+Split the document, or export a smaller format. A draft export comes back as bytes inside the response body rather than as a link to fetch, which is what puts a hard ceiling on it: an unbounded render would be an unbounded response for your HTTP client to hold in memory. A truncated contract is worse than no contract, so nothing partial is returned.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

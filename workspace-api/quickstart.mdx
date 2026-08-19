@@ -1,0 +1,130 @@
+---
+title: "Quickstart"
+description: "Upload a contract and review it against a playbook, end to end"
+icon: "bolt"
+---
+
+One credential, no browser after provisioning. Every path below is prefixed with `https://api.vaquill.ai/workspace/v1`, and every call carries `Authorization: Bearer vq_ws_...`.
+
+<Steps>
+  <Step title="Create a client and a matter">
+    Almost everything in the Workspace API hangs off a matter.
+
+    ```bash
+    curl -X POST https://api.vaquill.ai/workspace/v1/clients \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Content-Type: application/json" \
+      -d '{"name": "Acme Corp", "clientType": "organization"}'
+    ```
+
+    `clientType` is one of `individual`, `organization` or `corporation`. Take the `id` it returns, then:
+
+    ```bash
+    curl -X POST https://api.vaquill.ai/workspace/v1/matters \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Content-Type: application/json" \
+      -d '{"name": "Acme vendor MSA", "clientId": "cli_..."}'
+    ```
+  </Step>
+
+  <Step title="Upload the contract">
+    Uploads are presigned and go straight to storage, so your bytes never pass through the API. The same three calls work at every size, up to 2 GB.
+
+    ```bash
+    # 1. ask for a slot
+    curl -X POST https://api.vaquill.ai/workspace/v1/uploads \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Content-Type: application/json" \
+      -d '{"matterId":"mat_...","filename":"msa.pdf",
+           "contentType":"application/pdf","sizeBytes":132352}'
+
+    # 2. PUT the bytes to the returned parts[0].url, and keep the ETag
+
+    # 3. tell us it landed
+    curl -X POST https://api.vaquill.ai/workspace/v1/uploads/upl_.../complete \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Content-Type: application/json" \
+      -d '{"parts":[{"partNumber":1,"etag":"\"abc123\""}]}'
+    ```
+
+    That last call returns `202` with an operation.
+  </Step>
+
+  <Step title="Wait for ingestion">
+    ```bash
+    curl https://api.vaquill.ai/workspace/v1/operations/op_... \
+      -H "Authorization: Bearer vq_ws_..."
+    ```
+
+    Poll until `status` is `succeeded`. The `resource.id` on the finished operation is your `documentId`.
+  </Step>
+
+  <Step title="Read the extracted text">
+    A review is run over contract text, so pull it once ingestion has finished:
+
+    ```bash
+    curl https://api.vaquill.ai/workspace/v1/matters/mat_.../documents/doc_.../text \
+      -H "Authorization: Bearer vq_ws_..."
+    ```
+
+    You get `{documentId, text, chunkCount, truncated}`.
+  </Step>
+
+  <Step title="Run a review">
+    Optionally pick a playbook from `GET /v1/playbooks`, or adopt one of ours with `GET /v1/playbook-templates` and `POST /v1/playbooks/from-template`. Then:
+
+    ```bash
+    curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../reviews \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Idempotency-Key: $(uuidgen)" \
+      -H "Content-Type: application/json" \
+      -d '{"documentText":"MASTER SERVICES AGREEMENT ...",
+           "contractType":"msa",
+           "userSide":"customer",
+           "playbookId":"pbk_..."}'
+    ```
+
+    `documentText`, `contractType` and `userSide` are required; `playbookId` is optional and, without one, the review runs against our default expectations for that contract type. Another `202`, another operation to poll.
+
+    This is a launch, so it takes `Idempotency-Key`. Reuse the same key on a retry and you get the original operation back rather than a second billable review.
+  </Step>
+
+  <Step title="Read the findings">
+    ```bash
+    curl https://api.vaquill.ai/workspace/v1/matters/mat_.../reviews/rev_... \
+      -H "Authorization: Bearer vq_ws_..."
+    ```
+
+    You get typed lists rather than a blob of prose: `clauses`, `redlines`, `negotiationPriorities`, `missingClauses` and `flags`, plus `overallRisk`, `liabilityExposure` and an `approvalGate` that tells you whether a human has to sign off.
+  </Step>
+
+  <Step title="Export it">
+    ```bash
+    curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../reviews/rev_.../exports \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Content-Type: application/json" \
+      -d '{"trackedChanges": true}'
+    ```
+
+    Answers `201` with `{format, filename, url, expiresAt, sizeBytes, redlineCount, ...}`. The `url` is a signed download link, and the export is a Word file carrying **native tracked changes**, so it opens in Word as a redline your counterparty can accept or reject.
+
+    Pass a `redlines` array to export only the suggestions you accepted, instead of all of them.
+  </Step>
+</Steps>
+
+## What to read next
+
+<CardGroup cols={2}>
+  <Card title="Operations" icon="clock" href="/workspace-api/concepts/operations">
+    The job envelope every long call returns, and how to poll it well.
+  </Card>
+  <Card title="Documents" icon="file" href="/workspace-api/documents">
+    Upload, text extraction, downloading originals.
+  </Card>
+  <Card title="Idempotency" icon="rotate" href="/workspace-api/concepts/idempotency">
+    Which calls take the header, and what a safe retry looks like.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/workspace-api/concepts/errors">
+    The problem+json shape and what each type means.
+  </Card>
+</CardGroup>

@@ -1,0 +1,77 @@
+---
+title: "Overview"
+description: "Drive the Vaquill Legal Workspace from your own backend, with no browser"
+icon: "gear"
+---
+
+The Workspace API lets your systems do the work your team does in Vaquill: create clients and matters, upload documents, run contract review against a playbook, generate and revise drafts, compare versions, build matrices, and pull the results back out as files.
+
+It is a different product from the [Legal Data API](/api-guide/overview), and the two share nothing.
+
+| | Legal Data API | Legal Workspace API |
+| --- | --- | --- |
+| What it serves | US statutes, regulations, case law | **Your own matters and documents** |
+| Base URL | `https://api.vaquill.ai/api/v1` | `https://api.vaquill.ai/workspace/v1` |
+| Credential | `vq_key_...` | `vq_ws_...` |
+| Errors | Vaquill error object | [RFC 9457 problem+json](/workspace-api/concepts/errors) |
+| Reference | The **Data API Reference** tab | The **Workspace Reference** tab |
+
+<Warning>
+The two credentials are not interchangeable. A `vq_key_` sent to a Workspace route is refused with a `wrong-product-credential` error that names the other product, and vice versa.
+</Warning>
+
+## What you can do
+
+<CardGroup cols={2}>
+  <Card title="Clients and matters" icon="folder" href="/workspace-api/clients-and-matters">
+    Create and manage the client and matter structure everything else hangs off.
+  </Card>
+  <Card title="Documents" icon="file" href="/workspace-api/documents">
+    Upload at any size, poll ingestion, read extracted text, download the original bytes, delete.
+  </Card>
+  <Card title="Contract review" icon="clipboard-check" href="/workspace-api/review-and-playbooks">
+    Run a playbook against a contract and get clauses, redlines, missing clauses and negotiation priorities.
+  </Card>
+  <Card title="Drafting" icon="pen-nib" href="/workspace-api/drafting">
+    Generate a draft, revise it, apply a template, export it.
+  </Card>
+  <Card title="Compare" icon="code-compare" href="/workspace-api/compare">
+    Diff two versions of a document and export a redline.
+  </Card>
+  <Card title="Matrices" icon="table-cells" href="/workspace-api/matrices">
+    Ask the same questions across hundreds of documents and get cited answers.
+  </Card>
+  <Card title="Workflows" icon="diagram-project" href="/workspace-api/workflows">
+    Run multi-step pipelines over a set of documents and collect their artifacts.
+  </Card>
+  <Card title="MCP server" icon="plug" href="/workspace-api/mcp">
+    Every operation is also an MCP tool, so an AI agent can drive the same surface.
+  </Card>
+</CardGroup>
+
+## How it is shaped
+
+Three properties are worth knowing before you write any code, because they apply to the whole surface.
+
+**Your organization is never something you send.** It comes from the credential. There is no `organizationId` parameter anywhere, and a request that tries to name one is rejected. Every read and write is confined to the organization that owns the credential.
+
+**Long operations return a job, not a result.** Anything that takes more than a few seconds answers `202` with an operation id. You poll one endpoint, `GET /v1/operations/{operationId}`, for every kind of work. See [Operations](/workspace-api/concepts/operations).
+
+**Polling is the only completion signal.** There are no webhooks today. Each `202` carries a `Retry-After` telling you how long to wait, and the operation resource carries honest progress.
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/workspace-api/quickstart">
+    Upload a contract and review it, end to end.
+  </Card>
+  <Card title="Authentication" icon="key" href="/workspace-api/authentication">
+    Create a credential and understand scopes.
+  </Card>
+  <Card title="Operations" icon="clock" href="/workspace-api/concepts/operations">
+    The job envelope every long call returns, and how to poll it well.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/workspace-api/concepts/errors">
+    The problem+json shape and what each type means.
+  </Card>
+</CardGroup>

@@ -1,0 +1,308 @@
+---
+title: "Drafting"
+description: "Generate a contract, revise it, edit it safely, and export it as DOCX or PDF"
+icon: "pen-nib"
+---
+
+Drafting is four things: generating a document from a category and a set of instructions, reading it back as structure, replacing its body, and rendering it to a file. Everything lives under a matter, and everything that costs an LLM minutes answers `202` with an [operation](/workspace-api/concepts/operations).
+
+Reads need `drafting:read`. Writing, generating and revising all need `drafting:run`, and exporting needs `exports:create`.
+
+## Generating a draft
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{"category":"nda",
+       "title":"Acme mutual NDA",
+       "governingLawState":"ca",
+       "tone":"protective",
+       "specialInstructions":"Two year term, mutual, no residuals clause.",
+       "variables":{"party_a_name":"Acme Corp","party_b_name":"Northwind Ltd"}}'
+```
+
+Exactly three fields are required: `category`, `title` and `governingLawState`. Everything else is optional, and unknown fields are refused rather than ignored, so a typo is a `422` and not a silently dropped value.
+
+| Field | Required | Shape |
+| --- | --- | --- |
+| `category` | yes | A category slug, 1 to 64 characters |
+| `title` | yes | 1 to 200 characters |
+| `governingLawState` | yes | 1 to 80 characters |
+| `tone` | no | `protective`, `balanced` or `permissive`. Defaults to `balanced` |
+| `specialInstructions` | no | Free text, up to 40,000 characters |
+| `variables` | no | An object of string values. Defaults to empty |
+| `practiceArea` | no | 1 to 64 characters. Inferred from the category when omitted |
+
+There is no `jurisdiction` field. Vaquill drafts US documents only, so a field whose one accepted value is also its default would be something to discover before you could ignore it. `governingLawState` is required for the opposite reason: a US draft with no pinned governing law cites nothing.
+
+**`governingLawState` accepts three forms**: a two-letter code such as `ca`, a full state name such as `California`, or the sentinel `federal`. It is normalized on the way in, and an unrecognized value is refused.
+
+<Note>
+`category` is a slug rather than an open string, but it is **not published as an enum** in the schema. The underlying vocabulary still carries categories from an earlier, non-US product that this API does not sell, and publishing the enum would publish those as accepted values. Common slugs are `nda`, `employment`, `service`, `dpa`, `baa`, `statement_of_work`, `software_license` and `settlement_agreement`. An unknown slug comes back as `422 invalid-request` naming `body.category`, **before** anything is queued, so probing costs you nothing but a round trip.
+</Note>
+
+`variables` is free-form on purpose: which keys mean anything is a property of the category, and a closed set would need a release to add one. Anything the generator leaves unfilled is counted for you at export time as `unfilledPlaceholders`.
+
+### What comes back
+
+A `202` with an operation of type `draft.generate`, plus `Location` and `Retry-After` headers. Poll `GET /v1/operations/{operationId}` until it is terminal. On `succeeded`, `resource` names the draft:
+
+```json
+{
+  "kind": "draft",
+  "id": "drf_...",
+  "url": "/v1/matters/mat_.../drafts/drf_..."
+}
+```
+
+The draft row exists from the moment the launch is accepted, but it is an empty placeholder until the pipeline fills it. Read the operation, not the draft, to know whether it is finished.
+
+<Warning>
+This is the launch where `Idempotency-Key` matters most. The generation pipeline is not idempotent and its task is configured with no automatic retries, so a client timeout without a key is a coin flip between losing the work and paying for it twice. See [Idempotency](/workspace-api/concepts/idempotency).
+</Warning>
+
+## Reading drafts
+
+`GET /v1/matters/{matterId}/drafts` lists every draft in the matter, newest edit first, **without bodies**. It pages with `limit` (default 50, maximum 200) and `offset`, and returns `data` alongside a `pagination` object carrying `total` and `hasMore`.
+
+`GET /v1/matters/{matterId}/drafts/{draftId}` returns the same record plus the body.
+
+Four fields on that record are worth understanding before you build on them.
+
+| Field | What it is |
+| --- | --- |
+| `status` | Where the **document** is in its lifecycle: `draft`, `review`, `final` or `archived`. You set it |
+| `generationStatus` | Where the **job** that produced it got to, in the five public operation statuses. Only the pipeline sets it |
+| `version` | Current version number, counting from 1. This is the value you pass back as `expectedVersion` |
+| `source` | How the draft came to exist: `generated`, `uploaded` or `imported` |
+
+The two status fields are not synonyms, and confusing them is the easiest mistake here. A finished contract someone has marked `final` still reads `generationStatus: "succeeded"`, and a draft the pipeline never touched also reads `succeeded`, which is the honest answer for a document that was uploaded rather than generated.
+
+### Where the body lives
+
+The body comes back as `sections`, an ordered array of `heading`, `level` and `text`:
+
+```json
+{
+  "id": "drf_...",
+  "title": "Acme mutual NDA",
+  "version": 3,
+  "sections": [
+    { "heading": null, "level": null,
+      "text": "This Mutual Non-Disclosure Agreement is entered into by..." },
+    { "heading": "1. Confidential Information", "level": 2,
+      "text": "\"Confidential Information\" means..." }
+  ]
+}
+```
+
+**This is not plain text, and it is not the editor's document.** Vaquill stores a draft as the internal rich-text model its editor uses, and publishing that would make a third-party library's schema part of an API contract we cannot change without your release cycle. So structured content goes out, markdown comes in, and bytes are available on request. The one representation you never see, in either direction, is the stored editor document.
+
+The practical consequence is that `sections` is the shape your backend acts on: find the indemnity clause, check whether a limitation of liability exists, diff one heading across two revisions. If you want a flat document, join the sections yourself. If you want something a human reads, use the export.
+
+<Note>
+The first entry often has `heading: null`. That is not a bug. Body text preceding the first heading is where a preamble and a parties block live, and dropping it because it carries no heading would lose the first paragraph of most contracts.
+</Note>
+
+## Editing a draft
+
+`PUT /v1/matters/{matterId}/drafts/{draftId}` replaces the body. Only `contentMarkdown` is required.
+
+```bash
+curl -X PUT https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts/drf_... \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"contentMarkdown":"# Mutual NDA\n\n## 1. Confidential Information\n...",
+       "changeSummary":"Tightened the residuals carve-out",
+       "expectedVersion":3}'
+```
+
+| Field | Required | Shape |
+| --- | --- | --- |
+| `contentMarkdown` | yes | The complete new body, 1 to 500,000 characters |
+| `title` | no | 1 to 200 characters. Left alone when omitted |
+| `status` | no | `draft`, `review`, `final` or `archived`. Left alone when omitted |
+| `changeSummary` | no | Up to 500 characters, recorded against the version this replaces |
+| `expectedVersion` | no | Integer, 1 or greater |
+
+It answers `200` with the updated draft, at its new version number. The body you overwrote is kept as a version.
+
+<Warning>
+This is a `PUT`, not a `PATCH`. `contentMarkdown` is the **whole** document, so sending one paragraph replaces the contract with that paragraph. Markdown cannot express a partial body, and pretending otherwise would invite exactly that mistake. Whitespace alone is refused rather than accepted as an empty document.
+</Warning>
+
+### Optimistic concurrency
+
+`expectedVersion` is how a headless read-modify-write avoids a lost update. Read the draft, take its `version`, send that number back with your edit. If the draft has moved since you read it, the write is refused with `409 draft-version-conflict` and nothing is changed:
+
+```json
+{
+  "type": "https://docs.vaquill.ai/workspace-api/errors/draft-version-conflict",
+  "title": "Draft version conflict",
+  "status": 409,
+  "detail": "This draft is at version 5, not 3. Read it again and reapply the edit, or omit expectedVersion to overwrite.",
+  "instance": "/workspace/v1/matters/mat_.../drafts/drf_...",
+  "requestId": "req_ee238473ea99491dbb0a9b9799177c9f",
+  "expectedVersion": 3,
+  "currentVersion": 5
+}
+```
+
+Both numbers are on the problem document, so a retry can be automatic: re-read the draft, reapply your change to the current text, send it again with the new `version`.
+
+Omitting `expectedVersion` means "overwrite whatever is there". That is a legitimate thing to want, which is why it is allowed, and a bad thing to get by accident, which is why the field exists. A headless integration has no screen on which to notice that someone edited the draft in the browser between your two calls, so without the guard a lost update is invisible on both sides.
+
+<Note>
+The version predicate is applied to the write itself as well as being checked first, so two callers that pass the check in the same instant still cannot both land. The loser gets the same `409`.
+</Note>
+
+A body that renders to more than 5 MB of stored document is refused with `413 file-too-large`, carrying `limit` and `sizeBytes`.
+
+## Version history
+
+`GET /v1/matters/{matterId}/drafts/{draftId}/versions` lists the draft's history, newest first, paged the same way as the drafts list.
+
+Each entry carries three fields: `version`, `changeSummary` (whatever was supplied on the replace that created it, or null) and `createdAt`.
+
+**Old bodies are deliberately not published.** A version body would be a second copy of the same representation problem, and no customer has asked to read one. Treat this list as an audit trail, not as a way to restore text. If you need the ability to roll back, keep your own copy of the markdown you sent.
+
+## Revising a draft
+
+`POST /v1/matters/{matterId}/drafts/{draftId}/improvements` runs the draft back through the pipeline with new instructions. It answers `202` with an operation and accepts `Idempotency-Key`.
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts/drf_.../improvements \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{"instructions":"Add a mutual limitation of liability capped at fees paid.",
+       "tone":"balanced"}'
+```
+
+Every field is optional. `instructions` is free text up to 40,000 characters, `category` overrides the source draft's category, and `tone` is the same three-value enum, defaulting to `balanced`. Governing law and practice area are carried over from the source.
+
+**The result is a new draft. The source is never overwritten.** The operation is again of type `draft.generate` and its `resource.id` is a different `drf_` id from the one in the path. That is deliberate: the run takes minutes and costs money, and a customer who dislikes the result still holds the document they started from. Your integration has to decide which of the two is now current.
+
+A revision is refused with `409 draft-not-revisable` in two states: the source draft is still being generated, or it has essentially no body to revise (under 50 characters of text). Neither is a malformed request, which is why it is a `409` rather than a `422`. The same call succeeds once the generation finishes or once the draft has content.
+
+## Exporting
+
+`POST /v1/matters/{matterId}/drafts/{draftId}/exports` renders the draft and returns the file.
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts/drf_.../exports \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"format":"docx"}'
+```
+
+`format` is required and is one of `docx` or `pdf`. It answers **`200`**, not `201`, and the response is the file itself:
+
+```json
+{
+  "format": "docx",
+  "filename": "acme-mutual-nda.docx",
+  "sizeBytes": 48213,
+  "content": "UEsDBBQABgAIAAAAIQ...",
+  "unfilledPlaceholders": 2
+}
+```
+
+`content` is base64. Decode it and write it to disk; there is no URL to fetch. The filename is derived from the draft's own title, lowercased and hyphenated, so two exports of the same draft produce the same name and overwriting is an update rather than a second copy.
+
+<Note>
+Every other artifact on this API is a signed URL, and a draft export is the exception. A comparison export is signed over a file a worker already wrote, whereas a draft is rendered per call, so vending a URL would mean writing your client's work product to storage first. With encryption on, that is a choice between a URL you cannot decrypt and plaintext sitting in a bucket. A bounded response body is better than both.
+</Note>
+
+The ceiling is 10 MB. A larger render is refused with `413 export-too-large` carrying `limit` and `sizeBytes`, and the file is discarded rather than truncated.
+
+`unfilledPlaceholders` counts the `[Party Name]`-style spans that survived into the finished file. The web app warns a human about these before they send a contract; an integration that files an export unread needs the same signal, so it rides along as a number rather than as a header nobody parses. Treat anything above zero as a document not ready to leave the building.
+
+Exporting requires `exports:create`, which is separate from `drafting:read`. Reading a draft's structure and taking the finished contract out of the workspace are different risks, the same way `documents:download` is separate from `documents:read`.
+
+## Templates
+
+A template is a document **your organization uploaded** with its fillable spans marked. Running one is not the same thing as generating a draft:
+
+| | Generation | Template run |
+| --- | --- | --- |
+| Call | `POST /v1/matters/{matterId}/drafts` | `POST /v1/matters/{matterId}/templates/{templateId}/runs` |
+| Where the language comes from | Written by the model, from a category and your instructions | Your own uploaded document, unchanged |
+| What varies between runs | Everything | Only the marked spans |
+| Use it when | You do not have boilerplate for this document | You have approved boilerplate and want it filled in |
+
+The point of a template run is that your clause language is bit-identical between the template and the output. Only the marked variables are replaced.
+
+### Listing templates
+
+`GET /v1/templates` returns every active template the organization owns, paged with `limit` and `offset`. Each entry carries `id` (a `tpl_` identifier), `title`, `category`, an optional `description` and `sourceFilename`, and timestamps.
+
+<Note>
+Templates that belong to **one person** rather than to the organization are not listed. That is not an omission: an organization's machine credential has no business reading an employee's private document. If a template you expect is missing, it was saved personally and needs to be shared to the organization in the web app.
+</Note>
+
+The template's own body and its variable definitions are not published. What a headless caller needs is which template to name and what came back after it ran.
+
+### Running one
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../templates/tpl_.../runs \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Mutual NDA with Northwind Ltd, signed 3 March 2026, two year term.",
+       "slotOverrides":{"party_b_name":"Northwind Ltd"}}'
+```
+
+Both fields are optional. `prompt` is free text up to 8,000 characters that the extractor reads values out of, and `slotOverrides` is a map keyed by each variable's `varId` with values up to 4,000 characters. A template whose every variable you supply needs no prose at all, and values you supply are never overwritten by the extractor.
+
+The response is a `202` with an operation of type `template.run`. Its `resource` is the **run**, with kind `templateRun` and a `dtr_` identifier, not the draft.
+
+### Reading the run
+
+`GET /v1/matters/{matterId}/template-runs/{runId}` is where the answer lives:
+
+```json
+{
+  "id": "dtr_...",
+  "templateId": "tpl_...",
+  "status": "succeeded",
+  "draftId": "drf_...",
+  "prompt": "Mutual NDA with Northwind Ltd, ...",
+  "slots": [
+    { "id": "party_b_name", "value": "Northwind Ltd", "source": "user" },
+    { "id": "effective_date", "value": "2026-03-03", "source": "prompt" }
+  ],
+  "createdAt": "2026-08-19T10:00:00Z",
+  "completedAt": "2026-08-19T10:01:22Z"
+}
+```
+
+`draftId` is null until the run has finished rendering. `status` uses the same five public values as an operation, so the internal `planning` and `extracting` stages both read as `running`.
+
+**Read `slots[].source` before you trust a value.** A `source` of `user` was handed over by you. Anything else, `prompt`, `context`, `computed` or `default`, was inferred by a model and is worth checking before the document goes out.
+
+## Errors worth handling
+
+| Status | Type | When you hit it |
+| --- | --- | --- |
+| 404 | `draft-not-found` | No such draft, another organization's, another matter's, or binned. All four are the same response |
+| 404 | `template-not-found` | Same, for a template, including one that is no longer active |
+| 409 | `draft-version-conflict` | Your `expectedVersion` is stale. Re-read, reapply, retry |
+| 409 | `draft-not-revisable` | The source draft is still generating, or has no body to revise |
+| 422 | `draft-content-unprocessable` | Your `contentMarkdown` is a valid string but could not be converted into a body |
+| 422 | `invalid-request` | A field failed validation, including an unknown `category`. Detail is in `errors[]` |
+| 413 | `file-too-large` | The body you sent renders to more than 5 MB |
+| 413 | `export-too-large` | The rendered file is over 10 MB |
+| 429 | `concurrency-limit-reached` | Your organization already has 5 draft generations in flight, or 5 template runs. The two are counted separately, each capped at 5 |
+| 503 | `dispatch-unavailable` | The queue refused the work. Nothing started, so retry |
+
+Two of these are worth a second look.
+
+**`draft-content-unprocessable` is not `invalid-request`.** The field is a string and it passed the schema; what failed is our conversion of it into a draft body. The slug says which half broke so you are not hunting for a malformed field that is not there. Send headings, paragraphs and lists. Tables and fenced code blocks are not part of a draft.
+
+**`draft-not-revisable` is a `409`, not a `422`.** Nothing about your request is wrong, and changing the payload is the one thing that will not help. Poll the source draft's generation operation, or give it a body, and send exactly the same request again.
+
+A `404` on a draft is deliberately uninformative for the same reason every not-found on this API is: if a missing draft and someone else's draft returned different statuses, the status code would become a way to probe another organization. See [Errors](/workspace-api/concepts/errors).

@@ -1,0 +1,93 @@
+---
+title: "Operations"
+description: "One job envelope for every long-running call"
+icon: "clock"
+---
+
+Anything that takes more than a few seconds answers `202 Accepted` with an operation, not a result. Ingestion, review, drafting, draft improvement, template runs, compare, matrix runs and workflow runs all use the same envelope, so you write one polling loop rather than one per feature.
+
+```json
+{
+  "id": "op_01J8XQ...",
+  "type": "review.run",
+  "status": "queued",
+  "createdAt": "2026-08-19T10:00:00Z",
+  "completedAt": null,
+  "matterId": "mat_...",
+  "resource": null,
+  "error": null,
+  "progress": { "done": 0, "total": 12, "unit": "cells" },
+  "requestId": "req_..."
+}
+```
+
+The `202` also carries two headers worth using:
+
+| Header | Meaning |
+| --- | --- |
+| `Location` | The operation URL to poll |
+| `Retry-After` | Seconds to wait before the first poll, tuned per operation type |
+
+## The five statuses
+
+There are exactly five, and no others will ever appear.
+
+| Status | Meaning |
+| --- | --- |
+| `queued` | Accepted, not started |
+| `running` | In progress |
+| `succeeded` | Finished; `resource` names what was produced |
+| `failed` | Finished; `error` says why, in customer-actionable terms |
+| `cancelled` | Deliberately stopped, or not applicable |
+
+`succeeded`, `failed` and `cancelled` are terminal. A terminal operation always has `completedAt` set, and a non-terminal one never does.
+
+<Note>
+Internally these features use nineteen different status vocabularies. They are mapped onto these five before they reach you, so an internal value can never leak into your integration and become something you depend on.
+</Note>
+
+## Reading progress
+
+`progress` carries `done`, `total` and a `unit`. The unit matters: `{done: 43, total: 100}` means something quite different for `cells` than for `documents`, and a progress bar built without it will be wrong.
+
+A partial success reports `succeeded` with `done` short of `total`, rather than `failed`. The work that completed is real and available; failing the whole operation would tell you nothing worked when most of it did.
+
+## Polling well
+
+Respect `Retry-After` on the first poll, then back off. Operations remain readable for **30 days**, so a poller that dies can resume.
+
+<Warning>
+There are no webhooks. Polling this resource is the only way you learn a job finished, which is why `Retry-After` is worth honoring rather than picking your own interval.
+
+## Finding operations you did not keep
+
+```bash
+GET /workspace/v1/operations?status=running&limit=50
+```
+
+Returns the standard `{data, pagination}` page, newest first. This is how you recover an operation id you lost, and how you answer "what of mine is still running" after a restart.
+
+Three filters, and they combine:
+
+| Filter | Effect |
+| --- | --- |
+| `status` | One of the five. `queued` and `running` are what is still in flight |
+| `type` | One operation type, for example `review.run` |
+| `matterId` | Only operations belonging to that matter |
+
+<Warning>
+**A running operation's status in this list can lag.** Each row is the last status we recorded for it, not a fresh read of the underlying job. That is what keeps a page of 200 to a single query instead of several hundred.
+
+Use this route to find out **which** operations to poll, and `GET /v1/operations/{operationId}` to find out where one actually is.
+</Warning>
+
+You only see operations whose capability your credential can read. A credential with `review:read` and nothing else sees reviews and no matrix runs, and one with no capability scope at all gets an empty page rather than an error. An unknown `type` is likewise an empty page, never a `422`.
+
+Operations drop out of this list at the same 30 days after which they stop being readable individually, so the list can never offer you an id that then answers `404`.
+</Warning>
+
+## When it fails
+
+`error` carries a code and a message written for the person reading your logs. Internal exception text, file paths and stack frames are stripped before it reaches you.
+
+A worker that dies mid-job does not leave you polling forever: a sweeper moves abandoned operations to `failed` with `STUCK_OPERATION`.

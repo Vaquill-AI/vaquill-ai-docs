@@ -1,0 +1,63 @@
+---
+title: "Idempotency"
+description: "Retry a launch safely, and never pay for the same job twice"
+icon: "rotate"
+---
+
+Starting work costs money and takes minutes. If a launch request times out you cannot tell whether it arrived, and without a way to say "this is the same request", the only options are to lose the work or run it twice.
+
+`Idempotency-Key` is that way.
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../reviews \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: 8f1c2b4e-9a10-4d5f-8e2b-1c7d3a6f0b91" \
+  -H "Content-Type: application/json" \
+  -d '{"playbookId":"pbk_...","documentId":"doc_..."}'
+```
+
+Generate one UUID per logical action, and **reuse it on every retry of that action**. Generating the key inside your retry loop produces a new key each attempt, which defeats the whole mechanism.
+
+## Which endpoints take it
+
+The seven that launch a job:
+
+| Endpoint | Starts |
+| --- | --- |
+| `POST /v1/matters/{matterId}/reviews` | A playbook review |
+| `POST /v1/matters/{matterId}/comparisons` | A comparison |
+| `POST /v1/matters/{matterId}/drafts` | A draft generation |
+| `POST /v1/matters/{matterId}/drafts/{draftId}/improvements` | A draft improvement |
+| `POST /v1/matters/{matterId}/matrices/{matrixId}/runs` | A matrix run |
+| `POST /v1/matters/{matterId}/templates/{templateId}/runs` | A template run |
+| `POST /v1/matters/{matterId}/workflows/{workflowId}/runs` | A workflow run |
+
+One other call answers `202` with an operation and takes no key: `POST /v1/uploads/{uploadId}/complete`. It does not need one, because the upload id is already the thing that makes it repeatable. Ordinary writes such as creating a matter or a client take no key either, because they are cheap, fast, and already tell you plainly whether they succeeded.
+
+The header is optional. Omitting it is a legitimate way of saying "no idempotency promise", and if you never retry a launch you never need it. Sending it **empty** is a `400`, since an empty value is a bug in your client rather than a decision.
+
+## What a replay returns
+
+Send the same key with the same payload and you get the original operation back. No second job starts, nothing is charged twice, and the operation id is the one you already hold.
+
+We compare a fingerprint of the request, computed over sorted JSON keys, so a client that serializes its body in a different key order on the retry still gets its replay and not a rejection.
+
+## Same key, different payload
+
+That is a `422` with type `idempotency-key-reused`.
+
+Returning the first operation would report that work had started which never will, and leave you polling a job you did not ask for. Refusing tells you plainly that your client reused a key it should have rotated, or that a retry mutated its own body.
+
+## Scope, length and lifetime
+
+Keys are scoped to your installation, so two credentials in the same organization can use the same key without colliding, and another customer's key can never collide with yours.
+
+A key may be up to 255 characters. A UUID is comfortably inside that.
+
+<Note>
+Over [MCP](/workspace-api/mcp) the key is not optional. Every launch tool takes it as a required argument, because an AI agent that retries is exactly the caller that should not be able to start a second review by accident.
+</Note>
+
+A key stays associated with its operation for as long as that operation is readable, which is **30 days**. Past that, reusing the key is refused with `422 idempotency-key-reused` telling you to use a new one, rather than replaying an operation you could no longer poll.
+
+So a key is for one action and its retries. Do not use a fixed key as a permanent deduplication token.

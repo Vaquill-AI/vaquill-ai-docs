@@ -1,0 +1,19 @@
+---
+title: "Acting user not enrolled"
+description: "403 acting-user-not-enrolled"
+icon: "user-slash"
+---
+
+**`403`** `acting-user-not-enrolled`
+
+The acting user named in `X-Vaquill-Acting-User` is not one this installation recognizes.
+
+## What to do
+
+Send an identifier the installation knows about, or leave the header off, in which case the action is recorded as performed by an autonomous service.
+
+<Note>
+As with `acting-user-required`, v1 records an asserted acting user without checking it against a list, so no published operation returns this status today. It is in the taxonomy so that turning that check on later is not a breaking change for you.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

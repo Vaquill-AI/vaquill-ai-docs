@@ -158,6 +158,58 @@
               "guides/deep-research",
               "guides/answer-verification"
             ]
+          },
+          {
+            "group": "INTEGRATIONS",
+            "pages": [
+              "integrations/index",
+              {
+                "group": "MCP SERVERS",
+                "pages": [
+                  "integrations/mcp/index",
+                  "integrations/mcp/vaquill"
+                ]
+              },
+              {
+                "group": "CHATBOTS",
+                "pages": [
+                  "integrations/chatbots/index",
+                  "integrations/chatbots/slack",
+                  "integrations/chatbots/discord",
+                  "integrations/chatbots/microsoft-teams",
+                  "integrations/chatbots/telegram",
+                  "integrations/chatbots/whatsapp",
+                  "integrations/chatbots/signal"
+                ]
+              },
+              {
+                "group": "WIDGETS",
+                "pages": [
+                  "integrations/widgets/index",
+                  "integrations/widgets/embedded-chat",
+                  "integrations/widgets/docker-widget",
+                  "integrations/widgets/widget-pro"
+                ]
+              },
+              {
+                "group": "BROWSER",
+                "pages": [
+                  "integrations/browser/chrome"
+                ]
+              },
+              {
+                "group": "DOCUMENT MANAGEMENT",
+                "pages": [
+                  "integrations/dms/imanage"
+                ]
+              },
+              {
+                "group": "AUTOMATION",
+                "pages": [
+                  "integrations/automation/n8n"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -263,65 +315,54 @@
         ]
       },
       {
-        "tab": "Integrations",
-        "icon": "plug",
+        "tab": "Workspace API",
+        "icon": "briefcase",
         "groups": [
           {
-            "group": "OVERVIEW",
+            "group": "GET STARTED",
             "pages": [
-              "integrations/index"
+              "workspace-api/overview",
+              "workspace-api/quickstart",
+              "workspace-api/authentication"
             ]
           },
           {
-            "group": "MCP SERVERS",
+            "group": "CORE CONCEPTS",
             "pages": [
-              "integrations/mcp/index",
-              "integrations/mcp/vaquill"
+              "workspace-api/concepts/operations",
+              "workspace-api/concepts/idempotency",
+              "workspace-api/concepts/pagination",
+              "workspace-api/concepts/rate-limits",
+              "workspace-api/concepts/errors"
             ]
           },
           {
-            "group": "CHATBOTS",
+            "group": "CAPABILITIES",
             "pages": [
-              "integrations/chatbots/index",
-              "integrations/chatbots/slack",
-              "integrations/chatbots/discord",
-              "integrations/chatbots/microsoft-teams",
-              "integrations/chatbots/telegram",
-              "integrations/chatbots/whatsapp",
-              "integrations/chatbots/signal"
+              "workspace-api/clients-and-matters",
+              "workspace-api/documents",
+              "workspace-api/drafting",
+              "workspace-api/review-and-playbooks",
+              "workspace-api/compare",
+              "workspace-api/matrices",
+              "workspace-api/workflows"
             ]
           },
           {
-            "group": "WIDGETS",
+            "group": "AGENTS",
             "pages": [
-              "integrations/widgets/index",
-              "integrations/widgets/embedded-chat",
-              "integrations/widgets/docker-widget",
-              "integrations/widgets/widget-pro"
-            ]
-          },
-          {
-            "group": "BROWSER",
-            "pages": [
-              "integrations/browser/chrome"
-            ]
-          },
-          {
-            "group": "DOCUMENT MANAGEMENT",
-            "pages": [
-              "integrations/dms/imanage"
-            ]
-          },
-          {
-            "group": "AUTOMATION",
-            "pages": [
-              "integrations/automation/n8n"
+              "workspace-api/mcp"
             ]
           }
         ]
       },
       {
-        "tab": "API Guide",
+        "tab": "Workspace Reference",
+        "icon": "file-code",
+        "openapi": "https://api.vaquill.ai/workspace/openapi/v1.json"
+      },
+      {
+        "tab": "Data API Guide",
         "icon": "code",
         "groups": [
           {
@@ -330,6 +371,12 @@
               "api-guide/coverage",
               "api-guide/roadmap",
               "api-guide/changelog"
+            ]
+          },
+          {
+            "group": "USE CASES",
+            "pages": [
+              "api-guide/use-cases"
             ]
           },
           {
@@ -348,6 +395,7 @@
               "api-guide/concepts/jurisdictions",
               "api-guide/concepts/section-ids",
               "api-guide/concepts/status-and-currency",
+              "api-guide/concepts/amendment-history",
               "api-guide/concepts/formats"
             ]
           },
@@ -385,17 +433,12 @@
               "api-guide/recipes/citation-enrichment",
               "api-guide/recipes/mcp-tool"
             ]
-          },
-          {
-            "group": "USE CASES",
-            "pages": [
-              "api-guide/use-cases"
-            ]
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Data API Reference",
+        "icon": "database",
         "openapi": "https://api.vaquill.ai/external/openapi.json"
       }
     ]
@@ -512,7 +555,7 @@
           },
           {
             "label": "API Reference",
-            "href": "/api-reference/statutes/search-us-statutes"
+            "href": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
           },
           {
             "label": "Open US Law Dataset",
@@ -602,28 +645,60 @@
       "destination": "/integrations/mcp/vaquill"
     },
     {
-      "source": "/api-reference/pricing/get-api-credit-pricing",
-      "destination": "/api-reference/statutes/search-us-statutes"
+      "source": "/api-reference/statutes/search-us-statutes",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/statutes/browse-the-hierarchy",
+      "destination": "/api-reference/us-statutes/browse-the-statutory-hierarchy"
+    },
+    {
+      "source": "/api-reference/statutes/get-related-sections",
+      "destination": "/api-reference/us-statutes/get-the-sections-around-this-one"
+    },
+    {
+      "source": "/api-reference/statutes/list-bodies-of-law",
+      "destination": "/api-reference/us-statutes/catalog-the-bodies-of-law-available"
+    },
+    {
+      "source": "/api-reference/statutes/batch-fetch-sections",
+      "destination": "/api-reference/us-statutes/get-metadata-for-many-statute-sections"
+    },
+    {
+      "source": "/api-reference/statutes/resolve-a-citation",
+      "destination": "/api-reference/us-statutes/resolve-a-citation-to-its-section"
+    },
+    {
+      "source": "/api-reference/statutes/list-state-codes",
+      "destination": "/api-reference/us-statutes/browse-the-statutory-hierarchy"
     },
     {
       "source": "/api-reference/statutes/list-us-state-codes",
-      "destination": "/api-reference/statutes/list-state-codes"
+      "destination": "/api-reference/us-statutes/browse-the-statutory-hierarchy"
+    },
+    {
+      "source": "/api-reference/statutes/list-us-jurisdictions",
+      "destination": "/api-reference/us-statutes/coverage-matrix-by-jurisdiction-and-corpustype"
     },
     {
       "source": "/api-reference/statutes/list-us-statutes-coverage",
-      "destination": "/api-reference/statutes/list-us-jurisdictions"
+      "destination": "/api-reference/us-statutes/coverage-matrix-by-jurisdiction-and-corpustype"
     },
     {
       "source": "/api-reference/citations/:slug*",
-      "destination": "/api-reference/statutes/search-us-statutes"
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
     },
     {
       "source": "/api-reference/research/:slug*",
-      "destination": "/api-reference/statutes/search-us-statutes"
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
     },
     {
       "source": "/api-reference/acts-&-legislation/:slug*",
-      "destination": "/api-reference/statutes/search-us-statutes"
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/statutes/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
     },
     {
       "source": "/data-sources",

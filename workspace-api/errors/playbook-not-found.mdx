@@ -1,0 +1,15 @@
+---
+title: "Playbook not found"
+description: "404 playbook-not-found"
+icon: "book"
+---
+
+**`404`** `playbook-not-found`
+
+No playbook with that id is readable by this credential. That covers an id that does not exist, one owned by a different organization, and one owned by an individual person rather than by the organization.
+
+## What to do
+
+List `GET /v1/playbooks` and use an id from there. Personal playbooks are invisible to a machine credential by design, so a playbook a colleague built for themselves in the web app will not appear and cannot be run through the API. Have them save it to the organization, or create an organization playbook from a starter template.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

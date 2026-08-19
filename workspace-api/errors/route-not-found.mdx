@@ -1,0 +1,19 @@
+---
+title: "No such route"
+description: "404 route-not-found"
+icon: "signs-post"
+---
+
+**`404`** `route-not-found`
+
+There is no operation published at that path. This is about the URL itself, not about anything the URL might have pointed at.
+
+## What to do
+
+Check the path against the API reference, including the `/workspace/v1` prefix and the plural on each collection. Every path starts `https://api.vaquill.ai/workspace/v1`.
+
+<Warning>
+Do not treat this like `matter-not-found`. That one means the path was right and the id was not, so retrying can eventually work. This one means the path is not part of the API, so retrying it will fail forever no matter what happens to your data.
+</Warning>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

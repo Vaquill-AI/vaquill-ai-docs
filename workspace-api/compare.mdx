@@ -1,0 +1,153 @@
+---
+title: "Comparing documents"
+description: "Redline two versions of a contract and export the marked-up file"
+icon: "code-compare"
+---
+
+Compare takes two documents that are already in a matter and produces a **redline**: a list of the changes between them, and a Word or PDF file with those changes marked up.
+
+Every path below is prefixed with `https://api.vaquill.ai/workspace/v1`, and every call carries `Authorization: Bearer vq_ws_...`.
+
+## Starting a comparison
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../comparisons \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"MSA v3 against v2",
+       "originalDocumentId":"doc_...",
+       "revisedDocumentId":"doc_..."}'
+```
+
+The two sides are named by document id, and both must already be in the matter in the path. `title`, `originalDocumentId` and `revisedDocumentId` are required; `settings` is the only optional field. There is no `matterId` in the body, because the matter is the URL, which is what makes the authorization boundary visible in the request you send.
+
+Order is meaningful. `originalDocumentId` is the "before" side, so a deletion in the redline means text that was in the original and is not in the revised version.
+
+This is a launch, so it takes `Idempotency-Key` and answers `202` with an [operation](/workspace-api/concepts/operations) of type `compare.run`. Poll `GET /v1/operations/{operationId}` until it is terminal. When it succeeds, `resource.id` is the `comparisonId`. Retrying with the same key returns the original operation and starts nothing, which is what makes a client timeout free rather than a second comparison.
+
+Starting a comparison needs `compare:run`. Reading one needs `compare:read`. Exporting needs `exports:create`.
+
+### Settings
+
+`settings` is optional and every key inside it has a default, so most callers omit it entirely.
+
+| Key | Default |
+| --- | --- |
+| `granularity` | `word`, or `sentence` or `character` |
+| `ignoreWhitespace` | `true` |
+| `ignoreCase` | `false` |
+| `ignoreNumbering` | `false` |
+| `ignoreFormatting` | `false` |
+| `compareTables` | `true` |
+| `compareFootnotes` | `true` |
+| `compareHeadersFooters` | `true` |
+| `authorLabel` | `"Vaquill"`, the author name on the tracked changes |
+
+An unknown key inside `settings` is a `422`, not a silent no-op. A setting we accepted and ignored would leave you believing the comparison honored it.
+
+## The trap: two versions of one document
+
+Compare is a **redline engine**, not a general document differ. It assumes the two sides are two versions of the same document, and it refuses in two separate places when they are not. Those two refusals arrive at different times and look completely different, which is what costs the afternoon.
+
+<Warning>
+A format refusal is **synchronous**, at launch. A relatedness refusal happens **inside the worker**, so it reaches you as a `failed` operation and never as a `4xx`.
+</Warning>
+
+### Only three formats can be compared
+
+Comparison accepts `.docx`, `.doc` and `.pdf`. Nothing else.
+
+Anything else is refused with `415 unsupported-media-type`, and the problem document names the accepted set. This bites because the upload surface is much wider: the Workspace API accepts 37 extensions, so a `.txt` uploads cleanly, ingests cleanly, reads back fine from `/text`, and then fails only when you try to compare it. The refusal is deliberate rather than incidental. The compare engine's own format type is a closed set of those three, so accepting a fourth would surface a merely unsupported request as a `500`.
+
+If your source is plain text or markup, convert it to DOCX or PDF before uploading the copy you intend to compare.
+
+### Two unrelated documents are refused by the engine
+
+Before it diffs anything, the worker checks that the two sides share verbatim multi-word runs. Two versions of one contract share a great many, even across a heavy multi-year rewrite. An MSA and a DPA share essentially none.
+
+When that check fails, the comparison ends as an operation with `status: "failed"` and an `error` saying the two look like different documents rather than two versions of one, and pointing you at a [matrix](/workspace-api/matrices) instead. This is the correct answer: diffing unrelated files produces an unusable wall of changes, and the underlying engine would otherwise fail with a much less helpful message.
+
+So a launch that returns `202` is not yet evidence that the pairing made sense. Read the terminal operation before you treat the comparison as real.
+
+<Note>
+The check is skipped for very short documents, where there is too little text for the measure to mean anything and a wrong refusal is likelier than a real catch. Below roughly forty distinct word runs, two unrelated files will diff rather than be refused, and you get a large meaningless redline instead of a clear failure.
+</Note>
+
+<Note>
+To pull the same fields out of many **different** documents, you want a matrix, not a comparison. Compare answers "what changed between these two"; a matrix answers "what does each of these say about X".
+</Note>
+
+### One more refusal worth knowing
+
+A comparison can only read documents that were **uploaded through this API**. A document a person added in the web app is refused at launch with `404 document-not-found`, and the message says so explicitly.
+
+The reason is that the compare worker resolves each side scoped to the uploading user, while matrices and workflows resolve theirs scoped to the organization. Refusing at launch turns what would be a puzzling Celery-side storage failure a minute later into an immediate, explicable answer. Documents your integration uploaded are never affected.
+
+## Reading the comparison
+
+```bash
+curl https://api.vaquill.ai/workspace/v1/matters/mat_.../comparisons/cmp_... \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+You get the summary object: `status`, the two sides as `original` and `revised`, the `settings` the run used, `hunkCount`, `substantiveCount`, and a `summary` with `summaryBullets` when the run produced them. `summary` and `summaryBullets` are nullable, so branch on their presence.
+
+**`substantiveCount` is the number a reviewer actually has to look at.** `hunkCount` counts everything, including reformatting and renumbering. Reporting the second as "changes to review" is how a three-change amendment gets described to a lawyer as four hundred.
+
+`original` and `revised` each carry `documentId`, `filename`, `format`, `pageCount` and `sizeBytes` as they were resolved **at launch**. They are recorded rather than looked up, so they stay true after the document is renamed or replaced.
+
+## Paging the change list
+
+A hunk is one structural change: an insertion, a deletion, or a replacement of a span of text, with the surrounding context the engine could identify.
+
+```bash
+curl "https://api.vaquill.ai/workspace/v1/matters/mat_.../comparisons/cmp_.../hunks?limit=100&offset=0" \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+Hunks are a separate call from the comparison, and separately paged, because the two have completely different sizes. The comparison summary is a small fixed object you may read many times while polling; the change list is unbounded and each entry can carry the full before and after text of a clause. Inlining it would make every status check drag a whole diff along with it.
+
+`limit` runs from 1 to 200 and defaults to 50. `offset` defaults to 0. The response is `{data, pagination}`, where `pagination` carries `limit`, `offset`, `total` and `hasMore`. Page by advancing `offset` while `hasMore` is true, and use `total` to size the job before you start.
+
+The list is ordered by `index`, which is the stable position a person means by "the third change". Sort on `index` rather than on array position, and quote it when a human needs to find the same change.
+
+Each hunk always carries `id`, `index`, `kind` and `severity`. Today the engine emits `insert`, `delete` or `replace` for `kind`, and `substantive`, `cosmetic` or `numbering` for `severity`. Both are typed as open strings rather than closed enums, so treat an unfamiliar value as data to display, not as an error.
+
+Everything else on a hunk is nullable and populated only when that pass ran. `beforeText` is absent on a pure insertion and `afterText` on a pure deletion. `sectionHeading` and `clauseLabel` locate the change in the contract. `playbookVerdict`, `playbookReason` and `playbookClauseType` appear only when the comparison ran against a playbook, and `favorability`, `materiality`, `category` and `impact` only when the analysis pass ran.
+
+## Exporting the redline
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../comparisons/cmp_.../exports \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"format":"redlineDocx"}'
+```
+
+`format` is the only field and it is required. It is one of `redlineDocx` or `redlinePdf`.
+
+Answers **`201`** with `{format, url, expiresAt}`. The `url` is a short-lived signed link to the rendered file, currently about fifteen minutes; read `expiresAt` rather than hardcoding a duration, since it is absolute and a duration is only meaningful if you know exactly when the response was produced.
+
+It is a `POST` rather than a `GET` because it creates something: a bearer URL that grants access to a client document for as long as it lives. Recording that as a creation is what lets an audit answer who took a copy and when. The bytes are not proxied through the API, so pull them from the URL directly.
+
+<Note>
+A `409 export-not-available` means the comparison has not finished successfully, so the file does not exist yet. Poll the operation rather than retrying the export.
+</Note>
+
+## Limits and refusals
+
+| Status | Type | When |
+| --- | --- | --- |
+| 404 | `document-not-found` | A side is not in this matter, or was added by a person rather than by your integration |
+| 409 | `export-not-available` | The comparison has not produced that format yet |
+| 413 | `run-too-large` | The two documents together exceed 100 MB. The problem document carries `limit` and `requested` |
+| 415 | `unsupported-media-type` | A side is not `.docx`, `.doc` or `.pdf` |
+| 429 | `concurrency-limit-reached` | Your organization already has 10 comparisons in flight. Wait for one to finish |
+| 503 | `run-guard-unavailable` | The admission guard could not be consulted. It fails closed. Retry with backoff |
+
+None of these writes anything, so a refused launch is free and leaves no comparison behind.
+
+## What is not here
+
+There is no endpoint that lists a matter's comparisons, and none that deletes one. Keep the `comparisonId` from the finished operation; it is how you get back to a comparison later.

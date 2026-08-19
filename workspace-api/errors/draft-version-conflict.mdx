@@ -1,0 +1,19 @@
+---
+title: "Draft version conflict"
+description: "409 draft-version-conflict"
+icon: "code-branch"
+---
+
+**`409`** `draft-version-conflict`
+
+The draft moved between the version you read and the update you sent. Somebody edited it in the web app, or another of your calls did, and applying your edit now would silently discard theirs.
+
+## What to do
+
+The problem document carries `expectedVersion` and `currentVersion`, so a retry can be automatic: fetch the draft again, reapply your change to the version that came back, and resend with the new `expectedVersion`. If you genuinely want last-write-wins, omit `expectedVersion` entirely and your update overwrites whatever is there.
+
+<Warning>
+A headless integration has no screen to notice a concurrent edit, so a lost update here would be invisible on both sides. That is why the conflict is reported rather than resolved for you.
+</Warning>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

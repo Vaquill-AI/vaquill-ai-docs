@@ -1,0 +1,19 @@
+---
+title: "Acting user rejected"
+description: "400 acting-user-rejected"
+icon: "user-xmark"
+---
+
+**`400`** `acting-user-rejected`
+
+You sent an `X-Vaquill-Acting-User` header whose value cannot be stored exactly as sent. Either it is longer than 200 characters, or it contains control characters.
+
+## What to do
+
+Send a printable value of at most 200 characters, or leave the header off. The value is written verbatim into the audit trail and is never truncated or scrubbed for you: a repaired value would put a different identifier in the record and present it as your assertion, which is worse than storing nothing. An email address, a directory DN or a UUID all fit comfortably.
+
+<Note>
+Omitting the header is legitimate and is not this error. An absent acting user is recorded honestly as an autonomous service acting on your organization's behalf.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

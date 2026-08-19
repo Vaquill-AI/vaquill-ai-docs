@@ -1,0 +1,19 @@
+---
+title: "Matter not found"
+description: "404 matter-not-found"
+icon: "briefcase"
+---
+
+**`404`** `matter-not-found`
+
+No matter with that id is available to this credential. Two ways to arrive here are answered identically on purpose: no such matter, and a matter belonging to another organization. A malformed id is the same answer again.
+
+## What to do
+
+Call `GET /v1/matters` and use an id from that list, which is by definition the set your credential can reach. A matter id copied from a browser URL is a different form from the `mat_` id this API publishes, so paste from a response rather than from the address bar.
+
+<Note>
+The permission case is deliberately not a `403`. Distinguishing it would turn the status code into a way to confirm that a given matter exists in some other customer's organization.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

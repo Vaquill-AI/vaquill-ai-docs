@@ -1,0 +1,15 @@
+---
+title: "Workflow not found"
+description: "404 workflow-not-found"
+icon: "diagram-project"
+---
+
+**`404`** `workflow-not-found`
+
+There is no active workflow with that id. A workflow is a definition we publish rather than something in your data, so this is a straightforward "check the id" answer. A workflow that has been retired reads the same as one that never existed.
+
+## What to do
+
+Call `GET /v1/workflows` for the ids this API accepts and use one from the list. If a workflow you were running has disappeared from the catalog, it has been retired: pick a current one rather than retrying, and check the workflows guide for what replaced it.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

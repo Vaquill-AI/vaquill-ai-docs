@@ -1,0 +1,19 @@
+---
+title: "Could not start the work"
+description: "503 dispatch-unavailable"
+icon: "paper-plane"
+---
+
+**`503`** `dispatch-unavailable`
+
+The work was accepted nowhere: the queue would not take the job. Nothing was started, and any placeholder record has been marked failed so it does not sit spinning in the web app.
+
+## What to do
+
+Retry with backoff. This is ours to fix, not yours, and the same request will succeed once the queue recovers.
+
+<Note>
+Because nothing started, a retry cannot produce a duplicate. If you sent an `Idempotency-Key`, reuse the same one on the retry; if you did not, resend as is.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

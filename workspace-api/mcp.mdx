@@ -1,0 +1,93 @@
+---
+title: "MCP server"
+description: "Drive the Workspace API from an AI agent, over the Model Context Protocol"
+icon: "plug"
+---
+
+Every operation in this API is also published as an MCP tool. Point an agent at one endpoint with one credential and it can create matters, read extracted text, run a playbook review, generate a draft, build a matrix and collect the results, using the same authorization as your HTTP integration.
+
+```
+https://api.vaquill.ai/workspace/mcp
+```
+
+There is no second catalog to maintain. The tool list is derived from the same route registry the REST API is built from, so an operation and its tool are the same thing described twice, and the server refuses to start if the two ever disagree.
+
+## Connecting
+
+The credential is a static header on the MCP connection. That is the whole authentication story.
+
+<CodeGroup>
+```bash Claude Code
+claude mcp add --transport http vaquill-workspace \
+  https://api.vaquill.ai/workspace/mcp \
+  --header "Authorization: Bearer vq_ws_..."
+```
+
+```json Client config
+{
+  "mcpServers": {
+    "vaquill-workspace": {
+      "type": "http",
+      "url": "https://api.vaquill.ai/workspace/mcp",
+      "headers": {
+        "Authorization": "Bearer vq_ws_..."
+      }
+    }
+  }
+}
+```
+</CodeGroup>
+
+The credential is an ordinary `vq_ws_` credential from the automation console, with whatever scopes you granted it. See [Authentication](/workspace-api/authentication). Nothing about this endpoint needs a different credential type or a separate enrollment.
+
+<Warning>
+Do not put the credential in the URL. The MCP specification prohibits access tokens in a query string, and this server only reads the `Authorization` request header.
+</Warning>
+
+### There is no OAuth, and that is deliberate
+
+This server publishes **no OAuth discovery document**. All three well-known paths (`oauth-protected-resource`, `oauth-authorization-server`, `openid-configuration`) answer `404`, and the `401` challenge is a bare `Bearer` with no `resource_metadata` parameter. The application refuses to start if a discovery document ever appears on it.
+
+That is not an omission waiting to be fixed. We run no authorization server, so a metadata document would have nothing truthful to name, and publishing one would break the connection that works today: current clients treat a discovered document as winning over a credential the user configured, so they would abandon your static header and start a flow that cannot complete.
+
+The practical consequence for you is short. Configure the header, and ignore any client affordance that offers to "sign in" to this server.
+
+## What the agent sees
+
+**50 tools**, one per REST operation. Names come from the operation id, so `matters.list` is `matters_list`, `documents.text` is `documents_text`, `workflows.run` is `workflows_run` and `playbookTemplates.list` is `playbook_templates_list`.
+
+Arguments follow the HTTP call closely. Path and query parameters keep their published names, so `matterId` is `matterId`. A JSON request body is nested under a single `body` argument, which avoids a collision when a name such as `limit` is a query parameter on one operation and a body field on another.
+
+Each tool description carries the operation's own prose plus the scope it requires and the underlying `METHOD /path`, so a refusal is legible to the model rather than something it retries blindly. Tools are annotated: a `GET` is marked read-only, a `DELETE` destructive, and a `POST` is deliberately **not** marked idempotent, because on this API a `POST` is where work is minted.
+
+<Note>
+`idempotencyKey` is a **required** argument on the tools that launch work, even though the `Idempotency-Key` header is optional over HTTP. Requiring it in the schema means the agent supplies one in its own turn, which is what makes a retried tool call free instead of a second billed job.
+</Note>
+
+## What it can and cannot do
+
+Every tool call is the HTTP request the REST API already serves. It re-enters the same application, so it gets the same credential resolution, the same scope and matter checks, the same rate limits, and the same [problem document](/workspace-api/concepts/errors) on refusal. No authorization decision is made in the MCP layer, which means a tool can never reach something your credential could not reach over HTTP. Narrow the scopes on the credential and you narrow the agent.
+
+Your organization is fixed by the credential. No tool accepts an organization argument, and there is no way to name one.
+
+**Long work still returns an operation.** A review, a draft, a matrix run or a workflow run answers with an operation id, exactly as it does over HTTP, and the agent has to call `operations_get` until `status` is `succeeded`, `failed` or `cancelled`. Nothing is pushed to the agent and there are no webhooks, so an agent that fires a launch tool and reports success has reported that the job started, not that it finished. The server's own instructions tell the model this, but a workflow that depends on the result should be built to poll.
+
+**Reading a document means `documents_text`, not `documents_download`.** `documents_text` returns extracted text, which is the only form of a contract a model can reason over. `documents_download` returns the original file, inlined as an embedded resource only when it is under **1 MiB**; above that the tool answers with a text refusal naming the byte count and the HTTP route to fetch it from. That cap is a decision, not an accident: base64 of a large PDF is context you pay for on a response the model cannot read.
+
+**Uploading bytes is not an MCP flow.** `uploads_initiate`, `uploads_presign_part` and `uploads_complete` are all published, but the bytes themselves are `PUT` directly to presigned storage URLs, which is a plain HTTP call outside this server. An agent can start and finish an upload; something else has to move the file.
+
+**The catalog costs roughly 28,000 tokens** the first time a session lists tools, measured over the 50 tool definitions. That is the honest price of publishing the whole API rather than a hand-picked subset, and it is paid once per session.
+
+## Transport details
+
+Streamable HTTP, stateless, JSON responses. No session id and no server-initiated stream.
+
+`GET` and `DELETE` on the endpoint answer `405` with `Allow: POST`, which is the correct answer for a server that implements no standalone event stream and no protocol-level session. An unauthenticated request gets `401` before that, since authentication runs in front of the mount.
+
+The protocol version is mirrored back from what your client asks for, capped at `2025-11-25`. A client asking for `2026-07-28` negotiates `2025-11-25`. The only capability advertised is `tools`, with `listChanged: false`, because the catalog is fixed when the server starts.
+
+If your integration asserts a human actor, send `X-Vaquill-Acting-User` as a header on the MCP connection alongside the credential. It is copied onto every request the tools make, so the audit trail reads the same as it would over HTTP. Being a connection header, it is fixed for the life of the connection rather than per call.
+
+<Warning>
+This is not the Legal Data API's MCP server. That one is `vaquill-mcp`, deployed at `mcp.vaquill.ai`, holds a `vq_key_` and exposes the public US statutes corpus. This one runs on `api.vaquill.ai`, holds a `vq_ws_`, and exposes your own matters and work product. They share no credential, no host and no tools, and a key from one is refused by the other.
+</Warning>

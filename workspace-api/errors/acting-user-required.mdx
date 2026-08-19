@@ -1,0 +1,19 @@
+---
+title: "Acting user required"
+description: "400 acting-user-required"
+icon: "user-tag"
+---
+
+**`400`** `acting-user-required`
+
+An operation asked for the person on whose behalf the call is made, and no `X-Vaquill-Acting-User` header was present.
+
+## What to do
+
+Set `X-Vaquill-Acting-User` to whatever identifier your own directory uses for that person, and send it on every call your integration makes on their behalf. We record the value you assert and never authenticate it, so it must be an id you can explain, not a Vaquill user id.
+
+<Note>
+Today the API records an asserted acting user without requiring one, so no published operation returns this status. It is part of the taxonomy so an integration that branches exhaustively on `type` does not have to change when acting-user enforcement becomes available.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

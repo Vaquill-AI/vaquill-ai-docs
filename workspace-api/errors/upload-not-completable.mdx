@@ -1,0 +1,19 @@
+---
+title: "Upload cannot be completed"
+description: "409 upload-not-completable"
+icon: "puzzle-piece"
+---
+
+**`409`** `upload-not-completable`
+
+The upload session is real and cannot be completed as described. The usual causes are a part count that does not match the plan, a session that was aborted, or ETags that do not match the bytes storage is holding.
+
+## What to do
+
+Send every part exactly once, matching the `totalParts` from the create response, and use for each part the ETag that storage returned on the `PUT` for that part number. Every part except the last must be at least 5 MB. If `detail` says the upload has expired, it cannot be revived: start a new session and upload again.
+
+<Note>
+Completing a session that already completed is not an error. That is a retry, and it returns the original operation.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

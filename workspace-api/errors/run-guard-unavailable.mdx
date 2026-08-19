@@ -1,0 +1,19 @@
+---
+title: "Run guard unavailable"
+description: "503 run-guard-unavailable"
+icon: "shield-xmark"
+---
+
+**`503`** `run-guard-unavailable`
+
+The check that decides how much expensive work may run at once is itself unavailable, so the run was refused instead of admitted.
+
+## What to do
+
+Retry in a moment, with backoff. Nothing was started and nothing is charged against your concurrency.
+
+<Note>
+This fails closed on purpose. Letting runs through while the guard is blind would remove the only bound on concurrent expensive work, and a brief infrastructure blip would become a fan-out nobody asked for. A short refusal is the cheaper of the two failures.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

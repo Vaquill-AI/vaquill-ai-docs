@@ -1,0 +1,105 @@
+---
+title: "Amendment History"
+description: "When a section changed, taken from the publisher's own credit line: amendmentYears, lastAmendedYear, amendmentsCount, amendmentHistory"
+icon: "clock-rotate-left"
+---
+
+Most statute sections carry a credit line that records the acts which enacted and amended them.
+We parse that line into structured fields so you can filter and sort on when a section changed, instead of reading it out of prose.
+
+These fields appear on `POST /statutes/search`, `GET /statutes/section/{actId}`, and `POST /statutes/sections`.
+
+## The fields
+
+| Field | Meaning |
+|-------|---------|
+| `amendmentYears` | Sorted, distinct years credited to the section, including the original enactment. |
+| `amendmentsCount` | How many distinct years are in `amendmentYears`. |
+| `lastAmendedYear` | The most recent year in `amendmentYears`. |
+| `amendmentHistory` | Structured entries, where the publisher records them separately from the credit line. |
+| `currentThrough` | The date the publisher states the text is current through. |
+
+`amendmentYears` includes the enactment year, so a section enacted in 1991 and never amended reports `[1991]` with `amendmentsCount: 1`.
+
+```json
+{
+  "actId": "STATE_LA_Crevised-statutes_T39_S54",
+  "citation": "La. Rev. Stat. § 39:54",
+  "amendmentYears": [1989, 1993, 1997, 2003, 2011, 2013, 2015],
+  "amendmentsCount": 7,
+  "lastAmendedYear": 2015
+}
+```
+
+## Where the years come from
+
+Every year we report is one the publisher printed in that section's own credit line.
+
+```
+Ark. Code Ann. 14-284-224
+  "Acts 1991, No. 1028, § 2; 2005, No. 2145, § 55; 2007, No. 1049, § 77."
+  -> amendmentYears [1991, 2005, 2007]
+
+Ind. Code 12-15-20-2
+  "As added by P.L.2-1992, SEC.9. Amended by P.L.27-1992, SEC.23; ... P.L.205-2013, SEC.203."
+  -> amendmentYears [1992, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2011, 2013]
+```
+
+Each state prints its credits differently, so each has its own parser.
+Indiana puts the year second (`P.L.1-1996` is public law 1 of 1996), Florida encodes it in a chapter number with no four-digit year at all (`ch. 89-257` is chapter 257 of 1989), and Hawaii abbreviates heavily inside brackets (`[L 1974, c 48, pt of §1; am L 1981, c 242, §5]`).
+
+## What we deliberately exclude
+
+A four-digit year in the text is not an amendment year just because it is a year.
+Three kinds are excluded, because treating them as amendments produces a date the law never had:
+
+**Compilation and codification references.**
+A state that recodifies its statutes prints the codification alongside the real credits.
+`R.S.1943`, `RSMo 1939`, `RL 1955` and `A.S.A. 1947` name a compilation, not an act that changed the section.
+
+**Federal act names.**
+A section that mentions the *Fair Labor Standards Act of 1938* was not amended in 1938 by doing so.
+
+**Dates in the body.**
+Effective-date clauses, fiscal years and cross-references all carry years that are not credits.
+
+We exclude these structurally, by the token that introduces them, never by ignoring particular years.
+A real 1943 session law still counts in a state whose compilation is also named 1943.
+
+## Coverage varies by jurisdiction, and so does the reason
+
+Coverage depends on what the publisher prints, and the reason a section has no amendment history matters more than the percentage.
+
+<Note>
+Where a source does not publish a credit line, we say so rather than inferring a date from surrounding text. An absent `amendmentYears` means we found no credit, never that we guessed and gave up.
+</Note>
+
+Two cases look identical in a coverage number and are not the same thing:
+
+- **The publisher prints no credit.** Wyoming annotates repealed and renumbered sections but not sections in force, so roughly three quarters of its sections carry no credit at any source we can lawfully use. No parser can recover what was never published.
+- **The credit exists and we have not extracted it yet.** This is our gap, not the state's, and we treat it as a defect rather than a limitation.
+
+We publish per-jurisdiction figures once a jurisdiction has been measured against its own source, so the two cases can be told apart.
+Ask us for the current position on any jurisdiction you depend on and we will give you the measured number and which of the two cases it is.
+
+## Using the fields
+
+Find sections changed recently, then confirm against the text:
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "public records retention", "state": "in", "limit": 10}'
+```
+
+Then read `lastAmendedYear` on each result to see which sections have moved most recently.
+
+<Warning>
+`amendmentYears` records when an act credited a change to the section, which is the enactment year of that act. It is not the effective date, and the two differ when an act takes effect in a later year. Where a publisher prints an effective date we expose it separately; see [Status & Currency](/api-guide/concepts/status-and-currency).
+</Warning>
+
+## Related
+
+- [Status & Currency](/api-guide/concepts/status-and-currency) for whether a section is still good law.
+- [Law Change Alerts](/api-guide/alerts) to be notified when a section changes, rather than polling its amendment history.

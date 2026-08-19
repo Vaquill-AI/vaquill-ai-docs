@@ -1,0 +1,17 @@
+---
+title: "Idempotency-Key reused with a different payload"
+description: "422 idempotency-key-reused"
+icon: "clone"
+---
+
+**`422`** `idempotency-key-reused`
+
+You sent an `Idempotency-Key` that was already used, with a different request behind it. That is a recycled key or a retry whose payload changed, not a retry we can honor.
+
+## What to do
+
+Use a fresh key, or resend the original request byte for byte. Returning the first operation would report that work had started which never will, and you would then poll a job you did not ask for.
+
+A key should be minted once per logical launch and carried through every retry of that one launch, never reused across launches and never regenerated inside a retry loop. Field order does not matter: the same content serialized differently still gets its retry. See [Idempotency](/workspace-api/concepts/idempotency).
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

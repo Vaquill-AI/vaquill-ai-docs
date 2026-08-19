@@ -6,7 +6,7 @@ icon: "map-location-dot"
 
 Every US jurisdiction and corpus type the API has ingested: federal law, state statutes, constitutions, court rules, and regulations, each scoped with the `corpusType` filter.
 
-**Over 3.9M distinct sections, indexed as over 10.5M retrieval passages.** Figures below are a **2026-08-12** snapshot; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
+**Over 3.9M distinct sections, indexed as over 10.5M retrieval passages.** Figures below are a **2026-08-12** snapshot, except Oregon which is **2026-08-18**; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
 
 <Note>
   Counts here are **distinct sections**, one per provision or document, matching what `GET /statutes/coverage` returns. Longer documents split into several passages for retrieval, so the index holds more entries than sections, over half of them Federal Register rules at 13-15 passages each.
@@ -24,7 +24,7 @@ Every US jurisdiction and corpus type the API has ingested: federal law, state s
     **9 corpora, ~687K sections** — US Code, CFR, Federal Register rules, Executive Orders, agency guidance, court rules, the Constitution, and more. See the [Federal table](#federal) for the full breakdown. Queryable via the statutes API.
   </Card>
   <Card title="State constitutions" icon="scroll">
-    **51 jurisdictions** (50 states + Puerto Rico), ~13.7K sections, with article/section structure and clickable citations. Most are sourced from the state's own official publisher; a small number come from an open mirror where no reproducible official source was found, and those carry no `sourceUrl` rather than pointing at a third party. Two states remain partially covered, a data-availability gap in the source rather than a parsing issue. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
+    **51 jurisdictions** (50 states + Puerto Rico), ~13.7K sections, with article/section structure and clickable citations, sourced from each state's own official publisher. Two states remain partially covered, a data-availability gap in the source rather than a parsing issue. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
     **43 jurisdictions** (41 states + DC + Puerto Rico), ~43.5K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. 41 of the 43 are ingested from the state's own court system or legislature; Arizona and Maryland come from the commercial portal each state designates, because neither judiciary publishes consolidated rule text itself. Queryable via the API (`corpusType=STATE_RULES`).
@@ -120,6 +120,7 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | Mississippi | 158,698 | 35,752 | 319 | 794 |
 | Texas | 122,908 | 44,256 | 401 | 1,016 |
 | Indiana | 83,148 | 37,739 | 247 | 879 |
+| Oregon | 72,664 | 48,708 | 415 | 632 |
 | Illinois | 72,456 | 54,567 | 171 | 852 |
 | New Jersey | 56,092 | 51,999 | 216 | - [4] |
 | Washington | 53,595 | 51,014 | 282 | 1,182 |
@@ -132,7 +133,6 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | Maryland | 39,562 | 12,829 | 312 | 1,220 |
 | Arkansas | 36,936 | 5,556 | 702 | - [1] |
 | Oklahoma | 36,287 | 57,195 | 546 | - [3] |
-| Oregon | 36,204 | 48,708 | 415 | 632 |
 | New Mexico | 34,465 | 13,270 | 299 | - [1] |
 | Colorado | 34,258 | 610 | 407 | - [2] |
 | Virginia | 33,856 | 22,395 | 134 | 358 |
@@ -152,7 +152,7 @@ refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 | West Virginia | 25,669 | 20,105 | 209 | 1,116 |
 | New Hampshire | 25,385 | - | 158 | 970 |
 | Maine | 25,342 | 1,718 | 153 | 722 |
-| Florida | 24,866 | 32,791 | 218 | 1,135 |
+| Florida | 24,866 | 28,888 | 218 | 1,135 |
 | Kansas | 24,371 | - | 229 | 434 |
 | District of Columbia (territory) | 23,695 | - | - | 1,128 |
 | Puerto Rico (territory) | 23,649 | - | 102 | 1,528 |
@@ -346,7 +346,7 @@ curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
 Each column in the matrix above maps to a `corpusType` filter on `/statutes/search`: statutes to `STATE`, regulations to `REGULATION`, constitutions to `STATE_CONSTITUTION`, and court rules to `STATE_RULES`. Federal Register agency rules use `FEDERAL_REGISTER` and agency guidance uses `AGENCY_GUIDANCE`. State agency guidance (the section above) uses `STATE_AGENCY_GUIDANCE`, paired with `state`.
 
 <CardGroup cols={2}>
-  <Card title="API Reference" icon="code" href="/api-reference/statutes/search-us-statutes">
+  <Card title="API Reference" icon="code" href="/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions">
     Every endpoint with parameters and examples.
   </Card>
   <Card title="Open source: Vaquill-AI/open-us-law" icon="github" href="https://github.com/Vaquill-AI/open-us-law">

@@ -1,0 +1,15 @@
+---
+title: "File too large"
+description: "413 file-too-large"
+icon: "weight-hanging"
+---
+
+**`413`** `file-too-large`
+
+The file is larger than this workspace accepts, or the draft body you sent renders past the size a draft may hold. The `detail` names the ceiling and the size we measured.
+
+## What to do
+
+Split the document and upload the parts separately, or compress it before uploading. A `sizeBytes` of zero also lands here: a zero-length upload plans zero parts, which is a session that could never be completed, so it is refused up front rather than left to fail later.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

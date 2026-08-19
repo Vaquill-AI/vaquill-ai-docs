@@ -1,0 +1,19 @@
+---
+title: "Draft content unprocessable"
+description: "422 draft-content-unprocessable"
+icon: "align-left"
+---
+
+**`422`** `draft-content-unprocessable`
+
+The markdown you sent passed the schema and could not be turned into a draft body. The field was a valid string; the conversion of it is what failed.
+
+## What to do
+
+Resend simpler markdown. Headings, paragraphs and lists convert cleanly. Tables and fenced code blocks are not part of a draft and are the usual cause when a body that looks fine is refused. Empty or whitespace-only content lands here too, because writing it would replace a customer's contract with a blank page and report success.
+
+<Note>
+Do not go hunting for a malformed field. This slug exists precisely to tell you the field name was right and the content was the problem.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

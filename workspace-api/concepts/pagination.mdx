@@ -1,0 +1,55 @@
+---
+title: "Pagination"
+description: "One envelope for every list in the API"
+icon: "list"
+---
+
+Every list returns the same envelope, whatever it is listing:
+
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "total": 214,
+    "hasMore": true
+  }
+}
+```
+
+Two query parameters control it, and they are the same everywhere:
+
+| Parameter | Range | Default |
+| --- | --- | --- |
+| `limit` | 1 to 200 | 50 |
+| `offset` | 0 or more | 0 |
+
+```bash
+GET /workspace/v1/matters?limit=100&offset=200
+```
+
+Read `total` when you need to size a job before you start it, and `hasMore` to know when to stop. Do not infer the end of a list from a short page: a filtered page can be short and still have more behind it.
+
+## Ordering
+
+Every list has a fixed order and none of them lets you change it. Paging is only stable because the order is.
+
+| List | Ordered by |
+| --- | --- |
+| Clients, matters, folders, playbooks | `name`, A to Z |
+| Templates | `title`, A to Z |
+| Documents | `createdAt`, newest first |
+| Drafts | `updatedAt`, most recently edited first |
+
+## Filtering
+
+There is essentially none, and that is a deliberate cut rather than an omission. `GET /v1/matters/{matterId}/documents` takes a `folderId`, and that is the only content filter on the API. There is no search, no date range, no status filter and no sort parameter anywhere.
+
+If you need "every matter touched since yesterday", page the list and filter client-side, or hold your own index keyed on the ids we return.
+
+## Why offsets and not cursors
+
+Cursor pagination is better under concurrent writes, and it was deliberately left out. It is a second contract to keep stable, it makes "how many are there" impossible to answer cheaply, and the lists here are firm-sized rather than internet-sized.
+
+The tradeoff you inherit: if rows are created while you are paging, a deep offset can skip or repeat a row. For a nightly sync over a few thousand matters that is invisible. If it is not invisible for your workload, page fastest-first with a large `limit` and reconcile on ids rather than on position.

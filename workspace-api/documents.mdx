@@ -1,0 +1,112 @@
+---
+title: "Documents"
+description: "Upload at any size, read extracted text, download the original"
+icon: "file"
+---
+
+## Uploading
+
+One flow, three calls, at every file size up to 2 GB. Your bytes go straight to storage and never pass through the API.
+
+<Steps>
+  <Step title="Initiate">
+    ```bash
+    POST /workspace/v1/uploads
+    {"matterId":"mat_...","filename":"msa.pdf",
+     "contentType":"application/pdf","sizeBytes":132352}
+    ```
+
+    `matterId`, `filename`, `contentType` and `sizeBytes` are all required. `folderId` is optional, and `handwritten: true` routes the file through OCR tuned for handwriting.
+
+    Answers `201` with `{uploadId, partSize, totalParts, parts, expiresAt}`. Each entry in `parts` carries a `partNumber` and a presigned `url`.
+
+All three upload calls need `documents:write`.
+  </Step>
+  <Step title="PUT the bytes">
+    Split the file on exactly the `partSize` boundary the initiate response gave you, and `PUT` each piece to the matching `partNumber`. `partSize` is not advisory: parts are reassembled in order and every part except the last must be that size, so a different split produces a corrupt object that nothing rejects until `complete`.
+
+    Keep the `ETag` each `PUT` returns. That ETag is the only proof the bytes landed.
+
+    A small file comes back as a single part, so there is no separate small-file path to implement. That is the point.
+  </Step>
+  <Step title="Complete">
+    ```bash
+    POST /workspace/v1/uploads/{uploadId}/complete
+    {"parts":[{"partNumber":1,"etag":"\"abc123\""}]}
+    ```
+
+    Quoted and unquoted ETags are both accepted, so pass through whatever storage gave you rather than tidying it.
+
+    Answers `202` with an operation. When it reaches `succeeded`, `resource.id` is your `documentId`.
+  </Step>
+</Steps>
+
+<Note>
+Presigned URLs expire, and `expiresAt` tells you when. If one lapses part way through a large upload, re-sign that single part with `GET /v1/uploads/{uploadId}/parts/{partNumber}` rather than starting the whole upload again.
+</Note>
+
+## Supported file types
+
+The Workspace API accepts every format Vaquill supports: **37 extensions** and 42 media types, spanning PDF and Word, plain text and markup, spreadsheets, presentations, images, audio, email and archives.
+
+```
+.pdf  .doc  .docx .dotx .rtf  .txt  .md   .markdown
+.html .htm  .xml  .json .csv  .xls  .xlsx .xlsm .xltx .xltm
+.ppt  .pptx .epub .zip  .eml  .msg
+.png  .jpg  .jpeg .gif  .bmp  .tif  .tiff .webp .heic .heif
+.mp3  .m4a  .wav
+```
+
+Both the extension and the `contentType` are checked at initiate, against their own allowlists.
+
+<Warning>
+They are checked **separately**. Nothing verifies that they agree, so `{"filename": "contract.pdf", "contentType": "text/plain"}` is accepted and a URL is signed for it. The mismatch surfaces later, when the worker reads the file's actual magic bytes, which is after you have uploaded every byte. Send the content type that matches the file.
+</Warning>
+
+<Warning>
+Accepted for upload is not the same as usable by every operation. Compare produces a redline and needs a document format, so a plain text file is refused there with `415`. Check the page for the operation you intend to run.
+</Warning>
+
+## Reading a document
+
+| Call | Gives you | Scope |
+| --- | --- | --- |
+| `GET /v1/matters/{matterId}/documents` | The matter's documents, newest first, paged | `documents:read` |
+| `GET /v1/matters/{matterId}/documents/{documentId}` | Metadata and ingestion status | `documents:read` |
+| `GET .../text` | The extracted text, for your own analysis or to feed a review | `documents:read` |
+| `GET .../download` | The **original bytes**, streamed | `documents:download` |
+| `DELETE /v1/matters/{matterId}/documents/{documentId}` | A hard delete | `documents:write` |
+
+The list takes one filter, `folderId`, and it is the only content filter anywhere on this API:
+
+```bash
+GET /v1/matters/mat_.../documents?folderId=fld_...&limit=100
+```
+
+A document's `status` uses the same five values as an operation: `queued`, `running`, `succeeded`, `failed`, `cancelled`. It is never the internal ingestion vocabulary, so you can branch on it the same way everywhere.
+
+`GET .../text` answers `{documentId, text, chunkCount, truncated}`. Check `truncated`: on a very large document the text is capped, and a caller that ignores the flag will silently analyze part of a contract.
+
+A `409 document-not-readable` on `/text` means ingestion has not finished or did not produce text. Poll the ingestion operation rather than retrying blindly.
+
+## Downloading originals
+
+`/download` streams the file with its real content type and filename:
+
+```
+HTTP/1.1 200 OK
+content-type: application/pdf
+content-disposition: attachment; filename*=UTF-8''Data_Processing_Agreement.pdf
+```
+
+There is no signed URL to hand around. That is deliberate: a signed URL outlives the credential that asked for it, and these are your clients' confidential files. Authorization is checked at the moment of the request, so revoking a credential stops downloads immediately. It also means the same call works whether or not the document is stored encrypted, which some are.
+
+Downloading requires `documents:download`, a scope separate from `documents:read`. Listing metadata to check ingestion status and pulling an original out of a client file are different risks, so an integration that only needs the first should not be able to do the second.
+
+## Deleting
+
+```bash
+DELETE /v1/matters/{matterId}/documents/{documentId}
+```
+
+Answers `204`. This is a hard delete: the document, its extracted text and its search index entries all go, and there is no undo. It is the same delete the web app performs, so treat it with the care you would treat that button.

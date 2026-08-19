@@ -1,0 +1,15 @@
+---
+title: "Client not found"
+description: "404 client-not-found"
+icon: "address-card"
+---
+
+**`404`** `client-not-found`
+
+No client with that id is readable by this credential. An id that never existed, one belonging to another organization, and a string that is not a client id at all are answered identically, so the status can never be used to test whether a client exists somewhere else.
+
+## What to do
+
+Compare the id against `GET /v1/clients`. A client id looks like `cli_` followed by 32 hex characters, and it is returned on the create response. A matter id passed into a client slot lands here too, which is the usual cause when the shape looks right. The `instance` field echoes the path we received, so a transposed id is normally visible in the error itself.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

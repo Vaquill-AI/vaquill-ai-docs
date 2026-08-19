@@ -1,0 +1,15 @@
+---
+title: "Operation not found"
+description: "404 operation-not-found"
+icon: "list-check"
+---
+
+**`404`** `operation-not-found`
+
+No operation with that id is readable. That is one answer for three situations: the id never existed, it belongs to another organization, or it has aged past the 30-day window in which operations are readable.
+
+## What to do
+
+Check the id against what the launch returned. If the operation is simply old, stop polling and read the resource itself: a draft, comparison, review, matrix run or workflow run outlives the operation that created it, and its own status is the durable record. For anything long running, persist the resource id from the operation as soon as it appears rather than relying on the operation staying readable.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

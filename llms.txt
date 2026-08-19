@@ -49,9 +49,17 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 ## API Reference
 
-- [Search US statutes](https://www.vaquill.ai/docs/api-reference/statutes/search-us-statutes): POST /statutes/search.
-- [List US statutes coverage](https://www.vaquill.ai/docs/api-reference/statutes/list-us-statutes-coverage): GET /statutes/states.
-- [List US state codes](https://www.vaquill.ai/docs/api-reference/statutes/list-us-state-codes): GET /statutes/codes.
+- [Search US statutes](https://www.vaquill.ai/docs/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions): POST /api/v1/us/statutes/search.
+- [Get statute section metadata](https://www.vaquill.ai/docs/api-reference/us-statutes/get-statute-section-metadata): GET /api/v1/us/statutes/section/{act_id}.
+- [Get statute full text](https://www.vaquill.ai/docs/api-reference/us-statutes/get-statute-full-text): GET /api/v1/us/statutes/section/{act_id}/body.
+- [Get metadata for many statute sections](https://www.vaquill.ai/docs/api-reference/us-statutes/get-metadata-for-many-statute-sections): POST /api/v1/us/statutes/sections.
+- [Resolve a citation to its section](https://www.vaquill.ai/docs/api-reference/us-statutes/resolve-a-citation-to-its-section): GET /api/v1/us/statutes/resolve.
+- [Get the sections around this one](https://www.vaquill.ai/docs/api-reference/us-statutes/get-the-sections-around-this-one): GET /api/v1/us/statutes/section/{act_id}/related.
+- [Coverage matrix by jurisdiction and corpusType](https://www.vaquill.ai/docs/api-reference/us-statutes/coverage-matrix-by-jurisdiction-and-corpustype): GET /api/v1/us/statutes/coverage.
+- [Catalog the bodies of law available](https://www.vaquill.ai/docs/api-reference/us-statutes/catalog-the-bodies-of-law-available): GET /api/v1/us/statutes/laws.
+- [Browse the statutory hierarchy](https://www.vaquill.ai/docs/api-reference/us-statutes/browse-the-statutory-hierarchy): GET /api/v1/us/statutes/divisions.
+- [List watchable boards](https://www.vaquill.ai/docs/api-reference/board-watches/list-watchable-boards): GET /api/v1/boards, the entry point for the free law-change alert endpoints.
+- [Get API credit pricing](https://www.vaquill.ai/docs/api-reference/pricing/get-api-credit-pricing): GET /api/v1/api-credits/pricing, public and unauthenticated.
 - [OpenAPI schema](https://api.vaquill.ai/external/openapi.json): Machine-readable spec for all public endpoints.
 
 ## Optional

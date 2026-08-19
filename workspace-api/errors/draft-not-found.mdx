@@ -1,0 +1,15 @@
+---
+title: "Draft not found"
+description: "404 draft-not-found"
+icon: "file-pen"
+---
+
+**`404`** `draft-not-found`
+
+No draft with that id is readable under the matter in the path. A draft that belongs to another organization, one filed under a different matter, and an id that was never a draft id all come back the same way.
+
+## What to do
+
+List `GET /v1/matters/{matterId}/drafts` and take the id from there. Draft ids look like `drf_` plus 32 hex characters. If you are polling a generation you just started, use the operation you got back rather than guessing the draft id: the operation names the draft once the work has a row to point at.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

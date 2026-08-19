@@ -1,0 +1,19 @@
+---
+title: "Run too large"
+description: "413 run-too-large"
+icon: "layer-group"
+---
+
+**`413`** `run-too-large`
+
+The run you submitted is over the ceiling for a single run, so nothing was started at all. Depending on the capability the count is documents, matrix cells, or megabytes of source material.
+
+## What to do
+
+The problem document carries `limit` and `requested`, so you can batch without discovering the ceiling by bisection. Split the work along whatever unit the `detail` names: fewer documents per matrix or workflow run, fewer questions per matrix, smaller documents for a comparison.
+
+<Note>
+Nothing partial ran. We refuse rather than start the first `limit` units and report success, because a partial answer you have no way to detect is worse than an error you can act on.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

@@ -1,0 +1,54 @@
+---
+title: "Rate limits"
+description: "Per-credential budgets, sized by what an operation costs"
+icon: "gauge-high"
+---
+
+Budgets are **per credential**, not per IP. Your calls all arrive from the same few addresses, so an IP-keyed budget would put everything you run into one bucket.
+
+Every operation declares which kind of work it is, and the kind sets the budget. This is about cost, not HTTP method: a GET that streams a 400 MB original is not the same request as a GET that reads a row, even though both are reads.
+
+| Tier | Per minute | Per hour | Per day | What it covers |
+| --- | --- | --- | --- | --- |
+| Poll | 120 | 3,000 | 30,000 | `GET /v1/operations/{operationId}` |
+| Read | 60 | 1,200 | 15,000 | Metadata reads: list matters, fetch a document record |
+| Write | 30 | 600 | 5,000 | Ordinary mutations: create a matter, update a draft |
+| Download | 20 | 300 | 3,000 | Anything that puts a file or a document's full text on the wire |
+| Launch | 10 | 200 | 2,000 | Starting billable work: a review, a matrix run, a comparison |
+| Upload | 5 | 100 | 500 | Opening and completing upload sessions |
+
+Polling is the most generous tier on purpose. There are no webhooks, so polling is the only way you learn a job finished, and a completion signal you are charged to use is not much of a signal.
+
+<Warning>
+The Download tier is wider than its name suggests, and this is the budget people trip over. Six operations sit on it: `documents.download`, **`documents.text`**, and the four exports (draft, review, comparison, workflow artifact). Reading extracted text is a `GET` that returns a whole contract, so it costs a download and not a read. A batch job that pulls text for 60 documents in a minute is over the limit even though it never downloaded a file.
+</Warning>
+
+## When you hit one
+
+You get `429` with a `Retry-After` header in seconds. Honor it rather than picking your own interval; it is computed from your actual window, so backing off by less just burns another request.
+
+```
+HTTP/1.1 429 Too Many Requests
+Retry-After: 34
+```
+
+## Concurrency is separate
+
+Some launches also refuse with `429 concurrency-limit-reached`, which is not the same thing as being rate limited. It means too many of your jobs are **already running**, so the fix is to wait for one to finish rather than to slow your request rate. Slowing down does not help; finishing does.
+
+The cap is per capability, not one shared pool, and it is sized by what that work costs us:
+
+| Launch | Unfinished at once |
+| --- | --- |
+| Comparisons | 10 |
+| Reviews | 5 |
+| Draft generations | 5 |
+| Template runs | 5 |
+| Workflow runs | 5 |
+| Matrix runs | 3 |
+
+Comparisons and reviews, drafts, template runs and workflow runs count across your whole organization. Matrix runs count against the installation the credential belongs to.
+
+<Note>
+The `Retry-After` on a `202` and on a `200` read of an unfinished operation is guidance about the job, not about your budget. Only the one on a `429` is a limit.
+</Note>

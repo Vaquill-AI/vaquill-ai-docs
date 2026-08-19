@@ -1,0 +1,19 @@
+---
+title: "Method not allowed"
+description: "405 method-not-allowed"
+icon: "ban"
+---
+
+**`405`** `method-not-allowed`
+
+The path exists and does not accept the method you used. The `Allow` response header lists the methods it does accept.
+
+## What to do
+
+Read `Allow` and resend with one of the methods named there. The usual causes are a `POST` to a collection that only reads, and a `PUT` where the API takes `PATCH`.
+
+<Note>
+A `HEAD` request against a `GET` route lands here rather than returning an empty body. If you are using `HEAD` as a health probe or a cheap existence check, send the `GET` instead.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

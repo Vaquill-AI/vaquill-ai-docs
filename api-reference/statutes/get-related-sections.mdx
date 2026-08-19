@@ -1,9 +1,0 @@
----
-openapi: GET /api/v1/us/statutes/section/{act_id}/related
-description: "Fetch the immediate statutory neighbors of a section - the previous and next section within the same chapter, part, or code."
----
-
-Pass the `actId` of a section you already have to get its neighbors within
-the same container: what a lawyer would actually turn to next when reading a
-section in context, not simple numeric adjacency. Returns `previous` and
-`next` arrays (full section objects) plus a `container` label.

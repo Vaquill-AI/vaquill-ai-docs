@@ -1,0 +1,15 @@
+---
+title: "Organization selector rejected"
+description: "400 organization-selector-rejected"
+icon: "circle-xmark"
+---
+
+**`400`** `organization-selector-rejected`
+
+Your request tried to name an organization. That means an `organization_id`, `org_id`, `orgid`, `organisation_id` or `tenant_id` query parameter, or an `X-Organization-ID`, `X-Org-ID` or `X-Tenant-ID` header. The problem document lists what it found under `rejected`.
+
+## What to do
+
+Remove it. The Workspace API resolves your organization from the credential itself, so a selector can only ever agree with that or disagree with it, and both are refused rather than quietly ignored. If your platform serves several Vaquill organizations, hold one credential per organization and pick the credential, never the parameter.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

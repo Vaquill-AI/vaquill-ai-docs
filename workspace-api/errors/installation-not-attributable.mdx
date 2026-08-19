@@ -1,0 +1,19 @@
+---
+title: "Installation cannot attribute writes"
+description: "409 installation-not-attributable"
+icon: "user-gear"
+---
+
+**`409`** `installation-not-attributable`
+
+Every record this API creates is attributed to a real person in your organization. For this installation we could resolve neither the user who provisioned it nor an owner of the organization, so the write was refused rather than recorded against nobody.
+
+## What to do
+
+Nothing in the request will change this. Check that your organization still has at least one active owner and that the account which set the installation up still exists; a departed employee whose account was deleted is the usual cause. Reads carry on working throughout, so only writes are affected.
+
+<Warning>
+Your credential is fine and your scopes are fine, which is why this is a `409`. Rotating the credential will not help and only widens the outage.
+</Warning>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

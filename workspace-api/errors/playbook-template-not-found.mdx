@@ -1,0 +1,15 @@
+---
+title: "Playbook template not found"
+description: "404 playbook-template-not-found"
+icon: "book-open"
+---
+
+**`404`** `playbook-template-not-found`
+
+The starter template slug you named is not in the catalog. This one is a plain typo check rather than a permissions answer: the template catalog is identical for every customer, so there is nothing here to keep from you.
+
+## What to do
+
+List `GET /v1/playbook-templates` and copy the slug exactly. Slugs are lowercase and stable, and they are not the same strings as the contract types a playbook carries, which is the usual mix-up. Once you have the right slug, create the playbook from it and it becomes an ordinary organization playbook you can edit.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

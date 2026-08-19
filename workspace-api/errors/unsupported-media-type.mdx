@@ -1,0 +1,15 @@
+---
+title: "Unsupported media type"
+description: "415 unsupported-media-type"
+icon: "file-circle-exclamation"
+---
+
+**`415`** `unsupported-media-type`
+
+The content type you declared is not one this workspace can read, or the filename you sent is not one it accepts. Comparison is stricter than ingestion and refuses formats it cannot diff.
+
+## What to do
+
+The problem document carries `supportedMediaTypes` where ingestion refused it, and the `detail` names the accepted formats where comparison did, so your backend can discover the set without hardcoding it. Send the declared type that matches the bytes: a PDF labelled as plain text is refused on the label, not on the content. Convert anything else before uploading.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

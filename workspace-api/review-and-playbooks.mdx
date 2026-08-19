@@ -1,0 +1,337 @@
+---
+title: "Contract review and playbooks"
+description: "Review a contract against your firm's negotiation positions, then export the redlines as tracked changes"
+icon: "clipboard-check"
+---
+
+This is the capability most integrations are built for. A **playbook** encodes how your firm negotiates, clause by clause. A **review** measures one contract against it and returns clauses, redlines, missing clauses, a negotiation plan and a sign-off gate. An **export** turns the redlines you accept into a Word file with native tracked changes.
+
+Every path below is prefixed with `https://api.vaquill.ai/workspace/v1`, and every call carries `Authorization: Bearer vq_ws_...`.
+
+## What a playbook is
+
+A playbook is not a template and not a checklist. It is a map from a clause-type slug to the position your firm takes on that clause, and a review is only as good as the positions it is measured against.
+
+Each position carries two required fields and a set of optional ones that make it useful:
+
+| Field | What it holds |
+| --- | --- |
+| `standardPosition` | Required. What you want the clause to say. Up to 8,000 characters |
+| `acceptableRange` | Required. What you will live with. Up to 4,000 characters |
+| `fallbackLadder` | Up to 10 rungs, in order, of what to retreat to when the preferred position is rejected |
+| `dealBreaker` | The walk-away floor for this clause |
+| `escalationTriggers` | Up to 50 patterns that mean a human should look |
+| `escalationConditions` | Up to 20 conditional rules that RAISE the required sign-off |
+| `priority` | `must_have`, `should_have` or `nice_to_have` |
+| `approvalLevel` | `none`, `manager`, `partner` or `gc` |
+| `rationale`, `riskWeight`, `enabled` | Why the position exists, how heavily it weighs, whether it is live |
+
+The fallback ladder is what makes the output negotiable rather than binary: a redline that gets rejected comes with the next rung already attached as `fallbackPosition`. The deal breaker is what makes the sign-off gate meaningful, because a clause at or below the floor is what makes `approvalGate.required` true.
+
+An `escalationCondition` is how a playbook says "partner normally, but GC if the deal is over a million, or if it is on their paper". Each one names an `attribute` (`clause_severity`, `counterparty_paper`, `contract_value` or `governing_law`), an `operator` (`eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `in`), a `value` and an `escalateTo` of `manager`, `partner` or `gc`. Values are strings across every attribute so the stored shape stays uniform, and they are parsed per attribute when the rule runs.
+
+<Note>
+Positions are keyed by clause-type slug: `limitation_of_liability`, `indemnification`, `termination`, `confidentiality`, `data_protection` and so on. Up to 200 of them per playbook, each key at most 80 characters. Adopt a template and read it back to see the vocabulary the reviewer already matches against.
+</Note>
+
+## Start from a template
+
+Most customers should not author a playbook from scratch. We ship **28 starter templates**, written by counsel and identical for every organization, and adopting one is a single call.
+
+<Steps>
+  <Step title="Browse the catalog">
+    ```bash
+    curl "https://api.vaquill.ai/workspace/v1/playbook-templates?limit=50" \
+      -H "Authorization: Bearer vq_ws_..."
+    ```
+
+    You get `{data, pagination}`. Each entry carries `slug`, `name`, `description`, `contractType`, `category` (`commercial`, `privacy`, `hr`, `ip` or `nda`), an optional `userSide`, `featured`, `positionCount`, `tags` and `recommendedFor`.
+
+    The order is deliberate and worth preserving: all six `featured` templates lead, spanning several categories, and the rest group by category behind them. It is featured-first across the whole list, not within each category. Do not re-sort alphabetically unless you mean to throw that away.
+  </Step>
+  <Step title="Pick the right side">
+    Most templates come in a pair. `saas_customer` and `saas_vendor` are the same contract type argued from opposite sides, and adopting the wrong one produces a review that negotiates against your own client. `userSide` on the template card is what tells them apart.
+  </Step>
+  <Step title="Adopt it">
+    ```bash
+    curl -X POST https://api.vaquill.ai/workspace/v1/playbooks/from-template \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Content-Type: application/json" \
+      -d '{"templateSlug":"saas_customer","name":"Acme SaaS purchasing"}'
+    ```
+
+    Only `templateSlug` is required. `name` and `description` default to the template's own, and `jurisdiction` (two uppercase letters, or `INTL`) selects which default positions the template resolves against; omitted, it resolves as `US`.
+
+    Answers `201` with an ordinary `Playbook`, positions included.
+  </Step>
+</Steps>
+
+`GET /v1/playbook-templates` returns `positionCount` rather than the positions themselves. One template's materialized positions run to tens of kilobytes, and twenty eight of them would make a gallery request a megabyte. Adopt the template and read the playbook if you want the content.
+
+<Warning>
+Nothing links an adopted playbook back to its template. It is yours, editable, and it will not change when we improve the template, because a live link would imply an update path that does not exist. If you want our newer wording, adopt the template again into a second playbook and diff it yourself.
+</Warning>
+
+## Authoring and editing
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/playbooks \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Vendor MSA, buy side",
+    "contractType": "msa",
+    "positions": {
+      "limitation_of_liability": {
+        "standardPosition": "Mutual cap at 24 months of fees paid, with an uncapped IP indemnity.",
+        "acceptableRange": "12 to 24 months. IP indemnity must stay uncapped.",
+        "fallbackLadder": ["24 months + uncapped IP", "18 months + uncapped IP", "12 months + uncapped IP"],
+        "dealBreaker": "Direct damages excluded, or a cap below 12 months.",
+        "priority": "must_have",
+        "approvalLevel": "partner"
+      }
+    }
+  }'
+```
+
+`name` and `contractType` are the only required fields, and `contractType` must be one of the taxonomy values (`msa`, `saas`, `nda`, `dpa`, `employment`, `baa` and about thirty more, all enumerated on "Create a playbook" in the Workspace Reference tab). Answers `201`.
+
+`positions` may be omitted or empty. Creating the shell and filling it clause by clause is a supported flow.
+
+`PUT /v1/playbooks/{playbookId}` replaces `name`, `description` and `positions`, and answers `200`. `contractType` is absent from the update model on purpose: it decides which reviews resolve this playbook, so changing it would silently redirect them. Create a second playbook instead.
+
+<Warning>
+The PUT replaces at the **map** level. A clause type absent from `positions` is removed from the playbook. Read the playbook, edit the map, write the whole map back. Sending only the one clause you changed deletes the other thirty two.
+
+Within a clause type that IS present, the authoring fields this API does not publish (structured constraints, library clause references, extraction provenance) are preserved, so a write through the API cannot delete depth a lawyer added in the web app.
+</Warning>
+
+Two more things about playbooks. There is no delete: every review that ever ran references its playbook, and what should happen to those references is a decision to take on request rather than by default. And `isDefault` is read-only here; exactly one default per contract type is maintained by a user-keyed routine a machine credential cannot call.
+
+<Note>
+`GET /v1/playbooks` lists only playbooks the **organization** owns. Personal playbooks authored in the web app against no organization are invisible to this API, because a machine credential has no person behind it.
+</Note>
+
+## Running a review
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../reviews \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: 8f1c2b4e-9a10-4d5f-8e2b-1c7d3a6f0b91" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "documentText": "MASTER SERVICES AGREEMENT ...",
+    "contractType": "msa",
+    "userSide": "customer",
+    "playbookId": "pbk_..."
+  }'
+```
+
+The required trio is `documentText`, `contractType` and `userSide`. Everything else has a default.
+
+`documentText` must be between **100 and 200,000 characters**. Those bounds are published rather than internal, so size your batches by them: below the floor there is nothing to review, and above the ceiling the request is refused with a `422` before any work starts.
+
+Answers `202` with an operation of type `review.run`. Poll `GET /v1/operations/{operationId}` until it reaches a terminal status. The `Retry-After` on the `202` is tuned for this kind of work, and a real contract review takes a couple of minutes. A review operation reports no incremental `progress`, deliberately: the pipeline writes none, and a fabricated percentage would be a number nobody measured.
+
+### The input is text, not a document id
+
+This surprises people, and it is deliberate. A review reads one contract end to end, and callers usually have the text already: it arrived by email, or it came out of their own document system. Requiring an upload first would make the cheapest possible integration a three-call dance.
+
+If the contract IS an uploaded document, pull its text first:
+
+```bash
+curl https://api.vaquill.ai/workspace/v1/matters/mat_.../documents/doc_.../text \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+That returns `{documentId, text, chunkCount, truncated}`. Pass `text` straight into `documentText`, and **check `truncated` first**: on a very large document the text is capped, and a caller that ignores the flag reviews part of a contract and reports on it as if it were the whole one. See [Documents](/workspace-api/documents).
+
+### Choosing a playbook
+
+`playbookId` is optional. Naming one resolves it at launch, inside your organization, so a playbook you cannot see is a `404` you can act on in the same request rather than a review that quietly ran against different positions.
+
+<Warning>
+Omitting `playbookId` does **not** fall back to your organization's default playbook. It runs the review against our built-in default positions for `jurisdiction`. That is a real answer rather than a degraded one, but it is not your firm's positions. If you want a specific playbook's positions, name it.
+</Warning>
+
+The finished review echoes `playbookId` back, absent when it ran against the defaults, so you can tell the two cases apart after the fact.
+
+### Shaping the review
+
+| Field | Default | What it does |
+| --- | --- | --- |
+| `markupLevel` | `standard` | `light` flags only escalation triggers, `standard` marks up gaps to the preferred position, `firm` hard-lines every deviation |
+| `paperSide` | absent | `own` defends your drafted positions, `counterparty` marks up their form assertively. Orthogonal to `userSide`; omit if unknown |
+| `jurisdiction` | `US` | Two uppercase letters, or `INTL`. Selects the default positions when no playbook is named |
+| `focusAreas` | absent | Up to 50 areas of concern, to narrow the review from the whole contract |
+| `reviewInstructions` | absent | Up to 2,000 characters layered on top of the playbook, for this review only |
+| `dealContext` | absent | `{contractValue, governingLaw}`, the attributes your escalation conditions evaluate |
+
+`dealContext` is the input side of conditional escalation. Both fields are optional and stay optional: a rule that references an attribute you did not supply simply does not fire, which is the fail-safe direction. A missing contract value must not escalate a clause to GC on the strength of a number nobody provided.
+
+### Multi-round negotiation
+
+`round` is 1 by default and accepts up to 10. Setting it to 2 or above tells the reviewer the counterparty has already responded, so it proposes minimal edits toward the fallback rung rather than restating the preferred position from scratch.
+
+Pair it with `priorRoundText`, your last sent version, so the reviewer computes a real diff instead of guessing what changed and undoing language you already settled. Both text fields cap at 200,000 characters.
+
+`counterpartyResponseText` is for the case where the counterparty's response is a separate document from the one in `documentText`. Most callers paste the response straight into `documentText`, and then leave this out.
+
+### Retries and capacity
+
+This is one of the seven endpoints that takes `Idempotency-Key`. Send one, reuse it on every retry of the same logical review, and a client timeout costs you nothing: the replay returns the original operation and starts no second review. See [Idempotency](/workspace-api/concepts/idempotency).
+
+An organization may have **5 reviews in flight at once**. A sixth launch is refused with `429 concurrency-limit-reached`, which names the limit and the current count. It is a queueing signal, not a quota: wait for one to finish and launch again.
+
+## Reading the findings
+
+```bash
+curl https://api.vaquill.ai/workspace/v1/matters/mat_.../reviews/rev_... \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+Answers `200` whether or not the review has finished. A queued or running review is a truthful `status` with empty findings lists, not a `404`: "it is not finished yet" is a real answer to "show me the review". Why a review FAILED lives on the operation, not here.
+
+The `status` uses the same five values as an operation, never a sixth.
+
+### What each part is for
+
+**`clauses`** is every clause the reviewer analyzed, with `severity` (`green`, `yellow`, `red`) measured against the playbook position for its type, plus `analysis`, `riskDescription`, the `playbookPosition` it was compared to, an `approvalLevel` and `isDealBreaker`. This is the audit trail: it explains why a redline exists, and it covers compliant clauses too, which is how you show that a clause was looked at and passed.
+
+**`redlines`** is the actionable half: proposed edits ready to send to counterparty counsel. Each carries `currentLanguage`, `proposedLanguage`, a `rationale` fit for a margin comment, a `priority` (`must_have`, `should_have`, `nice_to_have`), and the `fallbackPosition` from the playbook ladder to retreat to if it is rejected. `nature` says `substantive` or `housekeeping`, and absent means unclassified rather than housekeeping.
+
+<Warning>
+Check `grounding` on every redline before applying one automatically. `verified` means `currentLanguage` was found verbatim in the contract. `unverified` means it was NOT, so the edit may be misanchored. `insertion` means there is nothing to anchor because the clause is missing entirely. An integration that applies redlines without branching on this will eventually paste a replacement over the wrong span.
+</Warning>
+
+**`negotiationPriorities`** is the plan rather than the findings: tiers of what to raise first and what to trade, each with a `tier` number, a `tierLabel` and an ordered `items` list. Tier 1 is must-have and covers deal breakers.
+
+**`missingClauses`** is the one finding that cannot be expressed as a clause analysis, because there is no clause to analyze. Standard clauses absent from the contract, by name.
+
+**`flags`** is what the reviewer noticed and deliberately did NOT redline: a wrong entity name, an odd schedule entry, a real ambiguity. These are not edits, they are things a human should confirm before signing, which makes them the most important field on this surface for an integration that is otherwise automating the review away.
+
+**`overallRisk`** is `green`, `yellow` or `red` for the contract as a whole, with `summary` and `businessImpactSummary` beside it in prose.
+
+**`liabilityExposure`** is the liability position in one panel: `exposureLevel`, a plain-language `verdict`, `capStatus` and `capAmount` with the `capQuote` they came from, `uncappedCarveouts`, `supercap`, `indemnityExposure`, `insuranceRequired` and `claimTimeBar`. Most of these are nullable and stay nullable, because a contract with no liability clause has no cap, and `null` is the true answer rather than a zero that reads as "capped at nothing". Three are not: `exposureLevel`, `verdict`, which is an empty string when there is nothing to say, and `uncappedCarveouts`, which is an empty array. Model those three as non-nullable or your client will disagree with the wire. The `grounding` here means the same thing it does on a redline, applied to `capQuote`.
+
+**`counterpartyMatch`** is set when the contract was recognized as a known counterparty's standard paper. It carries `name`, `vendor`, `flexibility` for how negotiable that paper is in practice (`rigid`, `limited` or `standard`), `negotiationStrategyNote` and `counterpartyRedlinesCount`. It matters because its presence changes how to read the rest: the findings include counterparty-specific redlines layered on top of the general analysis.
+
+<Note>
+`parseWarning` is set when the model's output only partly parsed, which means the findings may be incomplete. Its presence is the difference between acting on the findings and asking a human first.
+</Note>
+
+### The approval gate
+
+`approvalGate` answers one question: does a human have to sign this off before it goes to the counterparty?
+
+```json
+{
+  "required": true,
+  "level": "partner",
+  "dealBreakerCount": 1,
+  "reasons": [
+    { "clauseName": "Limitation of Liability", "approvalLevel": "partner",
+      "isDealBreaker": true, "note": "Cap below the 12-month floor." }
+  ],
+  "summary": "One deal breaker and two partner-level deviations."
+}
+```
+
+It is computed deterministically from your own playbook: the `approvalLevel` and `dealBreaker` you wrote, applied to the clauses that actually deviated. `required` says whether, `level` says who, `reasons` says why, and `dealBreakerCount` says how bad.
+
+<Warning>
+The gate is **reported, never enforced**. It does not block the review, it does not block the export, and the operation reaches a terminal status either way. That is deliberate: enforcing would mean an approval workflow and an enrolled approver directory we do not have, and a review that can sit unresolved forever.
+
+Which means the enforcement is yours. An integration that reads `redlines` and skips `approvalGate` is an integration that auto-approves deal breakers and sends them to a counterparty. Branch on `required` before anything leaves your system.
+</Warning>
+
+## Exporting the redlines
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../reviews/rev_.../exports \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"trackedChanges": true}'
+```
+
+Answers `201` with `{format, filename, url, expiresAt, sizeBytes, redlineCount, trackedChanges, approvalGate}`. `format` is always `docx`. The request body is required, so send at least `{}`; every field inside it is optional.
+
+`url` is a signed download link that lives **15 minutes**. Fetch it promptly and do not store it or log it. Re-exporting the same selection is cheap and gives you a fresh URL.
+
+The `approvalGate` is repeated on the export response on purpose. An integration that exports without re-reading the review is exactly the one that would send an unapproved redline out, so the gate travels with the bytes.
+
+### What tracked changes actually means
+
+With `trackedChanges: true`, which is the default, the file is a real Word document carrying **native tracked revisions and margin comments**. Counsel opens it, works the Review pane, and accepts or rejects each edit individually, exactly as if a colleague had marked it up. Each redline's `rationale` becomes the Word comment attached to the inserted text, which is where a negotiation rationale belongs: in the margin of the document the other side opens, not in a separate email.
+
+With `trackedChanges: false` you get colored strikethrough and underline instead. It is viewable in anything, including a PDF viewer once converted, but it is not real revisions and nothing can be accepted or rejected.
+
+### Exporting only what you accepted
+
+Omitting `redlines` applies **every** redline the review produced. That is the right default for an integration that has already triaged them elsewhere.
+
+To apply a subset, send the ones you accepted:
+
+```json
+{
+  "trackedChanges": true,
+  "redlines": [
+    {
+      "clauseName": "Limitation of Liability",
+      "currentLanguage": "Vendor's total liability shall not exceed the fees paid in the three (3) months preceding the claim.",
+      "replacementLanguage": "Vendor's total liability shall not exceed the fees paid in the twelve (12) months preceding the claim.",
+      "sectionReference": "11.2",
+      "comment": "12-month floor per our standard position."
+    }
+  ]
+}
+```
+
+`clauseName`, `currentLanguage` and `replacementLanguage` are required on each; `sectionReference` and `comment` are optional, and up to 500 edits may be applied in one export. `currentLanguage` must match the contract **verbatim** or the edit cannot be anchored, which is why the review's own redlines are the safest thing to echo back here after filtering. The same shape also lets you apply edits you wrote yourself after reading the findings.
+
+<Warning>
+An empty `redlines` array is refused, not widened into "apply everything". Silently exporting all forty redlines for a caller that asked for none is the worst possible reading of an ambiguous request. Omit the field to mean "apply everything"; send a list to mean "apply exactly these".
+</Warning>
+
+## Errors
+
+| Status | Type | What happened |
+| --- | --- | --- |
+| 404 | `playbook-not-found` | No such playbook, or not one your organization owns. Also covers a personal playbook that exists in the web app: confirming that to a machine would leak that it exists |
+| 404 | `playbook-template-not-found` | A template slug that is not in the catalog. This one is a plain typo error, because the catalog is code and identical for everyone. List it at `/v1/playbook-templates` |
+| 404 | `review-not-found` | No such review, not your organization's, or under a different matter |
+| 409 | `review-not-finished` | You asked to export a review that has not succeeded yet. It is a `409` rather than a `404` because the review is sitting right there, still running. Poll the operation that started it |
+| 409 | `export-not-available` | There is nothing to render: the review produced no redlines and you supplied none, or the contract text behind the review is no longer available so it cannot be re-rendered |
+| 429 | `concurrency-limit-reached` | Five reviews are already in flight for your organization. Wait for one to finish |
+| 503 | `storage-unavailable` | The export rendered but could not be stored or signed. Ours, not yours. Retry with backoff |
+
+Full error shape and the common types are in [Errors](/workspace-api/concepts/errors). Branch on `type`, never on `detail`.
+
+## Scopes
+
+| Scope | Lets you |
+| --- | --- |
+| `playbooks:read` | List and read playbooks, and browse the starter templates |
+| `playbooks:write` | Create a playbook, adopt a template, replace a playbook |
+| `review:run` | Start a review |
+| `review:read` | Read a review and poll its operation |
+| `exports:create` | Export a reviewed contract with its redlines applied |
+
+`exports:create` is separate from `review:read` on purpose. Reading what a review found and taking a marked-up copy of a client's contract out of the workspace are different risks, and the export is the one action here whose audit record names whoever asked for it. A reporting integration that summarizes findings needs `review:read` and nothing more.
+
+## What to read next
+
+<CardGroup cols={2}>
+  <Card title="Operations" icon="clock" href="/workspace-api/concepts/operations">
+    The job envelope a review returns, and how to poll it well.
+  </Card>
+  <Card title="Idempotency" icon="rotate" href="/workspace-api/concepts/idempotency">
+    Retry a review launch without paying for it twice.
+  </Card>
+  <Card title="Documents" icon="file" href="/workspace-api/documents">
+    Upload a contract and pull the text a review needs.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/workspace-api/concepts/errors">
+    The problem+json shape and what each type means.
+  </Card>
+</CardGroup>

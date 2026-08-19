@@ -1,0 +1,232 @@
+---
+title: "Clients and matters"
+description: "The structure everything else in the Workspace API hangs off"
+icon: "folder-tree"
+---
+
+Three resources sit underneath the whole API: a **client** is who the work is for, a **matter** is the piece of work, and a **folder** is how the customer arranges things. Only the matter is load-bearing. Get one created early, keep its id, and the rest of the API becomes addressable.
+
+None of these calls is long-running. They all answer synchronously with the record itself, so there is no operation to poll and none of them accepts an `Idempotency-Key`.
+
+## Why the matter is the unit of isolation
+
+**30 of the 50 operations on this API name a matter in the path.** Reviews, drafts, comparisons, matrices, workflow runs, documents and their exports are all `/v1/matters/{matterId}/...`, and uploads name a `matterId` in the body. That is not a URL style choice. Putting the matter in the path makes the authorization boundary visible in the URL, and gives the request exactly one place to read it from.
+
+Behind that, every route on this API carries a declared policy, and a middleware resolves the matter and checks it **before your handler runs**. Two things are checked, separately:
+
+1. **Does this installation's credential permit naming this matter?** Today every installation may name every matter in its own organization, so this check passes. It exists as a place to narrow later, and it fails closed: anything it does not recognize is read as permitting nothing.
+2. **Does this matter belong to the credential's organization?** That is a database read, done independently, because our backend bypasses row-level security nearly everywhere. The hand-written filter is the only tenancy boundary there is, which is why it is structural rather than something an endpoint author is trusted to remember.
+
+The matter id that authorization actually checked is then handed to the handler, rather than the handler re-reading the path and possibly reading it differently.
+
+<Note>
+A `404 matter-not-found` covers "no such matter", "not your organization's" and "malformed id" alike, byte for byte. If they differed, the status code would become a way to probe which matters exist in someone else's organization.
+</Note>
+
+## Clients
+
+A client is a record of who the work is for: name, contact details, tax id, and free-form `metadata` we never read. It owns matters rather than living inside one, so client routes are organization-level and carry no `matterId`.
+
+**A matter does not need a client.** `clientId` is optional on a matter, so if your system already tracks counterparties somewhere else you can skip clients entirely and never call these routes.
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/clients \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Acme Corp", "clientType": "organization", "email": "legal@acme.example"}'
+```
+
+Answers `201` with the client, whose `id` is a `cli_` identifier.
+
+**Only `name` is required**, 1 to 200 characters. Everything else is optional and can be filled in with a PATCH later: `email`, `phone`, `address`, `city`, `state`, `zipCode`, `country`, `clientType`, `taxId`, `notes` and `metadata`.
+
+`clientType` is one of `individual`, `organization` or `corporation`, and defaults to `individual` if you omit it.
+
+<Warning>
+The enum is closed **on write only**. On the way back, `clientType` is published as a plain string. The column's CHECK constraint is the only thing keeping it clean, and a response model that trusted that constraint would answer `500` the day a migration widened it. Do not build an exhaustive `switch` on the value you read.
+</Warning>
+
+`GET /v1/clients/{clientId}` reads one back. `PATCH /v1/clients/{clientId}` applies a partial update and answers `200`.
+
+`GET /v1/clients` lists them, ordered by name A to Z, in the standard `{data, pagination}` envelope. This is how you find a `cli_` id you did not keep: there is no lookup by name or by email, so page the list and match client-side. Both client routes that write need `clients:write`; reading needs `clients:read`.
+
+<Note>
+There is **no delete**. A client that owns matters cannot be removed through this API, which is deliberate: deleting one would orphan or cascade into matters and their documents. Mark it in `metadata` or `notes` instead.
+</Note>
+
+There is deliberately **no delete**. A client is referenced by matters, which hold work product, so "does deleting a client orphan its matters or remove them" is a decision we would rather take once, on request, than by default.
+
+## Matters
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Acme vendor MSA", "clientId": "cli_...", "practiceArea": "commercial"}'
+```
+
+Answers `201`. Again **only `name` is required**, and `clientId` is optional. A `clientId` that is given is verified to belong to your organization before the matter is written; an unrecognized one is refused with `404 client-not-found` rather than quietly dropped, because a matter created unattached while reporting success is a bug the caller finds much later with nothing to explain it.
+
+### The two enums
+
+| Field | Accepted on write | Default |
+| --- | --- | --- |
+| `status` | `open`, `pending`, `closed` | `open` |
+| `billingType` | `hourly`, `flat_fee`, `contingency`, `pro_bono` | none |
+
+Both are published as plain strings on read, for the same reason `clientType` is. `status` in particular already holds values in production that the write enum does not offer, set through the web app before this API existed, so a reader that assumes one of three values will eventually see something else.
+
+### Patterns that will reject an otherwise fine value
+
+`country` on a matter must match `^[A-Z]{2}$`, an uppercase ISO 3166-1 alpha-2 code. `billingCurrency` must match `^[A-Z]{3}$`, an uppercase ISO 4217 code. Lowercase is refused, and so is `USA`.
+
+<Warning>
+`country` on a **client** is a different field with different rules: a free-form string up to 100 characters, no pattern at all. The two fields share a name and do not share a validator, so a value that a client accepts can be rejected by a matter.
+</Warning>
+
+`billingRate` accepts a number or a numeric string on the way in, and is **always returned as a JSON string**. Money as a binary float in a published contract is a rounding error that eventually reaches an invoice, so the value stays exact rather than staying a number.
+
+### Length caps worth knowing before you map your fields
+
+| Field | Cap |
+| --- | --- |
+| `name` | **100** |
+| `description` | 5,000 |
+| `instructions` | 10,000 |
+| `practiceArea` | 100 |
+| `matterType` | 50 |
+| `caseNumber` | 100 |
+| `responsibleAttorneyName` | 255 |
+
+<Warning>
+A matter `name` is capped at **100** characters, while a client `name` is capped at **200**. If you generate matter names by concatenating a client name with a description, the same string that created the client cleanly will fail on the matter with a `422`. This is the single most common surprise on these routes.
+</Warning>
+
+### Reading and updating
+
+`GET /v1/matters/{matterId}` returns one matter. `PATCH /v1/matters/{matterId}` applies a partial update and answers `200`.
+
+Patch semantics are the same on clients, matters and folders: an omitted field is left alone, and an explicit `null` clears the field. Two things are refused with a `422` rather than being applied:
+
+- **An empty body.** It is always a mistake, and applying it would report success while changing nothing.
+- **`"name": null`.** The column is `NOT NULL` on all three resources. Omit the field to leave the name unchanged.
+
+Sending `"clientId": null` does work, and detaches the matter from its client.
+
+Setting `closeDate` does **not** change `status`. The two are independent, so close the matter explicitly if that is what you mean.
+
+There is no matter delete either, for a larger version of the same reason: a matter cascades to documents, drafts, comparisons and matrices.
+
+<Note>
+Every organization has exactly one **default matter**, minted at signup, which unfiled work from the web app lands in. It appears in `GET /v1/matters` with `isDefault: true`. The flag is read-only, and this API cannot create or move it.
+</Note>
+
+## Folders
+
+A folder is an organizing container. `POST /v1/folders` takes three fields, and only `name` is required:
+
+| Field | Meaning |
+| --- | --- |
+| `name` | Display name, 1 to 100 characters, trimmed. Whitespace alone is refused |
+| `parentId` | `fld_` id of the folder to nest under. Omit for a root folder |
+| `matterId` | `mat_` id to scope the folder to one matter. Omit for a workspace-level folder |
+
+Both references are verified against your organization before the row is written, and a cycle in the parent chain is refused by a database trigger.
+
+<Warning>
+**Folders are shared between chats and drafts.** One `folders` table powers organization across the whole product, so a folder you create through this API appears in your users' browser, and a folder they create there is one you can list here. That is intended behavior, not a leak, but it means folder names created by an automated integration are user-visible immediately.
+</Warning>
+
+`GET /v1/folders` returns matter-scoped and workspace-level folders together, because that is genuinely how the product stores them. It is a **flat, paged list**, not a tree: each `Folder` carries `id`, `name`, `parentId`, `matterId` and timestamps, and assembling the hierarchy from `parentId` is yours to do. It pages like everything else, so an organization with more than 50 folders needs more than one call, and there is no `matterId` filter to narrow it with.
+
+Those are the only two folder operations. There is **no get-by-id, no update and no delete**, and no `folders:*` scope either: `matters:read` and `matters:write` carry folder access.
+
+## The list envelope
+
+Every collection endpoint on this API returns the same shape, never a bare array:
+
+```json
+{
+  "data": [ { "id": "mat_...", "name": "Acme vendor MSA" } ],
+  "pagination": { "limit": 50, "offset": 0, "total": 217, "hasMore": true }
+}
+```
+
+Paging takes exactly two query parameters:
+
+<ParamField query="limit" type="integer" default="50">
+How many rows to return. Minimum 1, maximum **200**. A value outside that range is a `422`, not a silent clamp.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+How many rows to skip first. Minimum 0. Page with `offset=0`, then `offset=50`, and so on.
+</ParamField>
+
+`total` is the count of rows matching the filter, not the number returned in `data`, so you can size a job before running it. `hasMore` is derived from `offset + len(data) < total` rather than from "did this page come back full", which means a full final page correctly reports `false` instead of sending you after an empty page.
+
+<Warning>
+**There is no cursor pagination.** Offsets are positional and not stable: a collection that changes while you are paging through it can show you the same row twice or skip one entirely. If you are reconciling a full set, read `total` first and treat a mismatch as a signal to start over rather than as data loss.
+</Warning>
+
+## Your organization is never something you send
+
+There is no `organizationId` parameter anywhere on this API, on any route, in any position. The organization is resolved from the credential.
+
+This is enforced rather than merely absent, in two layers that answer differently.
+
+A **header** (`X-Organization-ID`, `X-Org-ID`, `X-Tenant-ID`) or a **query parameter** (`organizationId`, `organisationId`, `orgId`, `tenantId`, `organization_id`, `tenant_id`) is caught by a guard that runs before routing and refused with `400 organization-selector-rejected`. Refused rather than ignored on purpose: a client that sends one is asking for something, and silently serving it a different view of the world is worse than saying no.
+
+A **body field** of the same name never reaches that guard, which reads only headers and the query string. It is caught instead by the request model, where every model on this API sets `extra="forbid"`, so it comes back as `422 invalid-request` naming the field. Different status, same outcome: it is an error, never a value that vanishes.
+
+<Note>
+The practical version: if you are porting code from our web app, strip the organization plumbing entirely. There is nowhere to put it and every place you try will return an error.
+</Note>
+
+## Typical setup
+
+<Steps>
+  <Step title="Create the client">
+    ```bash
+    curl -X POST https://api.vaquill.ai/workspace/v1/clients \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Content-Type: application/json" \
+      -d '{"name": "Acme Corp", "clientType": "organization"}'
+    ```
+
+    Answers `201`. Keep the `cli_` id. Skip this step entirely if your own system is the system of record for counterparties.
+  </Step>
+
+  <Step title="Create the matter">
+    ```bash
+    curl -X POST https://api.vaquill.ai/workspace/v1/matters \
+      -H "Authorization: Bearer vq_ws_..." \
+      -H "Content-Type: application/json" \
+      -d '{"name": "Acme vendor MSA", "clientId": "cli_...", "country": "US"}'
+    ```
+
+    Answers `201`. Remember the 100-character cap on `name`, and that `country` wants an uppercase two-letter code.
+  </Step>
+
+  <Step title="Store the matter id against your own record">
+    The `mat_` id is the join key between your system and ours. Persist it next to whatever your side calls this piece of work, because every subsequent call needs it and there is no way to look a matter up by your identifier.
+  </Step>
+
+  <Step title="Build everything else on it">
+    Uploads name the matter in the body; documents, reviews, drafts, comparisons, matrices and workflow runs all live under `/v1/matters/{matterId}/...`. From here, follow the [Quickstart](/workspace-api/quickstart) to upload a contract and review it.
+  </Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Documents" icon="file" href="/workspace-api/documents">
+    Upload into a matter, read extracted text, download originals.
+  </Card>
+  <Card title="Operations" icon="clock" href="/workspace-api/concepts/operations">
+    The job envelope everything longer than a few seconds returns.
+  </Card>
+  <Card title="Authentication" icon="key" href="/workspace-api/authentication">
+    Scopes, including which ones these routes need.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/workspace-api/concepts/errors">
+    The problem+json shape behind every 422 and 404 above.
+  </Card>
+</CardGroup>

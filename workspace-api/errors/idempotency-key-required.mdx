@@ -1,0 +1,17 @@
+---
+title: "Idempotency-Key required"
+description: "400 idempotency-key-required"
+icon: "key"
+---
+
+**`400`** `idempotency-key-required`
+
+You sent an `Idempotency-Key` header with an empty value. An empty header is not the same as no header, so it is refused rather than treated as absent.
+
+## What to do
+
+Send a real key, or drop the header entirely. A key is normally a UUID your side mints once per logical launch and reuses on every retry of that same launch. Omitting it is allowed and means only that you give up the retry promise: a repeated call then starts a second piece of work rather than returning the first one.
+
+See [Idempotency](/workspace-api/concepts/idempotency) for which operations accept the header and how a retry is matched.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

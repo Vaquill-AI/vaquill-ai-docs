@@ -1,0 +1,15 @@
+---
+title: "Installation is not active"
+description: "403 installation-inactive"
+icon: "plug-circle-xmark"
+---
+
+**`403`** `installation-inactive`
+
+The installation your credential belongs to is suspended or revoked, so it will not serve requests. The `detail` names which of the two.
+
+## What to do
+
+Nothing about the request can fix this, and issuing another credential will not either: every credential under that installation answers the same way. An owner of your Vaquill organization reactivates the installation from the automation console, or provisions a new one and issues fresh credentials against it. Stop retrying in the meantime, because the state does not change on its own.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

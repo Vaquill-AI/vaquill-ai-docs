@@ -1,0 +1,15 @@
+---
+title: "Upload not found"
+description: "404 upload-not-found"
+icon: "cloud-arrow-up"
+---
+
+**`404`** `upload-not-found`
+
+No upload session with that id is readable. An id from another organization, an id that never existed, and a session that has already expired are one answer. Asking to sign a part number outside the range the session planned answers here too, since the session is the thing that decides how many parts exist.
+
+## What to do
+
+Start a fresh upload and use the id and part count it returns. Sessions are short lived by design, so an id parked in a queue overnight is expected to stop working. Never assume a part count: use `totalParts` from the create response and sign the parts within it.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)
