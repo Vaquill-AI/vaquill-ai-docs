@@ -54,9 +54,20 @@ A duplicate id is refused rather than silently de-duplicated. It would otherwise
 
 Row order is the order you named the documents in, not database order.
 
-<Warning>
-There is no route that edits a matrix. Rows and columns are fixed at create, so a matrix created with an empty `documentIds` or `columns` can never gain any. Send the full grid in the create call.
-</Warning>
+Rows and columns are not fixed at create. You can add and remove both afterwards, reorder the columns, and edit a question. See [Editing the grid](#editing-the-grid) below, and note the one edit that clears answers.
+
+## Finding a matrix again
+
+```bash
+curl "https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices?limit=50" \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+Newest first, `{data, pagination}` as everywhere. Each row is the header only: `id`, `matterId`, `title`, `description`, `status`, `createdAt`, `updatedAt`.
+
+**No cell counts and no grid.** Those are three extra queries per matrix, so a page of 200 would be 600 round trips on the cheapest read this API offers. Use the list to find an id and `GET .../matrices/{matrixId}` to read one.
+
+This is the matrices **filed to this matter**. Every matrix created through this API is one, because the create always names a matter in its path. A matrix somebody built in the web app without filing it to a matter is not visible here; 38 of the 64 matrices in production today are in that state.
 
 ## Running it
 
@@ -76,7 +87,13 @@ The operation's `progress` counts **cells**, with `unit: "cells"`. Read the unit
 
 An empty body re-runs every cell that has **not produced an answer**: cells that never ran, cells that failed, and cells that ran and found nothing. Cells that already hold an answer are left alone, so re-running after a partial failure is cheap and safe.
 
-`{"force": true}` re-runs everything, including cells that already answered, and overwrites their answers. That is the only way to pick up a question that was edited after the first run, and it is charged like any other run.
+**An answer you wrote, approved or rejected is not re-run and not re-charged.** That holds at three separate layers of the pipeline, so it is a property you can build a review workflow on rather than an accident of ordering.
+
+`{"force": true}` re-runs everything, including cells that already answered, and **overwrites them with no warning anywhere in the response**. That includes a reviewer's edits and their approvals. It is the only way to pick up a question that was edited after the first run, and it is charged for every cell.
+
+<Warning>
+The default re-run does include cells that ran and found nothing, and on real data that is the majority: across production's extracted cells, roughly two thirds came back with no answer. So a second `matrices.run` with an empty body on a finished grid re-charges most of it. That is correct after adding a document or re-ingesting one, and it is money spent for nothing if you are polling in a loop and re-running on each pass. Poll the operation instead.
+</Warning>
 
 <Note>
 Re-running is idempotent per cell rather than additive: a cell is unique on its row and column, so a second run replaces the answer in place instead of adding a second one.
@@ -153,6 +170,234 @@ The check then feeds back into the answer itself. If the model claimed an answer
 This is a deliberate trade. A matrix over 200 leases will show you a few blanks that a human would have filled in, and in exchange no cell asserts a term with a quote that is not in the document. If you need the borderline cases, look at `confidence` on the cells that did answer and read the low ones yourself.
 </Note>
 
+## Editing the grid
+
+Four operations change the axes, and every one of them answers with the **whole matrix**, not with what it created. That is deliberate: each of them changes the cell count, and the new `pendingCellCount` is the number you need before deciding whether to run.
+
+All four carry `matrices:write`. None of them starts extraction.
+
+### Adding rows
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../rows \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"documentIds":["doc_...","doc_..."]}'
+```
+
+`201` with the updated matrix. Each new row gets one pending cell per existing column, so adding two documents to a 30-column grid adds 60 extractions to the next run.
+
+Same two rules as the create: every document must be in this matter and must have finished ingesting. Plus one more: a document that is **already a row** is refused with `409 matrix-not-editable`, and the problem carries `enrolledDocumentIds` naming which. That refusal is not pedantry. The insert underneath filters duplicates out rather than failing, so without it a request naming five documents of which two were already rows would answer `201` having added three, with nothing saying which two it dropped.
+
+### Removing a row
+
+```bash
+curl -X DELETE https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../rows/row_... \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+`204`. The document's answers in this matrix go with the row; the document itself stays in the matter.
+
+### Adding columns
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../columns \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"columns":[{"label":"Assignment","question":"May this agreement be assigned without consent?","columnType":"yes_no"}]}'
+```
+
+`201` with the updated matrix. Each new column gets one pending cell per existing row, so one column on a 40-row grid is 40 extractions. Same column vocabulary and same 60-column ceiling as the create, counted against what the grid already holds.
+
+### Editing a column
+
+```bash
+curl -X PATCH https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../columns/col_... \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is the aggregate cap on liability, excluding carve-outs?"}'
+```
+
+<Warning>
+**Changing `question`, `columnType` or `options` clears every answer in that column.** All of them: extracted answers, answers a person wrote, answers a reviewer approved, and any verification verdict on them. The cells go back to unanswered and stay that way until the next run.
+
+That is the right behaviour in a browser, where somebody just retyped the question and is looking at the grid. As a `PATCH` from a backend it is a side effect worth reading twice, which is why it is repeated in the field descriptions of all three fields and not only here.
+
+Changing `label` or `instructions` clears nothing.
+</Warning>
+
+### Reordering columns
+
+```bash
+curl -X PUT https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../columns/order \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"columnIds":["col_...","col_...","col_..."]}'
+```
+
+`columnIds` is the complete order and has to name **every** column in the matrix exactly once. A subset is refused with `422` naming what was left out, and so is a repeat. A reorder that names some of the columns is not a reorder; it is an unstated rule about where the rest go.
+
+This is the only way to move a column. `position` is not writable on a column patch.
+
+### Removing a column
+
+```bash
+curl -X DELETE https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../columns/col_... \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+`204`, unless another column is [conditional](#conditional-columns) on this one, which is `409 matrix-not-editable` with `dependentColumns` naming them.
+
+<Note>
+Deleting a row or a column leaves a **gap** in `position` rather than renumbering. Positions are ascending and not contiguous; use them for ordering and never for addressing.
+</Note>
+
+## Conditional columns
+
+A column can be set to run only when another column answered a certain way. It is the cheapest thing in the product: a gated-out cell costs nothing, and an ungated one costs a model call per document.
+
+"Only ask the indemnity questions of contracts that HAVE an indemnity clause" is the shape.
+
+It takes two calls, because a dependency names a column id and a column has no id until it exists:
+
+```bash
+# 1. create both columns (or add the second to an existing matrix)
+# 2. point the second at the first
+curl -X PATCH https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../columns/col_CHILD \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"dependsOnColumnId":"col_PARENT","gateExpression":"yes","injectUpstream":true}'
+```
+
+| Field | Means |
+| --- | --- |
+| `dependsOnColumnId` | The `col_` id this column waits for. `null` makes it unconditional again |
+| `gateExpression` | What the upstream answer has to be. `null` means "run whenever the dependency has answered" |
+| `injectUpstream` | Prepends the upstream answer to this column's prompt, so the question can refer to it |
+
+`gateExpression` is a **closed vocabulary**, not free text:
+
+| Expression | Passes when the upstream answer |
+| --- | --- |
+| `any` | Always. Same as omitting it |
+| `not_empty` | Is anything at all |
+| `yes` / `yes_no:yes` | Reads as yes |
+| `no` / `yes_no:no` | Reads as no |
+| `equals:VALUE` | Equals `VALUE`, trimmed and case-insensitive |
+| `in:A\|B\|C` | Is one of the pipe-separated values |
+
+Anything else is refused with a `422`. That refusal is the point of the vocabulary being closed: the evaluator **fails closed**, so an expression it cannot parse does not error, it marks every cell in the column "deliberately skipped" for every document, with nothing anywhere saying why.
+
+<Warning>
+`yes`, `no` and `equals:` match the **whole** upstream answer, not part of it. `yes` is satisfied by `yes`, `y`, `true` or `1` and by nothing else, so `"Yes, mutual indemnity"` does **not** pass it.
+
+That makes them gates for a `yes_no` or `single_select` upstream column, where the extractor writes a typed value the gate reads first. Over a `free_text` upstream, use `not_empty`, or `in:` with the values you expect.
+</Warning>
+
+A gated-out cell reads as `cancelled` on the cells list, which is how you tell it apart from one that was never reached (`queued`) and one that ran and found nothing (`succeeded` with a null answer).
+
+A dependency naming a column outside this matrix is `404`. One that would close a cycle is `422`.
+
+<Warning>
+Nothing in production uses this yet: zero columns carry a dependency or a gate today. The machinery is tested and the retry ladder for a dependent cell whose upstream has not finished is real, but you would be the first user of it. Start with one gated column on one matter.
+</Warning>
+
+## Writing an answer, and reviewing one
+
+```bash
+curl -X PATCH https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../cells/cel_... \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"answer":"USD 5,000,000, uncapped for IP indemnity"}'
+```
+
+Two fields, and both are about a human decision:
+
+| Field | Means |
+| --- | --- |
+| `answer` | The answer to record, replacing whatever is there |
+| `review` | `approved` or `rejected`, recording what a reviewer decided |
+
+Either one makes the cell **survive the next default run**. That is the property that makes a review pass worth doing: correct twenty cells, re-run the matrix for the rest, and your corrections are still there and were not charged for. `{"force": true}` bypasses it.
+
+The cell keeps reading as `succeeded`, because the extraction itself did succeed. There is no sixth status for "a human touched this".
+
+<Note>
+**Citations cannot be written.** A `quote` on this API carries the promise that it was checked to be a literal substring of the passage it cites, and there is no such check on a quote you supply. Publishing the field would turn a true statement about our data into a false one, silently and permanently, so it is not published. Neither is `answerData`, which is where the verifier's own record lives.
+
+The extractor's statuses cannot be written either. `review` is `approved` or `rejected` and nothing else, because an integration writing `extracted` onto an answer no machine produced makes the whole grid unauditable.
+</Note>
+
+## Verifying one answer
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../cells/cel_.../verifications \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+```json
+{
+  "cellId": "cel_...",
+  "verdict": "partially_supported",
+  "explanation": "The passage caps direct damages at USD 2,000,000 but says nothing about the aggregate figure the answer asserts.",
+  "confidence": 0.71
+}
+```
+
+The citations on a cell have already been checked to be **literal quotes**. This asks the different and harder question: taken together, do those passages **entail** the answer. A quote can be verbatim and still not support the claim built on it, and that gap is where a wrong answer that looks well-cited lives.
+
+| Verdict | Means |
+| --- | --- |
+| `supported` | The passages entail the answer |
+| `partially_supported` | They entail part of it; something meaningful is missing or vague |
+| `unsupported` | They do not contain what the answer asserts |
+| `contradicted` | They assert something inconsistent with it |
+
+**It costs a model call, so it carries `matrices:run` rather than `matrices:read`** and sits in the launch rate-limit tier. It is synchronous: there is no operation to poll, because there is nothing to fan out.
+
+`409 cell-not-verifiable` means the cell has no answer, or an answer with no surviving citation. There is nothing to check and no evidence to check it against.
+
+Verify the cells you are going to rely on, not the whole grid. On a 200-row matrix, `confidence` on the cells that answered is the cheaper first filter.
+
+## Exporting the grid
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_.../exports \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"format":"xlsx","includeCitations":true}'
+```
+
+```json
+{ "format": "xlsx", "filename": "vendor-contract-portfolio-review.xlsx",
+  "sizeBytes": 48213, "content": "UEsDBBQ..." }
+```
+
+`csv` or `xlsx`. `content` is base64 and `sizeBytes` is the length of the **decoded** file, so you can size storage without doing base64 arithmetic.
+
+**Bytes, not a signed URL**, and this is one of only two operations on the whole API that work that way. A matrix export is rendered per call and stored nowhere, so a URL would mean writing your work product into our storage first: encrypted, and undecryptable to you, or in the clear.
+
+`includeCitations` is on by default and adds one extra column per question holding that answer's supporting quotes. It is what makes the file checkable by somebody who was not watching the run.
+
+`413 export-too-large` above 10 MiB. Export without citations, or split the matrix. A 250-row, 60-column grid with citations is comfortably inside it.
+
+<Note>
+Cells starting with `=`, `+`, `-` or `@` are neutralized before they reach the file, so an answer extracted from a hostile document cannot execute as a formula when somebody opens the export in Excel. This is a matrix over documents a third party sent you; that is not a theoretical concern.
+</Note>
+
+## Deleting a matrix
+
+```bash
+curl -X DELETE https://api.vaquill.ai/workspace/v1/matters/mat_.../matrices/mtx_... \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+`204`. Hard, with no trash and no undo. The cells, columns, rows and every answer go with it, along with any comments, history or webhooks configured on it in the web app. A workflow run that produced this matrix survives and loses its reference to it.
+
+`409 operation-in-flight` while a run over the matrix has not finished. Poll the operation named in the problem first. Deleting mid-run would leave that run's operation reporting `running` until a sweeper marked it failed hours later, with a code that is supposed to mean a worker died.
+
+**Delete is not idempotent.** A second delete of the same id answers `404`. On a delete that timed out, treat a subsequent `404` as success.
+
 ## Sizing a run
 
 Two ceilings, both refused with `413 run-too-large` before anything is written or charged. The problem document carries `limit`, `requested` and `unit`, so you can batch without discovering the ceiling by bisection.
@@ -182,6 +427,18 @@ It is not the same thing as the rate limiter. The rate limiter counts requests p
 
 ## What is not here
 
-There is no endpoint that lists a matter's matrices, and none that updates or deletes one. Keep the `matrixId` from the create response.
+**No cancel.** Once a run is accepted it runs to completion. Cancel is being added as one verb across every capability rather than one route per capability, because a published operation can never be withdrawn and shipping a matrix-shaped cancel now would commit this API to two ways of stopping work.
 
-Conditional columns, where one column only runs when another answered a certain way, are not part of this API. They key on a column id that does not exist until the create returns, so a dependency cannot be expressed in the same call that mints both columns.
+There is one consequence worth knowing about: a run cancelled **in the web app** marks its remaining cells as errors carrying a cancellation note, and the extractor then refuses to re-run exactly those cells. A plain `matrices.run` over such a grid would enqueue work, do nothing, and report success. So it is refused instead, with `409 matrix-not-runnable` telling you to send `{"force": true}`, which does re-run them and does charge for them.
+
+**No duplicate.** You already hold every column spec, because you read it off a `Matrix` response, so the same result is a `matrices.create` with that list: one call, a title you chose rather than `Copy of ...`, and explicit provenance.
+
+**No matrix templates.** All eight templates in the product are ours, not any customer's, so publishing them would publish our catalogue under a name that reads as yours. Send the questions you want asked; that is a request body you can version in your own repository.
+
+**No column wizard.** `POST /columns/from-prompt` in the web app turns a sentence into suggested columns for a person staring at an empty grid. A backend automating this already knows what it wants asked.
+
+**No cell comments, no cell history, no matrix chat.** Collaboration primitives with no headless meaning.
+
+**No `run-status` endpoint.** The [operation](/workspace-api/concepts/operations) IS that, with the same five statuses and a cell-counted `progress`. A second poll shape would be a second vocabulary reaching you.
+
+**No webhooks, anywhere on this API.** Polling the operation is the completion path.

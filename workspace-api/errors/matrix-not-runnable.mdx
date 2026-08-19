@@ -1,0 +1,23 @@
+---
+title: "Matrix is not runnable by this credential"
+description: "409 matrix-not-runnable"
+icon: "table-cells"
+---
+
+**`409`** `matrix-not-runnable`
+
+The matrix exists, your credential can read it, and extraction is authorized to whoever created it. Somebody in your organization built this matrix in the web app, so running it is theirs to do.
+
+This is a `409` rather than a `403` on purpose: your credential is valid and your scopes are sufficient. What blocks the run is whose matrix it is.
+
+## What to do
+
+Create the matrix through this API and run that one. A matrix created by your integration is owned by your integration, and every operation on it works.
+
+If you need to run a colleague's existing matrix, they can run it from the web app, and you can read the results here once it finishes.
+
+<Note>
+You are getting a refusal in the first second instead of a job that appears to start and then never finishes. Before this check existed, the run was accepted, every cell stayed pending, and the operation sat unfinished for about four hours before being marked failed.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

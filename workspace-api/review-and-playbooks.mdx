@@ -131,7 +131,7 @@ The required trio is `documentText`, `contractType` and `userSide`. Everything e
 
 `documentText` must be between **100 and 200,000 characters**. Those bounds are published rather than internal, so size your batches by them: below the floor there is nothing to review, and above the ceiling the request is refused with a `422` before any work starts.
 
-Answers `202` with an operation of type `review.run`. Poll `GET /v1/operations/{operationId}` until it reaches a terminal status. The `Retry-After` on the `202` is tuned for this kind of work, and a real contract review takes a couple of minutes. A review operation reports no incremental `progress`, deliberately: the pipeline writes none, and a fabricated percentage would be a number nobody measured.
+Answers `202` with an operation of type `review.run`, or `review.runDeep` at `depth: "deep"`. Poll `GET /v1/operations/{operationId}` until it reaches a terminal status. The `Retry-After` on the `202` is tuned for this kind of work, and a real contract review takes a couple of minutes. A review operation reports no incremental `progress`, deliberately: the pipeline writes none, and a fabricated percentage would be a number nobody measured.
 
 ### The input is text, not a document id
 
@@ -166,6 +166,7 @@ The finished review echoes `playbookId` back, absent when it ran against the def
 | `focusAreas` | absent | Up to 50 areas of concern, to narrow the review from the whole contract |
 | `reviewInstructions` | absent | Up to 2,000 characters layered on top of the playbook, for this review only |
 | `dealContext` | absent | `{contractValue, governingLaw}`, the attributes your escalation conditions evaluate |
+| `depth` | `standard` | `deep` adds a verification pass over every flagged clause. See below; six of the fields in this table are refused at that depth |
 
 `dealContext` is the input side of conditional escalation. Both fields are optional and stay optional: a rule that references an attribute you did not supply simply does not fire, which is the fail-safe direction. A missing contract value must not escalate a clause to GC on the strength of a number nobody provided.
 
@@ -176,6 +177,29 @@ The finished review echoes `playbookId` back, absent when it ran against the def
 Pair it with `priorRoundText`, your last sent version, so the reviewer computes a real diff instead of guessing what changed and undoing language you already settled. Both text fields cap at 200,000 characters.
 
 `counterpartyResponseText` is for the case where the counterparty's response is a separate document from the one in `documentText`. Most callers paste the response straight into `documentText`, and then leave this out.
+
+### Standard depth and deep depth
+
+`depth` is `standard` by default. Setting it to `deep` runs the same first-pass review and then verifies it: every flagged clause is re-drafted with the deep model, checked against the contract's own words, self-critiqued for over-reach and stamped with a sign-off level, and first-pass false positives are dropped.
+
+The result is the SAME `Review` shape, read back from the same endpoint and exported from the same one. What changes is what the fields mean:
+
+| What deep changes | Where you see it |
+| --- | --- |
+| Each redline's grounding is a fact rather than a default | `redlines[].grounding` reads `verified` or `unverified` per redline |
+| Sign-off is computed per clause instead of read off the playbook alone | `redlines[].approvalLevel`, `redlines[].isDealBreaker`, and `approvalGate` |
+| First-pass false positives are gone | Fewer entries in `redlines`, and a sentence about it appended to `summary` |
+| What the verification pass actually did | A `deep` object, absent on a standard review |
+
+The operation's `type` reads `review.runDeep` rather than `review.run`, so a caller can tell which depth it got without re-reading its own request, and the `Retry-After` is tuned for the longer clock.
+
+<Warning>
+A deep review verifies at most **40 flagged clauses**. When it hits that ceiling, `deep.clausesTruncated` is `true`, which means first-pass flags beyond the fortieth were never verified and are not in `redlines`. Treat the review as covering the first forty findings and review the rest separately. Without checking that flag, a hundred-clause contract comes back looking complete.
+</Warning>
+
+Six request fields are **not supported at deep depth** and are refused rather than ignored: `focusAreas`, `reviewInstructions`, `markupLevel`, `round`, `priorRoundText` and `counterpartyResponseText`. The deep pass reads none of them, so accepting them would mean a `round: 3` request quietly coming back as a first-round review. Send them at `depth: "standard"`, or drop them. `dealContext` and `paperSide` ARE accepted: they reach the per-clause verification loop.
+
+Deep and standard reviews share one capacity ceiling, because they are the same work on the same queue.
 
 ### Retries and capacity
 
@@ -302,6 +326,7 @@ An empty `redlines` array is refused, not widened into "apply everything". Silen
 | 404 | `review-not-found` | No such review, not your organization's, or under a different matter |
 | 409 | `review-not-finished` | You asked to export a review that has not succeeded yet. It is a `409` rather than a `404` because the review is sitting right there, still running. Poll the operation that started it |
 | 409 | `export-not-available` | There is nothing to render: the review produced no redlines and you supplied none, or the contract text behind the review is no longer available so it cannot be re-rendered |
+| 422 | `deep-review-unsupported-fields` | `depth: "deep"` was combined with fields the deep pass never reads. `fields` names them. Drop them, or run at `depth: "standard"` |
 | 429 | `concurrency-limit-reached` | Five reviews are already in flight for your organization. Wait for one to finish |
 | 503 | `storage-unavailable` | The export rendered but could not be stored or signed. Ours, not yours. Retry with backoff |
 

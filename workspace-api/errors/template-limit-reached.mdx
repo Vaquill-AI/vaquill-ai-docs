@@ -1,0 +1,30 @@
+---
+title: "Template limit reached"
+description: "409 template-limit-reached"
+icon: "gauge-high"
+---
+
+**`409`** `template-limit-reached`
+
+Creating another template would cross one of two ceilings your organization shares with the web app:
+
+- **200 active templates per organization.** Trashed and archived templates do not count.
+- **50 template creates per day**, counted against the person your installation is attributed to.
+
+`detail` says which one was hit, and the problem carries `limit` plus either `active` or `createdToday` so you do not have to discover the number by trying.
+
+## Why this is a 409 and not a 429
+
+A `429` promises that waiting will help. The per-organization cap never clears on its own: it needs a template deleted. The daily cap does roll, after 24 hours, but the two share an error so that an integration handles the one condition, reads `detail`, and does the right thing rather than retrying into a wall.
+
+## What these caps are, and what they are not
+
+They are not metering and not a usage quota. This API does not meter anything. They exist because template counts are shared with the product: an integration that creates fifty templates in a day silently blocks the next browser upload by the person your installation runs as, with a message about a daily limit they did not spend. Refusing here is refusing to spend somebody else's allowance.
+
+## What to do
+
+Delete a template you no longer run, then retry. `DELETE /v1/templates/{templateId}` retires one immediately and past template runs survive it.
+
+If you are importing a library in bulk and expect to cross 200 legitimately, ask us to lift it rather than working around it.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

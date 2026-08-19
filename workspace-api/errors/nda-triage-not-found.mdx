@@ -1,0 +1,15 @@
+---
+title: "NDA triage not found"
+description: "404 nda-triage-not-found"
+icon: "magnifying-glass"
+---
+
+**`404`** `nda-triage-not-found`
+
+No NDA triage with that id is readable under the matter in the path. Another organization's triage, one filed under a different matter, and an id that was never a triage all read the same. An id that belongs to some other kind of background job lands here as well, because that is not a triage you may not see, it is not a triage.
+
+## What to do
+
+Use the id the launch operation reported: it arrives on the operation's `resource` once the work is accepted, and it looks like `ndt_` plus 32 hex characters. The operation id that started the triage (`op_...`) is a different thing and cannot be substituted for it. There is no list endpoint for triages, so hold the id you were given.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

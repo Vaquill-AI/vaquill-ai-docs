@@ -342,15 +342,23 @@
               "workspace-api/clients-and-matters",
               "workspace-api/documents",
               "workspace-api/drafting",
+              "workspace-api/draft-lifecycle",
+              "workspace-api/template-authoring",
               "workspace-api/review-and-playbooks",
+              "workspace-api/playbook-extraction",
+              "workspace-api/nda-triage",
+              "workspace-api/compliance",
               "workspace-api/compare",
               "workspace-api/matrices",
+              "workspace-api/matter-analysis",
+              "workspace-api/research",
               "workspace-api/workflows"
             ]
           },
           {
             "group": "AGENTS",
             "pages": [
+              "workspace-api/cleanup",
               "workspace-api/mcp"
             ]
           }

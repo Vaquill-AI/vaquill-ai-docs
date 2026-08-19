@@ -1,0 +1,121 @@
+---
+title: "Compliance checks"
+description: "Check a DPA, a privacy policy or a security plan against one regulation's requirement checklist"
+icon: "shield-check"
+---
+
+A compliance check reads one document against **one regulation's requirement checklist** and reports a verdict per requirement, with the article it comes from, the gaps, and what to do about them.
+
+Every path below is prefixed with `https://api.vaquill.ai/workspace/v1`, and every call carries `Authorization: Bearer vq_ws_...`.
+
+## Run a check
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../compliance-checks \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: 6b1e7f30-2d59-4c8a-b0f4-91a3c5e7d206" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "documentText": "DATA PROCESSING AGREEMENT ...",
+    "regulationType": "gdpr",
+    "documentCategory": "dpa",
+    "context": "EU controller, US processor, customer support data."
+  }'
+```
+
+`documentText` is between **100 and 200,000 characters**. Answers `202` with an operation of type `complianceCheck.run`; the check id arrives on the operation's `resource` and looks like `cck_` plus 32 hex characters.
+
+### The regulations you can check against
+
+`regulationType` accepts these fourteen, and nothing else:
+
+`gdpr`, `uk_gdpr`, `ccpa`, `dpdp`, `lgpd`, `ferpa`, `hipaa`, `glba`, `tcpa`, `sox`, `pci_dss`, `dora`, `nis2`, `soc2`.
+
+<Note>
+There is no `other`. A regulation without a full requirement checklist behind it falls through to a generic one, which produces an answer shaped exactly like a real one and is worth less than no answer. The list above is the set that has a checklist, and anything else is refused by the schema with a `422` before any work starts.
+</Note>
+
+### Document category
+
+`documentCategory` defaults to `other` and sharpens which requirements apply. Unlike the regulation, `other` here is a real answer: it means "none of the listed shapes", not "unsupported".
+
+`dpa`, `privacy_policy`, `terms_of_service`, `data_breach_plan`, `consent_form`, `dsr_process`, `vendor_agreement`, `information_security_policy`, `incident_response_plan`, `financial_report`, `ict_risk_policy`, `business_continuity_plan`, `other`.
+
+`context` is up to 2,000 characters of anything else that changes which requirements bite: the industry, the data types processed, the jurisdictions involved.
+
+## Reading the result
+
+```bash
+curl https://api.vaquill.ai/workspace/v1/matters/mat_.../compliance-checks/cck_... \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+Answers `200` at any point, with `status` drawn from the same five public values an operation uses. While it is `queued` or `running`, `requirements` is empty and the scalar fields are absent.
+
+| Field | What it holds |
+| --- | --- |
+| `overallStatus` | `compliant`, `partially_compliant`, `non_compliant` or `not_applicable` |
+| `complianceScore` | 0 to 100 |
+| `requirements` | Every requirement checked, its verdict, the article it comes from, what the document says and what to change |
+| `gaps` | The gaps, each with a risk level and suggested remediation language |
+| `remediationActions` | What to do, in priority order, with an effort estimate and a suggested timeline |
+| `compliantCount`, `partiallyCompliantCount`, `nonCompliantCount`, `notApplicableCount` | The tallies, so you can gate on them without walking `requirements` |
+
+### Two fields worth branching on
+
+`deterministicCoverage` is the fraction of requirements that had keyword evidence in the document, between 0 and 1. It is the one number that says how much of the verdict rests on the document rather than on the model's priors. Low coverage on a long document usually means the document does not address the regulation at all, which is itself the finding.
+
+`preCheckFlags` names the places where the model and a deterministic keyword scan disagreed. Each one is worth a human glance before you act on that requirement.
+
+## Export a report
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../compliance-checks/cck_.../exports \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"format": "pdf"}'
+```
+
+Answers `201` with `{format, filename, url, expiresAt, sizeBytes}`. `format` is `pdf` or `docx`. The URL is signed and lives fifteen minutes.
+
+## Retries and capacity
+
+This endpoint takes `Idempotency-Key`. An organization may have **5 checks in flight at once**; a sixth is refused with `429 concurrency-limit-reached`.
+
+## Errors
+
+| Status | Type | What happened |
+| --- | --- | --- |
+| 404 | `compliance-check-not-found` | No such check, not your organization's, or under a different matter |
+| 404 | `matter-not-found` | The matter in the path is not readable by this credential |
+| 422 | `invalid-request` | Usually a `regulationType` outside the fourteen above |
+| 409 | `compliance-check-not-finished` | You asked to export a check that has not succeeded yet. Poll the operation that started it |
+| 429 | `concurrency-limit-reached` | Five checks are already in flight for your organization |
+| 503 | `storage-unavailable` | The report rendered but could not be stored or signed. Ours, not yours. Retry with backoff |
+
+Branch on `type`, never on `detail`. Full shape in [Errors](/workspace-api/concepts/errors).
+
+## Scopes
+
+| Scope | Lets you |
+| --- | --- |
+| `compliance:run` | Start a check |
+| `compliance:read` | Read a check and poll its operation |
+| `exports:create` | Export a check as a report |
+
+## What is not here
+
+There is **no list endpoint** and no delete. Hold the id you were handed at launch time.
+
+A compliance check is an analysis of a document you send, not of a document in the workspace. If the document is already uploaded, pull its text first with `GET /v1/matters/{matterId}/documents/{documentId}/text` and check the `truncated` flag before passing it in.
+
+## What to read next
+
+<CardGroup cols={2}>
+  <Card title="NDA triage" icon="traffic-light" href="/workspace-api/nda-triage">
+    The other screening tool: ten criteria over an inbound NDA.
+  </Card>
+  <Card title="Operations" icon="clock" href="/workspace-api/concepts/operations">
+    The job envelope a check returns, and how to poll it well.
+  </Card>
+</CardGroup>

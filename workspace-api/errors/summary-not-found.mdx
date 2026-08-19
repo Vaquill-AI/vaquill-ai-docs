@@ -1,0 +1,23 @@
+---
+title: "Summary not found"
+description: "404 summary-not-found"
+icon: "file-lines"
+---
+
+**`404`** `summary-not-found`
+
+The document exists and your credential can read it. It has never been summarized.
+
+This is deliberately a different error from [`document-not-found`](/workspace-api/errors/document-not-found), so you can tell "fix the id" from "there is nothing to read yet". A `document-not-found` on the same route means the document id is wrong, belongs to another organization, or is not in the matter you named.
+
+## What to do
+
+Generate the summary in the app, then read it here. `GET /v1/matters/{matterId}/documents/{documentId}/summary` is a read and never generates one: a summary is a pass over every chunk of the document, and this API does not start billable work behind a `GET`.
+
+A document that is still ingesting has no summary and cannot have one. Check `status` on the document first; it has to be `succeeded`.
+
+<Note>
+When a document has been summarized more than once at different lengths, this route returns the most recently regenerated one and `length` tells you which it is.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

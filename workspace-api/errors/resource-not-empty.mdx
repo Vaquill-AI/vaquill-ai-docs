@@ -1,0 +1,43 @@
+---
+title: "Resource is not empty"
+description: "409 resource-not-empty"
+icon: "folder-open"
+---
+
+**`409`** `resource-not-empty`
+
+The thing you asked to delete still contains something a delete would destroy or orphan, so nothing was deleted.
+
+This API deletes what you created and refuses what would take something else with it. A client that owns matters, a matter that holds documents, a folder that holds another folder: in each case a cascade would reach past the row you named, and a cascade that removes a hundred documents behind one `DELETE` is not something a retry can undo.
+
+## What to do
+
+Read `blockers`. It names every reason and how many of each, so you can clear them in one pass instead of discovering them one at a time.
+
+```json
+{
+  "type": "https://docs.vaquill.ai/workspace-api/errors/resource-not-empty",
+  "title": "Resource is not empty",
+  "status": 409,
+  "detail": "This matter still holds 3 documents, 1 draft. Delete or move everything inside it first. ...",
+  "blockers": [
+    { "resource": "documents", "count": 3 },
+    { "resource": "drafts", "count": 1 }
+  ]
+}
+```
+
+| Deleting | Blocked by |
+| --- | --- |
+| A client | Any matter it owns. List them at `GET /v1/clients/{clientId}/matters` |
+| A matter | Any document, folder, draft, comparison, matrix, workflow run, review or chat inside it |
+| A folder | Any folder inside it. List them at `GET /v1/folders?parentId=` |
+| A playbook | Any review that ran against it. Those reviews would lose the positions they were judged by |
+
+Documents, drafts, comparisons and matrices that a person moved to the trash in the app do not count as blockers. They are not visible through this API, so they could never be cleared through it either.
+
+<Note>
+`chats` can appear as a blocker on a matter even though this API does not publish chats. It is deliberate: a chat is work a person did, and a matter delete would remove it with no event anywhere. Open the matter in the app to clear them.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

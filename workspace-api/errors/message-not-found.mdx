@@ -1,0 +1,17 @@
+---
+title: "Message not found"
+description: "404 message-not-found"
+icon: "message"
+---
+
+**`404`** `message-not-found`
+
+No turn with that id is readable under the matter in the path.
+
+A message id is globally unique, but the route names a MATTER, and the message's own conversation has to be in it. A message from a conversation in another of your matters answers this rather than resolving, which is deliberate: widening silently to the organization would cross the fence an allowlisted installation exists to hold.
+
+## What to do
+
+Read the conversation's turns with `GET /v1/matters/{matterId}/chats/{chatId}/messages` and take the id from there, or take it from the `resource.id` on the operation that produced the answer.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

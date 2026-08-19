@@ -109,4 +109,16 @@ Downloading requires `documents:download`, a scope separate from `documents:read
 DELETE /v1/matters/{matterId}/documents/{documentId}
 ```
 
-Answers `204`. This is a hard delete: the document, its extracted text and its search index entries all go, and there is no undo. It is the same delete the web app performs, so treat it with the care you would treat that button.
+Answers `204`. This is a hard delete with no undo, and it is the same delete the web app's button performs.
+
+<Warning>
+**It takes more with it than the document.** Deleting a document also removes, by database cascade and without further warning:
+
+- its extracted text, search index entries and stored summaries
+- its **version history**, and any documents derived from it
+- its **timeline events**, so a matter's chronology loses those entries
+- its **row in every matrix it appears in**, so a completed matrix silently loses a row and its answers
+- its highlights, its extracted obligations, and its record in any workflow run that used it
+
+None of that is recoverable and none of it is reported back to you. If you only want the file out of circulation, consider leaving it in place rather than deleting it.
+</Warning>

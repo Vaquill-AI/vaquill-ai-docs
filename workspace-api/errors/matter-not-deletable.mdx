@@ -1,0 +1,25 @@
+---
+title: "Matter cannot be deleted"
+description: "409 matter-not-deletable"
+icon: "lock"
+---
+
+**`409`** `matter-not-deletable`
+
+This is your organization's default matter. It cannot be deleted, here or in the app.
+
+Every organization has exactly one, minted when the organization was created. It is where unfiled work lands, and the product looks it up by name for the whole organization, so removing it would break more than the matter itself. The database refuses the delete too, independently of this API.
+
+Emptying it will not help, which is why this is a different error from [`resource-not-empty`](/workspace-api/errors/resource-not-empty).
+
+## What to do
+
+Nothing, if you meant to delete this matter: it is not a matter you can remove. Read `GET /v1/matters/default` to confirm which one it is, or check `isDefault` on any matter.
+
+If you were cleaning up after an integration run, create matters explicitly with `POST /v1/matters` rather than writing into the default one. A matter your integration created can be emptied and deleted.
+
+<Note>
+This is a `409` and not a `403` on purpose. On this API a `403` means your credential is missing a scope or your installation is inactive, and both send you to rotate something. Your credential is fine.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

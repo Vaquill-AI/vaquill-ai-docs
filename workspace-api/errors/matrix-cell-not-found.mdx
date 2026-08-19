@@ -1,0 +1,21 @@
+---
+title: "Matrix cell not found"
+description: "404 matrix-cell-not-found"
+icon: "table-cells-large"
+---
+
+**`404`** `matrix-cell-not-found`
+
+There is no cell with that `cel_` id in that matrix. "No such cell" and "a cell in a matrix you cannot see" are the same answer.
+
+## What to do
+
+Read the cell ids from `GET /v1/matters/{matterId}/matrices/{matrixId}/cells`. Every cell carries its own `id`, plus the `rowId` and `columnId` that place it in the grid; resolve those against the matrix's `rows` and `columns` to know which document and which question it belongs to.
+
+There is no way to address a cell by its row and column instead. One `cel_` id, from the cells list.
+
+<Note>
+This is not the same as [`cell-not-verifiable`](/workspace-api/errors/cell-not-verifiable). That one means the id was right and the cell has nothing to check. If you see this error, the id is what to look at.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

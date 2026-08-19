@@ -1,0 +1,17 @@
+---
+title: "Verification not found"
+description: "404 verification-not-found"
+icon: "circle-check"
+---
+
+**`404`** `verification-not-found`
+
+The message exists and has never been verified. That is a different fact from `message-not-found`, and it is reported as one: an empty verification with a zero score would be indistinguishable from a verification that ran and found nothing to report.
+
+## What to do
+
+Start one with `POST /v1/matters/{matterId}/messages/{messageId}/verifications`, then poll the operation it returns. Once it succeeds, this route answers with the verdicts.
+
+While a verification is running this route answers `200` with a `running` status and no claims, so a `404` means no verification has ever been started for that message.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

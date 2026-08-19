@@ -1,0 +1,30 @@
+---
+title: "Cell has nothing to verify"
+description: "409 cell-not-verifiable"
+icon: "circle-question"
+---
+
+**`409`** `cell-not-verifiable`
+
+The cell id was right. What is missing is something to check: the cell has no answer, or it has an answer with no surviving citation.
+
+Verification asks whether the cited passages **entail** the answer. That needs both halves. A cell that ran and found nothing has neither, and a cell that has not run yet has neither.
+
+## What to do
+
+Read the cell first. `GET /v1/matters/{matterId}/matrices/{matrixId}/cells` tells you which of the three cases you are in:
+
+| What you see | What it means |
+| --- | --- |
+| `status: "queued"` | It has not run. Run the matrix, poll the operation, then verify |
+| `status: "succeeded"`, `answer: null` | The extraction ran and the document does not say. There is no claim to verify, and that is the finding |
+| `status: "succeeded"`, an answer, `citations: []` | Every candidate quote failed the substring check and was dropped. The answer is ungrounded, which is itself the signal you were looking for |
+| `status: "failed"` | The extraction broke. Re-run before verifying |
+
+The third row is worth pausing on. An answer with no citations has already been through our standing check, and an empty `citations` array on a succeeded cell means nothing supporting it survived. You do not need a verifier to tell you that one is weak.
+
+<Note>
+This is deliberately distinguished from [`matrix-cell-not-found`](/workspace-api/errors/matrix-cell-not-found) and [`matrix-not-runnable`](/workspace-api/errors/matrix-not-runnable). The web app collapses all three into one message reading "Cell has no answer or no citations to verify", which sends you to re-run extraction over a grid that is already full.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

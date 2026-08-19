@@ -1,0 +1,25 @@
+---
+title: "Research settings rejected"
+description: "422 research-config-rejected"
+icon: "sliders"
+---
+
+**`422`** `research-config-rejected`
+
+The matter research settings in the request cannot be stored together.
+
+Three settings are deep-tier only:
+
+- `maxMultiHopIterations` above 3
+- `enableHallucinationDetection`
+- `enableTemporalTracking`
+
+A matter on the `standard` tier may not carry any of them. The rule is enforced by the database over all four columns at once, which means it is evaluated against the RESULT of your patch rather than against the fields you sent.
+
+**The case that surprises people:** setting `ragTier` to `standard` on a matter that already has one of those flags on is refused, by a field the request never mentioned.
+
+## What to do
+
+Change them together. Send `ragTier` and the flags in one request, either turning the tier up to `deep` or clearing the flags alongside dropping to `standard`. The problem's `fields` names both sides.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

@@ -1,0 +1,129 @@
+---
+title: "NDA triage"
+description: "Screen an inbound NDA against ten criteria and your own playbook, and get a green, yellow or red answer"
+icon: "traffic-light"
+---
+
+An NDA triage answers one question: **can this be signed without a lawyer reading it?** It screens one inbound agreement against ten standard criteria, layers your own NDA playbook on top where you name one, and returns `green`, `yellow` or `red` with the reasoning for every criterion.
+
+It is the cheapest useful thing this API does with a contract. A [contract review](/workspace-api/review-and-playbooks) marks up a document clause by clause and produces redlines to send back; a triage sorts an inbox.
+
+Every path below is prefixed with `https://api.vaquill.ai/workspace/v1`, and every call carries `Authorization: Bearer vq_ws_...`.
+
+## Screen an NDA
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../nda-triages \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: 2c9f5a71-3b84-4e0d-9f11-6a7c2d8e4b03" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "documentText": "MUTUAL NON-DISCLOSURE AGREEMENT ...",
+    "counterpartyName": "Nimbus Robotics",
+    "businessContext": "Evaluating a supply relationship."
+  }'
+```
+
+`documentText` is the only required field, between **100 and 200,000 characters**. Those bounds are published rather than internal, so size your batches by them.
+
+Answers `202` with an operation of type `ndaTriage.run`. Poll `GET /v1/operations/{operationId}` until it reaches a terminal status; the triage id arrives on the operation's `resource` and looks like `ndt_` plus 32 hex characters.
+
+| Field | Default | What it does |
+| --- | --- | --- |
+| `documentText` | required | The full NDA text. Text rather than a document id, for the reason a review takes text: it usually just arrived by email |
+| `counterpartyName` | absent | Echoed back on the triage, so a queue of screened NDAs is readable without a second lookup |
+| `businessContext` | absent | One sentence about what the NDA is for. Sharpens the routing recommendation |
+| `playbookId` | absent | An NDA playbook to screen against. Must be `contractType: "nda"` |
+| `jurisdiction` | `US` | Two uppercase letters, or `INTL`. Selects the built-in default positions when no playbook is named |
+
+### Choosing a playbook
+
+`playbookId` is optional, and it has one rule the contract-review endpoint does not have: **it must be an `nda` playbook**. A playbook of any other contract type is refused with `422 playbook-contract-type-mismatch`.
+
+That refusal exists because nothing downstream enforces it. A playbook for a different contract type matches no criterion, so all ten come back `not_assessed`, the run reports success, and you are left believing your positions were applied.
+
+Omitting `playbookId` runs the screen against the built-in default NDA positions for `jurisdiction`. That is a real answer rather than a degraded one: it is what the app uses for a firm that has not authored an NDA playbook.
+
+## Reading the result
+
+```bash
+curl https://api.vaquill.ai/workspace/v1/matters/mat_.../nda-triages/ndt_... \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+Answers `200` at any point in the triage's life, with `status` drawn from the same five public values an operation uses. While it is `queued` or `running`, `criteria` is empty and the scalar fields are absent. That is the truthful shape of a screen that has not happened yet, not an error, and it is why this never answers `404` for a triage that is simply still running.
+
+### The two classifications, and which one to act on
+
+| Field | What it is |
+| --- | --- |
+| `classification` | The screen's own verdict: `green`, `yellow` or `red` |
+| `effectiveClassification` | The verdict after layering your playbook on top |
+
+**Branch on `effectiveClassification`.** A playbook deal-breaker flips it to `red` even where the screen said `green`, which is exactly the case automation exists to catch. When no playbook applied and no deal-breaker fired, the two are equal.
+
+### Per-criterion detail
+
+`criteria` holds the ten screening results. Each one carries a `status` of `pass`, `warn`, `fail`, or `not_found` when the NDA is silent on that point, plus what the agreement actually says and what to do about it.
+
+Where a playbook applied, each criterion also carries a `playbookAssessment` whose `verdict` is one of `meets_standard`, `within_acceptable_range`, `outside_range`, `deal_breaker_hit`, or `not_assessed` when the playbook has no entry for that criterion. `deviationSummary` is the one-line version: "Your standard: 5y term cap; this NDA: 10y".
+
+Two lists are worth reading on their own. `missingCarveouts` names the standard protections the NDA does **not** have, which is the finding that cannot be expressed as a criterion result because there is nothing there to assess. `problematicProvisions` names things that do not belong in an NDA at all, like a non-compete or an IP assignment.
+
+## Export a report
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../nda-triages/ndt_.../exports \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"format": "pdf"}'
+```
+
+Answers `201` with `{format, filename, url, expiresAt, sizeBytes}`. `format` is `pdf` or `docx`. The URL is signed and lives **fifteen minutes**: fetch it promptly and do not store it.
+
+A `201` rather than a `200` because it creates something: a rendering that did not exist before, and a bearer URL over an analysis of a client document. That is also why it carries its own scope.
+
+## Retries and capacity
+
+This endpoint takes `Idempotency-Key`. Send one, reuse it on every retry of the same logical triage, and a client timeout costs you nothing. See [Idempotency](/workspace-api/concepts/idempotency).
+
+An organization may have **5 triages in flight at once**. A sixth launch is refused with `429 concurrency-limit-reached`, which names the limit and the current count. It is a queueing signal, not a quota.
+
+## Errors
+
+| Status | Type | What happened |
+| --- | --- | --- |
+| 404 | `nda-triage-not-found` | No such triage, not your organization's, or under a different matter |
+| 404 | `matter-not-found` | The matter in the path is not readable by this credential |
+| 404 | `playbook-not-found` | No such playbook, or not one your organization owns |
+| 422 | `playbook-contract-type-mismatch` | The playbook exists and is for a different kind of contract. Name an `nda` playbook, or omit `playbookId` |
+| 409 | `nda-triage-not-finished` | You asked to export a triage that has not succeeded yet. Poll the operation that started it |
+| 429 | `concurrency-limit-reached` | Five triages are already in flight for your organization |
+| 503 | `storage-unavailable` | The report rendered but could not be stored or signed. Ours, not yours. Retry with backoff |
+
+Branch on `type`, never on `detail`. Full shape in [Errors](/workspace-api/concepts/errors).
+
+## Scopes
+
+| Scope | Lets you |
+| --- | --- |
+| `nda:run` | Start a triage |
+| `nda:read` | Read a triage and poll its operation |
+| `exports:create` | Export a triage as a report |
+
+`nda:*` is its own pair rather than a reuse of `review:*`. An NDA triage is not a contract review: it produces a different resource with a different shape, and a credential you restricted to reviews should not thereby be able to screen NDAs.
+
+## What is not here
+
+There is **no list endpoint**. Hold the id you were handed at launch time, or the one on the operation's `resource`. There is no delete either.
+
+## What to read next
+
+<CardGroup cols={2}>
+  <Card title="Contract review" icon="clipboard-check" href="/workspace-api/review-and-playbooks">
+    The full clause-by-clause markup, and the playbooks a triage screens against.
+  </Card>
+  <Card title="Operations" icon="clock" href="/workspace-api/concepts/operations">
+    The job envelope a triage returns, and how to poll it well.
+  </Card>
+</CardGroup>

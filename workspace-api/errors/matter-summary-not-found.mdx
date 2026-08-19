@@ -1,0 +1,21 @@
+---
+title: "Matter summary not found"
+description: "404 matter-summary-not-found"
+icon: "file-lines"
+---
+
+**`404`** `matter-summary-not-found`
+
+No matter summary with that id is readable under the matter in the path.
+
+**The `sum_` id names the GENERATION, not the summary document.** It is the id the operation's `resource` carries and the only summary identifier this API publishes, so an id taken from anywhere else answers this too, correctly: it was never one of ours.
+
+The three ordinary causes stay indistinguishable within this slug: no such id, another organization's, and one under a different matter.
+
+## What to do
+
+Take the id from the launch: `POST /v1/matters/{matterId}/summaries` answers `202` with an operation whose `resource.url` is the summary route and whose `resource.id` is the `sum_` id. Following that URL is always correct.
+
+Otherwise list `GET /v1/matters/{matterId}/summaries`, which is the history of what was asked for and what came back across both altitudes.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

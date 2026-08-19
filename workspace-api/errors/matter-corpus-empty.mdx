@@ -1,0 +1,19 @@
+---
+title: "Matter has no documents to analyse"
+description: "409 matter-corpus-empty"
+icon: "folder-open"
+---
+
+**`409`** `matter-corpus-empty`
+
+The matter holds no document that has finished ingesting, so there is nothing for a fact set or a summary to read.
+
+A `409` rather than a `404` or a `422`: the matter exists, the request is well formed, and what is missing is a precondition you can satisfy. The refusal happens at the boundary rather than in the worker because running the pipeline over an empty corpus would occupy a worker to produce nothing and would still take a run out of your concurrency budget.
+
+## What to do
+
+Upload a document with the `uploads.*` flow, then poll the `document.ingest` operation it returns until it reaches `succeeded`. A document that is still processing does not count, and neither does one whose ingest failed.
+
+Then retry. Nothing was started, so there is no operation to clean up and no cost was incurred.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

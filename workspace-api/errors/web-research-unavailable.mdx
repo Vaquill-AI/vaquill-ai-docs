@@ -1,0 +1,21 @@
+---
+title: "Web research unavailable"
+description: "502 web-research-unavailable"
+icon: "globe"
+---
+
+**`502`** `web-research-unavailable`
+
+The upstream web-research provider failed, refused the request, or could not read the page you asked for.
+
+**A `502` rather than a `500`**, and the distinction is the point: nothing of ours is broken. A `500` means open a ticket; this means try again.
+
+The provider's own error message is deliberately not forwarded. It names a vendor this API does not publish, and on some failures it echoes the shape of the request we sent.
+
+## What to do
+
+Retry. Nothing was stored and nothing was charged.
+
+If it persists on one specific URL rather than on every call, the page itself is the problem: it may be unreachable, behind a login, or refusing automated fetching. Other URLs will keep working.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

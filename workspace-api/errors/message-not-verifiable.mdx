@@ -1,0 +1,21 @@
+---
+title: "Message cannot be verified"
+description: "422 message-not-verifiable"
+icon: "circle-question"
+---
+
+**`422`** `message-not-verifiable`
+
+The answer has no stored source passages, so there is nothing to verify it against.
+
+Verification is RAG-native: it checks whether an answer accurately represented the passages that produced it, not whether the answer agrees with the open web. An answer with no passages has nothing for that check to read.
+
+**This is usually not a defect.** A turn answered by a summarize, extract, rewrite or redline route works from a document you pinned rather than from retrieval, and emits no source cards by design. Roughly 2% of assistant messages are in that state.
+
+You will also see this when the message is a question rather than an answer, and when an answer is still being generated.
+
+## What to do
+
+Nothing, in the common case. Check the message's `citations`: if it is empty, there is nothing to verify and repeating the call will not change that. If the message's `status` is `queued` or `running`, poll its operation until it succeeds and try again.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

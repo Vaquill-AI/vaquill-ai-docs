@@ -1,0 +1,20 @@
+---
+title: "Research scope rejected"
+description: "422 research-scope-rejected"
+icon: "filter-circle-xmark"
+---
+
+**`422`** `research-scope-rejected`
+
+`groundIn` and `alsoConsider` were both sent, and they mean different things.
+
+- **`groundIn` LOCKS** the answer to the documents you name. The legal corpus and the web are suppressed, and the answer is grounded only in those files.
+- **`alsoConsider` ADDS** the documents to what is searched. The corpus and the web stay in play.
+
+Internally the two resolve as "the locked list, or else the additive one", so a request carrying both would silently drop `alsoConsider` and answer as though you had only sent `groundIn`. Refusing is the only way you find out.
+
+## What to do
+
+Send one of them. Use `groundIn` when the documents ARE the answer (what does this contract say), and `alsoConsider` when they are context for a wider question (how does this contract compare to the market).
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

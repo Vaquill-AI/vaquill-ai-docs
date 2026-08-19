@@ -1,0 +1,17 @@
+---
+title: "Chronology event not found"
+description: "404 chronology-event-not-found"
+icon: "clock-rotate-left"
+---
+
+**`404`** `chronology-event-not-found`
+
+No chronology event with that id is readable under the matter in the path. Another organization's event, an event under a different matter, and an event you have already deleted all answer the same way.
+
+**An event can also disappear without being deleted here.** Deleting the DOCUMENT an event was extracted from removes every event derived from it, through a database cascade that goes past the soft delete entirely and leaves no record. That is the same behaviour the web app's delete button has.
+
+## What to do
+
+List `GET /v1/matters/{matterId}/chronology/events` for the matter you meant and take the id from there. If the event was extracted from a document you have since deleted, it is gone and cannot be restored; re-upload the document and its events are extracted again automatically.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

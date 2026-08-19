@@ -1,0 +1,23 @@
+---
+title: "Matrix column not found"
+description: "404 matrix-column-not-found"
+icon: "table-columns"
+---
+
+**`404`** `matrix-column-not-found`
+
+There is no column with that `col_` id in that matrix. As everywhere on this API, "no such column" and "a column belonging to a matrix you cannot see" are the same answer, so the status code cannot be used to test which ids exist.
+
+It has its own slug rather than reusing `matrix-not-found` on purpose. Reading "Matrix not found" out of `DELETE .../columns/{columnId}` sends you looking at a matrix that is fine.
+
+## What to do
+
+Read the column ids off the matrix. `GET /v1/matters/{matterId}/matrices/{matrixId}` carries `columns` inline, and each entry's `id` is the `col_` value to use.
+
+A column id from a different matrix will not resolve here even inside the same matter. Columns are per matrix; there is no shared column library.
+
+<Note>
+This is also the answer when `dependsOnColumnId` names a column outside the matrix being patched. A dependency is a reference you supply, verified before it reaches the database, so it fails the same way the column you are patching would.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

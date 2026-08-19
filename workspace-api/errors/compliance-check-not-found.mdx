@@ -1,0 +1,15 @@
+---
+title: "Compliance check not found"
+description: "404 compliance-check-not-found"
+icon: "magnifying-glass"
+---
+
+**`404`** `compliance-check-not-found`
+
+No compliance check with that id is readable under the matter in the path. Another organization's check, one filed under a different matter, and an id that was never a check all read the same. An id belonging to some other kind of background job lands here too.
+
+## What to do
+
+Use the id the launch operation reported, which arrives on the operation's `resource` and looks like `cck_` plus 32 hex characters. The operation id (`op_...`) is a different thing. There is no list endpoint for checks, so hold the id you were given.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

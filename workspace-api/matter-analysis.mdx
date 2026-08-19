@@ -1,0 +1,195 @@
+---
+title: "Matter analysis"
+description: "A fact ledger, a narrative summary, and a timeline, across every document in a matter"
+icon: "magnifying-glass-chart"
+---
+
+Three ways to read a whole matter rather than one document at a time.
+
+- **Facts** is a citation-backed ledger: every party, date, amount and obligation the matter's documents state, clustered so that ten documents saying the same thing become one fact with ten citations.
+- **Summary** is a narrative: sections of claims, each claim carrying the passages behind it.
+- **Chronology** is the timeline: dated events, extracted automatically and correctable by hand.
+
+All three read **one shared evidence spine**, so they agree with each other and with what the product's own tabs show. Nothing here re-extracts anything a sibling already extracted.
+
+Every path below is prefixed with `https://api.vaquill.ai/workspace/v1`, and every call carries `Authorization: Bearer vq_ws_...`.
+
+## Resolving a citation
+
+**This applies to all three capabilities, and it is the one thing worth reading before anything else.**
+
+A citation publishes a `quote`, a `documentId` and a page range. It does **not** publish character offsets, and their absence is deliberate rather than an omission: the offsets we store internally index a string assembled for the extractor, complete with retrieval headers and overlapping chunk text. `GET /v1/matters/{matterId}/documents/{documentId}/text` strips both, so the two strings have different lengths and an offset published from a citation would land in the wrong place, further wrong the longer the document.
+
+So: **locate the quote**. Fetch the document's text, search for the `quote` string, and highlight what you find. That is how the product's own citation verifier works, and it is stable across re-ingests in a way an offset is not.
+
+`sourceAvailable: false` on a citation means the document it came from is no longer in the workspace. The quote is an immutable snapshot and stays accurate; there is simply nothing left to open.
+
+## Facts
+
+### Generating a ledger
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../fact-sets \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{"mode":"standard"}'
+```
+
+Answers **`202`** with an operation. `mode` is `standard` (re-read everything) or `incremental` (read only what changed since the current set). Needs `facts:run`.
+
+Two callers asking for the same matter at once do not start two runs: the second attaches to the first, and both operations poll the same set to the same terminal status. That is separate from `Idempotency-Key`, which makes one caller's retry free.
+
+<Warning>
+**A regeneration resets attorney review.** Review verdicts on a fact are per fact and per set, and a generation writes new facts. A lawyer who confirmed forty facts yesterday sees forty unreviewed facts after tonight's run. Regenerating on a schedule is a decision, not a default.
+</Warning>
+
+### Reading it
+
+`GET /v1/matters/{matterId}/fact-sets` lists every generation, newest **request** first. The first row is the most recent attempt; the row with `isCurrent: true` is the ledger in force. Those are legitimately different rows after a failed generation, because a failure leaves the previous set untouched.
+
+`GET /v1/matters/{matterId}/fact-sets/{factSetId}` is the header. Read `coverage` before you trust a ledger as complete:
+
+```json
+{ "coverage": { "included": 60, "total": 214, "excluded": 154 } }
+```
+
+The extractor reads at most 60 documents inline per run. On a larger matter the operation still reports 100 percent, and it is right to: the run **is** complete, for what it read. `coverage` is the only place that says what that was. Generate again to pick up more.
+
+`isStale` is computed per request against the matter's documents as they are now, and `changedDocCount` says how many have arrived since. Neither is stored, and the hash behind them is not published.
+
+`GET /v1/matters/{matterId}/fact-sets/{factSetId}/facts` is the ledger itself, paged. Facts come back in the reducer's reading order: section-clustered, then dated facts ascending within a section. It is a reading order, not a chronology.
+
+`isConflicted: true` means the matter's documents state the fact more than one way. The rival statements are separate facts; the flag says they exist.
+
+### Exporting
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../fact-sets/fct_.../exports \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"format":"csv"}'
+```
+
+`csv`, `pdf` or `docx`, returned as base64 `content` rather than a signed URL, because the file is rendered on demand and never stored. Needs `exports:create`. Over the inline ceiling you get a `413` rather than a partial file.
+
+## Matter summary
+
+### Generating one
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../summaries \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{"altitude":"executive"}'
+```
+
+Answers **`202`** with an operation. `altitude` is `executive` (a brief) or `detailed` (the long form); both read the same extracted evidence, and `detailed` changes only how it is written up. Needs `summaries:run`.
+
+**If an up-to-date summary already exists, nothing is re-run.** The operation points at the existing one and reaches `succeeded` on your first poll. That is one code path rather than a second success shape, and it is honest: the work did succeed, earlier.
+
+### The `sum_` id names the generation
+
+<Warning>
+The identifier this API publishes for a summary is the id of the **generation**, not of the summary document. Take it from the operation's `resource` and use it as-is. Following `resource.url` is always correct; an id taken from anywhere else answers `matter-summary-not-found`.
+</Warning>
+
+`GET /v1/matters/{matterId}/summaries/{summaryId}` returns the summary with its narrative already joined: `sections` hold `claims`, and each claim holds the `citations` behind it. There is no `sectionId` or `claimId` to reassemble.
+
+`GET /v1/matters/{matterId}/summaries` lists generations, newest first, across both altitudes. `sections` is `null` there rather than an empty array: `null` means "not included in this response" and `[]` means "nothing was written".
+
+**A summary can refresh itself.** When a matter's documents change, an altitude that already has a completed summary is regenerated after a debounce. So the list can grow a row you did not ask for, and `isStale` can flip between two polls with no call from you.
+
+Progress on the operation moves in a handful of coarse jumps rather than smoothly, because the pipeline writes to the job row only when its stage changes. `Retry-After` over-waits slightly between stages; honour it anyway.
+
+There is no cancel. See [What is not here](#what-is-not-here).
+
+### Exporting
+
+`POST /v1/matters/{matterId}/summaries/{summaryId}/exports` with `{"format":"pdf"}` or `{"format":"docx"}`. Base64 bytes, same as the facts export. A summary that is still generating answers `409 export-not-available`: it exists, and there is nothing to render yet.
+
+There is no CSV. A summary is a narrative with citations, and flattening it into rows would lose the thing being exported.
+
+## Chronology
+
+### It extracts itself
+
+**There is no launch operation here, and none is needed.** Every document that finishes ingesting has its events extracted automatically, seconds later. The headless flow is:
+
+1. Upload a document and poll its `document.ingest` operation to `succeeded`.
+2. Read `GET /v1/matters/{matterId}/chronology/extraction-status` until `isExtractionComplete` is true.
+3. Read the events.
+
+Per-document `status` on that response is the internal label (`pending`, `in_progress`, `completed`, `failed`, `skipped`) rather than one of the five operation statuses. There is no operation here to be consistent with, and inventing a mapping would add a sixth spelling of "running" to the contract.
+
+### Reading the timeline
+
+```bash
+curl "https://api.vaquill.ai/workspace/v1/matters/mat_.../chronology/events?limit=100&primaryOnly=true" \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+**Oldest first**, which is the opposite of every other list on this API and is deliberate: a timeline sorted newest-first is a timeline nobody can read. Pass `sortOrder=desc` for the other direction.
+
+`primaryOnly=true` collapses duplicate events to one per group, which is what the product's own timeline does. Events in no duplicate group are always kept.
+
+`eventType`, `category` and `significance` come back as **plain strings**. The columns behind them carry no constraint, so a matter can hold a value this API would refuse on a write. Read them; do not switch on a closed list without a fallback.
+
+### Correcting it
+
+An extracted event can be wrong about a date, so the timeline is writable. This is the only capability of the three that is, which is why it has `chronology:write` rather than borrowing `matters:write`.
+
+```bash
+curl -X PATCH https://api.vaquill.ai/workspace/v1/matters/mat_.../chronology/events/evt_... \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"eventDate":"2026-03-14","significance":"high"}'
+```
+
+A PATCH, so send only what changes. An explicit `null` clears `description` or `eventDateEnd`; every other field is backed by a required column and a `null` for one is refused by name. `documentId` is not patchable: which document an event came from is provenance, and re-pointing it would make an extracted event claim a source it was never read from.
+
+`POST .../chronology/events` creates one by hand. Created events are recorded as not AI-extracted and carry no confidence, which keeps them distinguishable from the pipeline's output forever.
+
+`DELETE .../chronology/events/{eventId}` answers `204`. It is a soft delete; a second delete is a `404`.
+
+<Warning>
+**Deleting a document destroys the events extracted from it.** That happens through a database cascade, so it is a hard delete with no soft-delete record and no way to recover the events short of re-uploading the document. This is the same behaviour the web app's delete button has.
+</Warning>
+
+### Exporting
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../chronology/exports \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"format":"csv",
+       "filters":{"dateFrom":"2026-01-01","significance":["high"],"primaryOnly":true}}'
+```
+
+A POST, because the filters ride the body. They are the **same** filters the list accepts, read by the same code, so one cannot go missing here.
+
+**It never truncates.** Over the 50,000-event ceiling you get a `413` carrying `limit` and `requested`, so you can narrow the date range rather than receiving a partial file you would have no way to detect. `eventCount` on the response is exactly what the file contains.
+
+## Scopes
+
+| Scope | Grants |
+| --- | --- |
+| `facts:read` | Reading fact sets and their facts |
+| `facts:run` | Generating a fact set |
+| `summaries:read` | Reading summaries |
+| `summaries:run` | Generating a summary |
+| `chronology:read` | Reading events and extraction status |
+| `chronology:write` | Creating, correcting and deleting events. Grants `chronology:read` |
+| `exports:create` | All three exports |
+
+Read and run are separate so a reporting integration can watch without being able to spend. `exports:create` is separate from every capability's read scope for the same reason `documents:download` is separate from `documents:read`: reading an analysis and taking a copy of it out of the workspace are different risks.
+
+## What is not here
+
+- **No `deep` facts mode.** It is unpublished because of a defect in the shared extraction path, not because of cost: a deep run replaces evidence written at a different model without accounting for it, which degrades citations belonging to summaries that already exist. `standard` and `incremental` are safe.
+- **No `force` on either generate.** A caller that genuinely needs a rebuild changes something the corpus fingerprint can see.
+- **No summary cancel.** The product's own cancel marks the job cancelled without stopping the work, and the worker can move it back to completed afterwards. Publishing that would give you a control over spend that does not stop the spend, and would take an operation terminal and then move it.
+- **No event stream.** Polling the operation is the only completion path on this API.
+- **No fact review verdicts.** They are per set and a regeneration resets them.
+- **No character offsets, anywhere.** See [Resolving a citation](#resolving-a-citation).

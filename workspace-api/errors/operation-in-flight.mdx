@@ -1,0 +1,35 @@
+---
+title: "Work is still in flight"
+description: "409 operation-in-flight"
+icon: "hourglass-half"
+---
+
+**`409`** `operation-in-flight`
+
+Something is still writing to the row you asked to delete, so nothing was deleted. Wait for it to finish and try again.
+
+This covers a comparison, review, matrix, draft or workflow run that has not reached a terminal status, whether it was started through this API or by somebody in the app.
+
+## What to do
+
+Poll the operation, then repeat the delete. When we know which operation is blocking you, the problem document names it:
+
+```json
+{
+  "type": "https://docs.vaquill.ai/workspace-api/errors/operation-in-flight",
+  "title": "Work is still in flight",
+  "status": 409,
+  "detail": "An operation over this workflow run has not finished, so it cannot be deleted yet. Poll it, then try again.",
+  "operationId": "op_9d1f4c2b7e8a41d3b5c6e7f8a9b0c1d2"
+}
+```
+
+`operationId` is absent when the work was started in the app, because there is no operation of ours to poll. Read the resource itself: its `status` is the same five values, and it will be `succeeded`, `failed` or `cancelled` when the delete will go through.
+
+There is no way to cancel work through this API, deliberately. A delete that killed a running job would be a second way to spend a customer's money and lose the result.
+
+<Note>
+The refusal is not caution for its own sake. Deleting a row a job is writing to leaves you polling an operation that reports `running` for up to two and a half hours before it is swept and reported `failed`, and it makes that failure code stop meaning what it says for everybody else.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

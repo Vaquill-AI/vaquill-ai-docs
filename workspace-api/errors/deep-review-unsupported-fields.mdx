@@ -1,0 +1,24 @@
+---
+title: "Deep review does not support these fields"
+description: "422 deep-review-unsupported-fields"
+icon: "layer-group"
+---
+
+**`422`** `deep-review-unsupported-fields`
+
+You asked for `depth: "deep"` and also sent one or more of `focusAreas`, `reviewInstructions`, `markupLevel`, `round`, `priorRoundText` or `counterpartyResponseText`. The deep verification pass does not read any of them. The `fields` member of the problem names exactly which ones you sent.
+
+This is a refusal rather than a silent drop on purpose. A flag makes the two depths look like they honour the same request, and they do not: a deep review of a request carrying `round: 3` and `priorRoundText` would come back as a first-round review of the same contract, with nothing anywhere saying so.
+
+## What to do
+
+Pick one.
+
+- **Drop the fields.** A deep review still honours `contractType`, `userSide`, `jurisdiction`, `playbookId`, `dealContext` and `paperSide`.
+- **Run at `depth: "standard"`.** The standard depth honours all eleven controls. It does not verify each redline's grounding, and the difference shows up in every redline's `grounding` field.
+
+<Note>
+`dealContext` and `paperSide` are accepted at deep depth and reach the per-clause verification loop rather than the initial scan. They are partly honoured rather than dropped, which is why they are not on the refused list.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

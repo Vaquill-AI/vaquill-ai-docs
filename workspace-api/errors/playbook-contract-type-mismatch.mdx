@@ -1,0 +1,19 @@
+---
+title: "Playbook is for a different contract type"
+description: "422 playbook-contract-type-mismatch"
+icon: "book"
+---
+
+**`422`** `playbook-contract-type-mismatch`
+
+The playbook you named exists and belongs to your organization, and it encodes positions for a different kind of contract from the one this analysis needs. An NDA triage needs a playbook whose `contractType` is `nda`.
+
+Deliberately not a `404`: the playbook is yours and you can read it, so hiding it would send you hunting for a row that is sitting in your own list.
+
+Deliberately not accepted either. Nothing downstream enforces the type, so a mismatched playbook simply matches no criterion: every criterion comes back `not_assessed`, the run reports success, and you are left believing your own positions were applied when the analysis never saw them.
+
+## What to do
+
+Name a playbook of the right type, which you can find with `GET /v1/playbooks` and filtering on `contractType`, or omit `playbookId` entirely to run against the built-in default positions for your `jurisdiction`. The defaults are a real answer rather than a degraded one: they are what the app itself uses for a firm that has not authored a playbook yet.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

@@ -1,0 +1,23 @@
+---
+title: "Matrix row not found"
+description: "404 matrix-row-not-found"
+icon: "table-rows"
+---
+
+**`404`** `matrix-row-not-found`
+
+There is no row with that `row_` id in that matrix. "No such row" and "a row belonging to a matrix you cannot see" are deliberately the same answer.
+
+A row is one document's place in the grid. It is not the document: deleting a row removes that document's answers from this matrix and leaves the document itself in the matter.
+
+## What to do
+
+Read the row ids off the matrix. `GET /v1/matters/{matterId}/matrices/{matrixId}` carries `rows` inline, each with its `id`, its `documentId` and the filename.
+
+Do not send a `doc_` id here. A document can be a row in several matrices, so the row id is what identifies which grid you mean.
+
+<Note>
+Row `position` is ascending and not contiguous. Deleting a row leaves a gap rather than renumbering, so positions are for ordering and never for addressing.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

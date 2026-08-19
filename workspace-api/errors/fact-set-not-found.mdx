@@ -1,0 +1,19 @@
+---
+title: "Fact set not found"
+description: "404 fact-set-not-found"
+icon: "list-check"
+---
+
+**`404`** `fact-set-not-found`
+
+No fact set with that id is readable under the matter in the path. Fact sets live inside a matter, so a valid `fct_` id under the wrong matter reads exactly like an id that does not exist, as does one belonging to another organization.
+
+**A matter that has never generated a fact set also answers this.** There is no job to report a status for, so there is no `queued` to hand back: a status there would have you poll something that was never created.
+
+## What to do
+
+List `GET /v1/matters/{matterId}/fact-sets` for the matter you meant and take the id from there. The first row is the most recent attempt; the row with `isCurrent: true` is the ledger in force, and those are legitimately different rows after a failed generation.
+
+If the list is empty, generate one with `POST /v1/matters/{matterId}/fact-sets` and poll the operation it returns.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

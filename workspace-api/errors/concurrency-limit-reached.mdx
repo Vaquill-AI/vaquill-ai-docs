@@ -16,4 +16,10 @@ Wait for something to finish. The problem document carries `limit`, and `detail`
 Slowing your request rate will not clear this, which is what separates it from `rate-limited`. The fix is fewer runs open at once, so cap the launches your integration keeps in flight rather than adding a delay between them.
 </Warning>
 
+<Warning>
+**On `matrices.run` this cap is counted per PERSON, not per organization and not per credential**, and it is the only one on this API that works that way. The rows this API creates are attributed to a real user, the owner who provisioned your installation, so your matrix runs and that person's own matrix runs in the web app draw on the same three slots.
+
+The consequence to expect: you can be refused with no API run outstanding at all, because somebody was running a matrix in a browser. Nothing in the error can say so, which is why it is written here. If you hit this and cannot account for it, that is the first thing to check, and it is worth telling us: we would rather re-key the counter than have you build a retry loop around a person.
+</Warning>
+
 Full error reference: [Errors](/workspace-api/concepts/errors)

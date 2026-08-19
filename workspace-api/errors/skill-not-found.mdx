@@ -1,0 +1,21 @@
+---
+title: "Skill not found"
+description: "422 skill-not-found"
+icon: "wand-magic-sparkles"
+---
+
+**`422`** `skill-not-found`
+
+The `skillSlug` on the request names no skill this credential can see.
+
+A `422` rather than a `404` because the slug arrives in the request BODY: what is wrong is what the request asked for, not where it was sent.
+
+**Refused rather than ignored, on purpose.** A skill materially changes the prompt behind an answer. A typo'd slug that was quietly dropped would produce a confident, plausible answer written by a different prompt, with nothing on the response to say the skill never applied.
+
+**Skills belonging to an individual person are never visible here.** A machine credential has no person behind it, so borrowing the identity of whoever provisioned the integration would let one lawyer's private prompts steer an organization's automated research. Those skills reach this same refusal, so this response cannot be used to learn that a named private skill exists.
+
+## What to do
+
+List the slugs you can use with `GET /v1/skills` and send one of those, or omit `skillSlug` entirely.
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

@@ -40,7 +40,7 @@ There is no `jurisdiction` field. Vaquill drafts US documents only, so a field w
 **`governingLawState` accepts three forms**: a two-letter code such as `ca`, a full state name such as `California`, or the sentinel `federal`. It is normalized on the way in, and an unrecognized value is refused.
 
 <Note>
-`category` is a slug rather than an open string, but it is **not published as an enum** in the schema. The underlying vocabulary still carries categories from an earlier, non-US product that this API does not sell, and publishing the enum would publish those as accepted values. Common slugs are `nda`, `employment`, `service`, `dpa`, `baa`, `statement_of_work`, `software_license` and `settlement_agreement`. An unknown slug comes back as `422 invalid-request` naming `body.category`, **before** anything is queued, so probing costs you nothing but a round trip.
+`category` is a slug rather than an open string, and it is **not published as an enum** in the schema: the underlying vocabulary still carries categories from an earlier, non-US product this API does not sell, and publishing the enum would publish those as accepted values. Read [`GET /v1/draft-categories`](/workspace-api/draft-lifecycle#discovering-what-you-can-generate) instead, which lists every slug we advertise with the product's own name for each. An unknown slug comes back as `422 invalid-request` naming `body.category`, **before** anything is queued.
 </Note>
 
 `variables` is free-form on purpose: which keys mean anything is a property of the category, and a closed set would need a release to add one. Anything the generator leaves unfilled is counted for you at export time as `unfilledPlaceholders`.
@@ -76,7 +76,7 @@ Four fields on that record are worth understanding before you build on them.
 | `status` | Where the **document** is in its lifecycle: `draft`, `review`, `final` or `archived`. You set it |
 | `generationStatus` | Where the **job** that produced it got to, in the five public operation statuses. Only the pipeline sets it |
 | `version` | Current version number, counting from 1. This is the value you pass back as `expectedVersion` |
-| `source` | How the draft came to exist: `generated`, `uploaded` or `imported` |
+| `source` | How the draft came to exist: `generated` by the pipeline, `uploaded` from a file, `imported` from editor content, or `analysis` where an analysis produced it |
 
 The two status fields are not synonyms, and confusing them is the easiest mistake here. A finished contract someone has marked `final` still reads `generationStatus: "succeeded"`, and a draft the pipeline never touched also reads `succeeded`, which is the honest answer for a document that was uploaded rather than generated.
 
@@ -183,6 +183,8 @@ curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts/drf_.../
 
 Every field is optional. `instructions` is free text up to 40,000 characters, `category` overrides the source draft's category, and `tone` is the same three-value enum, defaulting to `balanced`. Governing law and practice area are carried over from the source.
 
+If the source draft is in a document type we no longer write, the revision falls back to `custom` rather than refusing. That case is real: categories get retired, and a draft this API published a month ago should still be revisable today.
+
 **The result is a new draft. The source is never overwritten.** The operation is again of type `draft.generate` and its `resource.id` is a different `drf_` id from the one in the path. That is deliberate: the run takes minutes and costs money, and a customer who dislikes the result still holds the document they started from. Your integration has to decide which of the two is now current.
 
 A revision is refused with `409 draft-not-revisable` in two states: the source draft is still being generated, or it has essentially no body to revise (under 50 characters of text). Neither is a malformed request, which is why it is a `409` rather than a `422`. The same call succeeds once the generation finishes or once the draft has content.
@@ -240,10 +242,10 @@ The point of a template run is that your clause language is bit-identical betwee
 `GET /v1/templates` returns every active template the organization owns, paged with `limit` and `offset`. Each entry carries `id` (a `tpl_` identifier), `title`, `category`, an optional `description` and `sourceFilename`, and timestamps.
 
 <Note>
-Templates that belong to **one person** rather than to the organization are not listed. That is not an omission: an organization's machine credential has no business reading an employee's private document. If a template you expect is missing, it was saved personally and needs to be shared to the organization in the web app.
+Vaquill's own starter templates are not listed. They belong to us rather than to you, and a template you did not author is not one your automation should run as if you had. Everything in this list is your organization's own.
 </Note>
 
-The template's own body and its variable definitions are not published. What a headless caller needs is which template to name and what came back after it ran.
+The list is a picker: `id`, `title`, `category`, `description`, `sourceFilename` and timestamps, sorted by title so two reads agree. For the body and the variable ids, fetch one: `GET /v1/templates/{templateId}` returns both. See [Authoring templates](/workspace-api/template-authoring) for creating and editing them.
 
 ### Running one
 
@@ -256,7 +258,7 @@ curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../templates/tpl_.
        "slotOverrides":{"party_b_name":"Northwind Ltd"}}'
 ```
 
-Both fields are optional. `prompt` is free text up to 8,000 characters that the extractor reads values out of, and `slotOverrides` is a map keyed by each variable's `varId` with values up to 4,000 characters. A template whose every variable you supply needs no prose at all, and values you supply are never overwritten by the extractor.
+Both fields are optional. `prompt` is free text up to 8,000 characters that the extractor reads values out of, and `slotOverrides` is a map keyed by each variable's `varId` with values up to 4,000 characters. Those ids come from `GET /v1/templates/{templateId}`. A template whose every variable you supply needs no prose at all, and values you supply are never overwritten by the extractor.
 
 The response is a `202` with an operation of type `template.run`. Its `resource` is the **run**, with kind `templateRun` and a `dtr_` identifier, not the draft.
 
@@ -304,5 +306,9 @@ Two of these are worth a second look.
 **`draft-content-unprocessable` is not `invalid-request`.** The field is a string and it passed the schema; what failed is our conversion of it into a draft body. The slug says which half broke so you are not hunting for a malformed field that is not there. Send headings, paragraphs and lists. Tables and fenced code blocks are not part of a draft.
 
 **`draft-not-revisable` is a `409`, not a `422`.** Nothing about your request is wrong, and changing the payload is the one thing that will not help. Poll the source draft's generation operation, or give it a body, and send exactly the same request again.
+
+## What is on the other pages
+
+Copying a draft, importing one from a document, filing one into its matter as a searchable document, and the 30-day trash behind `DELETE` are all on [The draft lifecycle](/workspace-api/draft-lifecycle). Creating and editing the templates a run uses is on [Authoring templates](/workspace-api/template-authoring).
 
 A `404` on a draft is deliberately uninformative for the same reason every not-found on this API is: if a missing draft and someone else's draft returned different statuses, the status code would become a way to probe another organization. See [Errors](/workspace-api/concepts/errors).

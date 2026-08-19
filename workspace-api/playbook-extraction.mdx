@@ -1,0 +1,126 @@
+---
+title: "Importing a contract into a playbook"
+description: "Read your negotiating positions out of a contract you already signed"
+icon: "file-import"
+---
+
+[Review and playbooks](/workspace-api/review-and-playbooks) covers authoring a playbook by hand and running a review against one. This page covers the other way to get one: reading it out of a contract you already signed.
+
+The argument for it is simple. A playbook authored from memory says what your organization thinks it negotiates. A playbook extracted from a hundred signed NDAs says what it actually negotiated. Extraction gets you from the second to something you can edit.
+
+Starting an extraction needs `playbooks:run`. Reading one needs `playbooks:read`.
+
+## Starting one
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/playbook-extractions \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{"documentId":"doc_...","contractType":"nda"}'
+```
+
+| Field | Required | Shape |
+| --- | --- | --- |
+| `documentId` | one of two | A `doc_` identifier in your organization |
+| `contractText` | one of two | The contract as plain text, up to 400,000 characters |
+| `contractType` | no | Pin the type instead of detecting it |
+| `useTrackedChanges` | no | Read the file's Word revision marks instead. Requires a `.docx` `documentId` |
+
+**Exactly one of `documentId` and `contractText`.** Both or neither is a `422` naming the two fields.
+
+Text is accepted because you usually have the contract in hand and requiring an upload first would make the cheapest integration a four-call dance. Name a `documentId` when the file's structure matters, when you want the source kept and addressable, or when you need tracked changes.
+
+A `documentId` may be a `.docx` or a `.pdf`. That is wider than what a template import accepts, deliberately: the extractor reads text and never claims to preserve shape, where an imported template would.
+
+The source does not have to be in any particular matter. An extraction produces positions for an organization-level playbook, so narrowing it to one matter would refuse your own signed contract for being filed somewhere else.
+
+It answers **`202` with an operation** of type `playbook.extract`. Poll it; `resource.id` is a `pex_` identifier.
+
+### Extracting from a redline
+
+`useTrackedChanges: true` reads a `.docx`'s Word revision marks and extracts what a reviewer pushed **from** and **to**, rather than the final-state positions. That is a different and often better playbook: the final text says what you agreed, the redline says what you asked for first.
+
+It needs a `documentId` for a file whose name ends in `.docx`, because revision marks exist nowhere else. A PDF is `415`, and combining it with `contractText` is `422`.
+
+## Reading the result
+
+`GET /v1/playbook-extractions/{extractionId}`
+
+```json
+{
+  "id": "pex_...",
+  "status": "succeeded",
+  "contractType": "nda",
+  "truncated": false,
+  "sourceDocumentId": "doc_...",
+  "positions": {
+    "confidentiality": {
+      "standardPosition": "Mutual, with a three year tail after disclosure.",
+      "acceptableRange": "Two to five years, mutual, with the usual carve-outs.",
+      "escalationTriggers": ["Perpetual for trade secrets"],
+      "rationale": "Market for a mutual NDA at this size."
+    }
+  },
+  "createdAt": "2026-08-19T10:00:00Z",
+  "completedAt": "2026-08-19T10:02:14Z"
+}
+```
+
+A running extraction is a **`200` with an empty `positions` map** and a truthful `status`, never a `404`. A `404` would be indistinguishable from an extraction that never existed.
+
+`status` uses the same five public values an operation does. Why one *failed* lives on the operation rather than here.
+
+There is no list. An extraction is short-lived work you started, so the operation you were handed is the handle. Adopt what you want into a playbook, which is permanent.
+
+<Warning>
+**Check `truncated` before you adopt.** A contract over the extractor's block ceiling produces positions that are correct and **not complete**: some clauses were never read. Split the contract and extract the remainder, or accept a playbook with holes you cannot see.
+</Warning>
+
+## Nothing is saved
+
+The result comes back for you to review. **No playbook is created**, and nothing is written to your playbook shelf.
+
+That is the same gate the web app has, and it is there because an extraction is a model's reading of a contract. Persisting a misclassified one as the positions your automated reviews measure against is a mistake nobody sees until a review cites it.
+
+Adopting is a second call, and it is a copy rather than a translation: the position shape here is exactly the shape `POST /v1/playbooks` accepts.
+
+```bash
+# 1. read the extraction
+POSITIONS=$(curl -s https://api.vaquill.ai/workspace/v1/playbook-extractions/pex_... \
+  -H "Authorization: Bearer vq_ws_...")
+
+# 2. review, edit, then create a playbook from what you kept
+curl -X POST https://api.vaquill.ai/workspace/v1/playbooks \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"name":"NDA, from our signed paper",
+       "contractType":"nda",
+       "positions": { ... }}'
+```
+
+Pass the extraction's `contractType` through to the playbook. A playbook's type decides which reviews resolve it, and it is fixed at creation.
+
+You do not have to keep everything. Drop a clause type you disagree with, edit a `standardPosition` that reads oddly, add a `dealBreaker` the contract never stated. What you send is what the playbook holds.
+
+## What comes back, and what does not
+
+The extractor also records how confident it was, how many sources agreed, and the minority positions it saw. None of those is published: they describe our process rather than your position, and a number a customer cannot act on is one they would build a threshold against.
+
+It can also name a clause type outside the standard set when your contract has one. Those are kept, because a model-named clause is a real finding about your own paper and dropping it would silently shorten the result.
+
+## Errors worth handling
+
+| Status | Type | When you hit it |
+| --- | --- | --- |
+| 404 | `playbook-extraction-not-found` | No such extraction, another organization's, or an id that names something else |
+| 404 | `document-not-found` | The `documentId` is not in your organization, or is still ingesting |
+| 413 | `file-too-large` | The source document is over 5 MB |
+| 415 | `unsupported-media-type` | The source is not a `.docx` or `.pdf`, or `useTrackedChanges` was sent with a PDF |
+| 422 | `invalid-request` | Both sources, neither source, or tracked changes over pasted text |
+| 429 | `concurrency-limit-reached` | Your organization already has 3 extractions in flight |
+| 503 | `dispatch-unavailable` | The queue refused the work. Nothing started; retry |
+
+The concurrency cap counts extractions only. Contract reviews are counted separately and against their own limit, so a busy review queue never blocks an import.
+
+A failed extraction reports why on its **operation**, not on the extraction. A contract with no recognisable clauses, an unreadable file and a scanned PDF with no text layer all end there with a message you can act on.

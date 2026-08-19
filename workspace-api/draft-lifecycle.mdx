@@ -1,0 +1,165 @@
+---
+title: "The draft lifecycle"
+description: "Import a document as a draft, copy it, file it into a matter, and undo a delete"
+icon: "arrows-rotate"
+---
+
+[Drafting](/workspace-api/drafting) covers generating a document and editing it. This page covers everything else that happens to a draft: how one gets created without a model run, how to copy it, how to turn it into a matter document your searches can reach, and what "delete" means here.
+
+Every route on this page needs `drafting:run`, which is the scope for any drafting write. `drafts.saveAsDocument` needs `documents:write` as well, and that is the only operation on the API that requires two scopes.
+
+## Discovering what you can generate
+
+`GET /v1/draft-categories` lists every document type the generator will write.
+
+```bash
+curl https://api.vaquill.ai/workspace/v1/draft-categories?limit=200 \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+```json
+{
+  "data": [
+    { "id": "nda", "label": "Mutual Non-Disclosure Agreement", "practiceArea": "general" },
+    { "id": "dpa", "label": "Data Processing Addendum", "practiceArea": "general" }
+  ],
+  "pagination": { "limit": 200, "offset": 0, "total": 57, "hasMore": false }
+}
+```
+
+Send an `id` from here as `category` on a generation. It pages like every other list and is sorted by slug, so two reads agree.
+
+`label` is the product's own name for the document type, taken from the format the generator uses rather than from a second list, so it cannot describe something other than what gets written. `practiceArea` is the workspace a draft in that category is filed under; every category reads `general` today, because that is the only practice area Vaquill registers.
+
+<Note>
+**The list is slightly narrower than what the API accepts.** It is what we advertise. A draft that already exists in a category this list omits can still be revised, and an integration written against an older list keeps working. New categories appear here with no version change, so read the list rather than pinning a copy of it.
+</Note>
+
+## Importing a document as a draft
+
+`POST /v1/matters/{matterId}/drafts/from-document` converts a file you already uploaded into an editable draft.
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts/from-document \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"documentId":"doc_...","title":"Northwind MSA, counterparty paper","category":"service"}'
+```
+
+| Field | Required | Shape |
+| --- | --- | --- |
+| `documentId` | yes | A `doc_` identifier for a document **in this matter** |
+| `title` | no | 1 to 200 characters. Defaults to the filename without its extension |
+| `category` | no | A category slug. Defaults to `custom`, which is always accepted |
+
+It answers **`201` with the draft**, not `202` with an operation, because no model runs. This is a format conversion and it is finished when the call returns.
+
+Upload the file first through the [presigned upload flow](/workspace-api/documents), poll its `document.ingest` operation to `succeeded`, then name the id it produced. There is no multipart variant: bytes reach this API exactly one way, so there is one media allowlist, one size ceiling and one answer to encryption at rest. The source document stays yours to list, download and delete, which is what makes "where did this draft come from" answerable months later.
+
+**The original file is converted, not the extracted text.** Vaquill extracts a flattened copy of every document for retrieval, and that copy has already lost the headings a contract is navigated by. The import reads the file itself.
+
+| Source | What you get |
+| --- | --- |
+| `.docx` | Headings, lists, tables and inline formatting, preserved |
+| `.txt`, `.md` | Paragraphs, split on blank lines |
+| anything else | `415 unsupported-media-type` |
+
+<Warning>
+A PDF is refused rather than converted. Turning one into an editable document needs a layout pass that produces paragraph soup often enough that a signed contract would silently lose the structure that made it worth importing. If you need a PDF as a draft, convert it to DOCX on your side, where you can look at the result.
+</Warning>
+
+The source must be in the matter named in the path. A draft belongs to a matter, so widening the search to the whole organization would let a caller pull one matter's contract into another.
+
+Files over 50 MB are refused with `413 file-too-large` before a byte is read, carrying `limit` and `requested`.
+
+## Copying a draft
+
+`POST /v1/matters/{matterId}/drafts/{draftId}/copies` makes a second, independent draft in the same matter.
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts/drf_.../copies \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+`title` is the only field and it is optional; send `{}` to take the default, which is the source title followed by `" (copy)"`.
+
+The copy answers `201` and starts fresh: **version 1, status `draft`, no version history of its own.** Presenting the source's history under a document that never had it would make the audit trail say something untrue.
+
+Two things about the body are worth knowing.
+
+- **Comment marks are removed.** A comment in the editor anchors to a thread that belongs to the original, and carrying the anchor into a copy renders a highlight pointing at nothing that the product then refuses to resolve. The count of what was dropped is recorded on the copy.
+- **Tracked-change marks are kept.** They are inline and depend on no other row, so a redline survives the copy intact.
+
+Copying is the safe move before any lossy edit. It is also how you get a draft into a different matter: copy, then work on the copy.
+
+## Filing a draft into its matter
+
+`POST /v1/matters/{matterId}/drafts/{draftId}/documents` renders the draft to DOCX, files it as a document in the matter, and puts it through the same ingest pipeline an upload goes through, so it becomes searchable alongside everything else.
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts/drf_.../documents \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Idempotency-Key: $(uuidgen)"
+```
+
+There is no body. It answers **`202` with a `document.ingest` operation**, the same kind and the same envelope `uploads.complete` returns, so a client that already polls an ingest has nothing new to learn. Poll it; `resource.id` is the `doc_` identifier.
+
+The document lands in the draft's own matter, the one in the path. To file it elsewhere, copy the draft into the target matter first.
+
+**Filing does not consume the draft.** You end up with two things: the draft, still editable, and a document, frozen at the moment you filed it. Editing the draft afterwards does not change the document, which is usually what you want: the document is the version you circulated.
+
+This needs both `drafting:read` and `documents:write`. A credential that can read drafts but not create documents cannot do this, which is the point of asking for both.
+
+<Note>
+It does **not** need `exports:create`. Nothing leaves the workspace: the bytes go from a draft into a document in the same organization's matter. Marking it as a content release would make the audit record claim a copy was taken when none was.
+</Note>
+
+The render is bounded at 10 MB, refused with `413 export-too-large`.
+
+## Deleting and restoring
+
+`DELETE /v1/matters/{matterId}/drafts/{draftId}` moves a draft to the trash. It answers `204`.
+
+The draft immediately stops being listed, stops being readable, stops being exportable and stops being revisable. From your side it is gone.
+
+**It is restorable for 30 days.** After that a scheduled purge removes it permanently and `drafts.restore` answers `404`.
+
+```bash
+# find what is in the trash
+curl "https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts?state=trashed" \
+  -H "Authorization: Bearer vq_ws_..."
+
+# put one back
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../drafts/drf_.../restore \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+`GET /v1/matters/{matterId}/drafts` takes a `state` parameter, `active` (the default) or `trashed`. Trashed drafts are invisible to every other read on this API, so this is the only way to find one whose id you no longer hold.
+
+`POST .../restore` answers `200` with the restored draft. Restoring a draft that is **not** in the trash answers `404`, so it is safe to call without checking first: it either restores something or tells you there was nothing to restore.
+
+### Why this delete is reversible when a document delete is not
+
+Vaquill's own web app puts deleted drafts in a trash a lawyer can restore from, and this API performs the same delete on the same row rather than inventing a second meaning for it. A machine-deleted draft appearing in someone's trash has to be restorable from both sides, or the two products disagree about what happened.
+
+The reason the product works that way is worth stating, because it constrains this API too: a draft's version history and the pointer from any template run that produced it both hang off the row, and a permanent delete would take them with it.
+
+<Warning>
+**Delete is not idempotent.** Deleting the same draft twice answers `404` the second time, because the write checks what it actually changed rather than assuming success. On a delete that timed out, treat a subsequent `404` as confirmation that the first one landed.
+</Warning>
+
+## Errors worth handling
+
+| Status | Type | When you hit it |
+| --- | --- | --- |
+| 404 | `draft-not-found` | No such draft, another organization's, another matter's, already trashed, or already purged |
+| 404 | `document-not-found` | The `documentId` you named is not in this matter, or is still ingesting |
+| 413 | `file-too-large` | The source document is over 50 MB |
+| 413 | `export-too-large` | The draft renders to more than 10 MB |
+| 415 | `unsupported-media-type` | The source is not a `.docx`, `.txt` or `.md` |
+| 422 | `invalid-request` | A field failed validation, including an unknown `state` on the list |
+| 503 | `dispatch-unavailable` | The queue refused the ingest. The document was written; retry the call |
+
+A `404` on a trashed draft and a `404` on a draft that never existed are the same response, which is deliberate for the reason every not-found on this API is. See [Errors](/workspace-api/concepts/errors).

@@ -1,0 +1,208 @@
+---
+title: "Research and chat"
+description: "Ask legal questions from your own backend and get grounded, cited answers"
+icon: "magnifying-glass"
+---
+
+Ask a question inside a matter and get an answer grounded in the matter's documents, the US legal corpus, and the web, with citations you can render in your own product.
+
+<Note>
+**This API does not stream.** An ask answers `202` with an operation; you poll it, then read the answer off the message it points at. Why, and what it costs you, is below.
+</Note>
+
+## The loop
+
+Four calls: open a conversation once, then ask, poll, read.
+
+```bash
+# 1. Open a conversation. Synchronous; nothing is generated.
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/$MATTER/chats \
+  -H "Authorization: Bearer $VQ_WS_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Nimbus indemnity review"}'
+# -> {"id": "cht_9f...", "matterId": "mat_2b...", ...}
+
+# 2. Ask. 202 with an operation.
+curl -X POST https://api.vaquill.ai/workspace/v1/matters/$MATTER/chats/$CHAT/messages \
+  -H "Authorization: Bearer $VQ_WS_KEY" \
+  -H "Idempotency-Key: turn-0001" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "question": "Is the liability cap mutual, and what does it exclude?",
+        "alsoConsider": ["doc_7c..."]
+      }'
+# -> 202 {"id": "op_4d...", "status": "queued",
+#         "resource": {"kind": "message", "id": "msg_1a...",
+#                      "url": "/v1/matters/mat_2b.../messages/msg_1a..."}}
+
+# 3. Poll the operation until it is terminal. Honour Retry-After.
+curl https://api.vaquill.ai/workspace/v1/operations/op_4d... \
+  -H "Authorization: Bearer $VQ_WS_KEY"
+
+# 4. Read the answer off the resource the operation named.
+curl https://api.vaquill.ai/workspace/v1/matters/$MATTER/messages/msg_1a... \
+  -H "Authorization: Bearer $VQ_WS_KEY"
+```
+
+The question and the answer are both appended to the conversation the moment you ask, so `messages.list` shows the turn immediately with the answer empty and its `status` set to `queued`. You can poll either the operation or the message; they report the same thing.
+
+## Why there is no stream
+
+The web app streams tokens over SSE, and this API deliberately does not publish that. Four reasons, all pointing the same way.
+
+**Your backend is not a browser.** The value of a token stream is a human watching text appear. Consuming SSE from a server means holding a connection open through a load balancer for the whole generation, reassembling a token stream into a string you were going to buffer anyway, and handling a mid-stream disconnect with no way to ask what you missed. It is strictly more work than polling.
+
+**An answer takes tens of seconds.** Well past the threshold where this API returns `200` with a result rather than `202` with an operation. Deep tier adds multi-hop retrieval; agentic mode adds a tool loop.
+
+**The operation envelope has nowhere to put half an answer.** It carries five statuses, an optional progress and a resource pointer. Adding a partial-text field would put a chat-specific field on the shape every capability on this API shares, and a published field can never be withdrawn.
+
+**We already made this call once, for drafting.** The streaming draft endpoint was removed because it bound the work to a browser tab and lost the result on a refresh. A backend that loses its connection has no refresh button.
+
+**The honest cost:** if you are relaying our answers to your own end user, they see a spinner for the whole generation where a Vaquill user sees text appearing. If that matters to you, tell us; the fix is a second route that replays a stored message, not a different shape for the ask.
+
+## Toggles: omitting one does not turn it off
+
+Every research toggle is three-valued.
+
+| Value | Means |
+| --- | --- |
+| omitted, or `null` | Use the matter's setting |
+| `true` | On for this turn only. Not persisted |
+| `false` | Off for this turn only. Not persisted |
+
+This is the field integrators get wrong most often. A matter has web search and corpus search ON by default, so leaving `enableWebSearch` out of your request leaves it on. Send `false` to turn it off.
+
+The matter's own settings are readable and writable at `/v1/matters/{matterId}/research-config`, which carries `matters:read` and `matters:write` rather than the research scopes: they change what every future answer costs, so a reporting credential should not be able to touch them.
+
+| Field | Matter default |
+| --- | --- |
+| `enableWebSearch` | on |
+| `enableCorpusSearch` | on |
+| `enableMatterDocsSearch` | on |
+| `enableAgenticMode` | off |
+| `enableDeepResearchMode` | off |
+| `ragTier` | `standard` |
+
+## Pinning documents: two fields, and they are not the same
+
+| Field | What it does |
+| --- | --- |
+| `groundIn` | **LOCKS** the answer to these documents. The corpus and the web are suppressed |
+| `alsoConsider` | **ADDS** these documents to what is searched. The corpus and the web stay in play |
+| `alsoConsiderDrafts` | Pins in-progress drafts into the answer's context |
+
+Use `groundIn` when the documents ARE the answer ("what does this contract say"). Use `alsoConsider` when they are context for a wider question ("how does this compare to market").
+
+Sending both is refused with `research-scope-rejected`. Internally the locked list wins and the additive one is dropped, so accepting both would answer your question differently from how you asked it and say nothing.
+
+Both cap at 20 documents. Every id is checked against your organization and against the matter in the path before it reaches retrieval.
+
+<Warning>
+There is no `documentIds` field on this API, and that is deliberate. The internal request shape has one, it is the most natural name to reach for, and it does not drive retrieval at all: it is a display label. Use `groundIn` or `alsoConsider`.
+</Warning>
+
+## What actually ran
+
+Two settings objects come back on every message this API produced.
+
+- `requestedSettings` is what you asked for.
+- `effectiveSettings` is what the pipeline recorded doing.
+
+Compare them. The pipeline demotes silently in two places and these fields are the only way to see it:
+
+- **Agentic mode forces the standard tier.** Agentic mode runs on the standard model, so `ragTier: "deep"` with `enableAgenticMode: true` would silently become standard. This API refuses that combination outright rather than demoting it.
+- **A pinned document forces deep research off.** Answering from the web while ignoring the file you pinned is wrong, so `enableDeepResearchMode: true` with `groundIn` set produces an ordinary retrieval answer. `requestedSettings.deepResearchMode` will be `true` and the answer will have no web citations.
+
+`effectiveSettings.answeredBy` is the other one to read. A question can be answered by a route other than research (a document summarizer, a redline generator), and when it is, `ragTier` is null and `answeredBy` names the engine. Those answers carry no citations and cannot be verified.
+
+## Citations
+
+Every answer carries a `citations` array matched to the `[N]` markers in its text.
+
+```json
+{
+  "index": 1,
+  "sourceType": "document",
+  "title": "Nimbus MSA.pdf",
+  "documentId": "doc_7c...",
+  "pageStart": 12,
+  "pageEnd": 12,
+  "excerpt": "Each party's aggregate liability shall not exceed..."
+}
+```
+
+`sourceType` is one of `document` (one of your own files), `corpus` (a statute, regulation, rule or case), `web`, or `draft`. `pageStart` and `pageEnd` are published only for `document`, so you can jump a viewer to the page. `citation` carries the formal legal citation string where the source has one.
+
+Retrieval internals are not published: no chunk ids, no character offsets, no relevance scores, and no links into our storage. A document's location is its `documentId`, which you can resolve through this API.
+
+## Verifying an answer
+
+```bash
+curl -X POST .../v1/matters/$MATTER/messages/$MESSAGE/verifications \
+  -H "Authorization: Bearer $VQ_WS_KEY"
+# -> 202, poll the operation
+
+curl .../v1/matters/$MATTER/messages/$MESSAGE/verifications \
+  -H "Authorization: Bearer $VQ_WS_KEY"
+```
+
+Verification is RAG-native: it checks whether the answer accurately represented the passages that produced it, not whether the answer agrees with the open web. When you scope a question to your own documents, fact-checking the result against the internet contradicts what you asked for.
+
+You get a headline verdict, a score, per-claim verdicts, and the count that matters most: `contradictedClaims`, where a source says something different from what the answer said. `unverified` is common and is not by itself an error; a claim of general law often has no supporting passage in your documents.
+
+An answer with no stored source passages is refused with `message-not-verifiable`. That is a real state rather than a bug: a summarize, extract or rewrite turn emits no source cards.
+
+Verifying twice replaces the previous result. There is one verification per message.
+
+## Skills
+
+A skill is a named prompt that steers an answer. Discover them with `GET /v1/skills` and pass one as `skillSlug` on an ask.
+
+Only system skills and your organization's skills are listed. Skills belonging to an individual person are invisible to a machine credential: there is no person behind an API key, and borrowing the identity of whoever set up the integration would let one lawyer's private prompts drive your organization's automated research.
+
+An unknown slug is refused with `skill-not-found` rather than ignored. A skill changes the prompt behind the answer, so a typo that was quietly dropped would hand you a confident answer written by something else.
+
+## Deep research
+
+A long web-research pass, run into a conversation:
+
+```bash
+curl -X POST .../v1/matters/$MATTER/chats/$CHAT/deep-research \
+  -H "Authorization: Bearer $VQ_WS_KEY" \
+  -d '{"query": "How have Delaware courts treated mutual liability caps since 2020?"}'
+```
+
+Thirty to a hundred and twenty seconds, so `202` and a poll. The report lands as a message in the conversation with its sources as citations, which is where you read it afterwards.
+
+Different from asking with `enableDeepResearchMode`: that runs the research pipeline and can fall back to retrieval; this is the web pass on its own, over the open web, with no matter documents and no corpus in play.
+
+## Standalone web research
+
+Three routes that touch no client data, take no matter and store nothing:
+
+| Operation | What it does |
+| --- | --- |
+| `POST /v1/web-search/queries` | Search the web for legal sources |
+| `POST /v1/web-search/similar` | Find pages similar to one you have |
+| `POST /v1/web-search/contents` | Read one page in full |
+
+They answer `200` directly. Sort on `authorityScore` and `isAuthoritativeSource` to prefer courts, legislatures and agencies over commentary; those describe the HOST rather than our ranking of it. Our own relevance score is not published, because it is a scale we retune.
+
+## Deleting a conversation
+
+`DELETE /v1/matters/{matterId}/chats/{chatId}` removes the conversation **and everything derived from it**: its messages, its in-conversation threads, its per-document reading outlines, its message edit history and its verifications. Five tables, none of them a resource this API publishes on its own. Nothing else in the system references a conversation.
+
+A conversation with an ask, a deep-research run or a verification still running is refused with `409 operation-in-flight`. Poll what you started, then delete.
+
+## Limits
+
+| | |
+| --- | --- |
+| Question length | 50,000 characters. Pin documents rather than pasting them |
+| Deep-research brief | 5,000 characters |
+| Pinned documents | 20 per field |
+| Concurrent asks | 5 per organization |
+| Concurrent deep-research runs | 5 per organization |
+| Concurrent verifications | 5 per organization |
+
+Over a concurrency limit you get `429 concurrency-limit-reached`, counting your own unfinished runs, so it clears itself.

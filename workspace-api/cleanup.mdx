@@ -1,0 +1,134 @@
+---
+title: "Cleaning up"
+description: "Deleting what your integration created, and what refuses to be deleted"
+icon: "trash"
+---
+
+An integration that creates clients, matters, folders, documents, drafts, comparisons, matrices, reviews and workflow runs needs to be able to undo that. This page is how.
+
+## The rule, in one line
+
+**A delete removes what you named and refuses anything that would take something else with it.**
+
+That means "delete an empty thing" for a container and "delete this thing" for a leaf. It is deliberately conservative: your real need is to undo what you just made, and you can always empty a container first. A single `DELETE` that quietly removed a hundred documents, their stored files and their vectors is not an operation anybody can safely retry.
+
+## Deleted means deleted
+
+Some resources go to a trash a person can see in the app. Drafts and comparisons do; documents, clients, matters, folders, reviews, workflow runs and matrices do not.
+
+**From this API the two are indistinguishable, on purpose.** A deleted resource answers `404` on its own `GET`, disappears from its own list, and stops being exportable. Nothing here brings it back.
+
+There is no `?hard=true`, no `deletedAt` field and no restore operation, and there will not be: an irreversible variant of something whose reversible variant you cannot observe is a footgun with no upside. Each delete's own description in the [reference](/workspace-api/reference) says whether a colleague could still restore it in the app.
+
+## Delete is not idempotent
+
+A `DELETE` that removed a row answers `204`. Repeating it answers `404`, because we report what actually happened rather than assuming success. PostgREST reports success for a delete that matched nothing, so "always 204" would mean answering `204` for a mistyped id too.
+
+<Warning>
+**On a delete that timed out, treat a subsequent `404` as success.** That is the only place this matters, and it is the whole reason it is written down.
+</Warning>
+
+There is no `Idempotency-Key` on a delete.
+
+## What refuses, and why
+
+Every refusal is a `409`, never a `403`. On this API a `403` means your credential is missing a scope or your installation is inactive, and both send you to rotate a credential. A refusal about the state of a row must not read like that.
+
+<AccordionGroup>
+  <Accordion title="409 resource-not-empty — the container still holds something">
+    Read `blockers`. It names every reason and how many of each, so you can clear them in one pass rather than discovering them one at a time.
+
+    ```json
+    {
+      "type": "https://docs.vaquill.ai/workspace-api/errors/resource-not-empty",
+      "status": 409,
+      "detail": "This matter still holds 3 documents, 1 draft. ...",
+      "blockers": [
+        { "resource": "documents", "count": 3 },
+        { "resource": "drafts", "count": 1 }
+      ]
+    }
+    ```
+
+    | Deleting | Blocked by |
+    | --- | --- |
+    | A client | Any matter it owns |
+    | A matter | Any document, folder, draft, comparison, matrix, workflow run, review or chat |
+    | A folder | Any folder inside it. Documents and drafts filed in it are unfiled, not deleted |
+  </Accordion>
+  <Accordion title="409 operation-in-flight — a job is still writing to it">
+    Poll `operationId` when the problem carries one, then repeat the delete. It is absent when the work was started in the app, because there is no operation of ours to poll; read the resource's own `status` instead.
+
+    There is no way to cancel work through this API. A delete that killed a running job would be a second way to spend your money and lose the result.
+  </Accordion>
+  <Accordion title="409 matter-not-deletable — it is the default matter">
+    Every organization has exactly one, minted at signup, and it cannot be deleted here or in the app. Emptying it will not help. Create matters explicitly with `POST /v1/matters` rather than writing into the default one, and a matter your integration created can be emptied and deleted.
+  </Accordion>
+</AccordionGroup>
+
+## Per resource
+
+| Resource | Operation | Notes |
+| --- | --- | --- |
+| Client | `DELETE /v1/clients/{clientId}` | Notes filed against the client in the app go with it. Matters must be reassigned or deleted first |
+| Matter | `DELETE /v1/matters/{matterId}` | Empty matters only |
+| Folder | `DELETE /v1/folders/{folderId}` | Content in it is unfiled, not deleted, and reads back with no `folderId` |
+| Document | `DELETE /v1/matters/{matterId}/documents/{documentId}` | See the blast radius below |
+| Draft | `DELETE /v1/matters/{matterId}/drafts/{draftId}` | Goes to the app's trash; restorable there |
+| Comparison | `DELETE /v1/matters/{matterId}/comparisons/{comparisonId}` | Goes to the app's trash; restorable there. Rendered redlines are left in storage and stop being reachable |
+| Matrix | `DELETE /v1/matters/{matterId}/matrices/{matrixId}` | Its cells, columns, rows and comments go with it |
+| Review | `DELETE /v1/matters/{matterId}/reviews/{reviewId}` | The contract itself is untouched: a review takes text, not a document |
+| Workflow run | `DELETE /v1/matters/{matterId}/workflow-runs/{runId}` | Documents the run produced survive, and stop pointing back at it |
+| Upload session | `DELETE /v1/uploads/{uploadId}` | Cancels the upload and discards the parts. Refused once completed: delete the document instead |
+
+**Playbooks cannot be deleted through this API.** There is no `playbooks.delete`
+operation, and a `DELETE` against a playbook path answers `405
+method-not-allowed`. A playbook you no longer want can be emptied with
+`playbooks.update`, or deleted by its owner in the app. The gap is deliberate
+for now: a review records the playbook it ran against as a plain JSONB key with
+no foreign key, so nothing in the database stops a deletion from leaving twelve
+completed reviews pointing at a row that is gone.
+
+## Deleting a document reaches further than the document
+
+This is the one delete with a blast radius worth reading before you loop over it. Removing a document also removes:
+
+- its extracted text, its versions and its stored original;
+- its highlights, flags, obligations and summary;
+- its entries in the matter's chronology;
+- **its row, and that row's answers, in every document matrix it appears in.**
+
+That last one changes the shape of a matrix somebody already finished, with no event anywhere. It is the same behaviour as the delete button in the app; what is new is that a loop can reach it.
+
+## Scopes
+
+Most deletes carry the resource's write scope. Three do not, because the scope taxonomy has no write scope for them:
+
+| Operation | Scope |
+| --- | --- |
+| `drafts.delete` | `drafting:run` |
+| `comparisons.delete` | `compare:run` |
+| `reviews.delete` | `review:run` |
+
+`:run` reads as "starting work" and these are deletes. The taxonomy is a frozen contract, and adding `compare:write` would make the operation answer `403` for every credential already issued, including yours. If you are minting a credential for a cleanup job, grant the `:run` scope for those three.
+
+## A worked cleanup
+
+Undoing everything one run created, in the order the refusals allow:
+
+<Steps>
+  <Step title="Delete the runs and results">
+    `comparisons.list`, `reviews.list`, `workflowRuns.list` and `matrices.list` inside the matter, then delete each. Anything still running answers `409 operation-in-flight`; poll it and come back.
+  </Step>
+  <Step title="Delete the drafts and documents">
+    `drafts.list` and `documents.list`, then delete each. Abort any upload session you left open with `DELETE /v1/uploads/{uploadId}`; find them with `GET /v1/uploads?status=in_progress`.
+  </Step>
+  <Step title="Delete the folders, deepest first">
+    `GET /v1/folders?parentId=` walks one level down. A folder with a child folder answers `409 resource-not-empty`, so clear the leaves first.
+  </Step>
+  <Step title="Delete the matter, then the client">
+    The matter refuses while anything is left, and names what. The client refuses while it owns a matter.
+  </Step>
+</Steps>
+
+Read [errors](/workspace-api/concepts/errors) for the full problem-document shape.

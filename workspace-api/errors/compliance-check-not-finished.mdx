@@ -1,0 +1,19 @@
+---
+title: "Compliance check not finished"
+description: "409 compliance-check-not-finished"
+icon: "hourglass-half"
+---
+
+**`409`** `compliance-check-not-finished`
+
+The check exists and has not produced anything to render yet. The `detail` names the status it is in.
+
+## What to do
+
+Poll the operation that started the check, and export once it reports `succeeded`.
+
+<Note>
+Only the export refuses. Reading the check itself answers `200` at any point, with the current status and an empty `requirements` list until there are requirements.
+</Note>
+
+Full error reference: [Errors](/workspace-api/concepts/errors)

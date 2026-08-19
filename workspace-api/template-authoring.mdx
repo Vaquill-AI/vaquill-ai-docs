@@ -1,0 +1,183 @@
+---
+title: "Authoring templates"
+description: "Create, import, edit, copy and retire the boilerplate your drafting runs on"
+icon: "file-pen"
+---
+
+[Drafting](/workspace-api/drafting#templates) covers running a template. This page covers building one.
+
+A template is your own document with its fillable spans marked. The point of the feature is that your clause language comes out of a run bit-identical to what went in: only the marked spans are replaced. So authoring one is mostly about the spans.
+
+Reading a template needs `drafting:read`. Every write on this page needs `drafting:run`, which is the scope for any drafting write.
+
+## Reading a template
+
+`GET /v1/templates/{templateId}` returns a template with everything needed to run it.
+
+```json
+{
+  "id": "tpl_...",
+  "title": "Acme mutual NDA",
+  "category": "nda",
+  "sourceFilename": "acme-nda.docx",
+  "variables": [
+    { "id": "disclosing_party", "name": "DISCLOSING PARTY", "label": null,
+      "kind": "party", "hint": null, "defaultValue": null, "position": 0 },
+    { "id": "effective_date", "name": "Effective Date", "label": null,
+      "kind": "date", "hint": null, "defaultValue": null, "position": 1 }
+  ],
+  "sections": [
+    { "heading": "Mutual NDA", "level": 1,
+      "text": "Between [DISCLOSING PARTY] and [RECEIVING PARTY]." }
+  ],
+  "createdAt": "2026-08-19T09:00:00Z",
+  "updatedAt": "2026-08-19T09:00:00Z"
+}
+```
+
+**`variables[].id` is what `slotOverrides` on a run is keyed by.** This is the only place those keys are published: without it the only way to learn a template's variables is to run it once and read the slots back off the finished run, which is a paid generation spent discovering a schema.
+
+`kind` is what sort of value belongs in the span, one of `party`, `date`, `money`, `jurisdiction`, `address`, `number`, `duration`, `text` or `other`. It constrains the extractor when it fills the slot.
+
+`sections` is the body with the placeholder text still in it, in the same shape a draft publishes, so you can read what a template says before deciding to run it.
+
+## Creating one from markdown
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/templates \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Acme mutual NDA",
+       "contentMarkdown":"# Mutual NDA\n\nBetween [DISCLOSING PARTY] and [RECEIVING PARTY], effective [EFFECTIVE DATE].\n\n## 1. Term\n\nConfidentiality survives for three (3) years.\n",
+       "category":"nda",
+       "description":"The one legal signs off without edits."}'
+```
+
+| Field | Required | Shape |
+| --- | --- | --- |
+| `title` | yes | 1 to 300 characters |
+| `contentMarkdown` | yes | The body, 1 to 500,000 characters. Whitespace alone is refused |
+| `description` | no | Up to 2,000 characters |
+| `category` | no | Up to 100 characters. Defaults to `custom` |
+
+It answers `201` with the full template, `variables` included.
+
+`category` here is **your** filing label, free text, and is deliberately unrelated to the drafting categories `drafts.generate` accepts. A template is your boilerplate; how you classify it is not our taxonomy's business.
+
+### Variables are detected for you
+
+You do not mark spans. Creating or replacing a body runs a detector over the text and the response carries what it found, so a template authored through this API cannot be in the state where it runs and interpolates nothing.
+
+The detector is a regex pass, and it finds:
+
+| Pattern | Example |
+| --- | --- |
+| Bracketed placeholders | `[DISCLOSING PARTY]` |
+| Jinja-style fields | `{{party_a_name}}` |
+| Word merge fields | `«party_name»` |
+| Blank runs, with the preceding label as the name | `Tenant: ________` |
+| Dates | `1 January 2026`, `2026-01-01` |
+| Amounts | `$50,000`, `USD 1,200.00` |
+| Durations | `ninety (90) days`, `three years` |
+
+It is deterministic, free and sub-millisecond, and it runs on every write that changes the body.
+
+<Note>
+**The web app runs a second, model-based pass that this API does not.** That pass refines display *names* and catches a few spans the regex missed; it deliberately leaves existing variable identifiers alone, so the keys `slotOverrides` uses are the same either way. The consequence, stated plainly: a template created here may carry fewer variables than the same text imported in the browser. If that bites you, tell us, because the fix is a real import job with an operation to poll rather than a call we fire and forget.
+</Note>
+
+The last two rows of that table are worth watching. A date or a duration written literally in your boilerplate becomes a variable, which is usually what you want and occasionally not: if "three (3) years" is a term you never negotiate, write it as something the detector cannot read as a duration, or accept an extra variable nobody fills.
+
+A template may hold 100 variables. A body with more is refused with `413 run-too-large`, carrying `limit` and `requested`.
+
+## Creating one from a document
+
+`POST /v1/templates/from-document` builds a template out of a file you already uploaded.
+
+```bash
+curl -X POST https://api.vaquill.ai/workspace/v1/templates/from-document \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"documentId":"doc_...","title":"Acme mutual NDA"}'
+```
+
+`documentId` is required; `title` (defaulting to the filename), `description` and `category` are not.
+
+Upload the file through the [presigned upload flow](/workspace-api/documents) first and poll its ingest operation to `succeeded`. The source document stays yours: you can list it, download it and delete it, which is what makes "which contract is this template from" answerable later.
+
+`.docx` keeps its headings, lists, tables and inline formatting. `.txt` and `.md` are converted paragraph by paragraph. Anything else, including PDF, is refused with `415` rather than degraded, because an import that quietly lost its structure is one nobody notices until they open the result.
+
+Unlike a draft import, the source does **not** have to be in any particular matter. A template belongs to the organization, so refusing your own contract for being filed somewhere else would be a boundary this resource does not have.
+
+Files over 5 MB are refused with `413 file-too-large` before a byte is read.
+
+## Replacing the body
+
+`PUT /v1/templates/{templateId}` replaces the body and re-detects the variables.
+
+```bash
+curl -X PUT https://api.vaquill.ai/workspace/v1/templates/tpl_... \
+  -H "Authorization: Bearer vq_ws_..." \
+  -H "Content-Type: application/json" \
+  -d '{"contentMarkdown":"# Mutual NDA\n\nBetween [DISCLOSING PARTY] and [RECEIVING PARTY].\n",
+       "title":"Acme mutual NDA, 2027 paper"}'
+```
+
+`contentMarkdown` is required. `title` and `description` are left alone when omitted.
+
+Like the draft equivalent, this is a `PUT` and not a `PATCH`: `contentMarkdown` is the whole body, so sending one clause replaces the template with that clause.
+
+<Warning>
+**Replacing the body of a template you imported from a `.docx` is lossy.** The importer preserves Word formatting that markdown cannot express, and this replaces the body with what markdown can say. Copy the template first if you want to keep the original, which is one call and free.
+</Warning>
+
+The response is the template at its new state, `variables` included. Every variable is re-derived from the new body, so a placeholder you removed stops being a key `slotOverrides` accepts.
+
+## Copying
+
+`POST /v1/templates/{templateId}/copies` makes a second template. Send `{}` to take the defaults, or `{"title": "..."}` to name it.
+
+The copy is independent: its own id, its own variables, its own edits. That makes it the safe move before any body replacement, and the way to fork "the 2026 paper" into "the 2027 paper" without losing either.
+
+## Retiring one
+
+`DELETE /v1/templates/{templateId}` retires a template. It answers `204`.
+
+It stops being listed, stops being runnable and stops being readable through this API, and this API will never bring it back.
+
+**Runs that already used it keep working.** A template run records what it was asked for and what it produced, and destroying those records to delete the template would rewrite history you may still be relying on. So a `dtr_` id you were handed months ago still resolves after the template behind it is gone.
+
+<Warning>
+**Delete is not idempotent.** Deleting the same template twice answers `404` the second time. On a delete that timed out, treat a subsequent `404` as confirmation that the first one landed.
+</Warning>
+
+## The two shared ceilings
+
+Templates are counted, and the counts are shared with the web app rather than being an API quota:
+
+- **200 active templates per organization.** Trashed ones do not count.
+- **50 template creates per day**, against the person your installation is attributed to.
+
+Crossing either is `409 template-limit-reached`, with `limit` and either `active` or `createdToday` on the problem so you do not have to find the number by trying.
+
+<Note>
+It is a `409` rather than a `429` because a `429` promises that waiting helps. The organization cap never clears on its own: it needs a template deleted. The daily one does roll after 24 hours.
+
+These exist because the counters are shared. Fifty template creates in a day through a machine credential silently blocks the next browser upload by the person your installation runs as, with a message about a daily limit they did not spend. Refusing here is refusing to spend somebody else's allowance.
+</Note>
+
+## Errors worth handling
+
+| Status | Type | When you hit it |
+| --- | --- | --- |
+| 404 | `template-not-found` | No such template, another organization's, or retired |
+| 404 | `document-not-found` | The `documentId` is not in your organization, or is still ingesting |
+| 409 | `template-limit-reached` | An organization or daily cap. Read `detail` |
+| 413 | `file-too-large` | The source document is over 5 MB |
+| 413 | `run-too-large` | The body has more than 100 fillable spans |
+| 415 | `unsupported-media-type` | The source is not a `.docx`, `.txt` or `.md` |
+| 422 | `draft-content-unprocessable` | The markdown is a valid string that could not be turned into a body |
+| 422 | `invalid-request` | A field failed validation. Detail is in `errors[]` |
+| 503 | `run-guard-unavailable` | The cap could not be checked. Nothing was created; retry |
+
+`draft-content-unprocessable` is not `invalid-request`: the field passed the schema and what failed was our conversion of it. Send headings, paragraphs and lists.
