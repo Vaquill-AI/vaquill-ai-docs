@@ -4,7 +4,7 @@ description: "Subscribe to a jurisdiction or corpus and get a webhook or email t
 icon: "bell"
 ---
 
-Corpus data updates on its own refresh cadence (daily for the Federal Register and the eCFR, weekly for the US Code and agency guidance, monthly for state codes, regulations, and court rules). Law Change Alerts let you subscribe to a **board** (a tracked source, identified by `corpusType` + `state`) and get notified automatically whenever it refreshes with real changes, instead of polling on your own schedule.
+Corpus data updates on its own refresh cadence (daily for the Federal Register and the eCFR, weekly for the US Code and agency guidance, every 7 days or monthly for state codes depending on how the state publishes, monthly for state regulations and court rules). Law Change Alerts let you subscribe to a **board** (a tracked source, identified by `corpusType` + `state`) and get notified automatically whenever it refreshes with real changes, instead of polling on your own schedule.
 
 Every alert names the exact sections that changed, not just a count, and you can fetch the old text next to the new text for any section that was amended.
 
@@ -12,7 +12,7 @@ Every path below is prefixed with `/api/v1` and every request needs an `Authoriz
 
 ## Boards and watches
 
-A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`. Watching a board does not change how often it refreshes.
+A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`. Watching a board does not change how often it refreshes. Read `cadence` as the declared staleness window a board is alerted against, not as a ceiling on how often it is re-pulled: every state statute board declares `monthly`, and the 19 bulk-sourced jurisdictions listed under [Which statute cadence applies where](/api-guide/coverage#which-statute-cadence-applies-where) are in fact re-pulled every 7 days.
 
 A **watch** is your subscription to one board, on one or more channels (webhook, email, or both). By default a watch covers the whole board; see [Narrow a watch to a citation](#narrow-a-watch-to-a-citation) to follow one title or part instead.
 
