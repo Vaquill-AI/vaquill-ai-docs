@@ -18,16 +18,16 @@ The credential is a static header on the MCP connection. That is the whole authe
 
 <CodeGroup>
 ```bash Claude Code
-claude mcp add --transport http vaquill-workspace \
+claude mcp add --transport http --scope user vaquill-workspace \
   https://api.vaquill.ai/workspace/mcp \
   --header "Authorization: Bearer vq_ws_..."
 ```
 
-```json Client config
+```json Cursor
+// ~/.cursor/mcp.json for every project, or .cursor/mcp.json for one.
 {
   "mcpServers": {
     "vaquill-workspace": {
-      "type": "http",
       "url": "https://api.vaquill.ai/workspace/mcp",
       "headers": {
         "Authorization": "Bearer vq_ws_..."
@@ -36,7 +36,57 @@ claude mcp add --transport http vaquill-workspace \
   }
 }
 ```
+
+```json VS Code
+// .vscode/mcp.json. For every project, run the "MCP: Open User Configuration"
+// command and use the same shape there. Restart the server after saving, or
+// the tools will not appear.
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "vaquill-workspace-authorization",
+      "description": "Authorization header value",
+      "password": true
+    }
+  ],
+  "servers": {
+    "vaquill-workspace": {
+      "type": "http",
+      "url": "https://api.vaquill.ai/workspace/mcp",
+      "headers": {
+        "Authorization": "${input:vaquill-workspace-authorization}"
+      }
+    }
+  }
+}
+```
+
+```json Windsurf
+// ~/.codeium/windsurf/mcp_config.json. A remote server is keyed on serverUrl
+// here, not url, and ${env:VAR} interpolates.
+{
+  "mcpServers": {
+    "vaquill-workspace": {
+      "serverUrl": "https://api.vaquill.ai/workspace/mcp",
+      "headers": {
+        "Authorization": "Bearer vq_ws_..."
+      }
+    }
+  }
+}
+```
 </CodeGroup>
+
+`--scope user` registers the server for every project rather than the current directory only, and `--header` sits after the name and the URL because it takes a repeated value and would otherwise swallow them.
+
+<Note>
+Claude.ai and Claude Desktop reach a server like this one through **Customize > Connectors > Add custom connector**. Because this server authenticates with a static header rather than OAuth, the credential belongs in that dialog's **Request headers** section, which is in beta and enabled per account. Paste the value on its own, `Bearer vq_ws_...`, since Claude sends it exactly as typed and adds no scheme. If you do not see Request headers, connect from Claude Code, Cursor, VS Code or Windsurf, which all carry it as written. On a Team or Enterprise plan an owner adds the connector under Organization settings first.
+</Note>
+
+<Note>
+Windsurf's Cascade allows 100 tools in one session, and this server publishes one per operation. Issue a credential with only the scopes that integration needs: the catalog is filtered to them, which brings it under the cap.
+</Note>
 
 The credential is an ordinary `vq_ws_` credential from the automation console, with whatever scopes you granted it. See [Authentication](/workspace-api/authentication). Nothing about this endpoint needs a different credential type or a separate enrollment.
 
@@ -54,7 +104,7 @@ The practical consequence for you is short. Configure the header, and ignore any
 
 ## What the agent sees
 
-**50 tools**, one per REST operation. Names come from the operation id, so `matters.list` is `matters_list`, `documents.text` is `documents_text`, `workflows.run` is `workflows_run` and `playbookTemplates.list` is `playbook_templates_list`.
+**133 tools**, one per REST operation. Names come from the operation id, so `matters.list` is `matters_list`, `documents.text` is `documents_text`, `workflows.run` is `workflows_run` and `playbookTemplates.list` is `playbook_templates_list`.
 
 Arguments follow the HTTP call closely. Path and query parameters keep their published names, so `matterId` is `matterId`. A JSON request body is nested under a single `body` argument, which avoids a collision when a name such as `limit` is a query parameter on one operation and a body field on another.
 
@@ -76,7 +126,7 @@ Your organization is fixed by the credential. No tool accepts an organization ar
 
 **Uploading bytes is not an MCP flow.** `uploads_initiate`, `uploads_presign_part` and `uploads_complete` are all published, but the bytes themselves are `PUT` directly to presigned storage URLs, which is a plain HTTP call outside this server. An agent can start and finish an upload; something else has to move the file.
 
-**The catalog costs roughly 28,000 tokens** the first time a session lists tools, measured over the 50 tool definitions. That is the honest price of publishing the whole API rather than a hand-picked subset, and it is paid once per session.
+**The catalog is filtered to your credential's scopes.** Listing all 133 tools costs about 71,000 tokens the first time a session asks for them, which is the honest price of publishing the whole API rather than a hand-picked subset. A credential holding only the scopes one integration needs is listed as only those tools: a read-only credential is 55 tools and about 18,000 tokens, and a credential scoped to one job, say reading matters and writing documents, is 17 tools and about 6,000. Either way it is paid once per session, so issue the narrowest credential the integration needs.
 
 ## Transport details
 

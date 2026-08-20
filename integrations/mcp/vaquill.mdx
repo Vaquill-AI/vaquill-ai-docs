@@ -32,7 +32,7 @@ The fastest path is the hosted remote MCP on Claude.ai web - no install, no loca
 >
 Install the Vaquill MCP server in Claude Code using my API key.
 
-1. Run `claude mcp add-json vaquill '{"type":"http","url":"https://mcp.vaquill.ai/s/_","headers":{"Authorization":"Bearer vq_key_REPLACE_ME"}}'` to register the remote MCP.
+1. Run `claude mcp add --transport http --scope user vaquill https://mcp.vaquill.ai/s/_ --header "Authorization: Bearer vq_key_REPLACE_ME"` to register the remote MCP for every project.
 2. Confirm the server is wired by running `claude mcp list` and looking for `vaquill`.
 3. Then try a smoke test prompt like *"Use Vaquill AI to pull the full text of 18 USC 1343 and summarize it in two sentences."*
 
@@ -44,8 +44,8 @@ If anything fails, show me the exact error and the output of `claude mcp list`.
   <Step title="Get an API key">
     Generate a `vq_key_...` token from your [dashboard settings](https://app.vaquill.ai/settings). See [Authentication](/api-guide/authentication).
   </Step>
-  <Step title="Open Claude.ai Settings > Integrations">
-    Click **Add a connector** and pick **Custom MCP server**.
+  <Step title="Open Claude.ai Customize > Connectors">
+    Click **Add custom connector**.
   </Step>
   <Step title="Paste the URL">
     Use either the path-token form:
@@ -54,12 +54,15 @@ If anything fails, show me the exact error and the output of `claude mcp list`.
     https://mcp.vaquill.ai/s/vq_key_your_key_here
     ```
 
-    Or, if your client supports auth headers, use the bearer-token form:
+    Or keep the key out of the URL by opening **Request headers** in the same dialog and adding it there:
 
     ```
-    URL:   https://mcp.vaquill.ai/s/_
-    Token: vq_key_your_key_here
+    URL:            https://mcp.vaquill.ai/s/_
+    Header name:    Authorization
+    Header value:   Bearer vq_key_your_key_here
     ```
+
+    Claude sends the value exactly as you type it and adds no scheme of its own, so the value field holds `Bearer vq_key_...` and **not** `Authorization: Bearer vq_key_...`.
   </Step>
   <Step title="Look up a statute">
     Try: *"What does 17 CFR 240.10b-5 say about insider trading?"* - Claude will call `search_us_statutes` and pull the section text.
@@ -67,17 +70,20 @@ If anything fails, show me the exact error and the output of `claude mcp list`.
 </Steps>
 
 <Info>
-  Remote MCP connectors are available on Claude Pro, Max, Team, and Enterprise plans.
+  Remote MCP connectors are available on Claude Pro, Max, Team, and Enterprise plans. The **Request headers** section is in beta and is enabled per account, it accepts a short allowlist of header names, and it holds at most four. If you do not see it, use the path-token URL, or connect from Claude Code, Cursor, VS Code, or Windsurf, which all carry the header as written. On Team and Enterprise an owner adds the connector under Organization settings first.
 </Info>
 
 ## Client setup
 
-Pick your client below. All configs accept the same set of environment variables - see [Environment variables](#environment-variables).
+Pick your client below. The remote endpoint needs no install. The local `uvx` package reads the variables in [Environment variables](#environment-variables).
 
 <CodeGroup>
 ```json Claude Desktop
-// ~/Library/Application Support/Claude/claude_desktop_config.json  (macOS)
-// %APPDATA%\Claude\claude_desktop_config.json                       (Windows)
+// Settings > Developer > Edit Config opens this file.
+//   macOS    ~/Library/Application Support/Claude/claude_desktop_config.json
+//   Windows  %APPDATA%\Claude\claude_desktop_config.json
+//   Linux    ~/.config/Claude/claude_desktop_config.json
+// Quit Claude completely and reopen it. It does not reload the file.
 {
   "mcpServers": {
     "vaquill": {
@@ -92,20 +98,34 @@ Pick your client below. All configs accept the same set of environment variables
 ```
 
 ```bash Claude Code (remote)
-claude mcp add-json vaquill '{
-  "type": "http",
-  "url": "https://mcp.vaquill.ai/s/_",
-  "headers": { "Authorization": "Bearer vq_key_your_key_here" }
-}'
+# --scope user registers it for every project. The default is the current directory only.
+claude mcp add --transport http --scope user vaquill \
+  https://mcp.vaquill.ai/s/_ \
+  --header "Authorization: Bearer vq_key_your_key_here"
 ```
 
 ```bash Claude Code (local)
-claude mcp add vaquill -- uvx vaquill-mcp
-export VAQUILL_API_KEY=vq_key_your_key_here
+# -e stores the key with the registration, so it survives Claude Code being launched from an IDE.
+claude mcp add --scope user vaquill -e VAQUILL_API_KEY=vq_key_your_key_here \
+  -- uvx vaquill-mcp
 ```
 
-```json Cursor
-// Settings > MCP Servers
+```json Cursor (remote)
+// ~/.cursor/mcp.json for every project, or .cursor/mcp.json for one.
+{
+  "mcpServers": {
+    "vaquill": {
+      "url": "https://mcp.vaquill.ai/s/_",
+      "headers": {
+        "Authorization": "Bearer vq_key_your_key_here"
+      }
+    }
+  }
+}
+```
+
+```json Cursor (local)
+// ~/.cursor/mcp.json
 {
   "mcpServers": {
     "vaquill": {
@@ -119,25 +139,62 @@ export VAQUILL_API_KEY=vq_key_your_key_here
 }
 ```
 
-```json VS Code (Copilot)
-// .vscode/settings.json
+```json VS Code (remote)
+// .vscode/mcp.json. For every project, run the "MCP: Open User Configuration"
+// command and use the same shape there.
 {
-  "mcp": {
-    "servers": {
-      "vaquill": {
-        "command": "uvx",
-        "args": ["vaquill-mcp"],
-        "env": {
-          "VAQUILL_API_KEY": "vq_key_your_key_here"
-        }
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "vaquill-authorization",
+      "description": "Authorization header value",
+      "password": true
+    }
+  ],
+  "servers": {
+    "vaquill": {
+      "type": "http",
+      "url": "https://mcp.vaquill.ai/s/_",
+      "headers": {
+        "Authorization": "${input:vaquill-authorization}"
       }
     }
   }
 }
 ```
 
-```json Windsurf
-// ~/.windsurf/settings.json
+```json VS Code (local)
+// .vscode/mcp.json
+{
+  "servers": {
+    "vaquill": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["vaquill-mcp"],
+      "env": {
+        "VAQUILL_API_KEY": "vq_key_your_key_here"
+      }
+    }
+  }
+}
+```
+
+```json Windsurf (remote)
+// ~/.codeium/windsurf/mcp_config.json
+{
+  "mcpServers": {
+    "vaquill": {
+      "serverUrl": "https://mcp.vaquill.ai/s/_",
+      "headers": {
+        "Authorization": "Bearer vq_key_your_key_here"
+      }
+    }
+  }
+}
+```
+
+```json Windsurf (local)
+// ~/.codeium/windsurf/mcp_config.json
 {
   "mcpServers": {
     "vaquill": {
@@ -151,6 +208,10 @@ export VAQUILL_API_KEY=vq_key_your_key_here
 }
 ```
 </CodeGroup>
+
+<Tip>
+  VS Code asks for the header value on first start and remembers it, which keeps the credential out of a file you commit. `${env:VAQUILL_API_KEY}` works in Windsurf if you would rather read it from the environment. Both clients need the server restarted after you save the file before the tools appear.
+</Tip>
 
 <Tip>
   The `uvx` runner requires Python 3.10+ and [uv](https://docs.astral.sh/uv/) on `PATH`. `uvx vaquill-mcp` downloads and executes the package in an isolated env on first run; subsequent runs are instant.

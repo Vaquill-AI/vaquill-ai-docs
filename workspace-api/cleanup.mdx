@@ -18,7 +18,7 @@ Some resources go to a trash a person can see in the app. Drafts and comparisons
 
 **From this API the two are indistinguishable, on purpose.** A deleted resource answers `404` on its own `GET`, disappears from its own list, and stops being exportable. Nothing here brings it back.
 
-There is no `?hard=true`, no `deletedAt` field and no restore operation, and there will not be: an irreversible variant of something whose reversible variant you cannot observe is a footgun with no upside. Each delete's own description in the [reference](/workspace-api/reference) says whether a colleague could still restore it in the app.
+There is no `?hard=true`, no `deletedAt` field and no restore operation, and there will not be: an irreversible variant of something whose reversible variant you cannot observe is a footgun with no upside. Each delete's own description in the Workspace Reference says whether a colleague could still restore it in the app.
 
 ## Delete is not idempotent
 
