@@ -7,6 +7,114 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-23" description="New corpusType: SESSION_LAW, the US Statutes at Large">
+  ## Read a law as Congress enacted it, not as it was codified
+
+  A fifteenth `corpusType` lands: **`SESSION_LAW`**, the US Statutes at Large.
+  **5,256 public and private laws, 110,287 sections, 1999 to 2026.**
+
+  The US Code is a *compilation*. It reorganizes enacted text by subject and
+  drops the structure the enacting Congress used, so a US Code section does not
+  tell you what the act it came from actually said. `SESSION_LAW` does.
+
+  ```json
+  { "query": "paycheck protection program eligibility", "corpusType": "SESSION_LAW" }
+  ```
+
+  **The join is the point.** A US Code section's `publicLawCites` resolve
+  directly into this corpus, so you can go from codified text to enacting text
+  in one hop. That join resolves for **every** US Code section we serve.
+
+  ```
+  GET /statutes/section/SAL_PL116-136_DVA_TII_S1109   CARES Act section 1109
+  ```
+
+  <Note>
+    These are laws **as enacted**, a historical record rather than a statement
+    of current law, so they carry `actStatus: "enacted"` and
+    `goodLawStatus: "unknown"` by design. For what the law says today, use
+    `corpusType=USC`.
+  </Note>
+</Update>
+
+<Update label="2026-08-23" description="State regulations reach 48 states, court rules reach 46 jurisdictions">
+  ## Regulations and court rules move onto official sources
+
+  **State regulations now cover 48 states, about 1.22M rules**, with Utah and
+  Kansas joining the corpus.
+
+  **State court rules now cover 46 jurisdictions, about 47.6K rules**, with New
+  Mexico (3,462 rules across 47 rule sets), New Jersey and Kentucky added. New
+  Mexico, New Jersey and Kentucky are also now watchable as law-change boards.
+
+  Counts in your own integration are worth re-reading from
+  `GET /statutes/coverage` rather than carried forward: a re-source can move a
+  jurisdiction's count in either direction.
+</Update>
+
+<Update label="2026-08-21" description="GET /boards returned only the first 200 sources">
+  ## Fixed: /boards silently truncated its own catalogue
+
+  `GET /boards` defaulted to `limit=200` and returned no `total`, so with 216
+  watchable sources every client was reading a truncated list with nothing in
+  the response to say so. Sources sorting last were invisible, **including
+  `usc`**, the US Code.
+
+  The response now carries a `total`, and paging is explicit. If you built a
+  source picker from this endpoint, re-fetch it: sources you never saw are not
+  new, they were always there.
+
+  `GET /watches` also gained filters, so a large watch list can be narrowed
+  server-side instead of client-side.
+</Update>
+
+<Update label="2026-08-20" description="Five new endpoints: change history, citators, definitions, neighbors, cross-state">
+  ## Five questions about a section you previously had to answer yourself
+
+  Each takes an `actId` and answers one question a section lookup could not.
+
+  | Endpoint | Answers | Credits |
+  |---|---|---|
+  | `GET /statutes/section/{actId}/changes` | Has this section moved since we last reviewed it? | 1 |
+  | `GET /statutes/section/{actId}/related` | What sits around it in the code? | 2 |
+  | `GET /statutes/section/{actId}/cited-by` | Which sections cite this one? | 2 |
+  | `GET /statutes/section/{actId}/definitions` | Which defined terms govern it? | 4 |
+  | `GET /statutes/section/{actId}/cross-state` | How do other states handle this? | 6 |
+
+  **`/changes`** is the one that removes a workaround. Every change our
+  refreshes have observed to a section: when it was added, each time its text
+  was replaced, and whether it has since been removed. Answering that used to
+  require creating a board watch and waiting, because a watch can only show
+  changes that postdate it. This reads the captured history directly.
+
+  **`/related`** returns the sections a reader would actually turn to, not the
+  numerically adjacent row, which in most codes belongs to an unrelated part.
+
+  Not-found and failed lookups are not charged. An empty result for a section
+  that exists is the answer, and is charged.
+</Update>
+
+<Update label="2026-08-18" description="Every jurisdiction now reports when we last pulled it">
+  ## Coverage answers "how old is this?" without you having to assume
+
+  `GET /statutes/coverage` gained a **`retrieval`** array covering every
+  `(jurisdiction, corpusType)` pair, maintained ones included:
+
+  - **`lastRetrievedAt`** - when we last pulled that body of law from its
+    publisher and finished cleanly
+  - **`cadence`** - how often we do
+  - **`status`** - `current`, `stale`, `failing`, or `never_retrieved`
+
+  Read it alongside a section count so the count carries an age. Note this is
+  when we last *checked*, not when the law last changed, and not a claim that
+  the text is current as of that date. Where a publisher states its own
+  currency, that rides on the section itself as `currentThrough`.
+
+  The **`freshness`** array is the companion: it names only the pairs that are
+  *not* being updated, each with a plain-language reason, so a large count can
+  be read as maintained rather than merely large.
+</Update>
+
 <Update label="2026-08-12" description="Watch a citation instead of a whole source">
   ## Scoped alerts: watch a citation, not a source
 
@@ -415,8 +523,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - **Federal court rules**: `Fed. R. Civ. P. 12` (incl. a pincite like
     `Fed. R. Civ. P. 12(b)(6)`), `Fed. R. Crim. P. 11`, `Fed. R. Evid. 702`,
     `Fed. R. App. P. 4`, `Fed. R. Bankr. P. 9011`, and the compact `FRCP 12` form.
-  - **Annotated / prefixed federal statutes**: `42 U.S.C.A. § 1983` (West),
-    `42 U.S.C.S. § 1983` (Lexis), `Title 42 U.S.C. § 1983`, and a doubled `§§`.
+  - **Annotated / prefixed federal statutes**: the annotated `42 U.S.C.A. § 1983`
+    and `42 U.S.C.S. § 1983` forms, `Title 42 U.S.C. § 1983`, and a doubled `§§`.
 
   This is additive and precision-focused: a Bluebook citation names one exact
   section, so it stays the most reliable way to reach or verify a section. See

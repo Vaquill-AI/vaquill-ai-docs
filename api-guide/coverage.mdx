@@ -6,7 +6,7 @@ icon: "map-location-dot"
 
 Every US jurisdiction and corpus type the API has ingested: federal law, state statutes, constitutions, court rules, and regulations, each scoped with the `corpusType` filter.
 
-**Over 3.9M distinct sections, indexed as over 10.5M retrieval passages.** Figures below are a **2026-08-12** snapshot, except Oregon which is **2026-08-18**; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
+**Over 3.9M distinct sections, indexed as over 11.1M retrieval passages.** Counts on this page were measured on **2026-08-24**; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
 
 <Note>
   Counts here are **distinct sections**, one per provision or document, matching what `GET /statutes/coverage` returns. Longer documents split into several passages for retrieval, so the index holds more entries than sections, over half of them Federal Register rules at 13-15 passages each.
@@ -18,19 +18,22 @@ Every US jurisdiction and corpus type the API has ingested: federal law, state s
 
 <CardGroup cols={2}>
   <Card title="State statutes" icon="building-columns">
-    **48 jurisdictions** (46 states + DC + Puerto Rico), **~1.82M sections**. Arkansas, Georgia, Mississippi and Tennessee carry no statute corpus. 19 jurisdictions refresh every 7 days, the rest monthly ([details](#which-statute-cadence-applies-where)). Queryable via the statutes API.
+    **52 jurisdictions** (50 states + DC + Puerto Rico), **~1.93M sections**. 24 jurisdictions refresh every 7 days, the rest monthly ([details](#which-statute-cadence-applies-where)). Queryable via the statutes API.
   </Card>
   <Card title="Federal law" icon="landmark">
-    **9 corpora, ~503K sections** — US Code, CFR, Federal Register rules, Executive Orders, agency guidance, court rules, the Constitution, and more. See the [Federal table](#federal) for the full breakdown. Queryable via the statutes API.
+    **10 corpora, ~613K sections** - US Code, the Statutes at Large, CFR, Federal Register rules, Executive Orders, agency guidance, court rules, the Constitution, and more. See the [Federal table](#federal) for the full breakdown. Queryable via the statutes API.
+  </Card>
+  <Card title="Statutes at Large" icon="feather-pointed">
+    **5,256 public and private laws, ~110K sections**, 1999-2026. Federal law **as enacted**, session by session, which is the source the US Code is compiled from: a US Code section's `publicLawCites` resolve here to the enacting text. Sourced from the official federal publisher and refreshed weekly.
   </Card>
   <Card title="State constitutions" icon="scroll">
-    **51 jurisdictions** (50 states + Puerto Rico), ~12.7K sections, with article/section structure and clickable citations, sourced from each state's own official publisher. Two states remain partially covered, a data-availability gap in the source rather than a parsing issue. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
+    **51 jurisdictions** (50 states + Puerto Rico), ~13.0K sections, with article/section structure and clickable citations, sourced from each state's own official publisher. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
   </Card>
   <Card title="Court rules" icon="gavel">
-    **44 jurisdictions** (42 states + DC + Puerto Rico), ~45K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly. 42 of the 44 are ingested from the state's own court system or legislature; Arizona and Maryland come from the commercial portal each state designates, because neither judiciary publishes consolidated rule text itself. Queryable via the API (`corpusType=STATE_RULES`).
+    **46 jurisdictions** (44 states + DC + Puerto Rico), ~47.6K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly, each taken from the edition that jurisdiction designates as its official text. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
-    **46 states**, **~1.16M rules**, with effective dates and statutory authority. All ingested from each state's own official publisher and refreshed monthly. Queryable via the API (`corpusType=REGULATION`).
+    **48 states**, **~1.22M rules**, with effective dates and statutory authority. Queryable via the API (`corpusType=REGULATION`).
   </Card>
 </CardGroup>
 
@@ -43,13 +46,14 @@ them.
 | Corpus | Sections | Refresh |
 |---|---|---|
 | United States Code (USC) | 54,853 | Weekly |
-| Code of Federal Regulations (CFR) | 219,424 | Daily |
+| Statutes at Large - federal public and private laws **as enacted**, 1999-2026 (5,256 laws) | 110,287 | Weekly |
+| Code of Federal Regulations (CFR) | 219,127 | Daily |
 | ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 (within CFR above) | 5,537 | Daily |
 | ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 (within CFR above) | 2,877 | Daily |
-| Federal Register agency rules (final + proposed), 1994-present | 202,448 | Weekly |
+| Federal Register agency rules (final + proposed), 1994-present | 202,526 | Weekly |
 | Executive Orders (Federal Register Presidential Documents), 2015-present | 3,820 | Daily |
-| Agency guidance — 30 named sources across 16 agencies (see table below) | 21,686 | Weekly |
-| Federal Rules of Procedure — Civil (FRCP), Criminal (FRCrP), Evidence (FRE), Appellate (FRAP) and Bankruptcy (FRBP), incl. Supplemental Admiralty and Social Security Rules — and Rules of the Supreme Court of the United States | 589 | Monthly |
+| Agency guidance - 30 named sources across 16 agencies (see table below) | 21,741 | Weekly |
+| Federal Rules of Procedure - Civil (FRCP), Criminal (FRCrP), Evidence (FRE), Appellate (FRAP) and Bankruptcy (FRBP), incl. Supplemental Admiralty and Social Security Rules - and Rules of the Supreme Court of the United States | 589 | Monthly |
 | US Constitution | 74 | On amendment |
 | US Sentencing Guidelines (U.S.S.G.) | 302 | Annual |
 | US Tax Treaties (bilateral income and estate tax treaties, citable by article) and Treasury's Technical Explanations (article-by-article commentary) | 119 | As treaties are signed |
@@ -60,157 +64,152 @@ them.
   2026. That can occasionally push a weekly pull later.
 </Note>
 
+<Note>
+  **Statutes at Large sections are searchable and retrievable now**, filterable
+  with **`corpusType=SESSION_LAW`**, and resolve by `actId` (for example
+  `SAL_PL116-136_DVA_TII_S1109`, CARES Act section 1109). They are listed as
+  their own corpus on `GET /statutes/coverage`.
+
+  Because these are laws **as enacted**, they are a historical record rather
+  than a statement of current law: they carry `actStatus: "enacted"` and
+  `goodLawStatus: "unknown"` deliberately. For what the law says *today*, use
+  the US Code (`corpusType=USC`).
+</Note>
+
 **Agency guidance** is a registry of named sources. Each is independently
 filterable by its own `category`, but all sit behind the single
-`corpusType=AGENCY_GUIDANCE` token — new sources land as one registry entry,
+`corpusType=AGENCY_GUIDANCE` token - new sources land as one registry entry,
 not a new API token.
 
 | Source | Docs | Coverage | Citable as |
 |---|---|---|---|
-| Social Security Administration (SSA) Rulings | 1,115 | — | — |
-| Internal Revenue Service (IRS) Revenue Procedures/Rulings/Notices/Announcements | 1,459 | 2015-present | — |
-| Department of Justice (DOJ) & Federal Trade Commission (FTC) Merger Guidelines | — | 2023 | — |
-| DOJ Antitrust Division Leniency Policy | — | — | — |
-| US Copyright Office Circulars | 58 | — | — |
-| DOJ Justice Manual | 1,548 sections, 9 Titles | — | "Justice Manual § 9-27.420" |
-| US Citizenship and Immigration Services (USCIS) Policy Manual | 456 chapters, 12 volumes | — | "USCIS Policy Manual, Vol. 12, Pt. D, Ch. 3" |
-| US Patent and Trademark Office (USPTO) Manual of Patent Examining Procedure (MPEP) | 2,024 sections, 29 chapters | — | "MPEP § 2106" |
-| USPTO Trademark Manual of Examining Procedure (TMEP) | 2,109 sections, 19 chapters | — | "TMEP § 1207.01" |
-| DFARS Procurement Guidance and Information (PGI) | 397 documents, 47 Parts | — | "PGI 225.370" |
+| Social Security Administration (SSA) Rulings | 1,115 | - | - |
+| Internal Revenue Service (IRS) Revenue Procedures/Rulings/Notices/Announcements | 1,459 | 2015-present | - |
+| Department of Justice (DOJ) & Federal Trade Commission (FTC) Merger Guidelines | - | 2023 | - |
+| DOJ Antitrust Division Leniency Policy | - | - | - |
+| US Copyright Office Circulars | 58 | - | - |
+| DOJ Justice Manual | 1,548 sections, 9 Titles | - | "Justice Manual § 9-27.420" |
+| US Citizenship and Immigration Services (USCIS) Policy Manual | 456 chapters, 12 volumes | - | "USCIS Policy Manual, Vol. 12, Pt. D, Ch. 3" |
+| US Patent and Trademark Office (USPTO) Manual of Patent Examining Procedure (MPEP) | 2,024 sections, 29 chapters | - | "MPEP § 2106" |
+| USPTO Trademark Manual of Examining Procedure (TMEP) | 2,109 sections, 19 chapters | - | "TMEP § 1207.01" |
+| DFARS Procurement Guidance and Information (PGI) | 397 documents, 47 Parts | - | "PGI 225.370" |
 | National Labor Relations Board (NLRB) General Counsel Memoranda | 300 | 1973-present | "NLRB General Counsel Memorandum GC 22-04" |
 | NLRB Division of Advice Memoranda | 339 | Rolling 10-year window | "NLRB Division of Advice Memorandum, Case No. 13-CA-182757 (Savage Fueling)" |
 | Commodity Futures Trading Commission (CFTC) Staff Letters (no-action, exemptive, interpretative, advisory) | 942 | 2008-present | "CFTC Letter No. 26-17"; filterable by regulation part or topic tag |
 | Federal Reserve Supervision and Regulation (SR) / Consumer Affairs (CA) Letters | 336 | Since 1990 | "SR 21-4 / CA 21-2" |
-| Office of the Comptroller of the Currency (OCC) Bulletins | 606 | Since 1994 | — |
+| Office of the Comptroller of the Currency (OCC) Bulletins | 606 | Since 1994 | - |
 | OCC Interpretive Letters | 448 | 1996-present | "OCC Interpretive Letter No. 1188" |
 | Federal Deposit Insurance Corporation (FDIC) Financial Institution Letters (FILs) | 2,313 | Since 1994 | Spans active + inactive FIL indexes; superseded letters queryable with `act_status=superseded` |
 | Financial Crimes Enforcement Network (FinCEN) Administrative Rulings | 86 | Since 1988 | "FinCEN Ruling FIN-2009-R001" |
-| FinCEN Guidance (alerts, advisories, notices, bulletins, fact sheets) | 127 | — | "FinCEN Guidance FIN-2019-G001" |
-| Consumer Product Safety Commission (CPSC) Office of General Counsel (OGC) Advisory Opinions | 139 | 1973-2012 | "CPSC OGC Advisory Opinion No. 82" — historical archive, not currently updated |
+| FinCEN Guidance (alerts, advisories, notices, bulletins, fact sheets) | 127 | - | "FinCEN Guidance FIN-2019-G001" |
+| Consumer Product Safety Commission (CPSC) Office of General Counsel (OGC) Advisory Opinions | 139 | 1973-2012 | "CPSC OGC Advisory Opinion No. 82" - historical archive, not currently updated |
 | Bureau of Industry and Security (BIS) Advisory Opinions (Export Administration Regulations, EAR) | 33 | 2003-2023 | "BIS Advisory Opinion, 09/25/23: Export guidance and BIS interpretation of 'gene' related to ECCN 1C353" |
 | Directorate of Defense Trade Controls (DDTC) Commodity Jurisdiction Determinations (International Traffic in Arms Regulations / US Munitions List vs. EAR) | 5,879 | 2010-present | From DDTC's own published XLSX export |
-| DDTC Guidance (incl. Guidelines for Preparing Agreements, ITAR Risk Matrix) | 7 | — | — |
-| CPSC Small Entity Compliance Guides | 34 | — | "CPSC Small Entity Compliance Guide: Safety Standard for Neck Floats (90 FR 58096)" |
-| Federal Communications Commission (FCC) Declaratory Rulings | 169 | — | "DA-26-680: {title} (07/07/26)" |
+| DDTC Guidance (incl. Guidelines for Preparing Agreements, ITAR Risk Matrix) | 7 | - | - |
+| CPSC Small Entity Compliance Guides | 34 | - | "CPSC Small Entity Compliance Guide: Safety Standard for Neck Floats (90 FR 58096)" |
+| Federal Communications Commission (FCC) Declaratory Rulings | 169 | - | "DA-26-680: {title} (07/07/26)" |
 | Federal Energy Regulatory Commission (FERC) Policy Statements | 45 | Since 1996 | "___ FERC ¶ _____" (bound-volume Reports form) |
-| Department of Energy (DOE) Appliance Standards Guidance and FAQs | 60 | — | "DOE Appliance Standards Guidance: {question} ({date})"; draft guidance excluded |
-| Health and Human Services (HHS) Office for Civil Rights (OCR) guidance on the Health Insurance Portability and Accountability Act (HIPAA) | 41 | — | — |
-| HHS OCR resolution agreements and civil money penalties | 140 | — | — |
-| HHS OCR HIPAA FAQs (deduplicated from HHS's cross-listed topic pages) | 444 | — | — |
-| Vaquill-synthesized administrative guidance | State and local tax (SALT) cap, Child Tax Credit (CTC), 401(k) limits | — | — |
+| Department of Energy (DOE) Appliance Standards Guidance and FAQs | 60 | - | "DOE Appliance Standards Guidance: {question} ({date})"; draft guidance excluded |
+| Health and Human Services (HHS) Office for Civil Rights (OCR) guidance on the Health Insurance Portability and Accountability Act (HIPAA) | 41 | - | - |
+| HHS OCR resolution agreements and civil money penalties | 140 | - | - |
+| HHS OCR HIPAA FAQs (deduplicated from HHS's cross-listed topic pages) | 444 | - | - |
+| Vaquill-synthesized administrative guidance | State and local tax (SALT) cap, Child Tax Credit (CTC), 401(k) limits | - | - |
 
 <Note>
   FERC Policy Statements are FERC's generally-applicable interpretive
-  vehicle — deliberately narrower than the docket-based eLibrary universe of
+  vehicle - deliberately narrower than the docket-based eLibrary universe of
   case-specific orders.
 </Note>
 
 ## State and territory matrix
 
 Counts are distinct sections (documents), the same figures `/statutes/coverage`
-returns. A dash means that corpus type is not yet ingested for that jurisdiction.
+returns. A dash means we do not serve that corpus for that jurisdiction.
 Sorted by statute volume.
-
-Every regulation count is ingested from that state's own official publisher and
-refreshed on the same monthly cycle; see [Refresh cadence](#refresh-cadence).
 
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
-| California | 161,439 | 76,155 | 362 | 1,521 |
-| Mississippi | 158,698 | 35,752 | 319 | 794 |
-| Texas | 122,908 | 44,256 | 401 | 1,016 |
-| Indiana | 83,148 | 37,739 | 247 | 879 |
-| Oregon | 72,664 | 48,708 | 415 | 632 |
-| Illinois | 72,456 | 54,567 | 171 | 852 |
-| New Jersey | 56,092 | 51,999 | 216 | - [4] |
-| Washington | 53,595 | 51,014 | 282 | 1,182 |
-| Nevada | 48,190 | 34,302 | 234 | 1,338 |
-| Alabama | 45,997 | 18,305 | 381 | 870 |
-| Louisiana | 43,569 | 29,213 | 328 | 481 |
-| Michigan | 40,658 | 22,963 | 307 | 1,025 |
-| New York | 40,140 | 50,266 | 212 | 1,088 |
-| South Dakota | 39,805 | 28,988 | 294 | - [3] |
-| Maryland | 39,562 | 12,829 | 312 | 1,220 |
-| Arkansas | 36,936 | 5,556 | 702 | - [1] |
-| Oklahoma | 36,287 | 57,195 | 546 | - [3] |
-| New Mexico | 34,465 | 13,270 | 299 | - [1] |
-| Colorado | 34,258 | 610 | 407 | - [2] |
-| Virginia | 33,856 | 22,395 | 134 | 358 |
-| Ohio | 33,168 | 19,914 | 267 | 1,167 |
-| Tennessee | 32,693 | - | 153 | 626 |
-| Montana | 30,524 | 32,183 | 196 | 238 |
-| South Carolina | 29,974 | 6,611 | 242 | 557 |
-| Missouri | 29,309 | 9,613 | 446 | - [5] |
-| North Dakota | 29,052 | 17,227 | 203 | 2,246 |
-| Wyoming | 28,860 | 18,554 | 315 | 1,010 |
-| Iowa | 28,223 | 26,605 | 190 | 1,294 |
-| Georgia | 28,165 | 18,889 | 366 | 1,174 |
-| Minnesota | 27,757 | 15,441 | 139 | 999 |
-| North Carolina | 26,695 | 30,248 | 155 | 495 |
-| Utah | 26,602 | - | 189 | 919 |
-| Nebraska | 25,998 | 14,044 | 448 | 734 |
-| West Virginia | 25,669 | 20,105 | 209 | 1,116 |
-| New Hampshire | 25,385 | - | 158 | 970 |
-| Maine | 25,342 | 1,718 | 153 | 722 |
-| Florida | 24,866 | 28,888 | 218 | 1,135 |
-| Kansas | 24,371 | - | 229 | 434 |
-| District of Columbia (territory) | 23,695 | - | - | 1,128 |
-| Puerto Rico (territory) | 23,649 | - | 102 | 1,528 |
-| Vermont | 23,527 | 1,050 | 120 | - [1] |
-| Massachusetts | 23,152 | 24,742 | 105 | 970 |
-| Idaho | 22,754 | 8,551 | 240 | 766 |
-| Arizona | 22,684 | 16,463 | 646 | 1,720 |
-| Delaware | 21,741 | 1,164 | 226 | 1,385 |
-| Rhode Island | 21,115 | 12,070 | 118 | 1,033 |
-| Kentucky | 20,946 | 4,854 | 274 | - [1] |
-| Hawaii | 19,437 | 26,735 | 171 | 1,259 |
-| Wisconsin | 18,158 | 17,821 | 175 | 395 |
-| Alaska | 17,942 | 24,771 | 243 | 763 |
-| Connecticut | 16,091 | 17,468 | 174 | 1,723 |
-| Pennsylvania | 15,619 | 52,702 | 213 | 1,723 |
+| California | 161,366 | 74,764 | 362 | 1,521 |
+| Texas | 122,535 | 43,489 | 401 | 1,007 |
+| Indiana | 83,148 | 37,449 | 196 | 743 |
+| Oregon | 72,664 | 48,578 | 415 | 632 |
+| Illinois | 72,251 | 52,798 | 170 | 839 |
+| New Jersey | 55,987 | 51,992 | 216 | 1,685 |
+| Washington | 51,488 | 51,026 | 282 | 1,182 |
+| Nevada | 49,747 | 34,245 | 234 | 1,338 |
+| Alabama | 45,984 | 18,864 | 381 | 870 |
+| Louisiana | 43,512 | 26,716 | 328 | 480 |
+| North Carolina | 41,290 | 45,823 | 155 | 384 |
+| Michigan | 40,889 | 22,148 | 307 | 1,025 |
+| New York | 40,146 | 50,135 | 204 | 1,088 |
+| South Dakota | 39,589 | 28,988 | 290 | - [3] |
+| Maryland | 39,552 | 12,739 | 312 | 1,220 |
+| Arkansas | 38,935 | 27,938 | 513 | - [1] |
+| Colorado | 35,758 | 610 | 424 | - [2] |
+| Oklahoma | 35,330 | 56,847 | 545 | - [3] |
+| Tennessee | 34,756 | - | 152 | 626 |
+| Virginia | 33,860 | 22,396 | 134 | 358 |
+| Ohio | 33,158 | 19,354 | 266 | 986 |
+| New Mexico | 31,109 | 13,270 | 299 | 3,462 |
+| Montana | 30,514 | 28,217 | 196 | 238 |
+| South Carolina | 29,947 | 6,606 | 245 | 557 |
+| Mississippi | 29,772 | 35,534 | 318 | 794 |
+| Missouri | 29,325 | 13,116 | 445 | - [4] |
+| Georgia | 29,212 | 18,886 | 287 | 1,090 |
+| North Dakota | 29,042 | 14,265 | 203 | 732 |
+| Iowa | 28,223 | 27,587 | 190 | 1,294 |
+| Minnesota | 27,747 | 15,391 | 138 | 958 |
+| Utah | 27,556 | 19,381 | 189 | 906 |
+| Nebraska | 27,157 | 13,624 | 448 | 702 |
+| West Virginia | 25,664 | 15,252 | 209 | 1,116 |
+| New Hampshire | 25,375 | - | 157 | 970 |
+| Maine | 25,316 | 1,717 | 153 | 722 |
+| Florida | 25,019 | 26,357 | 217 | 936 |
+| Kansas | 24,361 | 18,806 | 229 | 432 |
+| Puerto Rico (territory) | 24,305 | - | 102 | 1,528 |
+| District of Columbia (territory) | 23,694 | - | - | 987 |
+| Vermont | 23,521 | 1,047 | 120 | - [1] |
+| Massachusetts | 23,152 | 24,723 | 103 | 968 |
+| Idaho | 22,754 | 8,672 | 240 | 766 |
+| Arizona | 22,674 | 16,403 | 332 | 1,718 |
+| Delaware | 22,669 | 1,164 | 225 | 1,385 |
+| Rhode Island | 21,107 | 12,069 | 118 | 1,033 |
+| Wyoming | 20,995 | 13,345 | 315 | 996 |
+| Kentucky | 20,894 | 4,780 | 274 | 1,427 |
+| Hawaii | 19,197 | 26,649 | 171 | 1,259 |
+| Wisconsin | 18,158 | 17,823 | 175 | 395 |
+| Alaska | 17,935 | 24,761 | 243 | 763 |
+| Connecticut | 16,082 | 17,960 | 174 | 1,723 |
+| Pennsylvania | 14,617 | 52,645 | 186 | 1,727 |
 
-### Why nine jurisdictions show no court rules
+### Why six jurisdictions show no court rules
 
 Every gap is a source problem rather than a coverage decision, and each has a
 different cause. Statutes, regulations and constitutions for these
 jurisdictions are unaffected.
 
-**[1] No government-published consolidated text** — Arkansas, Kentucky, New
-Mexico, Vermont.
-Each publishes its *amendment stream* (promulgation orders, rule changes,
-proposed amendments) on the judiciary's own site, but licenses the consolidated
-current text to a commercial publisher: Thomson Reuters for Kentucky,
-LexisNexis for Vermont, and the Lexum "Norma" platform for Arkansas and New
-Mexico. Vermont's judiciary says so in its own words, noting that all Vermont
-court rules "are available through LexisNexis" and that it "does not administer
-the LexisNexis website." Arkansas is the subtle one: its rules sit at
-`opinions.arcourts.gov`, a `.gov` host, but the pages are the vendor's platform
-served under the state's domain. The rule text is a government edict and in the
-public domain; what is missing is a government-published compilation.
+**[1] No government-published consolidated text** - Arkansas, Vermont.
+Both publish their *amendment stream* (promulgation orders, rule changes,
+proposed amendments) on the judiciary's own site, but the consolidated current
+text is published only by a commercial licensee. The rule text itself is a
+government edict and in the public domain; what is missing is a
+government-published compilation.
 
-**[2] Only rule-change orders are published** — Colorado.
-The judiciary posts adopted and proposed rule changes, not consolidated text.
-The most recent government compilation is the Office of Legislative Legal
-Services' 2023 edition, with no 2024, 2025 or 2026 successor. Ingesting a
-three-year-old snapshot would serve superseded procedure as current law, so it
-is deliberately not ingested.
+**[2] Only rule-change orders are published** - Colorado.
+The judiciary posts adopted and proposed rule changes, not consolidated text,
+and the most recent government compilation is from 2023. Ingesting it would
+serve superseded procedure as current law, so it is deliberately not ingested.
 
-**[3] Already served under `corpusType=STATE`** — Oklahoma, South Dakota.
+**[3] Already served under `corpusType=STATE`** - Oklahoma, South Dakota.
 Both codify their rules of court into the statute book (Okla. Stat. tit. 12;
 SDCL tits. 15, 19 and 23A). Those rules are already in the corpus, cited the way
 the state cites them (`SDCL 15-6-12(b)`). Ingesting them again under
 `STATE_RULES` would be duplicate coverage, not new coverage.
 
-**[4] Technical block** — New Jersey.
-The judiciary publishes its rules as per-chapter PDFs, but `njcourts.gov` sits
-behind a bot-protection layer that refuses those file paths. An engineering
-problem rather than a sourcing or policy one, and it is queued.
-
-**[5] Publisher policy** — Missouri.
-Missouri prohibits automated access to its judicial websites under Court
-Operating Rule 2.02, and its `robots.txt` opts out of AI crawlers. We honor
-that. The route to Missouri coverage is a licence from the Office of State
-Courts Administrator, not a workaround.
+**[4] Publisher policy** - Missouri.
+Missouri's published court policy does not permit automated access to its
+judicial websites, and we honor it. Coverage there needs a licence from the
+state, not a workaround.
 
 ## State agency guidance
 
@@ -290,54 +289,40 @@ jurisdiction.
 | Corpus | Cadence |
 |---|---|
 | Federal | See the [Federal table](#federal): daily to weekly, and on amendment for the Constitution. |
-| State statutes | Two cadences, set by how the state publishes rather than by preference. **19 jurisdictions re-pull every 7 days** because their code can be pulled whole from the state's own publisher; the remaining scraper-crawled states re-pull monthly. Ten jurisdictions carry statutes that sit outside both drivers. See [Which statute cadence applies where](#which-statute-cadence-applies-where). |
-| State regulations | 46 states carry regulations. **15 of them are on an automatic monthly refresh**; the rest were ingested as one-time cutovers and are not yet on a recurring driver, so their text is as of the ingest date. Call `/statutes/coverage` for what is present, and treat the refresh cadence as per-state rather than uniform. |
+| State statutes | **24 jurisdictions re-pull every 7 days** because their code can be pulled whole; the rest are on a monthly cycle or carry text as of their ingest date. See [Which statute cadence applies where](#which-statute-cadence-applies-where). |
+| State regulations | 48 states carry regulations, on a monthly cycle where the publisher supports one. Treat the cadence as per-state rather than uniform, and read `lastRetrievedAt` on `/statutes/coverage` for the age of any one of them. |
 | State court rules | Monthly, for the states that carry them. Court rules change less often than statutes, and when they do the change is procedural and effective on a published date rather than immediately. |
-| State constitutions | Monthly per jurisdiction, spread across the month rather than one pass (constitutions change on the order of years via ballot-measure amendments, not weeks, so this is deliberately lower-frequency than statutes/regulations). |
+| State constitutions | Monthly per jurisdiction. Constitutions change on the order of years via ballot-measure amendments, so this is deliberately lower-frequency than statutes and regulations. |
 
 ### Which statute cadence applies where
 
-**Every 7 days — 19 jurisdictions.** California, Florida, Idaho, Illinois,
-Indiana, Iowa, Louisiana, Michigan, Missouri, Nevada, New Jersey, New York,
-Oregon, Pennsylvania, Puerto Rico, South Dakota, Virginia, Wisconsin and Wyoming
-publish their code in a form that can be pulled whole — an official bulk export,
-an API, or a complete per-section fetch — so every run re-pulls the entire code
-and reconciles it against what is stored rather than crawling for what looks
-new. Each holds a fixed slot in a rolling 7-day cycle and the dispatcher runs
-daily, so the heavy ingests (California's full-code archive, Illinois's
-per-section re-fetch) never land on the same day.
+**Every 7 days - 24 jurisdictions.** Arkansas, California, Colorado, Florida,
+Georgia, Idaho, Illinois, Indiana, Iowa, Louisiana, Michigan, Mississippi,
+Missouri, Nevada, New Jersey, New York, Oregon, Pennsylvania, Puerto Rico,
+South Dakota, Tennessee, Virginia, Wisconsin and Wyoming publish their code in a
+form that can be pulled whole - an official bulk export, an API, or a complete
+per-section fetch - so every run re-pulls the entire code and reconciles it
+against what is stored rather than crawling for what looks new.
+
+<Note>
+  **Colorado is checked weekly but re-pulled annually, and that is deliberate.**
+  The Colorado Revised Statutes are published once a year, with no process for
+  periodic updates, so Colorado's weekly slot re-pulls all 46 titles only when a
+  new edition appears.
+</Note>
 
 <Note>
   The `cadence` field on `/statutes/coverage` and `/boards` reports `monthly`
-  for every state statute board, these 19 included. Read it as the declared
+  for every state statute board, these 24 included. Read it as the declared
   staleness window a board is alerted against, not as a ceiling on how often the
   corpus is re-pulled.
 </Note>
 
-**Monthly — 19 states.** Alabama, Alaska, Arizona, Connecticut, Kentucky, Maine,
-Maryland, Massachusetts, Minnesota, Montana, Nebraska, New Hampshire, North
-Dakota, Ohio, Rhode Island, South Carolina, Texas, Washington and West Virginia
-are crawled page by page off the legislature's own site. Each state has a fixed
-day of the month, so the crawl spreads across the month rather than arriving as
-one sweep. A quarterly deep pass re-fetches all 19 in full on a single day and
-reconciles amended sections against what is already stored.
-
-**No automatic driver — 10 jurisdictions.** Colorado, Delaware, the District of
-Columbia, Hawaii, Kansas, New Mexico, North Carolina, Oklahoma, Utah and Vermont
-serve complete, queryable statutes whose text is as of its ingest date, and the
-reasons differ. Kansas's and Oklahoma's legislatures publish a `robots.txt` that
-disallows automated fetching, so we stopped re-pulling them rather than route
-around a published access policy; the text already ingested is the state's own
-and stays live. Vermont's legislature blocks our requests outright. Colorado's
-remaining fetch path reads a mirror rather than the state's own publisher, and
-we re-ingest only from the publisher. Delaware, Hawaii and Utah need browser
-automation that is not on a schedule. North Carolina and New Mexico have an
-official bulk source but are run by hand, and DC's cutover is complete with its
-recurring driver not yet wired. Colorado, Kansas, Oklahoma and Vermont are
-declared `paused` in the `freshness` array on `/statutes/coverage`, each with
-its reason; for the other six the `retrieval` array carries `lastRetrievedAt`,
-so the age of the text is a fact you can read rather than one you have to
-assume.
+**Everywhere else**, statutes are re-pulled on a monthly cycle or carry text as
+of their ingest date, which is a fact you can read rather than one you have to
+assume: `/statutes/coverage` returns `lastRetrievedAt` for every jurisdiction in
+its `retrieval` array, and anything we have deliberately stopped re-pulling is
+declared `paused` in `freshness` with its reason.
 
 <Note>
   Pennsylvania's Consolidated Statutes are complete; its older unconsolidated
