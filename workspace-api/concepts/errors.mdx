@@ -8,7 +8,7 @@ Every error is `application/problem+json`, following [RFC 9457](https://datatrac
 
 ```json
 {
-  "type": "https://docs.vaquill.ai/workspace-api/errors/insufficient-scope",
+  "type": "https://vaquill.ai/docs/workspace-api/errors/insufficient-scope",
   "title": "Insufficient scope",
   "status": 403,
   "detail": "This credential does not carry `review:run`.",
@@ -67,7 +67,7 @@ A `422` carries an `errors[]` array:
 
 ```json
 {
-  "type": "https://docs.vaquill.ai/workspace-api/errors/invalid-request",
+  "type": "https://vaquill.ai/docs/workspace-api/errors/invalid-request",
   "title": "Invalid request",
   "status": 422,
   "errors": [
