@@ -37,6 +37,30 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   </Note>
 </Update>
 
+<Update label="2026-08-24" description="Tennessee regulations added; state regulations reach 49 states">
+  ## Tennessee regulations
+
+  **Tennessee regulations are live: 11,608 rules**, taking state regulations to
+  **49 states, about 1.23M rules**. Source is the Official Compilation Rules
+  and Regulations (Tennessee Secretary of State).
+
+  ```
+  GET /us/statutes/section/STATE_TN_TCRR_C0880_05_S01   Tenn. Comp. R. & Regs. 0880-05-.01
+  ```
+
+  Metadata coverage: **98.5% statutory authority, 98.4% amendment years and
+  history, 97.6% effective date**. `priorEffectiveDates` is populated where the
+  publisher records more than one.
+
+  Watchable as a law-change board (`corpusType=STATE_REGULATION`, `state=tn`),
+  refreshing monthly.
+
+  <Note>
+    Section numbers are zero-padded as Tennessee cites them (`0880-05-.01`, not
+    `0880-5-.01`). Filter `sectionNumber` with the padded form.
+  </Note>
+</Update>
+
 <Update label="2026-08-23" description="State regulations reach 48 states, court rules reach 46 jurisdictions">
   ## Regulations and court rules move onto official sources
 
