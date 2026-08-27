@@ -7,6 +7,72 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-08-27" description="State regulations reach all 52 jurisdictions; corpus passes 4.1M sections">
+  ## Regulations for every US jurisdiction
+
+  **State regulations now cover all 52 jurisdictions, 50 states plus DC and
+  Puerto Rico: about 1.51M rules**, up from 48 states and about 1.22M.
+  No jurisdiction is now without a regulations corpus.
+
+  Three are entirely new, each from the jurisdiction's own publisher:
+
+  | Jurisdiction | Sections | Publisher |
+  |---|---|---|
+  | Puerto Rico | 124,281 | Registro de Reglamentos, Departamento de Estado |
+  | New Hampshire | 38,491 | Office of Legislative Services, Administrative Rules |
+  | District of Columbia | 27,401 | Office of Documents and Administrative Issuances |
+
+  DC's online edition is the official copy by its own rule, 1 DCMR 300.7.
+  Puerto Rico's reglamentos are published in Spanish, the language they are
+  enacted in, and `language_code` is set accordingly; free access is required by
+  LPAU 2.10, 3 L.P.R.A. 9620.
+
+  ## Ten jurisdictions re-sourced onto their own government publisher
+
+  Each of these now comes from the jurisdiction's own official publisher, with
+  amendment history and a resolvable `sourceUrl` on every section:
+
+  | Jurisdiction | Sections | Jurisdiction | Sections |
+  |---|---|---|---|
+  | New Jersey | 53,319 | Alaska | 25,717 |
+  | Mississippi | 56,800 | Arizona | 23,099 |
+  | Oregon | 40,790 | Georgia | 19,795 |
+  | Nevada | 30,785 | Rhode Island | 5,569 |
+  | Hawaii | 27,121 | Vermont | 1,116 |
+
+  Oklahoma, Pennsylvania and Massachusetts are not yet re-sourced. Each is
+  documented as such rather than partially ingested.
+
+  ## Coverage corrections
+
+  **New Mexico** was serving 9 of the 22 NMAC titles. All 22 are now live, at
+  3,116 parts and 36,310 sections, up from 1,074 parts.
+
+  **Colorado** was serving 610 of the 1,155 CCR rules its publisher lists. All
+  1,155 are now live, including Medicaid, workers' compensation, taxation, water
+  quality and election rules, which were absent entirely. Colorado amendment
+  coverage goes from none to 99%.
+
+  ## Amendment history across eight more states
+
+  `lastAmendedYear` and `amendmentYears` are now populated for Idaho, Illinois,
+  Minnesota, Ohio, South Carolina, Virginia, Washington and Wisconsin, where the
+  publisher records them. Roughly 350,000 sections gained derived amendment
+  history. Texas and Iowa are unchanged: their publishers do not record an
+  amendment for every rule, and the API reports null rather than inferring one.
+
+  ## Corpus total
+
+  **Over 4.1M distinct sections, indexed as over 11.9M retrieval passages**, up
+  from 3.9M and 11.1M.
+
+  <Note>
+    Rhode Island and Colorado are currently keyed one section per Part and per
+    rule respectively, rather than per subsection. Citation lookup and search are
+    unaffected; a finer-grained key for both is in progress.
+  </Note>
+</Update>
+
 <Update label="2026-08-23" description="New corpusType: SESSION_LAW, the US Statutes at Large">
   ## Read a law as Congress enacted it, not as it was codified
 
@@ -225,8 +291,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   SC, TN, UT, VA, WA, WI, WV, WY.
 
   Every jurisdiction is ingested from its own court system or legislature,
-  and New York was re-sourced onto `nycourts.gov` from a third-party
-  publisher. Coverage spans civil, criminal, appellate, evidence, professional
+  New York included, which is served from `nycourts.gov`.
+  Coverage spans civil, criminal, appellate, evidence, professional
   conduct and local rules; the District of Columbia alone carries 21 separately
   numbered rule families across its Superior Court divisions.
 
@@ -260,8 +326,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   and `GET /statutes/coverage` always returns the live figures.
 
   Every document is sourced from the issuing regulator's own government site. Where a
-  state's official index is itself incomplete, the confirmed subset ships and the gap
-  is recorded rather than backfilled from a third-party aggregator.
+  state's official index is itself incomplete, the confirmed subset ships and the
+  gap is recorded.
 
   A small number of states publish no browsable bulletin archive at all; those are
   documented as such rather than partially ingested.

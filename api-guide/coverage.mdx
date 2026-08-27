@@ -6,7 +6,7 @@ icon: "map-location-dot"
 
 Every US jurisdiction and corpus type the API has ingested: federal law, state statutes, constitutions, court rules, and regulations, each scoped with the `corpusType` filter.
 
-**Over 3.9M distinct sections, indexed as over 11.1M retrieval passages.** Counts on this page were measured on **2026-08-24**; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
+**Over 4.1M distinct sections, indexed as over 11.9M retrieval passages.** Counts on this page were measured on **2026-08-27**; query them live from `GET /statutes/coverage` and `GET /statutes/states`.
 
 <Note>
   Counts here are **distinct sections**, one per provision or document, matching what `GET /statutes/coverage` returns. Longer documents split into several passages for retrieval, so the index holds more entries than sections, over half of them Federal Register rules at 13-15 passages each.
@@ -33,7 +33,7 @@ Every US jurisdiction and corpus type the API has ingested: federal law, state s
     **46 jurisdictions** (44 states + DC + Puerto Rico), ~47.6K rules (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly, each taken from the edition that jurisdiction designates as its official text. Queryable via the API (`corpusType=STATE_RULES`).
   </Card>
   <Card title="State regulations" icon="clipboard-list">
-    **48 states**, **~1.22M rules**, with effective dates and statutory authority. Queryable via the API (`corpusType=REGULATION`).
+    **All 52 jurisdictions** (50 states + DC + Puerto Rico), **~1.51M rules**, with effective dates and statutory authority. Queryable via the API (`corpusType=REGULATION`).
   </Card>
 </CardGroup>
 
@@ -132,11 +132,11 @@ Sorted by statute volume.
 | California | 161,366 | 74,764 | 362 | 1,521 |
 | Texas | 122,535 | 43,489 | 401 | 1,007 |
 | Indiana | 83,148 | 37,449 | 196 | 743 |
-| Oregon | 72,664 | 48,578 | 415 | 632 |
+| Oregon | 72,664 | 40,789 | 415 | 632 |
 | Illinois | 72,251 | 52,798 | 170 | 839 |
-| New Jersey | 55,987 | 51,992 | 216 | 1,685 |
+| New Jersey | 55,987 | 53,319 | 216 | 1,685 |
 | Washington | 51,488 | 51,026 | 282 | 1,182 |
-| Nevada | 49,747 | 34,245 | 234 | 1,338 |
+| Nevada | 49,747 | 30,785 | 234 | 1,338 |
 | Alabama | 45,984 | 18,864 | 381 | 870 |
 | Louisiana | 43,512 | 26,716 | 328 | 480 |
 | North Carolina | 41,290 | 45,823 | 155 | 384 |
@@ -144,41 +144,41 @@ Sorted by statute volume.
 | New York | 40,146 | 52,312 | 204 | 1,088 |
 | South Dakota | 39,589 | 28,988 | 290 | - [3] |
 | Maryland | 39,552 | 12,739 | 312 | 1,220 |
-| Arkansas | 38,935 | 27,938 | 513 | - [1] |
-| Colorado | 35,758 | 610 | 424 | - [2] |
+| Arkansas | 38,935 | 27,837 | 513 | - [1] |
+| Colorado | 35,758 | 1,155 | 424 | - [2] |
 | Oklahoma | 35,330 | 56,847 | 545 | - [3] |
 | Tennessee | 34,756 | 11,608 | 152 | 626 |
 | Virginia | 33,860 | 22,396 | 134 | 358 |
 | Ohio | 33,158 | 19,354 | 266 | 986 |
-| New Mexico | 31,109 | 13,270 | 299 | 3,462 |
+| New Mexico | 31,109 | 36,310 | 299 | 3,462 |
 | Montana | 30,514 | 28,217 | 196 | 238 |
-| South Carolina | 29,947 | 6,606 | 245 | 557 |
-| Mississippi | 29,772 | 35,534 | 318 | 794 |
+| South Carolina | 29,947 | 6,189 | 245 | 557 |
+| Mississippi | 29,772 | 56,800 | 318 | 794 |
 | Missouri | 29,325 | 13,116 | 445 | - [4] |
-| Georgia | 29,212 | 18,886 | 287 | 1,090 |
-| North Dakota | 29,042 | 14,265 | 203 | 732 |
+| Georgia | 29,212 | 19,795 | 287 | 1,090 |
+| North Dakota | 29,042 | 14,343 | 203 | 732 |
 | Iowa | 28,223 | 27,587 | 190 | 1,294 |
 | Minnesota | 27,747 | 15,391 | 138 | 958 |
 | Utah | 27,556 | 19,381 | 189 | 906 |
 | Nebraska | 27,157 | 13,624 | 448 | 702 |
 | West Virginia | 25,664 | 15,252 | 209 | 1,116 |
-| New Hampshire | 25,375 | - | 157 | 970 |
+| New Hampshire | 25,375 | 38,491 | 157 | 970 |
 | Maine | 25,316 | 1,717 | 153 | 722 |
 | Florida | 25,019 | 26,357 | 217 | 936 |
+| Arizona | 24,956 | 23,099 | 332 | 1,719 |
 | Kansas | 24,361 | 18,806 | 229 | 432 |
-| Puerto Rico (territory) | 24,305 | - | 102 | 1,528 |
-| District of Columbia (territory) | 23,694 | - | - | 987 |
-| Vermont | 23,521 | 1,047 | 120 | - [1] |
+| Puerto Rico (territory) | 24,305 | 124,281 | 102 | 1,528 |
+| District of Columbia (territory) | 23,694 | 27,401 | - | 987 |
+| Vermont | 23,521 | 1,116 | 120 | - [1] |
 | Massachusetts | 23,152 | 24,723 | 103 | 968 |
 | Idaho | 22,754 | 8,672 | 240 | 766 |
-| Arizona | 22,674 | 16,403 | 332 | 1,718 |
 | Delaware | 22,669 | 1,164 | 225 | 1,385 |
-| Rhode Island | 21,107 | 12,069 | 118 | 1,033 |
+| Rhode Island | 21,107 | 5,569 | 118 | 1,033 |
 | Wyoming | 20,995 | 13,345 | 315 | 996 |
 | Kentucky | 20,894 | 4,780 | 274 | 1,427 |
-| Hawaii | 19,197 | 26,649 | 171 | 1,259 |
+| Hawaii | 19,197 | 27,121 | 171 | 1,259 |
 | Wisconsin | 18,158 | 17,823 | 175 | 395 |
-| Alaska | 17,935 | 24,761 | 243 | 763 |
+| Alaska | 17,935 | 25,717 | 243 | 763 |
 | Connecticut | 16,082 | 17,960 | 174 | 1,723 |
 | Pennsylvania | 14,617 | 52,645 | 186 | 1,727 |
 
@@ -290,7 +290,7 @@ jurisdiction.
 |---|---|
 | Federal | See the [Federal table](#federal): daily to weekly, and on amendment for the Constitution. |
 | State statutes | **24 jurisdictions re-pull every 7 days** because their code can be pulled whole; the rest are on a monthly cycle or carry text as of their ingest date. See [Which statute cadence applies where](#which-statute-cadence-applies-where). |
-| State regulations | 48 states carry regulations, on a monthly cycle where the publisher supports one. Treat the cadence as per-state rather than uniform, and read `lastRetrievedAt` on `/statutes/coverage` for the age of any one of them. |
+| State regulations | All 52 jurisdictions carry regulations, on a monthly cycle where the publisher supports one. Treat the cadence as per-state rather than uniform, and call [`GET /boards`](/api-reference/boards) for the age of any one of them: it is free and carries `lastRetrievedAt`, `cadence` and `retrievalStatus` per source. `/statutes/coverage` reports what each corpus is *current through* in the publisher's own words, which is a different question and is not available for every state. |
 | State court rules | Monthly, for the states that carry them. Court rules change less often than statutes, and when they do the change is procedural and effective on a published date rather than immediately. |
 | State constitutions | Monthly per jurisdiction. Constitutions change on the order of years via ballot-measure amendments, so this is deliberately lower-frequency than statutes and regulations. |
 
