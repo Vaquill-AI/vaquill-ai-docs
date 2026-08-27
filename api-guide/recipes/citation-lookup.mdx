@@ -28,8 +28,19 @@ to expand a citation your users typed into full, linkable law.
     (with or without periods, and with a pinpoint like `FAR 52.219-14(b)`) —
     resolves straight into the existing CFR Title 48 records, no separate corpus
 
+  The form a state's own courts print resolves too, not just the Bluebook form:
+  `O.C.G.A. § 51-1-6`, `RCW 59.18.060`, `R.C. 2305.10`, `§ 292.290, RSMo`.
+  The safest string to send is the `citation` value we returned to you.
+
   Scope `corpusType` (and `state`) when the citation names the corpus, so a
-  same-numbered section in another corpus cannot rank first.
+  same-numbered section in another corpus cannot rank first. Scope is a
+  **constraint, not a hint**: a citation naming a different jurisdiction
+  returns `resolved: false` rather than being forced into the scope, so leave
+  the scope off unless you are disambiguating.
+
+  See [Citation Formats](/api-guide/concepts/citation-formats) for every form
+  that resolves, the shared acronyms refused on purpose, and how `state`
+  unlocks them.
 </Tip>
 
 <Warning>

@@ -1,0 +1,204 @@
+---
+title: "Citation Formats"
+description: "Which citation strings resolve, why the form your state prints is the safest one to send, and which forms are refused on purpose"
+icon: "quote-left"
+---
+
+`GET /statutes/resolve` turns a citation string into one exact section. This page
+answers the two questions that decide whether it works for you: **what to send**,
+and **when to scope it**.
+
+## The short answer: send back the citation we gave you
+
+Every section we return carries a `citation` field. That string is the form the
+publishing jurisdiction itself prints, and feeding it back is guaranteed to
+resolve to the same section.
+
+```json Result from /statutes/search
+{
+  "actId": "STATE_GA_T51_C1_S51-1-6",
+  "citation": "O.C.G.A. § 51-1-6",
+  "sectionTitle": "Recovery of damages upon breach of legal duty."
+}
+```
+
+```bash Feed it straight back
+curl -G https://api.vaquill.ai/api/v1/us/statutes/resolve \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "cite=O.C.G.A. § 51-1-6"
+```
+
+If you are storing citations in your own database, store the `citation` value we
+return rather than a form you construct. It round-trips by definition, and it
+survives us adding jurisdictions.
+
+## You do not have to send Bluebook
+
+Both the Bluebook form and the form the state's own courts use resolve to the
+same section. You do not need a per-state table.
+
+| You send | Resolves to |
+|---|---|
+| `Ga. Code Ann. § 51-1-6` **or** `O.C.G.A. § 51-1-6` | the same Georgia section |
+| `Wash. Rev. Code § 59.18.060` **or** `RCW 59.18.060` | the same Washington section |
+| `Ohio Rev. Code § 2305.10` **or** `R.C. 2305.10` | the same Ohio section |
+| `Tenn. Code Ann. § 49-1-602` **or** `T.C.A. § 49-1-602` | the same Tennessee section |
+| `Alaska Stat. § 11.76.115` **or** `AS 11.76.115` | the same Alaska section |
+
+Also accepted, because real documents contain them:
+
+- **The code name after the section.** `§ 292.290, RSMo` and `§ 162.41, Fla. Stat.`
+  resolve exactly like the name-first forms.
+- **An edition year inside the code name.** `Ala. Code 1975, § 17-14-2` and
+  `NMSA 1978, § 22-23-1.1`. The year names the edition, not the section, and is
+  ignored.
+- **Doubled section symbols.** `Cal. Civ. Code §§ 1950.5`.
+- **A trailing period**, so a citation lifted out of a sentence works:
+  `42 U.S.C. § 1983.`
+- **Typographic dashes.** Text copied from a PDF or Word document carries
+  non-breaking hyphens, figure dashes and minus signs instead of `-`. They are
+  invisible on screen and they are normalized for you.
+- **Pinpoint subsections.** `42 U.S.C. § 1983(b)(2)` resolves to the parent
+  section and echoes `(b)(2)` back in `subsection`.
+
+## Forms that are refused on purpose
+
+Some acronyms belong to two jurisdictions. For those, `resolve` returns
+`resolved: false` rather than guessing.
+
+| Acronym | Claimed by |
+|---|---|
+| `MCA` | Montana **and** Mississippi Code Annotated |
+| `IC` | Indiana **and** Idaho Code |
+| `G.S.` | North Carolina **and** Connecticut General Statutes |
+| `G.L.` | Massachusetts **and** Rhode Island General Laws |
+| bare `R.S.` | Louisiana **and** New Jersey Revised Statutes |
+
+<Warning>
+  `resolved: false` on one of these is the correct answer, not a gap. A wrong
+  section is a wrong statement of the law; an unresolved citation is a question
+  you can answer.
+</Warning>
+
+**Pass `state` and they resolve.** You have told us which jurisdiction you mean,
+so there is nothing left to guess:
+
+```bash
+# resolved: false - MCA is Montana AND Mississippi
+--data-urlencode "cite=MCA § 27-2-204"
+
+# resolves - Mont. Code Ann. § 27-2-204
+--data-urlencode "cite=MCA § 27-2-204" -d "state=mt"
+```
+
+The same applies to a form carrying no jurisdiction at all: Virginia's own
+in-state form is the bare word `Code`, so `cite=Code § 8.01-243&state=va`
+resolves while the string alone cannot.
+
+Connecticut and North Carolina both print `General Statutes § ...`, which names
+a compilation but no jurisdiction. Those resolve the same way:
+`cite=General Statutes § 42a-1-101&state=ct`.
+
+## Court rules
+
+Many states cite a court rule with no jurisdiction token at all, because inside
+that state none is needed. Those resolve on the set acronym alone:
+
+| You send | Resolves to |
+|---|---|
+| `MCR 3.709` | Michigan Court Rules |
+| `JuCR 7.15` | Washington Juvenile Court Rules |
+| `N.D.R.Civ.P. 64` | North Dakota Rules of Civil Procedure |
+| `M. R. Civ. P. 17` | Montana Rules of Civil Procedure |
+| `Rule 901, SCRE` | South Carolina Rules of Evidence |
+
+Punctuation and case do not matter: `I.I.R. 4`, `IIR 4` and `iir 4` are the same
+citation.
+
+<Warning>
+  Some set acronyms are shared. `CR` is both the Kentucky Civil Rules and the
+  Washington Superior Court Civil Rules; `RAP` belongs to Washington, Kentucky
+  and West Virginia; `TCR` to Oregon and West Virginia. These return
+  `resolved: false` until you pass `state`, and they are refused on the
+  acronym's own ambiguity, **not** on whether we happen to hold that rule
+  number for one state only. A gap in our coverage must never read as
+  disambiguation.
+</Warning>
+
+```bash
+--data-urlencode "cite=CR 56"                 # resolved: false - CR is KY and WA
+--data-urlencode "cite=CR 56" -d "state=wa"   # Wash. Super. Ct. Civ. R. 56
+```
+
+## Scoping: a constraint, not a hint
+
+`state` and `corpusType` **narrow** a lookup. They never redirect one.
+
+<Steps>
+  <Step title="A citation that agrees with the scope resolves normally">
+    `cite=O.C.G.A. § 51-1-6&state=ga&corpusType=STATE` returns the same section
+    as the unscoped call.
+  </Step>
+  <Step title="A citation that disagrees returns resolved: false">
+    `cite=O.C.G.A. § 51-1-6&state=tx` does **not** find a Texas section that
+    happens to share the number. It returns `resolved: false`.
+  </Step>
+</Steps>
+
+That refusal is the point. Scope when a citation form is shared across
+jurisdictions or corpora, which is exactly when a bare lookup could pick the
+wrong one:
+
+- `8 CCR 1206-2` is Colorado and `22 CCR 76227` is California. The acronym alone
+  cannot say which, so pass `state`.
+- A rule number and a statute section often collide. If your citation names a
+  court rule, pass `corpusType=STATE_RULES` so a same-numbered statute cannot
+  answer instead.
+
+<Tip>
+  If you are not disambiguating, leave the scope off. Scoping an unambiguous
+  citation cannot improve the answer, and a scope that disagrees with the
+  citation turns a good result into `resolved: false`.
+</Tip>
+
+## Scoping on search is a different thing
+
+On `POST /statutes/search`, `state` and `corpusType` filter the candidate pool
+before ranking. Two consequences worth knowing:
+
+- A **recognized citation** passed as the `query` is pinned to rank 1 at
+  `relevanceScore: 1.0`, scoped or not. If you want one exact section, prefer
+  `/statutes/resolve`: it is cheaper and it tells you whether the citation is
+  real.
+- For a **natural-language query**, scoping changes which candidates are
+  considered, so scoped and unscoped searches legitimately return different
+  result sets. That is filtering working, not a bug.
+
+## When something does not resolve
+
+<Steps>
+  <Step title="Check it is not a deliberate refusal">
+    Compare against the ambiguous-acronym table above. If it is on that list,
+    add `state`.
+  </Step>
+  <Step title="Drop the scope">
+    A scope that disagrees with the citation returns `resolved: false`. Retry
+    without `state` and `corpusType` to find out whether the scope was the
+    problem.
+  </Step>
+  <Step title="Search for it instead">
+    `POST /statutes/search` with the citation as the `query` will surface the
+    section even when the string is not a form we parse, and the result carries
+    the `citation` we do recognize.
+  </Step>
+  <Step title="Tell us">
+    A citation that a jurisdiction genuinely prints and that we cannot read back
+    is a defect on our side, not yours. Send it to
+    [support@vaquill.ai](mailto:support@vaquill.ai) and we will fix the parser.
+  </Step>
+</Steps>
+
+<Note>
+  Case law citations are not covered here. The Data API serves statutes,
+  regulations, constitutions and court rules; it is not a case law API.
+</Note>

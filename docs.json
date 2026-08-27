@@ -401,6 +401,7 @@
             "pages": [
               "api-guide/concepts/corpus-types",
               "api-guide/concepts/jurisdictions",
+              "api-guide/concepts/citation-formats",
               "api-guide/concepts/section-ids",
               "api-guide/concepts/status-and-currency",
               "api-guide/concepts/amendment-history",
