@@ -405,6 +405,7 @@
               "api-guide/concepts/section-ids",
               "api-guide/concepts/status-and-currency",
               "api-guide/concepts/amendment-history",
+              "api-guide/concepts/response-fields",
               "api-guide/concepts/formats"
             ]
           },

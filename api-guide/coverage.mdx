@@ -45,14 +45,14 @@ them.
 
 | Corpus | Sections | Refresh |
 |---|---|---|
-| United States Code (USC) | 54,853 | Weekly |
+| United States Code (USC) - 2024 edition, current through 2025-01-06 | 60,170 | Checked weekly for a new edition |
 | Statutes at Large - federal public and private laws **as enacted**, 1999-2026 (5,256 laws) | 110,287 | Weekly |
 | Code of Federal Regulations (CFR) | 219,127 | Daily |
 | ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 (within CFR above) | 5,537 | Daily |
 | ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 (within CFR above) | 2,877 | Daily |
 | Federal Register agency rules (final + proposed), 1994-present | 202,526 | Weekly |
 | Executive Orders (Federal Register Presidential Documents), 2015-present | 3,820 | Daily |
-| Agency guidance - 30 named sources across 16 agencies (see table below) | 21,741 | Weekly |
+| Agency guidance - 34 named sources across 21 agencies (see table below) | 21,741 | Weekly |
 | Federal Rules of Procedure - Civil (FRCP), Criminal (FRCrP), Evidence (FRE), Appellate (FRAP) and Bankruptcy (FRBP), incl. Supplemental Admiralty and Social Security Rules - and Rules of the Supreme Court of the United States | 589 | Monthly |
 | US Constitution | 74 | On amendment |
 | US Sentencing Guidelines (U.S.S.G.) | 302 | Annual |
@@ -77,14 +77,19 @@ them.
 </Note>
 
 **Agency guidance** is a registry of named sources. Each is independently
-filterable by its own `category`, but all sit behind the single
+filterable with `source`, but all sit behind the single
 `corpusType=AGENCY_GUIDANCE` token - new sources land as one registry entry,
 not a new API token.
+
+The table below has 31 rows for 34 filterable sources: the IRS row covers four
+of them. `GET /statutes/coverage` names every source in its `AGENCY_GUIDANCE`
+legend, and the `source` filter's own error message lists each code with its
+full name, so neither can fall behind this page.
 
 | Source | Docs | Coverage | Citable as |
 |---|---|---|---|
 | Social Security Administration (SSA) Rulings | 1,115 | - | - |
-| Internal Revenue Service (IRS) Revenue Procedures/Rulings/Notices/Announcements | 1,459 | 2015-present | - |
+| Internal Revenue Service (IRS) Revenue Procedures/Rulings/Notices/Announcements - four separately filterable sources (`irs_rev_proc`, `irs_rev_rul`, `irs_notice`, `irs_announcement`) | 1,459 | 2015-present | - |
 | Department of Justice (DOJ) & Federal Trade Commission (FTC) Merger Guidelines | - | 2023 | - |
 | DOJ Antitrust Division Leniency Policy | - | - | - |
 | US Copyright Office Circulars | 58 | - | - |
@@ -179,7 +184,7 @@ Sorted by statute volume.
 | Hawaii | 19,197 | 27,121 | 171 | 1,259 |
 | Wisconsin | 18,158 | 17,823 | 175 | 395 |
 | Alaska | 17,935 | 25,717 | 243 | 763 |
-| Connecticut | 16,082 | 17,960 | 174 | 1,723 |
+| Connecticut | 16,082 | 18,012 | 174 | 1,723 |
 | Pennsylvania | 14,617 | 52,645 | 186 | 1,727 |
 
 ### Why six jurisdictions show no court rules

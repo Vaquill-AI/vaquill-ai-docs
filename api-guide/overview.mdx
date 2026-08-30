@@ -17,24 +17,36 @@ Every path is prefixed with `/api/v1`. Every result carries a citation, status a
 | Hybrid **semantic + keyword** search, scoped by corpus, jurisdiction, and code | `POST /statutes/search` |
 | Resolve a **Bluebook citation** to its exact section | `GET /statutes/resolve` |
 | **Browse the hierarchy** (titles to chapters or parts to sections) in statutory order | `GET /statutes/divisions` |
-| Section **metadata**, **full text**, and **neighboring sections** | `GET /statutes/section/{actId}`, `.../body`, `.../related` |
-| **Batch** metadata for up to 50 sections in one call | `POST /statutes/sections` |
-| Discover live **coverage**: jurisdictions, codes, and the corpus matrix | `GET /statutes/states`, `/codes`, `/coverage` |
+| Section **metadata**, **full text**, and **neighboring sections** | `GET /us/statutes/section/{actId}`, `.../body`, `.../related` |
+| **Defined terms** resolved from the chapter's definitions section | `GET /us/statutes/section/{actId}/definitions` |
+| The **same subject in other states**, for a 50-state survey | `GET /us/statutes/section/{actId}/cross-state` |
+| Sections that **cite this one**, and **observed changes** to it | `GET /us/statutes/section/{actId}/cited-by`, `.../changes` |
+| **Batch** metadata for up to 50 sections in one call | `POST /us/statutes/sections` |
+| Discover live **coverage**: jurisdictions, codes, and the corpus matrix | `GET /us/statutes/coverage`, `/laws` |
 | **Subscribe** to a jurisdiction or corpus and get a webhook or email when it changes, section by section, with before/after text on amendments | `GET /boards`, `POST /watches`, `GET /watches/{id}/changes`, `.../diff` |
 
 ### Credit costs
 
 | Endpoint | Credits |
 |---|---|
-| `POST /statutes/search` | 4 |
-| `GET /statutes/section/{actId}/body` | 6 |
-| `GET /statutes/section/{actId}` | 2 |
-| `GET /statutes/section/{actId}/related` | 2 |
-| `GET /statutes/resolve` | 2 |
-| `POST /statutes/sections` (batch) | 2 per section returned; misses in `notFound` are not charged |
-| `GET /statutes/divisions` | 1 |
-| `GET /statutes/states`, `/codes`, `/coverage`, `/laws` | Free |
-| `/boards` and `/watches` (Law Change Alerts, every endpoint) | Free |
+| `GET /us/statutes/section/{actId}/body` | 6 |
+| `GET /us/statutes/section/{actId}/cross-state` | 6 |
+| `POST /us/statutes/search` | 4 |
+| `GET /us/statutes/section/{actId}/definitions` | 4 |
+| `GET /watches/{id}/changes/{changeId}/diff` | 4 |
+| `GET /us/statutes/section/{actId}` | 2 |
+| `GET /us/statutes/section/{actId}/related` | 2 |
+| `GET /us/statutes/section/{actId}/cited-by` | 2 |
+| `GET /us/statutes/resolve` | 2 |
+| `POST /us/statutes/sections` (batch) | 2 per section returned; misses in `notFound` are not charged |
+| `GET /us/statutes/divisions` | 1 |
+| `GET /us/statutes/section/{actId}/changes` | 1 |
+| `GET /us/statutes/coverage`, `/laws`, `GET /api-credits/pricing` | Free |
+| `/boards` and `/watches` (Law Change Alerts) | Free **except** the `/diff` call above |
+
+This table is a snapshot. `GET /api-credits/pricing` returns the live per-endpoint
+matrix, needs no authentication, and costs nothing, so prefer it over hardcoding
+these numbers.
 
 <Note>
   `creditsConsumed` on every response reports what was actually billed, which
@@ -44,9 +56,16 @@ Every path is prefixed with `/api/v1`. Every result carries a citation, status a
 
 ### Corpora
 
-**Federal:** US Code (`USC`), Code of Federal Regulations (`CFR`), Federal Register agency rules (`FEDERAL_REGISTER`), agency guidance (`AGENCY_GUIDANCE`), executive orders (`EXECUTIVE_ACTION`), Federal Rules of Procedure (`FEDERAL_RULES`), and the US Constitution (`CONSTITUTION`).
+**Federal:** US Code (`USC`), Code of Federal Regulations (`CFR`), Federal Register agency rules (`FEDERAL_REGISTER`), agency guidance (`AGENCY_GUIDANCE`), executive orders (`EXECUTIVE_ACTION`), Federal Rules of Procedure (`FEDERAL_RULES`), the US Constitution (`CONSTITUTION`), session laws as enacted (`SESSION_LAW`), US Sentencing Guidelines (`SENTENCING_GUIDELINES`), and US tax treaties (`US_TAX_TREATY`).
 
-**State, across 52 jurisdictions:** statutory codes (`STATE`), administrative regulations (`REGULATION`), constitutions (`STATE_CONSTITUTION`), and court rules (`STATE_RULES`).
+**State, across 52 jurisdictions:** statutory codes (`STATE`), administrative regulations (`REGULATION`), constitutions (`STATE_CONSTITUTION`), court rules (`STATE_RULES`), and state regulator guidance (`STATE_AGENCY_GUIDANCE`).
+
+`STATE_AGENCY_GUIDANCE` is worth calling out because it is the newest and least
+expected: **13,000+ state Department of Insurance bulletins and circular letters
+across 49 jurisdictions**, going back to 1924. A bulletin interprets the law
+rather than being the law, which is why it is a separate token from
+`REGULATION`. It is the corpus to reach for on an insurance compliance or
+50-state survey question.
 
 Scope any search with the `corpusType` token. See [Corpus Types](/api-guide/concepts/corpus-types) for what each holds.
 

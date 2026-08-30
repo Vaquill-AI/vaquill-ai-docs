@@ -9,27 +9,54 @@ We parse that line into structured fields so you can filter and sort on when a s
 
 These fields appear on `POST /statutes/search`, `GET /statutes/section/{actId}`, and `POST /statutes/sections`.
 
+<Note>
+They are populated for statute corpora, where the publisher prints a credit line.
+Two corpora are different by nature rather than by coverage:
+
+- **Final rules** in `FEDERAL_REGISTER` carry the year the rule was published, because that is the year it amended the CFR.
+- **Proposed rules** carry no amendment years at all. A proposal amended nothing, so a year window returns none of them by design.
+
+See [Response Fields](/api-guide/concepts/response-fields) for which fields apply to which corpus.
+</Note>
+
 ## The fields
 
 | Field | Meaning |
 |-------|---------|
-| `amendmentYears` | Sorted, distinct years credited to the section, including the original enactment. |
-| `amendmentsCount` | How many distinct years are in `amendmentYears`. |
+| `amendmentYears` | Distinct years credited to the section, **newest first**. |
+| `amendmentsCount` | How many changes the publisher recorded. See the note below: this is **not** always the length of `amendmentYears`. |
 | `lastAmendedYear` | The most recent year in `amendmentYears`. |
 | `amendmentHistory` | Structured entries, where the publisher records them separately from the credit line. |
 | `currentThrough` | The date the publisher states the text is current through. |
 
-`amendmentYears` includes the enactment year, so a section enacted in 1991 and never amended reports `[1991]` with `amendmentsCount: 1`.
+<Warning>
+**`amendmentsCount` is a count of amending events, not a count of years.**
+
+For statutes the two almost always agree. For **regulations and court rules** they often do not, because those publishers record one entry per amending action and two actions can fall in the same year. A section amended twice in 2019 reports `amendmentYears: [2019]` with `amendmentsCount: 2`.
+
+Treat `amendmentsCount` as "how many times it changed" and `amendmentYears.length` as "how many distinct years it changed in". If you need the second, take the length of the array rather than reading the count.
+</Warning>
+
+`amendmentYears` is returned newest first, so `amendmentYears[0]` and `lastAmendedYear` agree. Do not rely on `amendmentYears[-1]` being the latest.
 
 ```json
 {
   "actId": "STATE_LA_Crevised-statutes_T39_S54",
   "citation": "La. Rev. Stat. § 39:54",
-  "amendmentYears": [1989, 1993, 1997, 2003, 2011, 2013, 2015],
+  "amendmentYears": [2015, 2013, 2011, 2003, 1997, 1993, 1989],
   "amendmentsCount": 7,
   "lastAmendedYear": 2015
 }
 ```
+
+### Whether the enactment year is included depends on the corpus
+
+For **statutes**, `amendmentYears` includes the original enactment, so a section enacted in 1991 and never amended reports `[1991]` with `amendmentsCount: 1`.
+
+Two corpora deliberately differ, because their publishers distinguish adoption from amendment and so do we:
+
+- **State constitutions** exclude the adoption date. A section adopted and never amended reports `amendmentYears: []` with the adoption date preserved in the credit text, so "adopted, never amended" is not mistaken for "we found nothing".
+- **Some state regulations** (Oklahoma among them) include the adoption year in `amendmentYears` but leave `lastAmendedYear` **null** until the section is actually amended. A null `lastAmendedYear` beside a populated `amendmentYears` therefore means "adopted, not yet amended", not missing data.
 
 ## Where the years come from
 
@@ -38,11 +65,11 @@ Every year we report is one the publisher printed in that section's own credit l
 ```
 Ark. Code Ann. 14-284-224
   "Acts 1991, No. 1028, § 2; 2005, No. 2145, § 55; 2007, No. 1049, § 77."
-  -> amendmentYears [1991, 2005, 2007]
+  -> amendmentYears [2007, 2005, 1991]
 
 Ind. Code 12-15-20-2
   "As added by P.L.2-1992, SEC.9. Amended by P.L.27-1992, SEC.23; ... P.L.205-2013, SEC.203."
-  -> amendmentYears [1992, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2011, 2013]
+  -> amendmentYears [2013, 2011, 2007, 2003, 2002, 2001, 2000, 1999, 1998, 1997, 1992]
 ```
 
 Each state prints its credits differently, so each has its own parser.

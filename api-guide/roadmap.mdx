@@ -32,6 +32,28 @@ currently planned: Pennsylvania, Colorado and Louisiana.
 
 Pennsylvania's Consolidated Statutes are complete; its older unconsolidated (Purdon's) statutes are a separate later addition, prioritized for backfill.
 
+## Point-in-time and as-applied federal law
+
+The current text of a rule answers what it says today.
+It does not answer what it said on the date of the conduct, which is the question most compliance disputes actually turn on.
+These are the highest-priority items on this page.
+
+| Source | What it adds | Official source |
+|---|---|---|
+| CFR annual editions, 1996 to 2026 | Thirty-one point-in-time editions of the Code of Federal Regulations, so a section can be retrieved as it read in a given year rather than only as it reads today. The annual edition is also the officially published CFR; what any continuously refreshed corpus serves between editions, ours included, is a current compilation of it. | govinfo |
+| List of Sections Affected (LSA), monthly, 1997 to 2026 | The official month-by-month map from a CFR section to the change that hit it and the Federal Register page that made it. It is the join key between the `CFR` and `FEDERAL_REGISTER` corpora already in the API, and it answers "what changed this month" directly. | govinfo |
+| FAR and DFARS class deviation text | Since the Federal Acquisition Regulation overhaul, agencies have been applying model deviation text that 48 C.F.R. does not yet reflect. FAR and DFARS are already served inside `CFR`; the deviations are what a contracting officer is operating under in the meantime. | acquisition.gov |
+
+## Federal statutory sources outside the US Code
+
+Citations that resolve to nothing today, because the text they point at is not in a code title.
+
+| Source | What it adds | Official source |
+|---|---|---|
+| Statute Compilations, 2,683 documents | Acts as amended that were never codified into a positive-law title. A citation like "Section 210 of the Public Utility Regulatory Policies Act" does not resolve against `USC` today, because that section lives in the act rather than in a code title. | govinfo |
+| Statutes at Large, volumes 1 to 112 (1789 to 1998) | Backfills `SESSION_LAW`, which starts at Public Law 106-1 (1999) today. Until it lands, no pre-1999 public law cite resolves, including ERISA and the Tax Reform Act of 1986. | govinfo |
+| Senate treaty documents, 785 | Treaties transmitted to the Senate for advice and consent, carrying the full text of the resolution. Distinct from the bilateral income and estate tax treaties already served under `US_TAX_TREATY`, which cover tax only. | congress.gov |
+
 ## Federal law and court rules
 
 Targeted to land by the **start of Q4 2026**, with the exception noted below.
@@ -57,6 +79,7 @@ Two additional Internal Revenue Service (IRS) corpora, beyond the IRS notices, r
 |---|---|
 | Chief Counsel Advice | Written determinations issued by IRS Chief Counsel to field offices. |
 | Private Letter Rulings | Taxpayer-specific rulings on the application of tax law to a proposed transaction. |
+| Internal Revenue Manual (IRM), 1,777 sections | The IRS's own operating procedures: what examiners, appeals officers and collection staff are instructed to do. It would be served and labelled as agency procedure, not law. It binds IRS personnel, not taxpayers, and confers no rights on them. |
 
 ## Administrative adjudication
 
@@ -108,6 +131,15 @@ Counts are the document categories planned for each.
 | FDA warning letters | Enforcement correspondence to regulated entities |
 | Department of Housing and Urban Development (HUD) fair housing guidance | Housing discrimination |
 | Office of Foreign Assets Control (OFAC) FAQs | Sanctions compliance |
+
+## Under evaluation
+
+**United States Reports, for official star pagination.**
+
+The text of Supreme Court opinions is available in many places.
+The bound volumes are the only place the official page numbers live, and a pin cite in the form `576 U.S. 644, 681` is what survives into a brief.
+This is the one case law item we are weighing, and only for the pagination anchor.
+It would not change the position immediately below on general case law and dockets.
 
 ## Out of scope
 

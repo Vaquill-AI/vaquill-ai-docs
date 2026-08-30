@@ -4,7 +4,7 @@ description: "Page through search results with limit, offset, and hasMore"
 icon: "list-ol"
 ---
 
-Only `POST /statutes/search` is paginated. Two request fields control the window, and one response flag tells you when to stop.
+Only `POST /us/statutes/search` is paginated. Two request fields control the window, and one response flag tells you when to stop.
 
 ## Request parameters
 
@@ -18,13 +18,21 @@ Only `POST /statutes/search` is paginated. Two request fields control the window
 Each search response includes these top-level fields:
 
 - `results`: the array of result objects for this page.
-- `total`: the count of results returned on **this page**, not the corpus-wide match count.
+- `count`: the number of results returned on **this page**, not the corpus-wide match count.
+- `total`: a **deprecated** alias for `count`. It is still returned for back-compatibility. Read `count` in new code.
 - `offset`: the offset that was applied.
 - `hasMore`: `true` when more results are reachable beyond this page.
 
 <Warning>
-  `total` is a per-page count, not a corpus total. There is no field that reports how many sections in the whole corpus match your query. Use `hasMore` to drive your loop, not arithmetic on `total`.
+  `count` is a per-page count, not a corpus total. There is no field that reports how many sections in the whole corpus match your query. Use `hasMore` to drive your loop, not arithmetic on `count`.
 </Warning>
+
+<Note>
+  `hasMore` is always `false` on the last reachable page, because the ranked
+  candidate pool is capped at 120 results (`offset` 70 + `limit` 50). It means
+  "more results are reachable within that pool", not "more matches exist in the
+  corpus". Narrow the query rather than paging deeper.
+</Note>
 
 ## How deep you can page
 

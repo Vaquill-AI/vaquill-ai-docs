@@ -8,7 +8,15 @@ Corpus data updates on its own refresh cadence (daily for the Federal Register a
 
 Every alert names the exact sections that changed, not just a count, and you can fetch the old text next to the new text for any section that was amended.
 
-Every path below is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header. All endpoints in this guide are **free**: authenticated and rate-limited, but not credit-metered.
+Every path below is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header. Every endpoint in this guide is **free** except one: [`GET /watches/{id}/changes/{changeId}/diff`](#read-the-diff-for-one-change) costs **4 credits** per call, because it reconstructs both sides of the text. Everything else is authenticated and rate-limited but not credit-metered.
+
+<Warning>
+  **Two plan limits apply to watches.**
+
+  **Webhook delivery requires the Business plan.** Creating or repointing a watch whose `channel` is `webhook` or `both` returns **403** on any other plan. Email delivery is open to every plan, so `channel: "email"` always works.
+
+  **Watch count is capped at 3** outside Business, and at 100 on Business. Exceeding it returns **429**. Delete a watch before creating another, or upgrade.
+</Warning>
 
 ## Boards and watches
 
@@ -370,7 +378,7 @@ while True:
   Running both channels is a reasonable design: take the webhook as the low-latency path, and poll on a slow timer as a backstop for deliveries your endpoint missed while it was down. Dedup on the change `id`, or on `deliveryId` for whole webhook payloads.
 </Tip>
 
-When `hasDiff` is `true`, call `GET /watches/{watchId}/changes/{changeId}/diff` for the section's text before and after that specific change:
+When `hasDiff` is `true`, call `GET /watches/{watchId}/changes/{changeId}/diff` for the section's text before and after that specific change. **This is the one metered call in this guide: 4 credits, charged whether or not both sides are available**, so branch on `hasDiff` before spending on it.
 
 <CodeGroup>
 ```bash cURL
@@ -400,7 +408,7 @@ if diff["hasBefore"] and diff["hasAfter"]:
     "hasBefore": true,
     "hasAfter": true
   },
-  "meta": { "processingTimeMs": 41.0, "creditsConsumed": 0 }
+  "meta": { "processingTimeMs": 41.0, "creditsConsumed": 4 }
 }
 ```
 

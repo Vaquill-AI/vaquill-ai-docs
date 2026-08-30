@@ -14,7 +14,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
   </Step>
 
   <Step title="Make your first search">
-    Send a natural language query to `POST /statutes/search`. Scope it with `corpusType` and `state` for tighter results.
+    Send a natural language query to `POST /us/statutes/search`. Scope it with `corpusType` and `state` for tighter results.
 
     <CodeGroup>
     ```bash cURL
@@ -100,7 +100,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
   </Step>
 
   <Step title="Fetch the section and its body">
-    Take an `actId` from the results (for example `USC_T42_C21_S1983`). Call `GET /statutes/section/{actId}` for metadata, and `GET /statutes/section/{actId}/body` for the full text.
+    Take an `actId` from the results (for example `USC_T42_C21_S1983`). Call `GET /us/statutes/section/{actId}` for metadata, and `GET /us/statutes/section/{actId}/body` for the full text.
 
     <CodeGroup>
     ```bash cURL
@@ -161,7 +161,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
   </Step>
 
   <Step title="Discover coverage">
-    The corpus grows weekly. Call `GET /statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data. Pass one of those tokens back into `/statutes/search`.
+    The corpus grows weekly. Call `GET /us/statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data. Pass one of those tokens back into `/us/statutes/search`.
 
     <CodeGroup>
     ```bash cURL

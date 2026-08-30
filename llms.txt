@@ -1,6 +1,6 @@
 # Vaquill
 
-> Vaquill is a legal AI suite for in-house counsel, plus a US statutes and regulations Developer API. The API lets you search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance. Every result carries a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into products.
+> Vaquill is a legal AI suite for in-house counsel, plus a US statutes and regulations Developer API. The API lets you search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, federal agency guidance, session laws, and 13,000+ state Department of Insurance bulletins and circular letters across 49 jurisdictions. Every result carries a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into products.
 
 Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authenticate every request with an API key: `Authorization: Bearer vq_key_...`. The API serves US statutes and regulations only (case law and India are not part of the Developer API).
 
@@ -12,7 +12,7 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 ## API: Core Concepts
 
-- [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 11 corpusType tokens (USC, CFR, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, AGENCY_GUIDANCE), federal vs state scope, and how to filter a search.
+- [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 15 corpusType tokens (USC, CFR, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, AGENCY_GUIDANCE, STATE_AGENCY_GUIDANCE, SESSION_LAW, SENTENCING_GUIDELINES, US_TAX_TREATY), federal vs state scope, and how to filter a search.
 - [Jurisdictions and State Codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The 52 jurisdictions, 2-letter state codes, and discovering what is queryable via /statutes/coverage.
 - [Section Identifiers](https://www.vaquill.ai/docs/api-guide/concepts/section-ids): The actId format and the search then section then body workflow.
 - [Response Formats](https://www.vaquill.ai/docs/api-guide/concepts/formats): HTML, PDF, XML, plain text, DOCX, and official government source links.
@@ -66,4 +66,5 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 - [Introduction](https://www.vaquill.ai/docs/introduction): The full Vaquill product, including the in-app legal AI suite.
 - [Changelog](https://www.vaquill.ai/docs/api-guide/changelog): API updates and additions.
+- [Roadmap](https://www.vaquill.ai/docs/api-guide/roadmap): Corpora being built next, and what is deliberately out of scope.
 - [Vaquill MCP](https://www.vaquill.ai/docs/integrations/mcp/vaquill): The hosted MCP server for AI agents.

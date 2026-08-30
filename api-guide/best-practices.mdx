@@ -8,13 +8,13 @@ A few habits make Vaquill AI integrations faster, cheaper, and more accurate. Fo
 
 ## Scope every query
 
-Pass `corpusType` (and `state` for state-scoped corpora) on `POST /statutes/search`. Scoping does two things: it sharpens relevance by removing off-target jurisdictions, and it makes your [pages](/api-guide/pagination) more predictable. An unscoped search ranks across the whole corpus, so a `state`-specific answer can be crowded out by federal or other-state matches.
+Pass `corpusType` (and `state` for state-scoped corpora) on `POST /us/statutes/search`. Scoping does two things: it sharpens relevance by removing off-target jurisdictions, and it makes your [pages](/api-guide/pagination) more predictable. An unscoped search ranks across the whole corpus, so a `state`-specific answer can be crowded out by federal or other-state matches.
 
 ```json
 { "query": "security deposit return deadline", "corpusType": "STATE", "state": "ca" }
 ```
 
-You can scope tighter still. `code` (state, e.g. `tx_pe` from `GET /statutes/codes`) and `titleNumber` (USC/CFR) narrow a search to one code or title. To go one level deeper, `chapter` (USC/state) and `part` (CFR) confine a search to a single subtree. These are the search-side of the `parent` object on every result: take a hit's `parent` and pass it straight back to search that section's neighbors. `chapter`/`part` must be paired with `titleNumber` or `code` (which `parent` always carries), since a chapter number alone repeats across every title.
+You can scope tighter still. `code` (state, e.g. `tx_pe` from `GET /us/statutes/codes`) and `titleNumber` (USC/CFR) narrow a search to one code or title. To go one level deeper, `chapter` (USC/state) and `part` (CFR) confine a search to a single subtree. These are the search-side of the `parent` object on every result: take a hit's `parent` and pass it straight back to search that section's neighbors. `chapter`/`part` must be paired with `titleNumber` or `code` (which `parent` always carries), since a chapter number alone repeats across every title.
 
 ```json
 { "query": "damages for intentional discrimination", "corpusType": "USC", "titleNumber": 42, "chapter": "21" }
@@ -25,27 +25,27 @@ You can scope tighter still. `code` (state, e.g. `tx_pe` from `GET /statutes/cod
 Two options tune the search payload:
 
 - `matchType`: `any` (default) is intent-ranked hybrid search. Use `all` to require every query term, or `phrase` to require the exact phrase, when you need precision over recall.
-- `excerptChars`: how much matching text each result carries (default 500). Raise it for more context inline, or fetch the full text from `/statutes/section/{actId}/body`.
+- `excerptChars`: how much matching text each result carries (default 500). Raise it for more context inline, or fetch the full text from `/us/statutes/section/{actId}/body`.
 
-Each result also carries a `parent` object: the `/statutes/divisions` query that lists the section's siblings, so you can walk up the hierarchy from any hit. Section responses now also include amendment provenance (`sourceCredit`, `amendmentYears`, `lastAmendedYear`, `publicLaws`, `federalRegisterCitations`).
+Each result also carries a `parent` object: the `/us/statutes/divisions` query that lists the section's siblings, so you can walk up the hierarchy from any hit. Section responses now also include amendment provenance (`sourceCredit`, `amendmentYears`, `lastAmendedYear`, `publicLaws`, `federalRegisterCitations`).
 
 ## Discover before you search
 
-Call `GET /statutes/coverage` first to learn what is queryable. Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids guessing a token that has no data for that state and wasting a call on an empty result.
+Call `GET /us/statutes/coverage` first to learn what is queryable. Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids guessing a token that has no data for that state and wasting a call on an empty result.
 
-For a named catalog rather than a count matrix, call `GET /statutes/laws` (or `?jurisdiction=ca` / `federal`). Each entry is a body of law with a human `name`, a `lawType`, and its `corpusType` ready to pass to search, which is what you want to render a "search in ..." picker or to tell an LLM which bodies of law exist.
+For a named catalog rather than a count matrix, call `GET /us/statutes/laws` (or `?jurisdiction=ca` / `federal`). Each entry is a body of law with a human `name`, a `lawType`, and its `corpusType` ready to pass to search, which is what you want to render a "search in ..." picker or to tell an LLM which bodies of law exist.
 
 <Tip>
-  Use `GET /statutes/codes?state=XX` to see the individual statutory codes (Penal, Civil, and so on) ingested for a state, and their section counts, when you want to explain a state's structure to a user.
+  Use `GET /us/statutes/codes?state=XX` to see the individual statutory codes (Penal, Civil, and so on) ingested for a state, and their section counts, when you want to explain a state's structure to a user.
 </Tip>
 
 ## Cache coverage
 
-Coverage grows weekly, not hourly. Cache the responses of `/statutes/coverage`, `/statutes/states`, `/statutes/codes`, and `/statutes/laws` for hours or a day rather than calling them on every request. They still count against your [rate limits](/api-guide/rate-limits).
+Coverage grows weekly, not hourly. Cache the responses of `/us/statutes/coverage`, `/us/statutes/states`, `/us/statutes/codes`, and `/us/statutes/laws` for hours or a day rather than calling them on every request. They still count against your [rate limits](/api-guide/rate-limits).
 
 ## Store the actId values you care about
 
-The `actId` (for example `USC_T42_C21_S1983`) is the stable handle for a section. Once a search surfaces a section your product depends on, store its `actId` and go straight to `GET /statutes/section/{actId}` or `.../body` on later runs. That skips the search entirely.
+The `actId` (for example `USC_T42_C21_S1983`) is the stable handle for a section. Once a search surfaces a section your product depends on, store its `actId` and go straight to `GET /us/statutes/section/{actId}` or `.../body` on later runs. That skips the search entirely.
 
 ## Retry on 429, handle 402
 
@@ -59,7 +59,7 @@ The `actId` (for example `USC_T42_C21_S1983`) is the stable handle for a section
 
 Do not compare scores across different queries and do not use a fixed threshold (for example "drop anything below 0.7") to decide what to keep. To narrow results, tighten `query`, `corpusType`, and `state` instead.
 
-Browse is ordered differently. `GET /statutes/divisions` returns divisions in statutory (natural) order, the way a person reads a code, not by relevance: `9` sorts before `10`, and `240.9` before `240.10`. Reach for search when you want the most on-point section, and for browse when you want the structure in order.
+Browse is ordered differently. `GET /us/statutes/divisions` returns divisions in statutory (natural) order, the way a person reads a code, not by relevance: `9` sorts before `10`, and `240.9` before `240.10`. Reach for search when you want the most on-point section, and for browse when you want the structure in order.
 
 ## Link users to official sources
 

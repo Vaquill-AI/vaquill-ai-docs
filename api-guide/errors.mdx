@@ -35,9 +35,10 @@ Validation errors (422) include field-level details:
 | `200` | Success | |
 | `401` | Unauthorized | Check your API key and `Authorization` header |
 | `402` | Payment Required | Check your account dashboard. |
+| `403` | Forbidden | Your key lacks the required scope, or your plan does not include the feature. Webhook delivery on a watch is Business-only; use `channel: "email"` or upgrade |
 | `404` | Not Found | Resource does not exist |
 | `422` | Validation Error | Check request body for missing or invalid fields |
-| `429` | Rate Limited | Back off and retry with exponential backoff |
+| `429` | Rate Limited | Back off and retry with exponential backoff. Also returned when you exceed your plan's watch cap (3 outside Business, 100 on Business) |
 | `500` | Internal Error | Retry after a brief delay. [Contact support](mailto:contact@vaquill.ai) if it persists |
 
 ## Rate Limiting
