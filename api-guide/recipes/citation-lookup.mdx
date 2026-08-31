@@ -32,6 +32,15 @@ to expand a citation your users typed into full, linkable law.
   `O.C.G.A. § 51-1-6`, `RCW 59.18.060`, `R.C. 2305.10`, `§ 292.290, RSMo`.
   The safest string to send is the `citation` value we returned to you.
 
+  Agency guidance resolves as well, and it has no Bluebook form at all. Send
+  its citation exactly as we printed it: `NY Insurance Circular Letter No. 4
+  (2022)`, `TDI Commissioner's Bulletin B-0004-22`, `IL Company Bulletin
+  2021-03`. This covers `STATE_AGENCY_GUIDANCE` (state insurance bulletins and
+  circular letters) and `AGENCY_GUIDANCE` (IRS Notices, OCC Bulletins, CFTC
+  staff letters and the rest). Because these are matched on the published
+  string rather than parsed, the `citation` we returned is not merely the
+  safest input here, it is the only one guaranteed to work.
+
   Scope `corpusType` (and `state`) when the citation names the corpus, so a
   same-numbered section in another corpus cannot rank first. Scope is a
   **constraint, not a hint**: a citation naming a different jurisdiction
@@ -97,6 +106,17 @@ A resolved response carries the full section (the same shape as `/statutes/secti
 
 <Note>
   `/statutes/resolve` is charged whether or not the citation resolves, because a confident "this does not resolve" is the answer you want when checking an LLM's output. Only server errors are refunded.
+</Note>
+
+<Note>
+  **A guidance citation can be ambiguous, and we would rather answer nothing
+  than guess.** Some regulators reuse one citation across several documents:
+  Delaware reissues `DE Domestic/Foreign Bulletin No. 113` five times, Vermont
+  twice, and Massachusetts has three separate documents citing `MA Bulletin
+  1991-01`. Where the publisher's own citation does not identify a single
+  document, `resolved` is `false` rather than one of the candidates picked
+  arbitrarily. Reach those documents by `actId`, or with a
+  `corpusType=STATE_AGENCY_GUIDANCE` search scoped to the state.
 </Note>
 
 ## Do it yourself

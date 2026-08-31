@@ -45,23 +45,31 @@ them.
 
 | Corpus | Sections | Refresh |
 |---|---|---|
-| United States Code (USC) - 2024 edition, current through 2025-01-06 | 60,170 | Checked weekly for a new edition |
+| United States Code (USC) - 2024 edition, current through 2025-01-06 | 60,170 | Annual edition; checked weekly for a new one |
 | Statutes at Large - federal public and private laws **as enacted**, 1999-2026 (5,256 laws) | 110,287 | Weekly |
-| Code of Federal Regulations (CFR) | 219,127 | Daily |
+| Code of Federal Regulations (CFR) | 219,114 | Daily |
 | ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 (within CFR above) | 5,537 | Daily |
 | ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 (within CFR above) | 2,877 | Daily |
 | Federal Register agency rules (final + proposed), 1994-present | 202,526 | Weekly |
 | Executive Orders (Federal Register Presidential Documents), 2015-present | 3,820 | Daily |
-| Agency guidance - 34 named sources across 21 agencies (see table below) | 21,741 | Weekly |
+| Agency guidance - 34 named sources across 21 agencies (see table below) | 21,710 | Weekly |
 | Federal Rules of Procedure - Civil (FRCP), Criminal (FRCrP), Evidence (FRE), Appellate (FRAP) and Bankruptcy (FRBP), incl. Supplemental Admiralty and Social Security Rules - and Rules of the Supreme Court of the United States | 589 | Monthly |
 | US Constitution | 74 | On amendment |
 | US Sentencing Guidelines (U.S.S.G.) | 302 | Annual |
-| US Tax Treaties (bilateral income and estate tax treaties, citable by article) and Treasury's Technical Explanations (article-by-article commentary) | 119 | As treaties are signed |
+| US Tax Treaties - 67 bilateral **income** tax treaties, plus Treasury's Technical Explanations for 52 of them (the publisher issues none for the other 15). Whole-instrument documents (10,158 retrieval passages), retrievable and searchable in full, cited at the treaty level rather than by article. No estate or gift tax treaties. | 119 | As treaties are signed |
 
 <Note>
   The Federal Register and Executive Order cadence depends on
   `federalregister.gov`, which has been throttling and rate-limiting traffic in
   2026. That can occasionally push a weekly pull later.
+</Note>
+
+<Note>
+  **The US Code is an annual publication, so "weekly" here means a weekly check, not a weekly update.**
+  Our source is the federal publisher's own annual `USCODE` package on GovInfo, which is issued once per edition rather than amended in place.
+  A job runs every Monday, asks GovInfo whether an edition newer than the one we hold has been released, and re-ingests the whole Code when one has.
+  Between editions the text does not move, so that job correctly reports no change: every run recorded to date has found no new edition, and we are still serving the 2024 edition, current through 2025-01-06.
+  For federal law enacted after that date, use `corpusType=SESSION_LAW` (the Statutes at Large), which does refresh weekly, or `corpusType=FEDERAL_REGISTER` for agency rulemaking.
 </Note>
 
 <Note>
@@ -86,13 +94,18 @@ of them. `GET /statutes/coverage` names every source in its `AGENCY_GUIDANCE`
 legend, and the `source` filter's own error message lists each code with its
 full name, so neither can fall behind this page.
 
+**Every count in this table was re-measured against the live collection on
+2026-08-30**, later than the page-wide date above. A document is one citable
+item (`act_id`); where a source has few documents but long ones, the retrieval
+passage count is given beside it.
+
 | Source | Docs | Coverage | Citable as |
 |---|---|---|---|
 | Social Security Administration (SSA) Rulings | 1,115 | - | - |
-| Internal Revenue Service (IRS) Revenue Procedures/Rulings/Notices/Announcements - four separately filterable sources (`irs_rev_proc`, `irs_rev_rul`, `irs_notice`, `irs_announcement`) | 1,459 | 2015-present | - |
-| Department of Justice (DOJ) & Federal Trade Commission (FTC) Merger Guidelines | - | 2023 | - |
-| DOJ Antitrust Division Leniency Policy | - | - | - |
-| US Copyright Office Circulars | 58 | - | - |
+| Internal Revenue Service (IRS) Revenue Procedures/Rulings/Notices/Announcements - four separately filterable sources (`irs_rev_proc`, `irs_rev_rul`, `irs_notice`, `irs_announcement`) | 1,469 | 2015-present | - |
+| Department of Justice (DOJ) & Federal Trade Commission (FTC) Merger Guidelines | 1 document, 128 passages | 2023 | - |
+| DOJ Antitrust Division Leniency Policy | 1 document, 8 passages | - | - |
+| US Copyright Office Circulars | 58 circulars, 704 passages | - | - |
 | DOJ Justice Manual | 1,548 sections, 9 Titles | - | "Justice Manual § 9-27.420" |
 | US Citizenship and Immigration Services (USCIS) Policy Manual | 456 chapters, 12 volumes | - | "USCIS Policy Manual, Vol. 12, Pt. D, Ch. 3" |
 | US Patent and Trademark Office (USPTO) Manual of Patent Examining Procedure (MPEP) | 2,024 sections, 29 chapters | - | "MPEP § 2106" |
@@ -100,23 +113,23 @@ full name, so neither can fall behind this page.
 | DFARS Procurement Guidance and Information (PGI) | 397 documents, 47 Parts | - | "PGI 225.370" |
 | National Labor Relations Board (NLRB) General Counsel Memoranda | 300 | 1973-present | "NLRB General Counsel Memorandum GC 22-04" |
 | NLRB Division of Advice Memoranda | 339 | Rolling 10-year window | "NLRB Division of Advice Memorandum, Case No. 13-CA-182757 (Savage Fueling)" |
-| Commodity Futures Trading Commission (CFTC) Staff Letters (no-action, exemptive, interpretative, advisory) | 942 | 2008-present | "CFTC Letter No. 26-17"; filterable by regulation part or topic tag |
+| Commodity Futures Trading Commission (CFTC) Staff Letters (no-action, exemptive, interpretative, advisory) | 943 | 2008-present | "CFTC Letter No. 26-17"; filterable by regulation part or topic tag |
 | Federal Reserve Supervision and Regulation (SR) / Consumer Affairs (CA) Letters | 336 | Since 1990 | "SR 21-4 / CA 21-2" |
 | Office of the Comptroller of the Currency (OCC) Bulletins | 606 | Since 1994 | - |
 | OCC Interpretive Letters | 448 | 1996-present | "OCC Interpretive Letter No. 1188" |
 | Federal Deposit Insurance Corporation (FDIC) Financial Institution Letters (FILs) | 2,313 | Since 1994 | Spans active + inactive FIL indexes; superseded letters queryable with `act_status=superseded` |
-| Financial Crimes Enforcement Network (FinCEN) Administrative Rulings | 86 | Since 1988 | "FinCEN Ruling FIN-2009-R001" |
+| Financial Crimes Enforcement Network (FinCEN) Administrative Rulings | 85 | Since 1988 | "FinCEN Ruling FIN-2009-R001" |
 | FinCEN Guidance (alerts, advisories, notices, bulletins, fact sheets) | 127 | - | "FinCEN Guidance FIN-2019-G001" |
 | Consumer Product Safety Commission (CPSC) Office of General Counsel (OGC) Advisory Opinions | 139 | 1973-2012 | "CPSC OGC Advisory Opinion No. 82" - historical archive, not currently updated |
 | Bureau of Industry and Security (BIS) Advisory Opinions (Export Administration Regulations, EAR) | 33 | 2003-2023 | "BIS Advisory Opinion, 09/25/23: Export guidance and BIS interpretation of 'gene' related to ECCN 1C353" |
-| Directorate of Defense Trade Controls (DDTC) Commodity Jurisdiction Determinations (International Traffic in Arms Regulations / US Munitions List vs. EAR) | 5,879 | 2010-present | From DDTC's own published XLSX export |
+| Directorate of Defense Trade Controls (DDTC) Commodity Jurisdiction Determinations (International Traffic in Arms Regulations / US Munitions List vs. EAR) | 5,903 | 2010-present | From DDTC's own published XLSX export |
 | DDTC Guidance (incl. Guidelines for Preparing Agreements, ITAR Risk Matrix) | 7 | - | - |
 | CPSC Small Entity Compliance Guides | 34 | - | "CPSC Small Entity Compliance Guide: Safety Standard for Neck Floats (90 FR 58096)" |
-| Federal Communications Commission (FCC) Declaratory Rulings | 169 | - | "DA-26-680: {title} (07/07/26)" |
-| Federal Energy Regulatory Commission (FERC) Policy Statements | 45 | Since 1996 | "___ FERC ¶ _____" (bound-volume Reports form) |
+| Federal Communications Commission (FCC) Declaratory Rulings | 172 | - | "DA-26-680: {title} (07/07/26)" |
+| Federal Energy Regulatory Commission (FERC) Policy Statements | 45 statements, 2,698 passages | Since 1996 | "___ FERC ¶ _____" (bound-volume Reports form) |
 | Department of Energy (DOE) Appliance Standards Guidance and FAQs | 60 | - | "DOE Appliance Standards Guidance: {question} ({date})"; draft guidance excluded |
-| Health and Human Services (HHS) Office for Civil Rights (OCR) guidance on the Health Insurance Portability and Accountability Act (HIPAA) | 41 | - | - |
-| HHS OCR resolution agreements and civil money penalties | 140 | - | - |
+| Health and Human Services (HHS) Office for Civil Rights (OCR) guidance on the Health Insurance Portability and Accountability Act (HIPAA) | 44 | - | - |
+| HHS OCR resolution agreements and civil money penalties | 144 | - | - |
 | HHS OCR HIPAA FAQs (deduplicated from HHS's cross-listed topic pages) | 444 | - | - |
 | Vaquill-synthesized administrative guidance | State and local tax (SALT) cap, Child Tax Credit (CTC), 401(k) limits | - | - |
 
@@ -178,7 +191,7 @@ Sorted by statute volume.
 | Massachusetts | 23,152 | 24,723 | 103 | 968 |
 | Idaho | 22,754 | 8,672 | 240 | 766 |
 | Delaware | 22,669 | 1,164 | 225 | 1,385 |
-| Rhode Island | 21,107 | 5,569 | 118 | 1,033 |
+| Rhode Island | 21,107 | 1,185 | 118 | 1,033 |
 | Wyoming | 20,995 | 13,345 | 315 | 996 |
 | Kentucky | 20,894 | 4,780 | 274 | 1,427 |
 | Hawaii | 19,197 | 27,121 | 171 | 1,259 |
