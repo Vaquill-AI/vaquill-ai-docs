@@ -14,9 +14,9 @@ Every path is prefixed with `/api/v1`. Every result carries a citation, status a
 
 | Capability | Endpoint |
 |---|---|
-| Hybrid **semantic + keyword** search, scoped by corpus, jurisdiction, and code | `POST /statutes/search` |
-| Resolve a **Bluebook citation** to its exact section | `GET /statutes/resolve` |
-| **Browse the hierarchy** (titles to chapters or parts to sections) in statutory order | `GET /statutes/divisions` |
+| Hybrid **semantic + keyword** search, scoped by corpus, jurisdiction, and code | `POST /us/statutes/search` |
+| Resolve a **Bluebook citation** to its exact section | `GET /us/statutes/resolve` |
+| **Browse the hierarchy** (titles to chapters or parts to sections) in statutory order | `GET /us/statutes/divisions` |
 | Section **metadata**, **full text**, and **neighboring sections** | `GET /us/statutes/section/{actId}`, `.../body`, `.../related` |
 | **Defined terms** resolved from the chapter's definitions section | `GET /us/statutes/section/{actId}/definitions` |
 | The **same subject in other states**, for a 50-state survey | `GET /us/statutes/section/{actId}/cross-state` |
@@ -51,12 +51,12 @@ these numbers.
 <Note>
   `creditsConsumed` on every response reports what was actually billed, which
   can be less than the list price above on a partial or refunded result (for
-  example, a `404` on `/statutes/section/{actId}` is not charged).
+  example, a `404` on `/us/statutes/section/{actId}` is not charged).
 </Note>
 
 ### Corpora
 
-**Federal:** US Code (`USC`), Code of Federal Regulations (`CFR`), Federal Register agency rules (`FEDERAL_REGISTER`), agency guidance (`AGENCY_GUIDANCE`), executive orders (`EXECUTIVE_ACTION`), Federal Rules of Procedure (`FEDERAL_RULES`), the US Constitution (`CONSTITUTION`), session laws as enacted (`SESSION_LAW`), US Sentencing Guidelines (`SENTENCING_GUIDELINES`), and US tax treaties (`US_TAX_TREATY`).
+**Federal:** US Code (`USC`), Code of Federal Regulations (`CFR`), Federal Register agency rules (`FEDERAL_REGISTER`), agency guidance (`AGENCY_GUIDANCE`), executive orders (`EXECUTIVE_ACTION`), Federal Rules of Procedure (`FEDERAL_RULES`), the US Constitution (`CONSTITUTION`), session laws as enacted (`SESSION_LAW`), US Sentencing Guidelines (`SENTENCING_GUIDELINES`), and US income tax treaties (`US_TAX_TREATY`).
 
 **State, across 52 jurisdictions:** statutory codes (`STATE`), administrative regulations (`REGULATION`), constitutions (`STATE_CONSTITUTION`), court rules (`STATE_RULES`), and state regulator guidance (`STATE_AGENCY_GUIDANCE`).
 
@@ -70,7 +70,7 @@ rather than being the law, which is why it is a separate token from
 Scope any search with the `corpusType` token. See [Corpus Types](/api-guide/concepts/corpus-types) for what each holds.
 
 <Note>
-  Coverage expands weekly. Call `/statutes/coverage` at runtime to see exactly what is queryable rather than hardcoding jurisdiction counts.
+  Coverage expands weekly. Call `/us/statutes/coverage` at runtime to see exactly what is queryable rather than hardcoding jurisdiction counts.
 </Note>
 
 ## What you can build
