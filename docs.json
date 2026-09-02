@@ -450,6 +450,11 @@
         "tab": "Data API Reference",
         "icon": "database",
         "openapi": "https://api.vaquill.ai/external/openapi.json"
+      },
+      {
+        "tab": "India API Reference",
+        "icon": "scale-balanced",
+        "openapi": "https://api.vaquill.ai/in/openapi.json"
       }
     ]
   },
