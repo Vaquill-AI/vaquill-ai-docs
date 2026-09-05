@@ -7,6 +7,424 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-09-05" description="State financial-institutions regulator bulletins are live as source=state_financial_bulletin under corpusType=STATE_AGENCY_GUIDANCE">
+  ## State financial-institutions regulator bulletins (Arizona, Oregon)
+
+  `STATE_AGENCY_GUIDANCE` now fans out into **two named sources** rather than one, and takes a `source` filter:
+
+  | `source` | Contents | Documents |
+  |---|---|---:|
+  | `state_insurance_bulletin` | Department of Insurance bulletins, circular letters and commissioner's orders, 49 states and territories | 13,182 |
+  | `state_financial_bulletin` | Financial-institutions regulator bulletins, alerts and substantive policy statements, Arizona and Oregon only | 45 |
+
+  **45 new documents across 117 retrieval passages**: 35 from the Arizona Department of Insurance and Financial Institutions (banks, credit unions, trust companies, escrow agents, consumer lenders, money transmitters, loan originators, collection agencies, sales finance) and 10 from the Oregon Division of Financial Regulation (investment advisers, collection agencies and pawnbrokers, student loan servicers, income share agreements, debt management).
+
+  **Nothing you already query changes.** Existing insurance-bulletin results keep their citations, their `actId` values and their counts, and a search with no `source` filter now spans both. A search for insurance guidance will never be handed a credit-union bulletin: the two are separate categories, and each document's `source` says which it is.
+
+  **This is not a claim to cover state banking law.** These two states are served because their banking regulator is combined with their insurance regulator and publishes both series on one index, under numbers we can cite. Most states' financial regulators publish no numbered series at all, so `source=state_financial_bulletin` returns nothing for the other 47 jurisdictions and no wider rollout is planned.
+
+  Every document carries an `issuedDate` from the publisher's own index, and both sources refresh weekly alongside the rest of the state-guidance registry.
+</Update>
+
+<Update label="2026-09-05" description="FinCEN Corporate Transparency Act beneficial-ownership guidance is live under corpusType=AGENCY_GUIDANCE">
+  ## FinCEN Corporate Transparency Act beneficial-ownership guidance
+
+  Three new `AGENCY_GUIDANCE` sources, **145 documents across 220 retrieval passages**, all from `fincen.gov`:
+
+  | `source` | Contents | Documents |
+  |---|---|---:|
+  | `fincen_boi_faq` | Beneficial Ownership Information FAQs, 15 lettered categories A-O | 122 |
+  | `fincen_boi_rule_qa` | BOI rulemaking Q&As, both the 2025 interim final rule and the 2026 final rule | 22 |
+  | `fincen_boi_compliance_guide` | Small Entity Compliance Guide, v1.4 (March 2025) | 1 |
+
+  This takes `AGENCY_GUIDANCE` to **40 named sources, 23,921 documents**.
+
+  **Two of the three predate the current rule, and we serve them anyway, labeled.** On August 11, 2026 FinCEN issued a final rule that permanently narrowed BOI reporting: entities created in the United States and their beneficial owners are exempt, and only certain companies formed under foreign law and registered to do business in a US State or tribal jurisdiction still report. The FAQs (issued 2023-2024) and the compliance guide (March 2025) both predate it, and FinCEN's own pages say some of their content is outdated.
+
+  We do not drop them, because they remain the authoritative FinCEN text and much of it is untouched by the scope change: the beneficial-owner and substantial-control definitions in FAQ category D read the same either way. Instead, **every passage from these sources carries FinCEN's own notice verbatim in `currencyNote`, with `currencyYear: 2026`.** Disregard any statement in them that US companies or their beneficial owners must report BOI, that BOI must be reported for US persons, that US persons must update or correct FinCEN ID information, or that reports were due before April 25, 2025.
+
+  **For the current position, use `source=fincen_boi_rule_qa`.** The 12 final-rule Q&As are current. The 10 interim-rule Q&As are served with `actStatus: "superseded"` and are excluded from good-law retrieval, because FinCEN's own final-rule Q&A states the final rule adopted the interim changes permanently.
+
+  These sources are **not** offered as a change-alert board; they refresh weekly with the rest of the agency-guidance registry.
+</Update>
+
+<Update label="2026-09-05" description="CFR annual editions 1996-2026 are live under corpusType=CFR_ANNUAL">
+  ## CFR annual editions, 1996 to 2026
+
+  `corpusType=CFR_ANNUAL` previously held nothing and returned zero results for every query. It now serves GPO's officially published annual editions of the Code of Federal Regulations: **31 editions across all 49 titles**.
+
+  | | |
+  |---|---:|
+  | Section versions | **886,066** |
+  | Distinct sections covered | **312,132** |
+  | Retrieval passages | **2,844,809** |
+  | Editions | 31 (1996-2026) |
+
+  **Read the headline number as section VERSIONS, not sections.** A section is stored once per distinct run of text, not once per edition. A section whose wording never changed between 1996 and 2026 is ONE record whose `editionsObserved` lists every year it was observed in, rather than thirty-one near-identical copies.
+
+  **`editionsObserved` is an enumeration, never a range.** A version observed in 1998, 1999 and 2003 lists exactly those three years. It does not imply 2000 to 2002, and a date falling in an unobserved gap is answered with `asOf.isBounded: false` rather than served from the nearest year we happen to hold.
+
+  **Citation years are each volume's own `<REVISED>` year, not the folder GPO filed it under.** GPO reprints unchanged volumes into later folders without re-dating them, so only the date inside the volume is authoritative. That is why 167 versions in title 26 (parts 502, 503 and 509) carry 1990 while sitting in the 1997 folder.
+
+  This corpus is deliberately **not** offered as a change-alert board. The existing `cfr` board already carries the daily change signal for the same regulations, so a second board would fire once a year on a whole edition and repeat what subscribers had already been told the day each change happened.
+
+  `CFR_ANNUAL` and the `asOf` parameter are both point-in-time routes and are **not** interchangeable. The corpus serves an edition **as published**; `asOf=YYYY-MM-DD` on `GET /us/statutes/section/{actId}/body` **reconstructs** a section from observed change history against the current CFR.
+</Update>
+
+<Update label="2026-09-05" description="Coverage figures re-measured against the live corpus">
+  ## Published coverage re-measured
+
+  Every figure on [API Coverage](/api-guide/coverage) and [Corpus Types](/api-guide/concepts/corpus-types) was re-measured against the live corpus on 2026-09-05.
+  Where a published number disagreed with the measurement, the measurement won.
+  The corrections:
+
+  | What | Published | Measured |
+  |---|---|---|
+  | Corpus totals | 4.1M sections / 13.1M passages | **4.5M sections / 13.3M passages** |
+  | Federal law | 12 corpora, ~711K sections | **13 corpora, ~1.06M sections** |
+  | Statutes at Large (`SESSION_LAW`) | 5,256 laws, ~110K sections, 1999-2026 | **93,422 laws (48,437 public, 44,985 private), 423,928 sections, 1789-2026**, from 137 of the 140 volumes |
+  | Code of Federal Regulations | 222,348 | **222,330** |
+  | Federal Acquisition Regulation (FAR) | 5,537 | **3,118** |
+  | Defense FAR Supplement (DFARS) | 2,877 | **1,705** |
+  | Executive Orders | 3,783 | **3,771** |
+  | US Sentencing Guidelines | 302 | **1,281** (Appendix A, and Appendix B Part III's former guideline text, are separate documents) |
+  | Agency guidance, all sources | 23,776 | **23,809** |
+  | MSPB nonprecedential orders | 5,349 | **5,355** (so MSPB totals 5,461, not 5,455) |
+  | Senate treaty records | 781 | **780** |
+  | CPSC OGC Advisory Opinions | 139 | **304** |
+  | OCC Bulletins | 606 | **611** |
+  | FDIC Financial Institution Letters | 2,313 | **2,320** |
+  | Federal Reserve SR / CA Letters | 336 | **337** |
+  | Illinois regulations | 52,798 | **55,944** |
+  | State regulations, all jurisdictions | ~1.51M | **~1.45M** |
+  | State court rules, all jurisdictions | ~47.6K | **~51.4K** |
+
+  Two counting units are in play and they are not interchangeable.
+  A **section** is one provision or document, which is what `GET /statutes/coverage` reports and what every table column here holds.
+  A **retrieval passage** is one indexed chunk, and a long document has many.
+  Publishing a passage count in a section column overstates a corpus by roughly 1.5x to 3x, which is what the FAR and DFARS rows were doing.
+
+  ## ~~`CFR_ANNUAL` is a reserved token that holds no data~~ (superseded the same day)
+
+  <Warning>
+    **Superseded later on 2026-09-05.** The corpus landed hours after this note was written; see the entry above. The paragraph below is kept as the record of what was true at the time and no longer describes the API.
+  </Warning>
+
+  `corpusType=CFR_ANNUAL` is accepted by the API and **returns zero results**, because GPO's published annual editions of the CFR have not been ingested.
+  The token was registered ahead of a corpus that was then deliberately deferred in favor of shipping `asOf` point-in-time reconstruction over data we already hold.
+
+  Both reference pages now say so explicitly, because a token carrying a rich description and returning nothing reads as "there is no CFR history" rather than "this has not shipped".
+  It stays on the [roadmap](/api-guide/roadmap#point-in-time-and-as-applied-federal-law), and it is excluded from the corpus-type count until it lands.
+
+  For a regulation as it read on a past date, use `asOf=YYYY-MM-DD` on `GET /us/statutes/section/{actId}/body`.
+</Update>
+
+<Update label="2026-09-04" description="New corpusType: FEDERAL_REGISTER_NOTICE, a curated 17,612-notice slice of the Federal Register notice series">
+  ## `FEDERAL_REGISTER_NOTICE`, and what it deliberately does not hold
+
+  Federal Register **notices**, 1994 to present, under the new `corpusType=FEDERAL_REGISTER_NOTICE`. **17,612 documents, 128,564 retrieval passages.**
+
+  🔴 **This is a curated slice, not the notice series.**
+  The Federal Register published **766,073** notices in this period and we hold **2.3%** of them.
+  Saying so is the point: a corpus is worth what its limits are known to be, and a token that looked like complete notice coverage would be wrong in the one way that matters.
+
+  **What is held** is the four classes of notice that act on a rulemaking:
+
+  - withdrawal of a proposed rule,
+  - extension or reopening of a comment period,
+  - publication of significant agency guidance,
+  - announcement of negotiated rulemaking.
+
+  Every point names the rule that admitted it in `frNoticeClass`, so the scope is readable from the data rather than only from this page.
+
+  **What is not held** is everything else, which is mostly Paperwork Reduction Act information collections, meeting notices, permits and applications, antidumping proceedings and Privacy Act system-of-records notices.
+  None of those states or changes a legal obligation.
+  The 748,461 excluded documents are each recorded by Federal Register document number in our candidate ledger, so the scope can be widened later without re-crawling the series.
+
+  **A separate token from `FEDERAL_REGISTER` on purpose.**
+  Rules and proposed rules are ingested whole.
+  Folding notices in would attach this partial-scope statement to 5.5M points that are not partial, which is a false claim in the other direction.
+
+  ⚠️ **Notices carry an empty CFR cross-reference graph.**
+  `crossReferencesCfr` and `frTopics` are 0% and `frRegulationIdNumbers` is 2%, against 100% and 94% on rules, so a notice is **not** reachable by a CFR-citation filter.
+  `frDocketIds`, at 73.5%, is the join key that works.
+
+  `amendmentYears` is empty by design and `goodLawStatus` is `unknown`: a notice amends nothing, and the publisher prints no amendment credit for one, so there is no claim to make either way.
+
+  The token takes no `source` filter.
+  It has one internal source, so the value would be an exact synonym for the `corpusType` itself.
+</Update>
+
+<Update label="2026-09-04" description="NLRB Board decisions join AGENCY_ADJUDICATION: 2,762 decided cases on a bounded 15-year window, with currency deliberately not asserted">
+  ## NLRB Board decisions
+
+  The unfair-labor-practice and representation cases decided by the five-member National Labor Relations Board itself, which bind later Board panels and the administrative law judges beneath them. **2,762 decisions, 2012 to date**, under `source=nlrb_board_decision`.
+
+  This is a **bounded 15-year window** of a 90-year, 66,612-decision archive. That is a scope decision, not an omission: the window covers essentially every decision a practicing labor lawyer searches day to day, and the full backfill is tracked as a named follow-up.
+
+  **Two citation forms, both served, neither normalized into the other.** A Board decision is cited `NNN NLRB No. N` as a slip opinion and `NNN NLRB NNN` once the bound volume closes and assigns it a page. These are different facts rather than variants, because the page number does not exist until the volume closes: 57.45% carry a `slipOpinionNumber`, 42.55% a `pageNumber`, and which one a decision carries is itself the record of where it sits in its own lifecycle. 56.07% carry the Board's own notice that the opinion "is subject to formal revision before publication in the bound volumes".
+
+  Every decision carries `caseName`, `caseNumber` (the Board's own docket, e.g. `28-CA-230115`), `volume` and `issuedDate` at 100%, plus the source PDF and extracted text in R2.
+
+  ## goodLawStatus is `unknown`, and that is the point
+
+  Board doctrine swings hard with Board composition, and **the NLRB publishes no overruling or supersession signal for its decisions.** Its CITENET Classified Index is a subject digest rather than a citator: it records an overruling only as editorial prose on the decision doing the overruling, with no reverse edge on the decision that was overruled. Measured against the landed corpus, no decision carries a dead status.
+
+  So every decision is served as the Board issued it, with `goodLawStatus: "unknown"` and a `coverageNote` stating the limit. **Do not read that as "still good law".** It means we can show you faithfully what the Board decided and we will not assert whether a later Board has since overruled it.
+
+  Unpublished Board decisions are summary dispositions with no independent precedential value, are published as a separate series, and are out of scope by design.
+</Update>
+
+<Update label="2026-09-04" description="SEC Commission opinions join AGENCY_ADJUDICATION: 5,790 adjudicatory rulings, 1996 to date, with the File-Number proceeding graph">
+  ## SEC Commission opinions and adjudicatory orders
+
+  The Securities and Exchange Commission's own adjudicated rulings: appeals from an administrative law judge, review of a self-regulatory organization's disciplinary action (FINRA, an exchange), and applications for review. **5,790 documents, 1996-04-05 to 2026-09-01**, under `source=sec_commission_opinion`.
+
+  These bind the Commission's own later adjudications and the ALJs beneath it, and they are the securities bar's primary source on what the SEC believes the securities laws mean in a contested posture. Cited by release number: `Exchange Act Release No. 34-106254`. One action issued under several securities statutes at once carries every release number it was given in `citableAs`.
+
+  **The File-Number proceeding graph.** Every document carries its Administrative Proceeding File Number in `fileNumber` (99.6%; 112 documents name more than one, because the Commission consolidates proceedings). Documents sharing a File Number are ONE proceeding, and they are linked in date order through `supersedes` / `supersededBy` - 2,353 proceedings, 65.4% of them holding more than one document, 3,641 links across 86.7% of the series.
+
+  🔴 **Those links record a SEQUENCE, not a currency verdict, and no SEC document is served with a dead `actStatus` because of one.** A docket says a later document exists; it does not say the earlier one stopped being good law. This series is overwhelmingly interlocutory - 839 orders to show cause, 820 orders extending time to issue a decision, 227 orders scheduling briefs, against 901 opinions of the Commission - so a later document routinely affirms the earlier one, schedules briefing, or merely notices an initial decision as final. `goodLawStatus` is `unknown` for the series.
+
+  **What is not here, stated rather than implied.** ALJ **initial decisions** are deliberately not included: an initial decision is what one judge concluded before the Commission acted, and the SEC publishes no supersession field, so serving one as current authority would misstate its weight. Where an opinion names the initial decision it reviews, the citation is carried in `relatedCitations` and the referenced document is not in the corpus - that happens on 3.3% of the series. The 18,637-item settled-order and Fair Fund docket is also excluded, because a consent order reciting allegations is not a decision holding them proven. Federal court review under 15 U.S.C. 78y is not published on the SEC's adjudication listings and is not reflected here. Every section states these bounds in its own `coverageNote`.
+</Update>
+
+<Update label="2026-09-04" description="BIA and Attorney General precedent decisions join AGENCY_ADJUDICATION: the full I&N Dec. reporter, 3,292 decisions">
+  ## The `I&N Dec.` reporter, under `AGENCY_ADJUDICATION`
+
+  The Board of Immigration Appeals' published precedent decisions, the Attorney General's decisions reviewing the Board, and the legacy INS and USCIS administrative decisions the same reporter carries. 3,292 decisions across volumes 8 to 30, 1958 to 2026.
+
+  A published Board decision binds every immigration judge and every DHS officer nationwide under 8 C.F.R. 1003.1(g) unless and until it is overruled. This is the operative body of immigration law between the statute and the circuit courts, and it is not in any general case-law database.
+
+  **Three sources under the existing token**, filterable with `source`:
+
+  | `source` | decisions | who decided |
+  |---|---|---|
+  | `bia_precedent` | 2,714 | the Board of Immigration Appeals |
+  | `ag_precedent` | 94 | the Attorney General, on review of the Board |
+  | `immigration_admin_precedent` | 484 | Regional Commissioners, District Directors, Assistant Commissioners, the Commissioner, the Administrative Appeals Office |
+
+  `decidedBy` carries the deciding authority verbatim as EOIR prints it, across 37 distinct authorities, and a decision the Board decided and the Attorney General then reviewed carries both.
+
+  **The overruling graph.** The Board states its own effect on earlier decisions in the holdings prose beside each entry. 343 of those statements resolve into `supersedes` / `supersededBy` links, with the publisher's own verb in `dispositionVerb` and the sentence itself in `history`. `overruled_in_part` is stored distinctly and does not carry a dead `actStatus`. 70 decisions are served dead on this evidence; the corpus as a whole stays `goodLawStatus: "unknown"`.
+
+  **What is not here, stated rather than implied.** Volumes 1 to 7 are not published on EOIR's precedent page. Holdings prose begins at volume 19, so an overruling of a pre-1984 decision by a pre-1984 decision is invisible. A court of appeals can reject a precedent for its own circuit while it remains in force elsewhere, and EOIR publishes nothing about that. Unpublished single-member Board orders are not precedent and are out of scope. Every point states these in its own `coverageNote`.
+</Update>
+
+<Update label="2026-09-04" description="CFPB compliance guidance joins AGENCY_GUIDANCE: 16 circulars and 95 supervisory-guidance documents">
+  ## CFPB compliance guidance, under `AGENCY_GUIDANCE`
+
+  The other half of the Bureau's output, alongside the enforcement actions
+  below. **111 documents** across two new sources:
+
+  - **`cfpb_circular`** (16) - Consumer Financial Protection Circulars, cited
+    `Circular 2023-01`. These are the Bureau telling every enforcer and every
+    firm how it reads a statute, so they are the most broadly applicable thing
+    it publishes.
+  - **`cfpb_supervisory_guidance`** (95) - bulletins, policy statements,
+    interpretive rules and rescissions.
+
+  This completes a shelf that was missing its most-read agency: we already
+  carried OCC bulletins and interpretive letters, FDIC FILs, Federal Reserve SR
+  letters and FinCEN guidance, and nothing from the one federal consumer-finance
+  regulator a bank compliance officer reads every week.
+
+  **The Bureau's enforcement actions are NOT here.** They are adjudications and
+  live under `corpusType=AGENCY_ADJUDICATION`: an enforcement action binds one
+  named respondent, while a circular addresses the whole market. Folding them
+  together would make an `AGENCY_GUIDANCE` search mean two different things.
+
+  Two things worth knowing about coverage. The two series have opposite shapes -
+  a circular publishes its full text on its page, while a supervisory-guidance
+  page is a landing stub whose real document is the linked PDF - and both are
+  served as full text regardless. And **Circular 2023-03 is deliberately absent**:
+  the Bureau archived it, publishes no text for it, and leaves only a
+  third-party mirror, which we do not source from.
+
+  `goodLawStatus` is `unknown` on both sources. Neither publishes a structured
+  rescission signal, so we do not claim currency we cannot verify.
+</Update>
+
+<Update label="2026-09-04" description="CFPB enforcement actions join AGENCY_ADJUDICATION: 386 actions, and the first measured supersession signal in that corpusType">
+  ## CFPB enforcement actions, under `AGENCY_ADJUDICATION`
+
+  **386 Consumer Financial Protection Bureau enforcement actions**, filterable
+  with `source=cfpb_enforcement_action`. This closes a hole in a shelf we
+  already had: we carry OCC bulletins, FDIC FILs, Federal Reserve SR letters
+  and FinCEN guidance, and carried nothing from the one federal consumer-finance
+  regulator whose output a bank compliance officer reads every week.
+
+  **Both forums are included and are separable on the new `forum` field.** 225
+  actions are administrative proceedings carried on a Bureau File No. such as
+  `2024-CFPB-0002`; 162 are civil actions the Bureau files in federal district
+  court, which carry the court's own number in `caseNumber` and no Bureau
+  citation, because that identifier belongs to the court rather than to the
+  Bureau. One action carries both labels.
+
+  **The unit is the ACTION, not the filing.** A consent order and the
+  stipulation consenting to it are one record, because a stipulation is not a
+  separate legal instrument from the order it stipulates to and splitting them
+  makes every search return two half-answers. `relatedDocuments` names every
+  filing whose text a record carries - 993 documents in total, a mean of 2.6 per
+  action and a maximum of 17. Twelve actions are served with the Bureau's own
+  summary alone, because it posts no document for them.
+
+  ### 185 of the 386 are excluded from ordinary search, on purpose
+
+  The Bureau publishes its own three-value status enum and defines it publicly.
+  An action it marks `Expired/Terminated/Dismissed` - meaning the matter "did
+  not result in, or is no longer subject to, ongoing compliance obligations" -
+  is served with a dead `actStatus` and is therefore outside ordinary search
+  results. That is correct for an order that no longer binds anyone, and it is
+  close to half the set, so it is stated here rather than left to be discovered.
+
+  That status **bundles three different endings** and the Bureau does not
+  separate them: a matter it lost or withdrew is not the same event as an order
+  that ran its term. Every record therefore carries the Bureau's own status
+  string verbatim in `history`, so you can see the ambiguity we inherited rather
+  than only our reading of it.
+
+  ### The first `AGENCY_ADJUDICATION` source with a real `goodLawStatus`
+
+  No publisher in this corpusType ships a structured overruling field - an
+  adjudication is superseded by another decision, and the document itself never
+  changes when it stops being good law. MSPB and OLC records therefore carry
+  `goodLawStatus: "unknown"`. The CFPB is the exception: its status enum is
+  defined, complete and published, so this source's `goodLawStatus` is a real
+  verdict. MSPB and OLC are unchanged.
+
+  New fields on this corpus: `forum`, `court` and `relatedDocuments`.
+</Update>
+
+<Update label="2026-09-03" description="New corpusType: STATUTE_COMPILATION, 80,276 sections across 2,680 GovInfo compilations">
+  ## New corpusType: `STATUTE_COMPILATION`
+
+  A new federal corpus token for a public law's own text **as amended through**
+  a stated later public law - GovInfo's official compilations. **80,276
+  sections across 2,680 compilations**, sourced from GovInfo's `COMPS`
+  collection.
+
+  This fills a real citation gap. A section like "Section 210 of the Public
+  Utility Regulatory Policies Act" has no `USC` address, because it was never
+  codified into a positive-law title; `STATUTE_COMPILATION` is where it
+  resolves.
+
+  ```json
+  POST /statutes/search
+  { "query": "relationship to antitrust laws under the Public Utility Regulatory Policies Act",
+    "corpusType": "STATUTE_COMPILATION" }
+  ```
+
+  **Distinct from both of its neighbors, deliberately.** `USC` is the codified,
+  subject-organized arrangement - only for provisions that were codified at
+  all. `SESSION_LAW` (the Statutes at Large) holds the same acts **as
+  enacted**, a frozen historical record that carries `actStatus: "enacted"` and
+  `goodLawStatus: "unknown"` by design. `STATUTE_COMPILATION` makes the
+  opposite claim: "this is the act as it reads today, amended through Public
+  Law 117-58." Folding it into either neighbor would mean a customer reading a
+  decades-old snapshot as current law.
+
+  **Currency is stated per document, and read it before relying on the text.**
+  Each section carries `currentThrough` (e.g. `Public Law 117-58`), naming
+  exactly which amending law the compilation reflects. Across the collection
+  that ranges from `Public Law 96-308` (1980) to `Public Law 119-75` (2026) -
+  a 45-year span in the same corpus. **2.6% of compilations state no currency
+  at all**, and those carry `compilationCurrencyState: "unstated"` with
+  `currentThrough: null` rather than a guessed date.
+  `STATUTE_COMPILATION` does not carry a `goodLawStatus` certification.
+
+  **The join into `USC` is captured, not resolved.** Where GovInfo publishes a
+  structured cross-reference into the Code (`16 U.S.C. 2603`, for example),
+  it's served as `crossReferencesUsc`, so a caller can look up the codified
+  version of a compiled provision directly.
+
+  Full text is served by `GET /statutes/section/{actId}/body`, exactly like
+  every other corpus.
+</Update>
+
+<Update label="2026-09-03" description="New corpusType: AGENCY_ADJUDICATION, with 5,455 MSPB decisions and 1,371 OLC opinions">
+  ## New corpusType: `AGENCY_ADJUDICATION`
+
+  A new federal corpus token for **administrative adjudication**: matters decided
+  by a federal body through a formal process, carrying precedential weight on its
+  later decisions. It is deliberately separate from `AGENCY_GUIDANCE`, which is
+  interpretive rather than adjudicative, so a `corpusType=AGENCY_GUIDANCE` search
+  keeps meaning one thing.
+
+  ## Department of Justice Office of Legal Counsel opinions
+
+  **1,371 OLC opinions**, cited `NN Op. O.L.C. NNN`, filterable with
+  `source=olc_opinion`. OLC opinions are the executive branch's own controlling
+  legal advice: an opinion binds executive agencies unless the Attorney General
+  or the President overrides it. Sourced entirely from the Department's own
+  official bound volumes at `justice.gov`.
+
+  ```json
+  POST /statutes/search
+  { "query": "presidential authority to decline to execute a statute",
+    "corpusType": "AGENCY_ADJUDICATION" }
+  ```
+
+  Each opinion carries its volume and starting page, the canonical citation, the
+  requester it was addressed to, the signing official, its date, and the statutes
+  and regulations it cites. Full text is served by
+  `GET /statutes/section/{actId}/body`.
+
+  **Coverage ends with volume 44 (2020).** Opinions issued in 2021 and later have
+  not yet been published in a bound volume and are not included; every section
+  states this in its own `coverageNote`. Supplemental volume 1
+  (`NN Op. O.L.C. Supp. NNN`) adds opinions written 1933-1977 and published later.
+
+  **Currency.** OLC opinions default to `goodLawStatus: "unknown"`, because an
+  opinion is superseded by a later opinion rather than amended in place and the
+  publisher ships no structured overruling field. Where OLC printed an editor's
+  note that an opinion was withdrawn, superseded or reversed, that note is served
+  in `currencyNote` and the section carries `actStatus: "superseded"`.
+
+  ## Merit Systems Protection Board decisions
+
+  **5,455 MSPB decisions**, November 2018 to September 2026, sourced from the
+  Board's own published JSON manifests at `mspb.gov`. The MSPB adjudicates
+  federal-employee appeals: removals, suspensions, demotions, reduction-in-force
+  challenges, Individual Right of Action whistleblower claims under the
+  Whistleblower Protection Act, and USERRA cases.
+
+  **The two series are separately filterable, and that distinction is load
+  bearing.** 106 **precedential** decisions, cited `YYYY MSPB N`, bind
+  administrative judges across the Board's regional offices. 5,349
+  **nonprecedential** orders do not: the Board states in the orders themselves
+  that they "do not add significantly to the body of MSPB case law". Filter with
+  `source=mspb_precedential` / `source=mspb_nonprecedential`, or on the
+  `precedential` boolean carried by every decision.
+
+  ```json
+  POST /statutes/search
+  { "query": "whistleblower reprisal for a protected disclosure",
+    "corpusType": "AGENCY_ADJUDICATION", "source": "mspb_precedential" }
+  ```
+
+  Each decision carries its docket number, the respondent federal agency, the
+  appellant caption, its issue date, and the Title 5 statutes and regulations it
+  cites (`5 U.S.C. 7513`, `2302`, `1221` and `5 C.F.R. 1201` are the common
+  ones). **Only the precedential series has a citation.** A nonprecedential order
+  is identified by its docket number, which is the only identifier the Board
+  assigns it; nothing is synthesized to fill the gap.
+
+  **Currency.** MSPB decisions default to `goodLawStatus: "unknown"`. A decision
+  is superseded by a later decision on the same docket rather than amended in
+  place, and the Board publishes no supersession or reconsideration field. Where
+  two decisions share a docket they are linked with `supersedes` /
+  `supersededBy`, which records the sequence only: the Board does not say whether
+  the later decision affirmed, modified or reversed the earlier one, so neither
+  do we.
+
+  **One gap, stated plainly.** MSPB decisions are reviewable by the Federal
+  Circuit under 5 U.S.C. 7703, and a reversed decision is no longer good law. The
+  Board publishes nothing about this, and a decision cannot mention its own later
+  appeal, so a decision reversed on appeal is **not** marked as such here. Every
+  section says so in its `currencyNote`.
+</Update>
+
 <Update label="2026-08-27" description="State regulations reach all 52 jurisdictions; corpus passes 4.1M sections">
   ## Regulations for every US jurisdiction
 
