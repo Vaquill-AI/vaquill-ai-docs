@@ -41,6 +41,113 @@ A derived, conservative verdict that answers "can I rely on this section today?"
   The field is `null` when currency checking is disabled.
 </Warning>
 
+### State agency guidance: the verdict is per PUBLISHER, not per state
+
+`goodLawStatus` under `corpusType=STATE_AGENCY_GUIDANCE` is decided by the
+publisher that issued the document, and a state can hold two publishers with
+different answers.
+
+**Arizona is the worked example.** Its insurance regulator marks rescissions
+diligently, so `source=state_insurance_bulletin` earns `good_law`: 15 of its
+199 bulletins are served with a dead `actStatus` on the strength of the
+Department's own withdrawal statements. Its financial-institutions regulator,
+which shares the same index, has rescinded nothing we hold: 0 of 35. So
+`source=state_financial_bulletin` is served `unknown` in both Arizona and
+Oregon, and will be until a regulator actually withdraws something and we
+store it.
+
+Same state, same `corpusType`, same `actStatus` - two different verdicts,
+because they are two different publishers. Read `unknown` here as "we make no
+claim", not as "probably still current".
+
+**The rule is an allow-list**, as it is for federal guidance and
+administrative adjudications: a source earns a good-law verdict only after its
+own rescission signal has been measured, and a new source is `unknown` until
+then rather than certified by default.
+
+### Administrative adjudications: the text is served, the doctrine is not certified
+
+Every corpus under `corpusType=AGENCY_ADJUDICATION` except one is served with `goodLawStatus: "unknown"`, and that is a construction rather than a gap.
+
+**We serve the decision exactly as the body issued it, and we have NOT verified that it is still good law.**
+Read `unknown` as "we make no claim", not as "still good".
+
+The reason is the publisher, not the pipeline.
+An adjudication is superseded by ANOTHER DECISION, not by an amendment to itself, so the document never changes when it stops being law and none of the ordinary currency instruments fire.
+**No publisher in this family ships a structured overruling or supersession field.**
+Currency here is an allow-list keyed on the source: a source earns a good-law verdict only once it has been MEASURED to publish a real signal, and a source that has not is `unknown` with no action required.
+
+`nlrb_board_decision` is the clearest case, and it is deliberately not on that list.
+Board doctrine swings hard with Board composition, so an overruling is the normal course rather than an edge case, and the NLRB publishes nothing machine-readable that records one.
+Its CITENET Classified Index is a subject digest, not a citator: it carries an overruling only as editorial prose on the decision doing the overruling, with no reverse edge on the decision that was overruled.
+Two independent measurements, the citenet probe and a supersession sweep over the landed corpus, both returned no signal.
+So we serve the Board's text faithfully and refuse to assert what a later Board has done to it, and every section says so in its own `coverageNote`.
+
+`mspb_precedential`, `mspb_nonprecedential`, `olc_opinion`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent` and `immigration_admin_precedent` are `unknown` for the same reason.
+The two sections below cover the two places where a partial signal does exist, and neither of them changes that verdict.
+
+<Warning>
+  Do not treat `goodLawStatus: "unknown"` under this corpusType as a soft yes.
+  On a body whose doctrine turns over with its membership, a decision served as
+  issued may have been overruled the week after it was decided, and nothing in
+  this API will tell you.
+  If your use of an adjudication depends on it still being good law, check the
+  body's own subsequent output.
+</Warning>
+
+### An adjudicator overruling another: BIA and Attorney General decisions
+
+An administrative adjudication is superseded by ANOTHER DECISION, not by an amendment to itself, so the document never changes when it stops being good law. The `I&N Dec.` reporter is the one place in this corpus where the publisher states that relation itself, in the holdings prose it prints beside each decision.
+
+We resolve those statements into a graph. `supersedes` and `supersededBy` carry act ids, and `dispositionVerb` carries the publisher's own verb.
+
+🔴 **The verb's object is the CITED decision, not the one you are reading.** A headnote under `Matter of Diji, 30 I&N Dec. 1 (BIA 2026)` reading "*Matter of G-Y-R-*, 23 I&N Dec. 181 (BIA 2001), overruled" means G-Y-R- is dead and Diji is in force, not the other way round.
+
+🔴 **Read the verb before treating a link as fatal.** Most links are `followed`, `modified`, `clarified`, `distinguished` or `reaffirmed`, and none of those kills the cited decision. `overruled_in_part` and `modified_in_part` are stored distinctly and do NOT carry a dead `actStatus`, because a partly overruled decision is still law for everything else it held. Only an unqualified `overruled`, `vacated`, `superseded` or `withdrawn` moves the status.
+
+The whole corpus is still served as `goodLawStatus: "unknown"`, because the signal cannot certify the decisions it says nothing about: the Board publishes holdings prose only from volume 19 onward, and a court of appeals can reject a precedent for its own circuit while it remains in force elsewhere without EOIR publishing anything at all.
+
+### An agency's own status enum: CFPB enforcement actions
+
+Most of the corpus derives `goodLawStatus` from a repeal signal in the text. One
+source instead carries the issuing agency's own published lifecycle status, and
+it is worth knowing because it behaves differently from everything around it.
+
+The Consumer Financial Protection Bureau assigns every enforcement action one of
+three statuses and [publishes the definitions itself](https://www.consumerfinance.gov/enforcement/actions/enforcement-action-definitions/):
+
+| CFPB status | Meaning, in the Bureau's words | What we serve |
+|---|---|---|
+| `Post-order/Post-judgment` | "resolved ... and has ongoing compliance obligations" | `actStatus: "in_force"` |
+| `Expired/Terminated/Dismissed` | "did not result in, or is no longer subject to, ongoing compliance obligations" | `actStatus: "terminated"` (a dead status) |
+| `Pending Litigation` | "in ongoing litigation or under appeal" | `actStatus: "in_force"` |
+
+Two consequences you should plan for.
+
+**185 of the 386 actions carry the dead status, so they are excluded from
+ordinary search results.** That is close to half the source, and it is correct:
+an order that no longer binds anyone should not be returned as live law. Query
+them explicitly if you need the historical record.
+
+**That status bundles three different endings and the Bureau does not separate
+them.** A matter it lost or withdrew is not the same event as an order that ran
+its term, and no field distinguishes them. So each record also carries the
+Bureau's raw status string verbatim in `history`, and you should read that
+rather than inferring an outcome from `actStatus` alone.
+
+<Note>
+  **`goodLawStatus` is not uniform within `corpusType=AGENCY_ADJUDICATION`.**
+  CFPB enforcement actions carry a real verdict, because the Bureau publishes a
+  defined and complete status enum. Every other source under this token - MSPB
+  decisions, DOJ Office of Legal Counsel opinions, SEC opinions, NLRB Board
+  decisions and the `I&N Dec.` reporter - carries `unknown`, because no
+  publisher among them ships a supersession field at all: an adjudication is
+  superseded by *another decision*, and the document itself never changes when
+  it stops being good law.
+
+  Filter on `source` if you need one behavior or the other.
+</Note>
+
 ## Currency and move pointers
 
 - **`currencyNote`**: the source's own "current through ..." line, when the publisher provides one. Use it to show how fresh the text is, rather than a bare fetch date.

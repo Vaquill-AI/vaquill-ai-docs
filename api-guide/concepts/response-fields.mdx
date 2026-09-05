@@ -100,13 +100,33 @@ enacted law on the field a currency query trusts.
 
 ## Filtering by year
 
-`yearFrom` and `yearTo` range over `lastAmendedYear` and `effectiveYear`.
+`yearFrom` and `yearTo` match a section on any of three years, in this order:
+
+1. `lastAmendedYear`, the publisher's own credited amendment.
+2. `effectiveYear`, for a section adopted once and never amended. Calling an
+   adoption an amendment would be a wrong answer rather than a missing one, so
+   those sections carry no `lastAmendedYear` and are reached this way instead.
+3. The document's own **publication or issue year**, for the corpora where that
+   is what the document is dated by: Federal Register proposed rules, agency
+   guidance, adjudications and the treaty record.
 
 <Note>
-A corpus whose sections carry neither is not reachable by a year filter at all,
-and will return zero results rather than an error.
-Check the table above before filtering: for proposed rules in particular, a year
-window returns nothing by design.
+The third case is deliberately scoped to those corpora and is **not** a general
+fallback. On statutes and regulations the underlying year field records when we
+last ingested the text, not when the law changed, so matching it would answer a
+recent-year window with entire state codes.
+</Note>
+
+A section carrying none of the three is not reachable by a year filter and
+returns zero results rather than an error.
+
+<Note>
+**Changed 2026-09-04.** Proposed rules are now reachable by their publication
+year; before this they matched no year window at all.
+They still carry no `amendmentYears`, and that has not changed: a proposed rule
+amended nothing, and the asymmetry described above is deliberate.
+"When was this published" and "what did this amend" are different questions, and
+only the second one is silent for a proposed rule.
 </Note>
 
 ## Related

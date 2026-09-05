@@ -106,6 +106,14 @@ Two cases look identical in a coverage number and are not the same thing:
 - **The publisher prints no credit.** Wyoming annotates repealed and renumbered sections but not sections in force, so roughly three quarters of its sections carry no credit at any source we can lawfully use. No parser can recover what was never published.
 - **The credit exists and we have not extracted it yet.** This is our gap, not the state's, and we treat it as a defect rather than a limitation.
 
+A third case appears in the scanned federal corpora and is worth naming separately, because it looks like our gap and is really a limit of the artifact:
+
+- **The publisher printed the credit and the scan destroyed it.** The `I&N Dec.` reporter prints a date line on every decision, but the pre-1985 volumes are OCR of paper prints and the line arrives damaged ("Docidcd by Docird Juno 25, 19.78"). We keep the publisher's printed string byte-identical in `effectiveDate` whatever state it is in, because it is the evidence, and we emit the derived `issuedDate` only where a second, independent source agrees with it. For that corpus the second source is the citation year on the publisher's own index, and the two disagree on 172 decisions, essentially always because the scan misread a digit. Rather than serve a year that is wrong by decades, we drop the derived date and take the year from the index.
+
+<Note>
+A decision reissued with changes is a real amendment event, and this reporter states it in the date line itself: "Decided as amended March 19, 1998". Those carry `reissuedAsAmended: true` and an `amendmentsCount` of 2 rather than 1.
+</Note>
+
 We publish per-jurisdiction figures once a jurisdiction has been measured against its own source, so the two cases can be told apart.
 Ask us for the current position on any jurisdiction you depend on and we will give you the measured number and which of the two cases it is.
 

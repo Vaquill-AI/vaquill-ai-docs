@@ -7,6 +7,59 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-09-06" description="One measurement now backs both the docs and the marketing site: 4,844,957 sections">
+  ## Coverage is now one measurement, and it is 4,844,957 sections
+
+  Yesterday two figures were published for the same corpus: **4.5M sections** here and **4M+** on vaquill.ai.
+  Neither was a typo. Each surface was resynced independently, from a different source, and the two rounded different definitions: one carved the CFR annual editions out of the total as "versions", the other measured before those editions had landed.
+
+  Both surfaces now carry a single measurement, taken on 2026-09-06 by calling the shipped counters read-only, which is the exact definition `GET /statutes/coverage` publishes as `sectionCount`. All 52 jurisdictions scrolled, none failed.
+
+  | | Sections |
+  |---|---:|
+  | **Total** | **4,844,957** |
+  | Federal | 1,363,580 |
+  | State and territory | 3,481,377 |
+  | Retrieval passages | 16,201,932 |
+
+  The CFR annual editions enter that total at their **section** count, 312,132, not at their 886,066 stored versions.
+  The collapse is applied by the counter itself, so there is no second carve-out to make, and the corpus is depth in time over the same regulations rather than extra breadth of distinct ones.
+
+  <Warning>
+    **`GET /statutes/coverage` still returns 4,180,527 until the API is refreshed.**
+    The endpoint reads section counts from an overlay that a worker loads at boot, and the workers have not been restarted since the overlay for this measurement was written.
+    The figures above are what it returns once that restart lands.
+  </Warning>
+
+  ## Two corpus types are counted but cannot be filtered on yet
+
+  Checked against the deployed OpenAPI document on 2026-09-06: the published `corpusType` enum carries 17 tokens, and **`CFR_ANNUAL` and `FEDERAL_REGISTER_NOTICE` are not among them**.
+  Both corpora are in the index and both are counted by `/statutes/coverage`, but a search scoped to either token is rejected.
+  The 2026-09-05 entry announcing `CFR_ANNUAL` is correct about the data and premature about the filter; that filter ships with the next API deploy.
+
+  Six `source` values are in the same position and are listed here so nobody has to discover them by trial: `nlrb_board_decision`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `cfpb_enforcement_action` and `irs_irm` are not in the deployed `source` enum.
+  Unlike the two above, those documents **are** retrievable today, under `corpusType=AGENCY_ADJUDICATION` and `corpusType=AGENCY_GUIDANCE`. What is missing is the per-body filter, not the data.
+
+  ## Things that stay true when the number goes up
+
+  Nothing in this entry widens a claim, and four scope limits travel with these figures wherever they are quoted.
+
+  - Federal Register **notices** are 17,612 of the 766,073 published in the period, **2.30%**, four operative classes by design. That is not notice coverage and is never described as such.
+  - The **Internal Revenue Manual** is agency procedure, not law. It is the IRS's own instruction manual for its employees and does not bind the agency against a taxpayer.
+  - The **adjudication** corpora (NLRB, MSPB, BIA, SEC, OLC, CFPB) carry no verified doctrinal currency. `goodLawStatus` is `unknown` by design on all but the CFPB slice, and nothing here implies good-law assurance.
+  - **Statutes at Large** is held from 137 of the 140 volumes. Volumes 7, 8 and 44 are not held.
+</Update>
+
+<Update label="2026-09-06" description="FinCEN AML Act of 2020 implementation material is live as source=fincen_amla_material">
+  ## FinCEN Anti-Money Laundering Act of 2020 implementation material
+
+  `source=fincen_amla_material` adds **13 documents across 159 retrieval passages**: the AML/CFT National Priorities and the interagency statements issued with them, the Arts and Antiquities notice, threat-pattern and trend reports, the Section 6305 Report to Congress on no-action letters, the whistleblower bulletin, and the AML/CFT program NPRM fact sheets. Cited as `FinCEN, Statement for Banks (AML Act of 2020 Sec. 6101, June 30, 2021)`.
+
+  **The AML Act rulemakings themselves are not duplicated here.** The NPRMs and final rules implementing each section are Federal Register documents and are already served under `corpusType=FEDERAL_REGISTER`. This source carries only FinCEN's own standalone publications.
+
+  Completes the FinCEN Corporate Transparency Act and AML Act batch begun in the previous entry.
+</Update>
+
 <Update label="2026-09-05" description="State financial-institutions regulator bulletins are live as source=state_financial_bulletin under corpusType=STATE_AGENCY_GUIDANCE">
   ## State financial-institutions regulator bulletins (Arizona, Oregon)
 
@@ -22,6 +75,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   **Nothing you already query changes.** Existing insurance-bulletin results keep their citations, their `actId` values and their counts, and a search with no `source` filter now spans both. A search for insurance guidance will never be handed a credit-union bulletin: the two are separate categories, and each document's `source` says which it is.
 
   **This is not a claim to cover state banking law.** These two states are served because their banking regulator is combined with their insurance regulator and publishes both series on one index, under numbers we can cite. Most states' financial regulators publish no numbered series at all, so `source=state_financial_bulletin` returns nothing for the other 47 jurisdictions and no wider rollout is planned.
+
+  **`state_financial_bulletin` is served `goodLawStatus: "unknown"`, deliberately.** Neither regulator has rescinded anything we hold (0 of 35 in Arizona, 0 of 10 in Oregon), so there is no measured rescission signal to certify against. Arizona's INSURANCE bulletins keep `good_law` on their own signal, which is 15 of 199 marked - same state, same `corpusType`, two publishers, two verdicts. Read `unknown` as "we make no claim", not as "probably still current".
 
   Every document carries an `issuedDate` from the publisher's own index, and both sources refresh weekly alongside the rest of the state-guidance registry.
 </Update>
@@ -80,7 +135,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   | What | Published | Measured |
   |---|---|---|
-  | Corpus totals | 4.1M sections / 13.1M passages | **4.5M sections / 13.3M passages** |
+  | Corpus totals | 4.1M sections / 13.1M passages | **4.5M sections / 13.3M passages** (superseded 2026-09-06: this measurement excluded the CFR annual editions; the single figure is 4,844,957 sections / 16,201,932 passages) |
   | Federal law | 12 corpora, ~711K sections | **13 corpora, ~1.06M sections** |
   | Statutes at Large (`SESSION_LAW`) | 5,256 laws, ~110K sections, 1999-2026 | **93,422 laws (48,437 public, 44,985 private), 423,928 sections, 1789-2026**, from 137 of the 140 volumes |
   | Code of Federal Regulations | 222,348 | **222,330** |
