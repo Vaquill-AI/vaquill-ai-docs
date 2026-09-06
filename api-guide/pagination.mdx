@@ -1,19 +1,42 @@
 ---
 title: "Pagination"
-description: "Page through search results with limit, offset, and hasMore"
+description: "Offset paging and cursor paging, and which endpoints use which"
 icon: "list-ol"
 ---
 
-Only `POST /us/statutes/search` is paginated. Two request fields control the window, and one response flag tells you when to stop.
+Eight endpoints page, in two different models.
 
-## Request parameters
+**Offset paging** walks a fixed window with `limit` and `offset` and stops when `hasMore` is `false`.
+Use it for a ranked or ordered list that is not changing while you read it.
+
+**Cursor paging** walks an append-only log by change `id`, forwards with `sinceId` or backwards with `beforeId`.
+Use it for change history, where new rows land while you page and an offset would skip or repeat them.
+
+| Endpoint | Model | `limit` default | `limit` max |
+|---|---|---:|---:|
+| `POST /us/statutes/search` | offset, `offset` 0 to 70 | 10 | 50 |
+| `GET /boards` | offset | 500 | 500 |
+| `GET /watches` | offset | 100 | 200 |
+| `GET /watches/{id}/changes` | cursor, in `meta.cursor` | 50 | 200 |
+| `GET /us/statutes/section/{actId}/changes` | cursor, top-level `cursor` | 50 | 200 |
+| `GET /us/statutes/section/{actId}/cited-by` | `limit` only | 25 | 100 |
+| `GET /us/statutes/section/{actId}/cross-state` | `limit` only | 5 | 25 |
+| `GET /us/statutes/section/{actId}/related` | `limit` only | 3 | 10 |
+
+The last three take a `limit` and nothing else.
+They return the top N by relevance, and there is no page two, so raise `limit` to its maximum if you want the whole set.
+`GET /watches/{id}/deliveries` behaves the same way, with a `limit` of 50 by default and 200 at most.
+
+## Search paging
+
+`POST /us/statutes/search` is the endpoint most integrations page. Two request fields control the window, and one response flag tells you when to stop.
 
 | Field | Type | Default | Range | Purpose |
 |-------|------|---------|-------|---------|
 | `limit` | int | 10 | 1 to 50 | Page size, the number of results returned |
 | `offset` | int | 0 | 0 to 70 | Number of results to skip before this page |
 
-## Response fields
+### Response fields
 
 Each search response includes these top-level fields:
 
@@ -22,6 +45,7 @@ Each search response includes these top-level fields:
 - `total`: a **deprecated** alias for `count`. It is still returned for back-compatibility. Read `count` in new code.
 - `offset`: the offset that was applied.
 - `hasMore`: `true` when more results are reachable beyond this page.
+- `creditsConsumed`: what this call actually cost. Read it rather than assuming the list price.
 
 <Warning>
   `count` is a per-page count, not a corpus total. There is no field that reports how many sections in the whole corpus match your query. Use `hasMore` to drive your loop, not arithmetic on `count`.
@@ -34,7 +58,7 @@ Each search response includes these top-level fields:
   corpus". Narrow the query rather than paging deeper.
 </Note>
 
-## How deep you can page
+### How deep you can page
 
 The deepest reachable result is `offset + limit`. The full candidate pool is ranked once per query and cached, so every page, including deep ones, is a free slice of that ranking with no extra search or rerank. With the largest page size, `offset` up to `70` reaches the entire reranked pool:
 
@@ -46,7 +70,7 @@ The deepest reachable result is `offset + limit`. The full candidate pool is ran
   If you need to survey a jurisdiction more broadly, scope with `corpusType` and `state` and run several narrower queries rather than trying to page past the window. Tighter scope also gives more predictable pages.
 </Note>
 
-## Page until hasMore is false
+### Page until hasMore is false
 
 This loop walks every reachable page, stopping when `hasMore` is `false` or the offset cap is reached.
 
@@ -117,9 +141,100 @@ console.log(sections.length);
 ```
 </CodeGroup>
 
+## Offset paging on the list endpoints
+
+`GET /boards` and `GET /watches` both take `limit` and `offset` and return their page inside `data`.
+
+They differ in what they tell you about the rest.
+`GET /boards` returns `data.total` and `data.hasMore`, so you can page it properly.
+`GET /watches` returns neither: page it by advancing `offset` until a page comes back shorter than `limit`.
+In practice one page is always enough there, because the watch cap is 3 outside Business and 100 on Business, and `limit` defaults to 100.
+
+`GET /boards` is the one that bites.
+Its `limit` defaults to 500 **and 500 is also the maximum**, so a client that never passes `offset` silently truncates the moment the registry passes 500 boards.
+There are about 216 boards today, so the default still covers the whole registry, but that is a fact about today rather than a guarantee.
+Read `total` and page on `offset` instead of trusting one call.
+
+```python Python
+import requests
+
+def all_boards():
+    url = "https://api.vaquill.ai/api/v1/boards"
+    headers = {"Authorization": "Bearer vq_key_..."}
+    boards, offset = [], 0
+    while True:
+        data = requests.get(
+            url, headers=headers, params={"limit": 500, "offset": offset}
+        ).json()["data"]
+        boards.extend(data["boards"])
+        # Stop on the API's own flag, not on len(boards) == total.
+        if not data.get("hasMore"):
+            break
+        offset += 500
+    return boards
+
+print(len(all_boards()))
+```
+
+`GET /boards` and `GET /watches` are free, so paging them costs nothing but a request against your [rate limit](/api-guide/rate-limits).
+
+## Cursor paging on change history
+
+`GET /watches/{id}/changes` and `GET /us/statutes/section/{actId}/changes` page by change `id` rather than by offset.
+Change ids are monotonic across the whole corpus, so an id is a stable position in the log even as new rows arrive behind you.
+
+| Parameter | Direction | Purpose |
+|---|---|---|
+| `sinceId` | forwards | Return changes with an `id` **greater** than this. The polling cursor. |
+| `beforeId` | backwards | Return changes with an `id` **less** than this. How you walk into history. |
+| `order` | either | `desc` (default) newest first, `asc` when catching up from a cursor. |
+| `limit` | either | 1 to 200, default 50. |
+| `changeKind` | filter | `added`, `amended` or `removed`. Repeatable. |
+
+The two endpoints return the cursor in different places, which is the one thing to get right:
+
+- `GET /watches/{id}/changes` returns it as `meta.cursor`, alongside `meta.hasMore`.
+- `GET /us/statutes/section/{actId}/changes` returns it as a top-level `cursor`, alongside a top-level `hasMore`.
+
+Either way the cursor is the **highest** `id` on the page, and it is `null` on an empty page, so an idle poll must keep the cursor it already holds rather than overwriting it with `null`.
+
+**Polling forwards** is the normal case: save the cursor, and pass it as `sinceId` with `order=asc` on the next call.
+Walking forward means a page that fills to `limit` leaves the gap at a known end, so you never lose a row between polls.
+
+**Walking backwards** is what `beforeId` is for: pass the **lowest** `id` you have seen, with the default `order=desc`, to fetch the page of history that sits behind it.
+Repeat until a page comes back short of `limit`.
+
+```python Python
+import requests
+
+def backfill(act_id, headers):
+    """Walk a section's change history backwards, oldest page last."""
+    url = f"https://api.vaquill.ai/api/v1/us/statutes/section/{act_id}/changes"
+    before, out = None, []
+    while True:
+        params = {"limit": 200, "order": "desc"}
+        if before is not None:
+            params["beforeId"] = before
+        page = requests.get(url, headers=headers, params=params).json()
+        changes = page["changes"]
+        out.extend(changes)
+        if not page["hasMore"] or not changes:
+            break
+        # Lowest id on this page is where the next page starts.
+        before = min(c["id"] for c in changes)
+    return out
+```
+
+<Warning>
+  `hasMore` on both change endpoints means "this page filled to `limit`", not "more rows definitely exist". A page that happens to land exactly on `limit` reports `true` and the next page comes back empty. Treat an empty page as the end.
+</Warning>
+
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="Law Change Alerts" icon="bell" href="/api-guide/alerts">
+    Subscribe to a board, then poll its changes with a cursor.
+  </Card>
   <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
     Stay under per-minute limits while paging in a loop.
   </Card>

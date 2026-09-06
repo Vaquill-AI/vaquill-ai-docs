@@ -11,24 +11,96 @@ given field may be `null`.
 
 ## Text from the body endpoint
 
-`GET /statutes/section/{actId}/body` returns the section's full text in two
-forms:
+`GET /us/statutes/section/{actId}/body` returns the section's text in several
+forms at once.
 
 | Field | Contains |
 |---|---|
-| `html` | The section rendered as HTML (string or `null`) |
-| `plain` | The section as plain text (string or `null`) |
-| `source` | Where the text was sourced from (string or `null`) |
+| `html` | The whole body rendered as HTML (string or `null`) |
+| `plain` | The whole body as plain text (string or `null`) |
+| `content` | The operative text only, with the credit line and notes removed |
+| `sourceCredit` | The publisher's credit line, split out of the body |
+| `notes` | The notes apparatus the publisher prints after the section |
+| `sourceUrl` | Where the government published this text (string or `null`) |
+| `source` | Our storage identifier for the text. Not a citation. |
 | `available` | Whether text was returned at all (bool) |
 | `note` | An optional note when text is partial or unavailable (string or `null`) |
 
+Always check `available` first.
 Use `html` when you are displaying the section in a UI and want its structure
-preserved. Use `plain` when you are feeding the text to an LLM in your stack or
-doing plain-text processing. Always check `available` first.
+preserved, `plain` when you want the publisher's whole body as text.
+
+### Telling the law from the apparatus
+
+`plain` and `html` are the WHOLE body as the publisher prints it: the operative
+text, then the source credit, then the notes apparatus (historical and revision
+notes, committee reports, editorial notes, amendments, effective-date notes).
+
+For **United States Code** sections that body is mostly not the law.
+Measured 2026-09-02, the operative text is a median 46% of it across USC, and as
+little as 3.4% on `17 U.S.C. § 107`, where 28,529 of 29,775 characters are
+commentary.
+
+So the granule is split into three additional fields, using the field delimiters
+GPO publishes in the source: `content` is the operative text and nothing else,
+`sourceCredit` is the credit line, and `notes` is the apparatus, kept because it
+is the legislative history.
+
+<Warning>
+  **If you are feeding sections to a model, use `content`.**
+  A model handed the full body will quote a 1992 amendment note as the law in
+  force, and it will look right.
+
+  ⚠️ USC only. CFR and the state corpora carry no equivalent structure in their
+  sources, so all three fields are null there and `plain` remains the whole body.
+  Null means "we cannot split this reliably", never "this section is empty".
+</Warning>
+
+### Choosing what comes over the wire: `format`
+
+`format` selects which representations are returned.
+Cost is unchanged at 6 credits whichever you pick: the fetch is the same either
+way, so this buys payload size, not price.
+
+| Value | Returns |
+|---|---|
+| `both` | `html` and `plain`. The default. |
+| `html` | `html` only. Roughly halves the payload on a long section. |
+| `plain` | `plain` only. |
+| `content` | Neither `html` nor `plain`, only `content`, `sourceCredit` and `notes`. |
+
+On `17 U.S.C. § 107`, `format=content` is about 1 KB over the wire instead of
+about 30 KB, for the same price.
+Only USC sections can be split, so on any other corpus `format=content` returns
+no text at all.
+Check `content` for null and fall back to `plain` if you are not sure which
+corpus you have.
+
+### Citing where the text came from
+
+`sourceUrl` is where the government published this text.
+Cite and verify against that, not against `source`, which names our storage
+backend and is not a citation.
+
+`sourceUrl` is null when we hold no official link for the section.
+We never substitute a third-party compiler, so an absent link is the correct
+answer rather than a gap you should work around.
+
+## Point-in-time text: `asOf`
+
+Pass `asOf=YYYY-MM-DD` to get the text as it stood on that date instead of
+today's, at the same 6 credits.
+The response then carries an `asOf` block saying which version you are holding
+and how far the evidence for it reaches.
+
+It is a reconstruction rather than an archive, and `asOf.isBounded` is the field
+that says so.
+See [Response Fields](/api-guide/concepts/response-fields) for the full block
+and how to read it before citing the text.
 
 ## Structured text and pincites
 
-Pass `?structured=true` to `GET /statutes/section/{actId}/body` for two more
+Pass `?structured=true` to `GET /us/statutes/section/{actId}/body` for two more
 representations parsed from the text, at no extra cost:
 
 | Field | Contains |

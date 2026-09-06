@@ -7,7 +7,7 @@ icon: "clock-rotate-left"
 Most statute sections carry a credit line that records the acts which enacted and amended them.
 We parse that line into structured fields so you can filter and sort on when a section changed, instead of reading it out of prose.
 
-These fields appear on `POST /statutes/search`, `GET /statutes/section/{actId}`, and `POST /statutes/sections`.
+These fields appear on `POST /us/statutes/search`, `GET /us/statutes/section/{actId}`, and `POST /us/statutes/sections`.
 
 <Note>
 They are populated for statute corpora, where the publisher prints a credit line.
@@ -108,10 +108,12 @@ Two cases look identical in a coverage number and are not the same thing:
 
 A third case appears in the scanned federal corpora and is worth naming separately, because it looks like our gap and is really a limit of the artifact:
 
-- **The publisher printed the credit and the scan destroyed it.** The `I&N Dec.` reporter prints a date line on every decision, but the pre-1985 volumes are OCR of paper prints and the line arrives damaged ("Docidcd by Docird Juno 25, 19.78"). We keep the publisher's printed string byte-identical in `effectiveDate` whatever state it is in, because it is the evidence, and we emit the derived `issuedDate` only where a second, independent source agrees with it. For that corpus the second source is the citation year on the publisher's own index, and the two disagree on 172 decisions, essentially always because the scan misread a digit. Rather than serve a year that is wrong by decades, we drop the derived date and take the year from the index.
+- **The publisher printed the credit and the scan destroyed it.** The `I&N Dec.` reporter prints a date line on every decision, but the pre-1985 volumes are OCR of paper prints and the line arrives damaged ("Docidcd by Docird Juno 25, 19.78"). We keep the publisher's printed string byte-identical in `effectiveDate` whatever state it is in, because it is the evidence, and we derive a clean date from it only where a second, independent source agrees. For that corpus the second source is the citation year on the publisher's own index, and the two disagree on 172 decisions, essentially always because the scan misread a digit. Rather than serve a year that is wrong by decades, we drop the derived date and take the year from the index. That derived date is held with the document for our own gating and is not served as its own response field.
 
 <Note>
-A decision reissued with changes is a real amendment event, and this reporter states it in the date line itself: "Decided as amended March 19, 1998". Those carry `reissuedAsAmended: true` and an `amendmentsCount` of 2 rather than 1.
+A decision reissued with changes is a real amendment event, and this reporter states it in the date line itself: "Decided as amended March 19, 1998".
+We count it as one, so those decisions report an `amendmentsCount` of 2 rather than 1.
+The reissue marker itself is held with the document and is not exposed as a response field, so read the count.
 </Note>
 
 We publish per-jurisdiction figures once a jurisdiction has been measured against its own source, so the two cases can be told apart.

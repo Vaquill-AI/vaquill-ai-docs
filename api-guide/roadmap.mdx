@@ -1,101 +1,97 @@
 ---
 title: "Roadmap"
-description: "Corpora Vaquill AI is building next, what is deliberately out of scope, and how to detect new coverage programmatically"
+description: "Corpora Vaquill AI has not built yet, what is deliberately out of scope, and how to detect new coverage programmatically"
 icon: "map"
 ---
 
-What is coming to the corpus, and what is not.
+**This page lists only what is NOT built yet.**
 
-Everything here ships through the same pipeline as the current data: official government source, chunked and embedded, citation-linked, on a recurring refresh. Each lands behind the same `corpusType` filter, so there is nothing to integrate.
+For what is queryable right now, `GET /us/statutes/coverage` is the live answer and this page is not.
+It reports every jurisdiction, every corpus and every section count at the moment you call it, it is free, and it needs no authentication beyond your key.
+The human-readable version is [Coverage](/api-guide/coverage), and what has already shipped is in the [Changelog](/api-guide/changelog).
 
-Queryable today: [Coverage](/api-guide/coverage). Already shipped: [Changelog](/api-guide/changelog).
+Everything below ships through the same pipeline as the current data: official government source, chunked and embedded, citation-linked, on a recurring refresh.
+Each lands behind the same `corpusType` filter, so there is nothing to integrate.
 
 <Note>
-  Dates are targets, not commitments. Poll `GET /statutes/coverage` to detect new corpora rather than tracking this page, and see [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled diff.
+  This page is maintained by hand and the corpus is not, so treat it as direction rather than as a manifest. Poll `GET /us/statutes/coverage` to detect new corpora, and see [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled diff. No date on this page is a commitment.
 </Note>
 
 ## Completing existing coverage
 
-**State regulations reached all 52 jurisdictions on 2026-08-27.** Two corpus types are live but not yet complete.
-Both are rolling out state by state on the same pipeline and the same refresh cadence as the states already covered.
+State regulations reached all 52 jurisdictions on 2026-08-27, and state agency guidance is effectively complete at 49.
+Two gaps remain inside corpora that are otherwise live.
 
-| Corpus | Today | Target |
+| Corpus | Gap | Position |
 |---|---|---|
-| State regulations (`REGULATION`) | **All 52 jurisdictions. Complete.** | Reached 2026-08-27 |
-| State court rules (`STATE_RULES`) | 46 jurisdictions | Broad coverage. The remaining states either publish no consolidated rules text from a government source, codify their rules into the statute book (already served under `STATE`), or restrict automated access by published court policy. |
-| State agency guidance (`STATE_AGENCY_GUIDANCE`) | 49 jurisdictions, 12,808 documents | Effectively complete; three jurisdictions publish no browsable bulletin archive |
+| State court rules (`STATE_RULES`) | 6 jurisdictions | See below |
+| State agency guidance (`STATE_AGENCY_GUIDANCE`) | Pennsylvania, Colorado, Louisiana | Not currently planned |
+| State statutes (`STATE`) | Pennsylvania's unconsolidated (Purdon's) statutes | Prioritized for backfill |
 
-State agency guidance is each insurance regulator's own bulletins and circular
-letters, the state-level analog of federal `AGENCY_GUIDANCE`. Three
-jurisdictions publish no cleanly scopable insurance-only archive and are not
-currently planned: Pennsylvania, Colorado and Louisiana.
+The remaining court-rules jurisdictions either publish no consolidated rules text from a government source, codify their rules into the statute book (already served under `STATE`), or restrict automated access by published court policy.
 
-Pennsylvania's Consolidated Statutes are complete; its older unconsolidated (Purdon's) statutes are a separate later addition, prioritized for backfill.
+The three missing agency-guidance jurisdictions publish no cleanly scopable insurance-only archive.
+Pennsylvania's Consolidated Statutes are complete; only the older unconsolidated Purdon's material is outstanding.
 
 ## Point-in-time and as-applied federal law
 
 The current text of a rule answers what it says today.
 It does not answer what it said on the date of the conduct, which is the question most compliance disputes actually turn on.
-These are the highest-priority items on this page.
 
-<Check>
-  **Shipped 2026-09-05: CFR annual editions, 1996 to 2026.** All 31 published editions across all 49 titles are live under `corpusType=CFR_ANNUAL`, as 886,066 section versions covering 312,132 distinct sections. See [Corpus Types](/api-guide/concepts/corpus-types) and [API Coverage](/api-guide/coverage#federal). The remaining items in this section are still planned.
-</Check>
+The CFR annual editions, 1996 to 2026, are **live** under `corpusType=CFR_ANNUAL`, and the Statutes at Large are live under `SESSION_LAW`.
+These are what is still missing around them.
 
 | Source | What it adds | Official source |
 |---|---|---|
-| List of Sections Affected (LSA), monthly, 1997 to 2026 | The official month-by-month map from a CFR section to the change that hit it and the Federal Register page that made it. It is the join key between the `CFR` and `FEDERAL_REGISTER` corpora already in the API, and it answers "what changed this month" directly. Now that the annual editions are in, the LSA is what turns two adjacent editions into a reason a section changed. | govinfo |
-| FAR and DFARS class deviation text | Since the Federal Acquisition Regulation overhaul, agencies have been applying model deviation text that 48 C.F.R. does not yet reflect. FAR and DFARS are already served inside `CFR`; the deviations are what a contracting officer is operating under in the meantime. | acquisition.gov |
+| List of Sections Affected (LSA), monthly, 1997 to 2026 | See below | govinfo |
+| FAR and DFARS class deviation text | See below | acquisition.gov |
+| Statutes at Large, volumes 7, 8 and 44 | The three volumes of 140 that `SESSION_LAW` does not hold. Everything else, 1789 to 2026, is live. | govinfo |
 
-## Federal statutory sources outside the US Code
+The **LSA** is the official month-by-month map from a CFR section to the change that hit it and the Federal Register page that made it.
+It is the join key between the `CFR` and `FEDERAL_REGISTER` corpora already in the API, and it answers "what changed this month" directly.
+Now that the annual editions are in, the LSA is what turns two adjacent editions into a reason a section changed.
 
-Citations that resolve to nothing today, because the text they point at is not in a code title.
+**FAR and DFARS class deviations** matter because, since the Federal Acquisition Regulation overhaul, agencies have been applying model deviation text that 48 C.F.R. does not yet reflect.
+FAR and DFARS are already served inside `CFR`; the deviations are what a contracting officer is operating under in the meantime.
 
-| Source | What it adds | Official source |
-|---|---|---|
-| Statutes at Large, volumes 7, 8 and 44 | The three volumes of the 140 that `SESSION_LAW` does not yet hold. Everything else, 1789 to 2026, landed on 2026-09-03: 93,422 public and private laws across 423,928 sections. | govinfo |
-
-## Federal law and court rules
-
-Targeted to land by the **start of Q4 2026**, with the exception noted below.
-
-<Note>
-  Federal local rules are the largest item in this table by a wide margin,
-  since they mean roughly 200 separate courts each publishing their own set,
-  mostly as PDFs, with no common schema. Expect it to trail the other three.
-</Note>
+## Federal court rules
 
 | Source | What it adds | Official source |
 |---|---|---|
-| Federal Register notices | The third Federal Register document class. We carry final and proposed rules today; notices cover meeting announcements, information collections, agency determinations, and grant availability. | govinfo, federalregister.gov |
-| OLC and Attorney General opinions | Office of Legal Counsel (OLC) opinions plus formal Attorney General (AG) opinions, the executive branch's own binding legal interpretations. | justice.gov/olc |
-| GAO decisions | Government Accountability Office (GAO) decisions of the Comptroller General on appropriations law and bid protests. | gao.gov |
-| Federal local rules | The local rules of the 94 district courts, the 13 circuits, and the bankruptcy courts, adopted under 28 U.S.C. 2071 and Federal Rule of Civil Procedure 83. These modify the national Federal Rules in every district, so the national rules alone are an incomplete picture of what governs a filing. Citable in their own form, for example `N.D. Cal. Civ. L.R. 7-2`. | uscourts.gov and each court's own site |
+| Federal local rules | See below | uscourts.gov and each court's own site |
+
+The local rules of the 94 district courts, the 13 circuits, and the bankruptcy courts, adopted under 28 U.S.C. 2071 and Federal Rule of Civil Procedure 83.
+These modify the national Federal Rules in every district, so the national rules alone are an incomplete picture of what governs a filing.
+They are citable in their own form, for example `N.D. Cal. Civ. L.R. 7-2`.
+
+This is a large item: roughly 200 separate courts each publishing their own set, mostly as PDFs, with no common schema.
 
 ## Tax
 
-Two additional Internal Revenue Service (IRS) corpora, beyond the IRS notices, revenue procedures, revenue rulings and announcements already served under agency guidance.
+The Internal Revenue Manual is **live** under `AGENCY_GUIDANCE`, as are IRS notices, revenue procedures, revenue rulings and announcements.
+Two IRS corpora are not.
 
 | Source | What it adds |
 |---|---|
 | Chief Counsel Advice | Written determinations issued by IRS Chief Counsel to field offices. |
 | Private Letter Rulings | Taxpayer-specific rulings on the application of tax law to a proposed transaction. |
-| Internal Revenue Manual (IRM), 1,777 sections | The IRS's own operating procedures: what examiners, appeals officers and collection staff are instructed to do. It would be served and labelled as agency procedure, not law. It binds IRS personnel, not taxpayers, and confers no rights on them. |
 
 ## Administrative adjudication
 
-A new corpus type: the record of what federal agencies actually decided, as opposed to what the rules say.
-These are public domain under 17 U.S.C. 105 and are genuinely under-aggregated, since each body publishes into its own silo with no shared format or API.
+`corpusType=AGENCY_ADJUDICATION` is **live** and currently serves seven bodies: FTC Part 3 administrative filings, SEC opinions and adjudicatory orders, MSPB, BIA and Attorney General precedent decisions, NLRB Board decisions, DOJ Office of Legal Counsel opinions, and CFPB enforcement actions.
+See [Federal coverage](/api-guide/coverage/federal) for the per-body scope limits, which are real and worth reading before you rely on this corpus.
+
+These bodies are not in it yet.
 
 | Body | What it adds |
 |---|---|
-| SEC (Securities and Exchange Commission) administrative proceedings | The full order stream, including Accounting and Auditing Enforcement Releases (AAERs) and Rule 102(e) accountant disqualifications. Roughly 18,400 proceedings since the early 2000s. |
-| DOL (Department of Labor) OALJ, ARB and BRB | Decisions of the Office of Administrative Law Judges (OALJ), the Administrative Review Board (ARB) and the Benefits Review Board (BRB), across an 80+ case-type taxonomy (SOX, AIR21, STAA, ERA, OSH, OFCCP, LCA, black lung, longshore). |
-| NLRB (National Labor Relations Board) | Administrative law judge and Board decisions. Extends the NLRB General Counsel and Division of Advice memoranda already in the corpus. |
-| MSPB (Merit Systems Protection Board) | Precedential and nonprecedential decisions. |
-| FDIC, OCC and Federal Reserve | Enforcement actions and consent orders from the Federal Deposit Insurance Corporation, the Office of the Comptroller of the Currency and the Federal Reserve. Extends the guidance from these agencies already in the corpus. |
+| DOL OALJ, ARB and BRB | Decisions of the Office of Administrative Law Judges, the Administrative Review Board and the Benefits Review Board. See below. |
+| FDIC, OCC and Federal Reserve | Enforcement actions and consent orders. Extends the guidance from these agencies already in the corpus. |
+| SEC ALJ initial decisions | The initial-decision layer beneath the Commission opinions already served. |
 
-On customer demand: the Occupational Safety and Health Review Commission (OSHRC), the Federal Mine Safety and Health Review Commission (FMSHRC), the Federal Energy Regulatory Commission (FERC), Commodity Futures Trading Commission (CFTC) reparations, the Board of Immigration Appeals (BIA), the US Tax Court, the Armed Services and Civilian Boards of Contract Appeals (ASBCA and CBCA), the EPA Environmental Appeals Board, Federal Trade Commission (FTC) administrative decisions, and the Departmental Appeals Board (DAB) of the Department of Health and Human Services (HHS).
+The DOL bodies span an 80+ case-type taxonomy: SOX, AIR21, STAA, ERA, OSH, OFCCP, LCA, black lung and longshore, among others.
+
+On customer demand: the Occupational Safety and Health Review Commission (OSHRC), the Federal Mine Safety and Health Review Commission (FMSHRC), the Federal Energy Regulatory Commission (FERC), Commodity Futures Trading Commission (CFTC) reparations, the US Tax Court, the Armed Services and Civilian Boards of Contract Appeals (ASBCA and CBCA), the EPA Environmental Appeals Board, and the Departmental Appeals Board (DAB) of the Department of Health and Human Services (HHS).
 
 ## Federal regulatory dockets
 
@@ -104,34 +100,22 @@ Rulemaking dockets and the public comment record behind a rule, sourced from thr
 | Source | What it adds |
 |---|---|
 | regulations.gov | Federal rulemaking dockets, documents, and public comments across participating agencies. |
-| FCC ECFS | Telecom proceeding filings from the Federal Communications Commission (FCC) Electronic Comment Filing System (ECFS), with filers, documents and submission types. |
-| SEC EDGAR comment letters | Securities and Exchange Commission staff comment letters (`UPLOAD`) and filer correspondence (`CORRESP`), from the Electronic Data Gathering, Analysis and Retrieval system (EDGAR). |
+| FCC ECFS | Telecom proceeding filings from the FCC Electronic Comment Filing System, with filers, documents and submission types. |
+| SEC EDGAR comment letters | SEC staff comment letters (`UPLOAD`) and filer correspondence (`CORRESP`), from EDGAR. |
 
 ## Agencies not yet covered
 
 No documents from these agencies are in the corpus today.
-Counts are the document categories planned for each.
 
-| Agency | Categories | Domain |
-|---|---|---|
-| Federal Trade Commission (FTC) | 4 | Consumer protection and competition |
-| Department of Justice (DOJ) Antitrust Division | 1 | Merger and conduct enforcement |
-| Securities and Exchange Commission (SEC) | 3 | Securities regulation and disclosure |
-| Customs and Border Protection (CBP) | 3 | Import classification, valuation, and admissibility |
-| Consumer Financial Protection Bureau (CFPB) | 2 | Consumer financial protection |
-| Department of Labor (DOL) Wage and Hour Division | 2 | Wage, hour, and leave enforcement |
-
-## Other federal guidance
-
-| Source | Domain |
+| Agency | Domain |
 |---|---|
-| Centers for Medicare & Medicaid Services (CMS) Medicare Manuals | Medicare coverage, billing, and program administration |
-| Department of Justice (DOJ) Americans with Disabilities Act (ADA) guidance | Disability access and accommodation |
-| Equal Employment Opportunity Commission (EEOC) guidance | Employment discrimination |
-| Food and Drug Administration (FDA) guidance documents | Drug, device, and food regulation |
-| FDA warning letters | Enforcement correspondence to regulated entities |
-| Department of Housing and Urban Development (HUD) fair housing guidance | Housing discrimination |
-| Office of Foreign Assets Control (OFAC) FAQs | Sanctions compliance |
+| Customs and Border Protection (CBP) | Import classification, valuation, and admissibility |
+| Food and Drug Administration (FDA) | Guidance documents and warning letters |
+| Department of Housing and Urban Development (HUD) | Fair housing guidance |
+| Department of Justice (DOJ) Civil Rights Division | Americans with Disabilities Act guidance |
+
+Agencies that **are** covered, and were on an earlier version of this list, include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
+Their per-source detail is in [Agency guidance coverage](/api-guide/coverage/agency-guidance).
 
 ## Under evaluation
 
@@ -149,11 +133,21 @@ Deliberate exclusions, not gaps. If you need one of these, we are not your suppl
 | Not building | Why |
 |---|---|
 | General case law and court dockets | We are a primary-law corpus: statutes, regulations, constitutions, court rules, agency material. |
+| GAO and Comptroller General decisions | See below. |
 | Judge-specific procedural material (standing orders, chambers procedures, individual practice rules) | See the court-material line below. |
 | Practice notes and practice directions | A Commonwealth instrument with no direct US federal equivalent. The closest analogues are local rules and court-wide general orders. |
 | Municipal and county ordinances | Public-domain text, but locked in three commercial publisher platforms with no comprehensive source. |
 | Standards incorporated by reference into the CFR (ASTM, NFPA, ISO) | Published by private standards bodies. Courts have held only non-commercial dissemination is fair use, which is incompatible with a paid API. |
-| NAIC model law text | A copyrighted, commercially sold publication, not open government primary law. Each state's own insurance bulletins are in scope and are now covered across 49 jurisdictions under `STATE_AGENCY_GUIDANCE`. |
+| NAIC model law text | A copyrighted, commercially sold publication, not open government primary law. Each state's own insurance bulletins are in scope under `STATE_AGENCY_GUIDANCE`. |
+
+### GAO
+
+GAO decisions of the Comptroller General on appropriations law and bid protests were previously planned and are now a deliberate no.
+
+The obstacle is policy, not transport.
+GAO disallows every listing in `robots.txt`, hard-403s them, publishes a `Crawl-delay` of 420 seconds, and offers no sitemap, RSS or API.
+The only bulk source is govinfo's `GAOREPORTS` collection, which runs from 1989 to 2008 and then stops.
+A bid-protest corpus that ends 18 years ago invites a customer to read absence as a finding, which is worse than not serving it.
 
 ### The line on court material
 
@@ -173,7 +167,7 @@ Judge-specific material fails every one of those tests: over 1,500 judges, no co
     What has already shipped, in date order.
   </Card>
   <Card title="Coverage monitoring" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
-    Poll `/statutes/coverage` on a schedule and diff it, so you detect new corpora automatically.
+    Poll `/us/statutes/coverage` on a schedule and diff it, so you detect new corpora automatically.
   </Card>
   <Card title="Corpus types" icon="layer-group" href="/api-guide/concepts/corpus-types">
     What each `corpusType` token holds.

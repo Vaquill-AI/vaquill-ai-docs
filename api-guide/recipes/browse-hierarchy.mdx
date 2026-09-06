@@ -1,17 +1,17 @@
 ---
 title: "Browse the statute hierarchy"
-description: "Walk a code top to bottom with /statutes/divisions: titles, chapters, parts, and sections in statutory order"
+description: "Walk a code top to bottom with /us/statutes/divisions: titles, chapters, parts, and sections in statutory order"
 icon: "sitemap"
 ---
 
 **What this gets you:** a table of contents for any code or title - render a browsable tree of a law in your product, the way a person would flip through it, instead of only ever surfacing single sections from search.
 
-Search finds the section that answers a question, but it cannot enumerate a code. When you need the *structure*, titles then chapters then sections, in the order a human reads them, use `GET /statutes/divisions`. Each call returns the immediate children of wherever you are, so you can render a tree, build a table of contents, or crawl a whole title without paging through search.
+Search finds the section that answers a question, but it cannot enumerate a code. When you need the *structure*, titles then chapters then sections, in the order a human reads them, use `GET /us/statutes/divisions`. Each call returns the immediate children of wherever you are, so you can render a tree, build a table of contents, or crawl a whole title without paging through search.
 
-**Endpoint used:** `GET /statutes/divisions` (1 credit per call).
+**Endpoint used:** `GET /us/statutes/divisions` (1 credit per call).
 
 <Note>
-  Browse supports `USC`, `CFR`, `STATE`, and `REGULATION`, the corpora with a clean drill-down tree. Constitutions, court rules, executive actions, the Federal Register, and agency guidance are flatter or heterogeneous; reach those with [`/statutes/search`](/api-guide/quickstart).
+  Browse supports `USC`, `CFR`, `STATE`, and `REGULATION`, the corpora with a clean drill-down tree. Constitutions, court rules, executive actions, the Federal Register, and agency guidance are flatter or heterogeneous; reach those with `POST /us/statutes/search` (see the [Quickstart](/api-guide/quickstart)).
 </Note>
 
 ## How drilling works
@@ -28,7 +28,7 @@ Pass the deepest level you already know, and the response returns the level dire
 | `corpusType=STATE&state=tx` | the state's `codes` |
 | `corpusType=STATE&state=tx&code=tx_pe` | the `chapters` in the Texas Penal Code |
 
-Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back as the matching filter (`chapter`, `part`, or `code`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
+Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back as the matching filter (`chapter`, `part`, or `code`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
 
 ## One level
 
@@ -89,7 +89,7 @@ Drill from a title to its chapters, then each chapter to its sections. Leaf node
 ```python Python
 import requests
 
-BASE = "https://api.vaquill.ai/api/v1"
+BASE = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
 
@@ -107,7 +107,7 @@ def walk_title(corpus_type: str, title_number: int) -> None:
             corpusType=corpus_type, titleNumber=title_number, chapter=ch["identifier"]
         )
         for sec in sections["divisions"]:
-            # sec["actId"] -> GET /statutes/section/{actId} or .../body
+            # sec["actId"] -> GET /us/statutes/section/{actId} or .../body
             print(f'  § {sec["identifier"]}  {sec["name"] or ""}  [{sec["actId"]}]')
 
 
@@ -115,17 +115,17 @@ walk_title("USC", 42)
 ```
 
 <Warning>
-  A leaf listing is bounded to keep one call fast, so an unusually large chapter can be truncated. Chapters are small in practice; if you are enumerating a very large flat state code, scope with [`/statutes/search`](/api-guide/concepts/corpus-types) using the `code` filter instead of listing every section at once.
+  A leaf listing is bounded to keep one call fast, so an unusually large chapter can be truncated. Chapters are small in practice; if you are enumerating a very large flat state code, scope a `POST /us/statutes/search` with the `code` filter instead of listing every section at once. The `code` values are the `actId`s this endpoint returns for `corpusType=STATE&state=XX`, so browse output feeds straight back in.
 </Warning>
 
 ## Search within a container
 
-Browse and search meet at the `parent` object. Every search result carries a `parent`: the ready-made query that lists its siblings. Its keys (`titleNumber`, `chapter`, `part`, `code`) are also accepted by `POST /statutes/search`, so you can take any hit and run a keyword search confined to its chapter or part, without building the scope yourself.
+Browse and search meet at the `parent` object. Every search result carries a `parent`: the ready-made query that lists its siblings. Its keys (`titleNumber`, `chapter`, `part`, `code`) are also accepted by `POST /us/statutes/search`, so you can take any hit and run a keyword search confined to its chapter or part, without building the scope yourself.
 
 ```python Python
 import requests
 
-BASE = "https://api.vaquill.ai/api/v1"
+BASE = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
 
@@ -156,7 +156,7 @@ for r in neighbors["results"]:
     The corpora you can browse and how to scope with `corpusType` and `state`.
   </Card>
   <Card title="Jurisdictions & State Codes" icon="map-location-dot" href="/api-guide/concepts/jurisdictions">
-    Discover the `code` values that seed a state browse via `/statutes/codes`.
+    Which jurisdictions exist, and what the two-letter `state` codes mean.
   </Card>
   <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
     Go straight to a section from a Bluebook citation instead of walking to it.

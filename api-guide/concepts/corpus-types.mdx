@@ -1,453 +1,144 @@
 ---
-title: "Corpus Types"
-description: "The 19 corpusType tokens that scope a Vaquill statutes search, what each holds, and how to pair them with a state"
-icon: "layer-group"
+title: "Corpus types"
+description: "The 19 corpusType tokens, how they scope a search, and how source narrows one further"
+icon: "filter"
 ---
 
-The Vaquill AI statutes corpus is one index of US primary law, split into 19 named
-slices. The `corpusType` filter on `POST /statutes/search` tells the API which
-slice to search. Omit it and you search everything; set it and you narrow to one
-body of law (federal statutes, state regulations, a constitution, and so on).
+`corpusType` chooses which body of law a search runs against. It is the single most important
+filter in the API: it decides whether you get a statute, a regulation, a court rule, agency
+guidance or a decided case.
 
-Corpus types come in two scopes. **Federal** corpora live under the single
-`federal` jurisdiction. **State** corpora are keyed by jurisdiction, so you pair
-them with a `state` filter (a 2-letter lowercase code like `ca` or `tx`) to
-search one jurisdiction's data.
+```json
+{ "query": "security deposit return", "corpusType": "STATE", "state": "ca" }
+```
 
-## The 19 tokens
+Pass one token or a list. This page is the **query vocabulary**: what each token means and how to
+scope it. For how much data sits behind each one and what is deliberately excluded, see
+[API Coverage](/api-guide/coverage).
 
-<Warning>
-  **Two of these tokens are not accepted by the deployed search filter yet**, verified against the published OpenAPI document on 2026-09-06: **`CFR_ANNUAL`** and **`FEDERAL_REGISTER_NOTICE`**.
-  Both corpora are indexed and both are counted by `GET /statutes/coverage`, but the published `corpusType` enum carries 17 tokens and neither of these is among them, so a search scoped to either one is rejected.
-  Their rows are marked below.
-
-  Six `source` values are in the same position and are not in the deployed `source` enum: `nlrb_board_decision`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `cfpb_enforcement_action` and `irs_irm`.
-  Those documents are retrievable today under `AGENCY_ADJUDICATION` and `AGENCY_GUIDANCE`; what is missing is the per-body filter, not the data.
-</Warning>
-
-### Federal-scoped
-
-| Token | Contains | Scope | ~Size |
-|---|---|---|---|
-| `USC` | United States Code (federal statutes) | federal | 60,170 |
-| `CFR` | Code of Federal Regulations, incl. the Federal Acquisition Regulation (FAR, 48 C.F.R. ch. 1, 3,118 sections) and Defense FAR Supplement (DFARS, ch. 2, 1,705 sections) - cite `FAR 52.219-14` or `DFARS 252.225-7001` directly, or filter with `source` (see below) | federal | 222,251 |
-| `CFR_ANNUAL` (not filterable yet) | GPO's officially published **annual editions** of the CFR, 31 editions from 1996 to 2026, all 49 titles. A separate corpus from `CFR`, not a subset: `CFR` is the continuously refreshed current compilation, this is the edition as printed. **The size is section VERSIONS, not sections.** A section is stored once per distinct run of text rather than once per edition, so 886,066 versions cover **312,132 distinct sections**; a section unchanged across the whole span is ONE record whose `editionsObserved` lists every year it was observed in. `editionsObserved` is an enumeration and never a range, so a date in an unobserved gap returns `asOf.isBounded: false` rather than the nearest year held. A citation's year is the volume's own `<REVISED>` year, not the folder GPO filed it under: GPO reprints unchanged volumes forward without re-dating them, which is why 167 versions in title 26 carry 1990 while sitting in the 1997 folder. Not available as a change-alert board, because `CFR` already carries the daily change signal for the same regulations. | federal | 312,132 |
-| `CONSTITUTION` | U.S. Constitution (Articles + Amendments) | federal | 74 |
-| `FEDERAL_RULES` | Federal Rules of Procedure - Civil (FRCP), Criminal (FRCrP), Evidence (FRE), Appellate (FRAP) and Bankruptcy (FRBP), incl. Supplemental Admiralty and Social Security Rules - and Rules of the Supreme Court of the United States. Filter to one set with `source` (see below). | federal | 589 |
-| `EXECUTIVE_ACTION` | Presidential documents (executive orders, proclamations, memos) | federal | 3,643 |
-| `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | federal | 196,237 |
-| `FEDERAL_REGISTER_NOTICE` (not filterable yet) | Federal Register **notices**, 1994-present, and deliberately a **CURATED SLICE** rather than the whole series. **Held:** the four classes of notice that act on a rulemaking - withdrawal of a proposed rule, extension or reopening of a comment period, publication of significant agency guidance, and announcement of negotiated rulemaking. That is **17,612 of the 766,073 notices** the Federal Register published in this period, a **2.3% keep rate**, and every point names the rule that admitted it in `frNoticeClass`. **Not held:** everything else, which is mostly Paperwork Reduction Act information collections, meeting notices, permits and applications, antidumping proceedings and Privacy Act system-of-records notices. Do not read this token as complete notice coverage. The 748,461 excluded documents are each recorded by Federal Register document number in our candidate ledger, so the scope can be widened without a re-crawl. A separate token from `FEDERAL_REGISTER` on purpose: rules and proposed rules are ingested WHOLE, and folding notices in would attach this partial-scope statement to 5.5M points that are not partial. ⚠️ Notices carry an **empty CFR cross-reference graph** (`crossReferencesCfr` and `frTopics` at 0%, `frRegulationIdNumbers` at 2%, against 100% and 94% on rules), so a notice is not reachable by a CFR-citation filter; `frDocketIds` (73.5%) is the join key that works. A notice amends nothing and the publisher prints no amendment credit for one, so `amendmentYears` is empty by design and `goodLawStatus` is `unknown` rather than a claim either way. Takes no `source` filter: the token has one internal category, so `source` would be an exact synonym for it. | federal | 17,612 |
-| `AGENCY_GUIDANCE` | Sub-regulatory agency guidance - 46 named sources across 23 agencies: the Social Security Administration (SSA), Internal Revenue Service (IRS), Department of Justice (DOJ), Federal Trade Commission (FTC), Copyright Office, US Citizenship and Immigration Services (USCIS), US Patent and Trademark Office (USPTO), Department of Defense (DFARS PGI), National Labor Relations Board (NLRB), Commodity Futures Trading Commission (CFTC), Financial Crimes Enforcement Network (FinCEN), Federal Reserve, Office of the Comptroller of the Currency (OCC), Federal Deposit Insurance Corporation (FDIC), Consumer Product Safety Commission (CPSC), Bureau of Industry and Security (BIS), Directorate of Defense Trade Controls (DDTC), Federal Communications Commission (FCC), Federal Energy Regulatory Commission (FERC), Department of Energy (DOE), the Health and Human Services Office for Civil Rights (HHS OCR), the Consumer Financial Protection Bureau (CFPB), and the Department of Labor Wage and Hour Division (DOL WHD). Full list in [API Coverage](/api-guide/coverage#federal). Filter to one source with `source` (see below). **The IRS Internal Revenue Manual** (`source=irs_irm`, 1,777 sections across 26 Parts, 121,234 retrieval passages, by far the largest source here) is the IRS's own instruction manual for its employees, cited `IRM 4.10.3`. It is **agency procedure, not law**, and is served as such: every passage is labeled "IRS internal procedure" and `goodLawStatus` is `unknown` on every section, because no IRS source states when an IRM section is superseded. Do not read an IRM response timeframe as a statutory deadline. **CFPB compliance guidance** arrives as two sources: `cfpb_circular` (16 Consumer Financial Protection Circulars, cited `Circular 2023-01`, the Bureau's own statements of how it reads a statute, addressed to every enforcer and every firm) and `cfpb_supervisory_guidance` (95 bulletins, policy statements, interpretive rules and rescissions). The Bureau's ENFORCEMENT actions are adjudications and live under `AGENCY_ADJUDICATION` instead. **FinCEN Corporate Transparency Act beneficial-ownership material** arrives as three sources: `fincen_boi_faq` (122 BOI FAQs in 15 lettered categories, cited `FinCEN BOI FAQ C.2`), `fincen_boi_compliance_guide` (the Small Entity Compliance Guide, v1.4 March 2025), and `fincen_boi_rule_qa` (22 rulemaking Q&As). Separately, `fincen_amla_material` carries FinCEN's 13 standalone Anti-Money Laundering Act of 2020 implementation documents (the AML/CFT National Priorities and their interagency statements, the Arts and Antiquities notice, threat-pattern reports, the Section 6305 Report to Congress and the whistleblower bulletin); the AML Act rulemakings themselves are Federal Register documents and are served under `FEDERAL_REGISTER` rather than duplicated here. **Read the currency caveat before relying on the first two**: FinCEN's August 11, 2026 final rule exempted US-created entities and US persons from BOI reporting, leaving only certain foreign-registered companies covered, and both the FAQs and the guide predate it. They are served as FinCEN published them, each passage carrying FinCEN's own outdated-content notice verbatim in `currencyNote`; the 10 interim-rule Q&As carry `actStatus: "superseded"` while the 12 final-rule Q&As are current. Full detail in [API Coverage](/api-guide/coverage#federal). | federal | 24,720 |
-| `SENTENCING_GUIDELINES` | U.S. Sentencing Guidelines (U.S.S.G.), the federal sentencing commission's guideline manual: the 302 current guideline sections, plus Appendix A (the statutory index) and Appendix B, whose Part III carries the text of FORMER guidelines and commentary as they read before amendment. A former version is a separate document, not a variant of the current section. | federal | 1,281 |
-| `US_TAX_TREATY` | Two sources. **The IRS mirror** (173): U.S. bilateral **income** tax treaties and their protocols, plus Treasury's Technical Explanations, the article-by-article commentary the publisher issues for most instruments but not all. No estate or gift tax treaties. **The Senate treaty record** (1,476, `source=senate_treaty` / `senate_treaty_resolution` / `senate_treaty_document`): the Senate's own account of all 780 treaties it has considered since 1949, tax and non-tax alike, including the **resolution of advice and consent** - independently retrievable, and where the reservations and declarations narrowing a treaty's actual effect in US law live. Each record is one whole-instrument document, searchable and retrievable in full and cited at the treaty level rather than per article (see the note below). | federal | 1,649 |
-| `SESSION_LAW` | US Statutes at Large: federal public and private laws **as enacted**, session by session, 1789-2026. Held from 137 of the 140 Statutes at Large volumes; volumes 7, 8 and 44 are not held. This is the source the US Code is compiled from, so a US Code section's `publicLawCites` resolve here to the enacting text. Because these are laws as enacted rather than as amended, they carry `actStatus: "enacted"` and `goodLawStatus: "unknown"` by design; for current law use `USC`. | federal | 423,928 across 93,422 laws (48,437 public, 44,985 private) |
-| `AGENCY_ADJUDICATION` | Federal administrative adjudication: matters decided by a federal body through a formal process, with precedential weight on its later decisions. Six bodies. **Merit Systems Protection Board** (5,461): 106 precedential decisions, cited `YYYY MSPB N`, which bind Board administrative judges, and 5,355 nonprecedential orders, which do not - split them with `source=mspb_precedential` / `source=mspb_nonprecedential`, or on the `precedential` boolean. **DOJ Office of Legal Counsel** (1,371, `source=olc_opinion`), cited `NN Op. O.L.C. NNN`, the executive branch's own controlling legal advice, binding on executive agencies unless the Attorney General or the President overrides it. **Consumer Financial Protection Bureau enforcement actions** (386, `source=cfpb_enforcement_action`): consent orders, stipulated judgments and related filings against named respondents under the CFPA, TILA, RESPA, EFTA, FCRA, FDCPA, ECOA and the Military Lending Act. Both forums are included and separable on `forum` (`Administrative Proceeding` / `Civil Action`); administrative actions are cited by the Bureau's own File No. (`2024-CFPB-0002`), while a civil action carries the district court's case number in `caseNumber` and no Bureau citation. 185 of the 386 carry the Bureau's `Expired/Terminated/Dismissed` status and are served with a dead `actStatus`. Deliberately separate from `AGENCY_GUIDANCE`, which is interpretive rather than adjudicative: an OCC bulletin tells every national bank what the OCC thinks, while a CFPB consent order tells one company what it must do.  **BIA and Attorney General precedent decisions** (3,292), the `I&N Dec.` reporter: a published Board decision binds every immigration judge and DHS officer nationwide under 8 C.F.R. 1003.1(g) unless overruled, and an Attorney General decision sits above it. Three sources, because the reporter carries three: `source=bia_precedent` (2,714), `source=ag_precedent` (94) and `source=immigration_admin_precedent` (484) for the legacy INS and USCIS administrative decisions published in the same series. `decidedBy` holds the deciding authority verbatim. The Board's own overruling statements resolve into `supersedes` / `supersededBy` with the verb in `dispositionVerb`; `overruled_in_part` is distinct and does not carry a dead `actStatus`. Volumes 1 to 7 are not published by EOIR and are not held, and circuit-level rejection of a precedent is not published by EOIR and is not reflected here. **National Labor Relations Board decisions** (2,762, `source=nlrb_board_decision`): unfair-labor-practice and representation cases decided by the five-member Board, binding on later Board panels and on ALJs. A bounded **15-year window, 2012 to date**, of a 66,612-decision archive. Both citation forms are served and are different facts, not variants: `NNN NLRB No. N` while a slip opinion (`slipOpinionNumber`, 57.45%) and `NNN NLRB NNN` once the bound volume assigns a page (`pageNumber`, 42.55%). **`goodLawStatus` is `unknown` on every decision**: Board doctrine swings with Board composition and the NLRB publishes no overruling field, so a decision is served as issued and whether a later Board overruled it is not asserted. **Securities and Exchange Commission opinions and adjudicatory orders** (5,790, `source=sec_commission_opinion`): the Commission's own rulings on appeal from an administrative law judge, on review of a self-regulatory organization's disciplinary action (FINRA, an exchange), and on an application for review, 1996 to date. Cited by release number (`Exchange Act Release No. 34-106254`); one action issued under several securities statutes at once carries every release number it was given in `citableAs`. Every document carries its Administrative Proceeding File Number in `fileNumber` (99.6%), and documents sharing one are ONE proceeding, linked in date order through `supersedes` / `supersededBy`. **Those links record a SEQUENCE, not a currency verdict**, which is why no SEC document is served with a dead `actStatus` on the strength of a later sibling: the series is overwhelmingly interlocutory, and an order scheduling briefs does not supersede the opinion it precedes. ALJ initial decisions are deliberately not held; where an opinion names the one it reviews, the citation is carried in `relatedCitations` and the document is not in the corpus. | federal | 19,062 |
-| `STATUTE_COMPILATION` | An act's own text **as amended through** a stated later public law - GovInfo's official compilations, act-organized rather than codified. Distinct from `SESSION_LAW` (the same acts as **enacted**, a frozen historical record) and from `USC` (the codified arrangement, which only covers provisions that were codified at all): a citation like "Section 210 of the Public Utility Regulatory Policies Act" resolves here even though it has no `USC` address. Each section carries `currentThrough` (e.g. `Public Law 117-58`), stating exactly which amending law the text reflects; 2.6% of compilations state no currency at all and carry `compilationCurrencyState: "unstated"` instead of a guessed date. Cross-references into `USC` are captured as `crossReferencesUsc`. | federal | 80,232 |
-
-<Note>
-  **`CFR_ANNUAL` landed on 2026-09-05 and is listed above.** It was previously a reserved token that held nothing; searches scoped to it now return results.
-
-  **There are two ways to ask a point-in-time question, and they are not interchangeable.**
-
-  `corpusType=CFR_ANNUAL` serves the officially published annual edition **as printed**. Use it when the edition itself is the authority you need to cite, or when you want the text as of a published edition year.
-
-  `asOf=YYYY-MM-DD` on `GET /us/statutes/section/{actId}/body` **reconstructs** a section from observed change history against the current `CFR` corpus. Use it for a specific date rather than an edition year. It reports `asOf.isBounded` so you can tell whether the answer is bounded by what we observed, and `isBounded: false` means we saw no change affecting that date, which is not the same as there having been none.
-
-  The annual edition is the officially published CFR. What any continuously refreshed corpus serves between editions, ours included, is a current compilation of it.
-</Note>
-
-<Note>
-  **`STATUTE_COMPILATION` currency varies by document, from 1980 to 2026.**
-  A compilation is republished only when GPO issues a new one, so one section's
-  `currentThrough` can read `Public Law 96-308` (1980) while another reads
-  `Public Law 119-75` (2026) in the same response set. Always read
-  `currentThrough` and `compilationCurrencyState` before relying on the text as
-  a statement of current law; `STATUTE_COMPILATION` does not carry a
-  `goodLawStatus` certification.
-</Note>
-
-<Note>
-  **`AGENCY_ADJUDICATION` covers the bound volumes, which end in 2020.**
-  Office of Legal Counsel opinions are served from the official bound series,
-  volumes 1 through 44 (1977-2020) plus Supplemental volume 1
-  (`NN Op. O.L.C. Supp. NNN`, opinions written 1933-1977 and published later).
-  Opinions issued in 2021 and later have not yet appeared in a bound volume and
-  are **not** included. Every section states this in its own `coverageNote`, so
-  the boundary is readable from the data rather than only from these docs.
-
-  OLC opinions carry `goodLawStatus: "unknown"` by default, and that is
-  deliberate rather than a gap. An opinion is superseded by a later opinion, not
-  by an amendment to itself, and the publisher ships no structured overruling
-  field. Where OLC has printed an editor's note saying an opinion was withdrawn,
-  superseded or reversed, that text is served in `currencyNote` and the section
-  carries `actStatus: "superseded"`. Absence of such a note means we found no
-  withdrawal, which is not the same as there having been none.
-</Note>
-
-<Note>
-  **`goodLawStatus` is not uniform under `AGENCY_ADJUDICATION`, and the reason
-  is the publisher, not the corpus.**
-
-  MSPB decisions, OLC opinions, SEC opinions and the `I&N Dec.` reporter carry
-  `goodLawStatus: "unknown"` because no publisher here ships a structured
-  overruling field: an adjudication is superseded by ANOTHER DECISION, and the
-  document itself never changes when it stops being good law, so none of the
-  ordinary currency instruments fire.
-
-  The SEC is the case where a real proceeding graph exists and still does not
-  certify anything. Documents sharing an Administrative Proceeding File Number
-  ARE one proceeding in date order, and 86.7% of the series is linked that way -
-  but a docket records a sequence, not a verdict. The series is overwhelmingly
-  interlocutory (orders to show cause, orders extending time, orders scheduling
-  briefs), so a later document routinely affirms, schedules or merely notices an
-  earlier one as final. Treating "a later document exists" as "the earlier one is
-  no longer good law" would mark 61% of the corpus dead, including 71 Opinions of
-  the Commission. Federal court review under 15 U.S.C. 78y is a further gap the
-  SEC does not publish at all.
-
-  The BIA is the strongest signal in this corpusType and it is still served as
-  `unknown`, deliberately. The Board DOES state its own doctrinal effect on
-  earlier decisions, in the holdings prose it publishes beside each entry, and
-  343 of those statements are resolved into `supersedes` / `supersededBy` links
-  with the publisher's own verb in `dispositionVerb`. 70 decisions carry
-  `actStatus: "superseded"` on that evidence. What the signal cannot do is
-  certify the other 3,222: the Board publishes holdings prose only from volume
-  19 onward, so an overruling of a pre-1984 decision by a pre-1984 decision is
-  invisible to us, and a court of appeals can reject a precedent for its own
-  circuit while it remains in force elsewhere without EOIR publishing anything.
-  A decision we have not marked dead is one we found no overruling for, which is
-  not the same as there having been none.
-
-  🔴 Read `dispositionVerb` before treating a link as fatal. Of the 343 links,
-  most are `followed`, `modified`, `clarified`, `distinguished` or `reaffirmed`,
-  none of which kills the cited decision, and 16 more are explicitly PARTIAL
-  (`overruled_in_part`, `modified_in_part`). Only an unqualified overruling,
-  vacatur, supersession or withdrawal moves `actStatus`, because a partly
-  overruled decision is still law for everything else it held.
-
-  CFPB enforcement actions are the exception and carry a real verdict. The
-  Bureau publishes a defined three-value status enum, publishes its definitions,
-  and assigns one to every action - `Post-order/Post-judgment`,
-  `Expired/Terminated/Dismissed`, or `Pending Litigation`. We accepted it only
-  after measuring it against the served corpus, and the measurement is
-  reproducible: 185 of 386 actions carry the dead status, and no action we serve
-  as live says in its own text that it is dead.
-
-  So treat `goodLawStatus` as a per-source property here. Filter on `source` if
-  you need one behavior or the other.
-</Note>
-
-<Note>
-  **`US_TAX_TREATY` is addressed at the treaty level, not by article.**
-  Every document carries one whole-instrument identifier, such as
-  `TREATY_US_FRANCE` for the IRS's mirror of a treaty, `TREATY_US_GERMANY_TE`
-  for its Technical Explanation, or `TREATY_SEN_117_3_RES` for the Senate's
-  resolution of advice and consent to Treaty Doc. 117-3.
-  There is no per-article address, so `Article 11` is not a citable unit and
-  cannot be requested directly.
-  What you get instead is the complete text: every instrument is stored in
-  full, that full text is what search runs against, and a substantive query
-  returns the right instrument together with the passage that answers it.
-  The limit comes from the source.
-  The IRS publishes each treaty as a single stacked PDF carrying the base
-  treaty plus every later protocol, and each layer restarts its own `Article 1`
-  in mixed Roman and Arabic numbering, so an article number does not identify
-  one span of text.
-  Search for the substance rather than the article number.
-
-  **Not every treaty has a resolution or a Treaty Document.** About 60% of the
-  Senate's 780 treaty records carry no instrument text from either publisher -
-  only the title, parties, subject index and procedural history the Senate
-  itself keeps. That is stated in the record's `source`, never hidden behind a
-  count that looks complete.
-
-  **`goodLawStatus` is `unknown` on every record under this token.** A treaty
-  terminates by diplomatic note, and no source held here states that. Treat
-  `unknown` as "we cannot confirm this treaty is still in force," not as a
-  claim that it is.
-</Note>
-
-### State-scoped
-
-| Token | Contains | Scope | ~Size |
-|---|---|---|---|
-| `STATE` | State statutory codes | state | 1,934,326 across 52 jurisdictions (50 states + DC + PR) |
-| `REGULATION` | State administrative regulations | state | 1,467,437 across 52 jurisdictions (50 states + DC + PR) |
-| `STATE_CONSTITUTION` | State constitutions | state | 12,762 across 51 jurisdictions (50 states + PR) |
-| `STATE_RULES` | State court rules (civil, criminal, appellate, evidence, professional conduct, local) | state | 53,628 across 46 jurisdictions, 44 states + DC + PR (refreshed monthly) |
-| `STATE_AGENCY_GUIDANCE` | State-issued regulatory guidance interpreting state law - the state-scoped analog of `AGENCY_GUIDANCE`. Two sources. **Insurance-regulator bulletins** (`source=state_insurance_bulletin`, 13,182 documents across 49 states and territories): Department of Insurance bulletins, circular letters and commissioner's orders. **Financial-institutions bulletins** (`source=state_financial_bulletin`, 45 documents, Arizona and Oregon only): banking, credit unions, trust companies, escrow agents, consumer lenders, money transmitters, loan originators and investment advisers. That second source exists only where a state's banking regulator is COMBINED with its insurance regulator and publishes both series on one index - it is not a claim to cover state banking law, and most states' financial guidance carries no numbered series to cite. Neither source is on a comprehensive 52-jurisdiction rollout; both land state by state. | state | 13,224 documents across 49 states and territories |
-
-<Info>
-  These are approximate totals and expand weekly. The exact per-jurisdiction
-  counts are always live via `GET /statutes/coverage`.
-</Info>
-
-## Scoping a search
+## Scoping rules
 
 <Steps>
-  <Step title="corpusType alone">
-    A federal corpus needs only `corpusType`. This searches the whole US Code:
-
+  <Step title="A federal token needs only corpusType">
     ```json
     {"query": "civil rights under color of law", "corpusType": "USC"}
     ```
   </Step>
-  <Step title="corpusType plus state">
-    A state corpus needs both `corpusType` and `state`. This searches only
-    California's statutory code:
+  <Step title="A state token needs corpusType and state">
+    Omit `state` on a state-scoped token and the search spans every jurisdiction that has that
+    corpus ingested, which is rarely what you want and always costs the same.
 
     ```json
     {"query": "security deposit return", "corpusType": "STATE", "state": "ca"}
     ```
 
-    Omit `state` on a state-scoped corpus and the search spans every
-    jurisdiction that has that corpus ingested.
+    `state` also accepts a **list**, so one call can cover several jurisdictions.
+  </Step>
+  <Step title="Narrow further with source, where a token folds in several bodies">
+    ```json
+    {"query": "tip credit", "corpusType": "AGENCY_GUIDANCE", "source": "whd_foh"}
+    ```
   </Step>
 </Steps>
 
 <Note>
-  `titleNumber` is only valid alongside `corpusType` `USC` or `CFR`. Sending it
-  with any other corpus returns a `422`.
+  `titleNumber` is only valid alongside `corpusType` `USC` or `CFR`. Sending it with any other
+  token returns a `422`.
 </Note>
 
-## Example: state regulations
+## The 19 tokens
 
-A `REGULATION` search paired with a state returns that state's administrative
-rules. Here is Washington's environmental regulations:
+Sizes are distinct sections, measured 2026-09-06. Call `GET /us/statutes/coverage` for a live
+figure and for which tokens have data in which jurisdiction.
 
-<CodeGroup>
+### Federal-scoped
 
-```bash cURL
-curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-  -H "Authorization: Bearer vq_key_..." \
-  -H "Content-Type: application/json" \
-  -d '{"query": "stormwater discharge permit", "corpusType": "REGULATION", "state": "wa", "limit": 5}'
-```
+| Token | Contains | Sections |
+|---|---|---:|
+| `USC` | United States Code, the codified federal statutes | 60,170 |
+| `SESSION_LAW` | Statutes at Large: public and private laws **as enacted**, 1789-2026 | 423,928 |
+| `STATUTE_COMPILATION` | An act's own text **as amended through** a stated later public law | 80,276 |
+| `CFR` | Code of Federal Regulations, the continuously refreshed current compilation | 222,330 |
+| `CFR_ANNUAL` | GPO's published **annual editions** of the CFR, 31 editions, 1996-2026 | 312,132 |
+| `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | 196,237 |
+| `FEDERAL_REGISTER_NOTICE` | A **curated slice** of Federal Register notices, those acting on a rulemaking | 17,612 |
+| `EXECUTIVE_ACTION` | Presidential documents: executive orders, proclamations, memoranda | 3,771 |
+| `AGENCY_GUIDANCE` | Sub-regulatory guidance from 51 named sources across 26 agencies | 82,733 |
+| `AGENCY_ADJUDICATION` | Federal matters decided by an agency, seven bodies | 37,085 |
+| `US_TAX_TREATY` | Bilateral income tax treaties, Treasury explanations, the Senate treaty record | 1,649 |
+| `SENTENCING_GUIDELINES` | US Sentencing Guidelines, current sections plus former text in Appendix B | 1,281 |
+| `FEDERAL_RULES` | Federal Rules of Civil, Criminal, Appellate and Bankruptcy Procedure, Evidence, and Supreme Court Rules | 589 |
+| `CONSTITUTION` | US Constitution, Articles and Amendments | 74 |
 
-```python Python
-import requests
+### State-scoped
 
-resp = requests.post(
-    "https://api.vaquill.ai/api/v1/us/statutes/search",
-    headers={"Authorization": "Bearer vq_key_..."},
-    json={
-        "query": "stormwater discharge permit",
-        "corpusType": "REGULATION",
-        "state": "wa",
-        "limit": 5,
-    },
-)
-data = resp.json()
-for r in data["results"]:
-    print(r["citation"], "-", r["title"])
-```
+Each of these requires `state`, or spans every jurisdiction holding that corpus.
 
-```javascript JavaScript
-const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
-  method: "POST",
-  headers: {
-    Authorization: "Bearer vq_key_...",
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    query: "stormwater discharge permit",
-    corpusType: "REGULATION",
-    state: "wa",
-    limit: 5,
-  }),
-});
-const data = await resp.json();
-for (const r of data.results) {
-  console.log(r.citation, "-", r.title);
-}
-```
+| Token | Contains | Sections | Jurisdictions |
+|---|---|---:|---|
+| `STATE` | State statutory codes | 1,934,326 | 52 |
+| `REGULATION` | State administrative codes | 1,467,437 | 52 |
+| `STATE_RULES` | State court rules: civil, criminal, appellate, evidence, professional conduct, local | 53,628 | 46 |
+| `STATE_AGENCY_GUIDANCE` | State regulator guidance, almost all insurance bulletins | 13,224 | 49 |
+| `STATE_CONSTITUTION` | State constitutions | 12,762 | 51 |
 
-</CodeGroup>
+## Choosing between tokens that look alike
 
-<Tip>
-  Not every corpus type exists for every state. Before you scope a state
-  search, call `GET /statutes/coverage` and read that jurisdiction's `corpora`
-  keys to see which tokens actually have data. This avoids empty results from
-  guessing.
-</Tip>
+Five pairs are routinely confused, and picking the wrong one returns a confident answer to a
+different question.
 
-## Example: Federal Register and agency guidance
+| You want | Use | Not |
+|---|---|---|
+| What federal law says **today** | `USC` | `SESSION_LAW`, which is law as enacted and never updated |
+| The text of an act Congress passed | `SESSION_LAW` | `USC`, which rearranges it by subject |
+| An act that was never codified | `STATUTE_COMPILATION` | `USC`, which has no address for it |
+| A regulation as it reads **now** | `CFR` | `CFR_ANNUAL`, which is a past published edition |
+| What a regulation said in 2004 | `CFR_ANNUAL` | `CFR` with `asOf`, which reconstructs rather than reproduces |
+| What an agency **thinks** a rule means | `AGENCY_GUIDANCE` | `AGENCY_ADJUDICATION`, which is decided cases |
+| How an agency **decided** a case | `AGENCY_ADJUDICATION` | `AGENCY_GUIDANCE` |
 
-Both are **federal**, so they need only a `corpusType`, no `state`.
-`FEDERAL_REGISTER` searches agency rules as published (proposed and final).
-`AGENCY_GUIDANCE` searches sub-regulatory guidance across 46 named sources
-(SSA rulings, IRS notices, DOJ/FTC merger guidance, USPTO's MPEP/TMEP, NLRB
-General Counsel and Advice Memoranda, CFTC Staff Letters, FinCEN rulings,
-banking-regulator letters, HHS OCR HIPAA material, export-control
-determinations, and more - full
-list in [API Coverage](/api-guide/coverage#federal)), plus a set of
-primary-sourced **reference figures**: annually adjusted dollar thresholds
-(for example the Subchapter V debt limit, or state and local tax (SALT) and
-Child Tax Credit (CTC) values) that don't live in USC or CFR section text.
+For asking any corpus what it said on a past date, see
+[Point-in-time law](/api-guide/point-in-time).
 
-<CodeGroup>
-
-```bash cURL
-# Agency guidance, including the annually adjusted figure records
-curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-  -H "Authorization: Bearer vq_key_..." \
-  -H "Content-Type: application/json" \
-  -d '{"query": "2026 Subchapter V debt limit", "corpusType": "AGENCY_GUIDANCE", "limit": 5}'
-```
-
-```python Python
-import requests
-
-resp = requests.post(
-    "https://api.vaquill.ai/api/v1/us/statutes/search",
-    headers={"Authorization": "Bearer vq_key_..."},
-    json={
-        "query": "2026 Subchapter V debt limit",
-        "corpusType": "AGENCY_GUIDANCE",
-        "limit": 5,
-    },
-)
-for r in resp.json()["results"]:
-    print(r["citation"], "-", r["title"])
-```
-
-```javascript JavaScript
-const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
-  method: "POST",
-  headers: {
-    Authorization: "Bearer vq_key_...",
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    query: "2026 Subchapter V debt limit",
-    corpusType: "AGENCY_GUIDANCE",
-    limit: 5,
-  }),
-});
-const data = await resp.json();
-for (const r of data.results) console.log(r.citation, "-", r.title);
-```
-
-</CodeGroup>
-
-Swap `corpusType` to `FEDERAL_REGISTER` to search published agency rules the same way.
-
-<Note>
-  `FEDERAL_REGISTER` and `AGENCY_GUIDANCE` are **search-only**. They are flat, not
-  a title/chapter tree, so `/statutes/divisions` does not browse them, and
-  `/statutes/resolve` parses statute and regulation citations (USC, CFR, state
-  codes), not Federal Register or guidance citations. Reach both through
-  `/statutes/search`, then `/statutes/section/{actId}` and `.../body`.
-</Note>
+`SESSION_LAW` and `STATUTE_COMPILATION` both carry `goodLawStatus: "unknown"` by design: they are
+historical records, not statements of current law.
 
 ## Filtering to one named source
 
-`FEDERAL_RULES`, `CFR`, `AGENCY_GUIDANCE`, `AGENCY_ADJUDICATION`,
-`US_TAX_TREATY` and `STATE_AGENCY_GUIDANCE` each fold several independently
-filterable bodies of law into one token. Every result carries a `source` field
-naming which one it came from; pass that value back as the `source` search
-filter to scope to just it.
-
-- `FEDERAL_RULES` sources: `frcp`, `frcrp`, `fre`, `frap`, `frbp`, `sct` (Rules
-  of the Supreme Court of the United States).
-- `CFR` sources: `far` (Federal Acquisition Regulation, 48 C.F.R. ch. 1) and
-  `dfars` (Defense FAR Supplement, ch. 2). These split the *existing* Title 48
-  data by chapter; they are not a separate ingest, and every other `CFR`
-  result (all other titles, plus non-FAR/DFARS Title 48 chapters) has a null
-  `source`.
-- `AGENCY_GUIDANCE` sources:
-
-  | `source` value | Name |
-  |---|---|
-  | `ssa_ruling` | SSA Rulings |
-  | `irs_rev_proc` | IRS Revenue Procedures |
-  | `irs_notice` | IRS Notices |
-  | `irs_rev_rul` | IRS Revenue Rulings |
-  | `irs_announcement` | IRS Announcements |
-  | `irs_irm` | IRS Internal Revenue Manual (agency procedure, not law) |
-  | `merger_guidelines` | DOJ & FTC Merger Guidelines |
-  | `doj_leniency` | DOJ Antitrust Division Leniency Policy |
-  | `doj_business_review` | DOJ Antitrust Division Business Review Letters (1991-2021; `goodLawStatus` is always `unknown`, see below) |
-  | `copyright_circular` | US Copyright Office Circulars |
-  | `doj_justice_manual` | DOJ Justice Manual |
-  | `uscis_policy_manual` | USCIS Policy Manual |
-  | `mpep` | USPTO Manual of Patent Examining Procedure |
-  | `tmep` | USPTO Trademark Manual of Examining Procedure |
-  | `dfars_pgi` | DFARS PGI (Procedures, Guidance, and Information) |
-  | `nlrb_gc_memo` | NLRB General Counsel Memoranda |
-  | `nlrb_advice_memo` | NLRB Division of Advice Memoranda (rolling 10-year window, not the full archive) |
-  | `cftc_staff_letter` | CFTC Staff Letters (no-action, exemptive, interpretative, advisory) |
-  | `fincen_ruling` | FinCEN Administrative Rulings |
-  | `fincen_guidance` | FinCEN Guidance (alerts, advisories, notices, bulletins, fact sheets) |
-  | `frb_sr_letter` | Federal Reserve SR / CA Letters |
-  | `occ_bulletin` | OCC Bulletins |
-  | `occ_interpretive_letter` | OCC Interpretive Letters |
-  | `fdic_fil` | FDIC Financial Institution Letters |
-  | `cfpb_circular` | CFPB Consumer Financial Protection Circulars |
-  | `cfpb_supervisory_guidance` | CFPB Supervisory Guidance (bulletins, policy statements, interpretive rules, rescissions) |
-  | `cpsc_advisory_opinion` | CPSC OGC Advisory Opinions (historical archive, 1973-2012) |
-  | `cpsc_secg` | CPSC Small Entity Compliance Guides |
-  | `fcc_declaratory_ruling` | FCC Declaratory Rulings |
-  | `ferc_policy_statement` | FERC Policy Statements |
-  | `doe_appliance_guidance` | DOE Appliance Standards Guidance and FAQs |
-  | `bis_advisory_opinion` | BIS Advisory Opinions (Export Administration Regulations) |
-  | `ddtc_commodity_jurisdiction` | DDTC Commodity Jurisdiction Determinations (International Traffic in Arms Regulations / US Munitions List vs. Export Administration Regulations / Commerce Control List) |
-  | `ddtc_guidance` | DDTC Policy Guidance Documents |
-  | `hhs_ocr_hipaa_guidance` | HHS OCR HIPAA Guidance Materials |
-  | `hhs_ocr_resolution_agreement` | HHS OCR HIPAA Resolution Agreements and Civil Money Penalties |
-  | `hhs_ocr_hipaa_faq` | HHS OCR HIPAA FAQs |
-  | `administrative_guidance` | Vaquill-synthesized administrative guidance |
-
-- `AGENCY_ADJUDICATION` sources:
-
-  | `source` value | Body | Documents |
-  |---|---|---|
-  | `mspb_precedential` | Merit Systems Protection Board, precedential decisions | 106 |
-  | `mspb_nonprecedential` | MSPB nonprecedential orders | 5,355 |
-  | `sec_commission_opinion` | SEC opinions and adjudicatory orders | 5,790 |
-  | `bia_precedent` | Board of Immigration Appeals precedent decisions | 2,714 |
-  | `ag_precedent` | Attorney General decisions reviewing the Board | 94 |
-  | `immigration_admin_precedent` | Legacy INS / USCIS administrative decisions in the same reporter | 484 |
-  | `nlrb_board_decision` | NLRB Board decisions, 2012 to date | 2,762 |
-  | `olc_opinion` | DOJ Office of Legal Counsel opinions | 1,371 |
-  | `cfpb_enforcement_action` | CFPB enforcement actions | 386 |
-
-- `STATE_AGENCY_GUIDANCE` sources:
-
-  | `source` value | Body | Documents |
-  |---|---|---|
-  | `state_insurance_bulletin` | State Department of Insurance bulletins and circular letters | 13,182 |
-  | `state_financial_bulletin` | State financial-institutions regulator bulletins (AZ, OR) | 45 |
-
-  Pair either with `state`. The second exists only where the banking regulator
-  shares an index with the insurance regulator, so `source=state_financial_bulletin`
-  returns nothing for the other 47 jurisdictions.
-
-- `US_TAX_TREATY` sources: `senate_treaty` (780), `senate_treaty_resolution`
-  (406) and `senate_treaty_document` (290) scope to the Senate treaty record.
-  The IRS mirror of the treaties and Treasury's Technical Explanations (173
-  documents) carries no `source` value, so it is what a search with no `source`
-  filter returns alongside the Senate records.
-
-`FEDERAL_REGISTER`, `FEDERAL_REGISTER_NOTICE`, `SESSION_LAW` and
-`STATUTE_COMPILATION` take no `source` filter. Each has a single internal
-source, so the value would be an exact synonym for the `corpusType` itself.
+`AGENCY_GUIDANCE`, `AGENCY_ADJUDICATION`, `FEDERAL_RULES`, `CFR`, `US_TAX_TREATY` and
+`STATE_AGENCY_GUIDANCE` each fold several independently filterable bodies into one token. Every
+result carries a `source` field naming which one it came from; pass that value back as the `source`
+filter to scope to it.
 
 ```json
 { "query": "petition for writ of certiorari", "corpusType": "FEDERAL_RULES", "source": "sct" }
 ```
 
-`source` accepts a single value or a list, so `source: ["frcp", "sct"]`
-searches those two sets in one call. An unrecognized value is rejected with
-`422` rather than silently returning nothing.
+`source` accepts a single value or a list, so `source: ["frcp", "sct"]` searches both in one call.
+An unrecognized value is rejected with `422` and the error names every valid code, so the API
+itself is the authoritative list.
+
+| Token | Sources |
+|---|---|
+| `FEDERAL_RULES` | `frcp`, `frcrp`, `fre`, `frap`, `frbp`, `sct` |
+| `CFR` | `far` (48 C.F.R. ch. 1), `dfars` (ch. 2). Every other CFR result has a null `source`. |
+| `AGENCY_GUIDANCE` | 51 codes. See the [source registry](/api-guide/coverage/agency-guidance). |
+| `AGENCY_ADJUDICATION` | 7 bodies. See [Federal coverage](/api-guide/coverage/federal). |
+| `US_TAX_TREATY` | `us_tax_treaty`, `us_tax_treaty_technical_explanation`, `senate_treaty`, `senate_treaty_resolution`, `senate_treaty_document` |
+| `STATE_AGENCY_GUIDANCE` | `state_insurance_bulletin`, `state_financial_bulletin` |
+
+<Note>
+  The `far` and `dfars` sources split **existing** Title 48 data by chapter. They are not a
+  separate ingest and do not add sections to the `CFR` total.
+</Note>
 
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Jurisdictions & State Codes" icon="map-location-dot" href="/api-guide/concepts/jurisdictions">
-    The 52 jurisdictions, state codes, and how to discover live coverage.
-  </Card>
   <Card title="API Coverage" icon="layer-group" href="/api-guide/coverage">
-    The full per-jurisdiction matrix with current section counts.
+    How much sits behind each token, and what each corpus deliberately excludes.
+  </Card>
+  <Card title="Jurisdictions and state codes" icon="map-location-dot" href="/api-guide/concepts/jurisdictions">
+    The 52 jurisdictions and how to discover live coverage.
   </Card>
 </CardGroup>

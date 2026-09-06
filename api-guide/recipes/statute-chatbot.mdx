@@ -11,7 +11,15 @@ message runs one search, pulls the best matching section's text, and returns a
 grounded answer with a link to the official source. It is framework-agnostic: the
 same loop drops into Slack, Discord, a web widget, or a terminal.
 
-**Endpoints used:** `POST /statutes/search`, `GET /statutes/section/{actId}/body`.
+**Endpoints used:** `POST /us/statutes/search` (4 credits), `GET /us/statutes/section/{actId}/body` (6 credits).
+
+<Tip>
+  A bot answers in the time its slowest call takes. Pass `"includeBody": true`
+  with `"limit": 1` on the search and the top section's full text comes back
+  inline, so a reply is one round trip instead of two, at the same 4 + 6 credits.
+  The two-call version below is the one to keep if you rank three candidates and
+  ground on one.
+</Tip>
 
 <Tip>
   This is the compact version of the retrieve-then-ground pattern. For multi-source
@@ -23,12 +31,12 @@ same loop drops into Slack, Discord, a web widget, or a terminal.
 
 <Steps>
   <Step title="Search on the user's message">
-    Send the message to `POST /statutes/search`. Scope with `corpusType` and
+    Send the message to `POST /us/statutes/search`. Scope with `corpusType` and
     `state` if your bot already knows the jurisdiction.
   </Step>
   <Step title="Pull the best section's text">
     Take the top result and fetch its full text with
-    `GET /statutes/section/{actId}/body`.
+    `GET /us/statutes/section/{actId}/body`.
   </Step>
   <Step title="Reply, grounded and cited">
     Give an LLM the section text and its citation, and have it answer only from
@@ -50,7 +58,7 @@ curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
 ```python Python
 import requests
 
-BASE = "https://api.vaquill.ai/api/v1"
+BASE = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
 resp = requests.post(
@@ -68,7 +76,7 @@ results = resp.json()["results"]
 ```
 
 ```javascript JavaScript
-const BASE = "https://api.vaquill.ai/api/v1";
+const BASE = "https://api.vaquill.ai/api/v1/us";
 
 const resp = await fetch(`${BASE}/statutes/search`, {
   method: "POST",
@@ -94,7 +102,7 @@ const { results } = await resp.json();
 ```python Python
 import requests
 
-BASE = "https://api.vaquill.ai/api/v1"
+BASE = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
 
@@ -127,12 +135,9 @@ def answer(message, state=None):
         return "I found a matching section but its text is not available right now."
 
     citation = hit.get("citation") or hit["actId"]
-    source_url = (
-        hit.get("stateHtmlUrl")
-        or hit.get("htmlUrl")
-        or hit.get("govInfoHtmlUrl")
-        or hit.get("externalUrl")
-    )
+    # best_source_url() is the shared helper from Text Formats and Source URLs,
+    # linked below. Copy it once; do not re-derive the field order per surface.
+    source_url = best_source_url(hit)
 
     prompt = (
         "Answer the user's question using ONLY the statute text below. "
@@ -175,10 +180,13 @@ if __name__ == "__main__":
     search the entire US corpus when the jurisdiction is unknown.
   </Accordion>
   <Accordion title="Always show the source link" icon="link">
-    Every reply ends with the citation and the official government URL. This is
-    what makes the bot trustworthy: users can click through and read the law
-    themselves. Vaquill AI complements existing research tools, it does not replace a
-    lawyer.
+    Every reply ends with the citation and the official government URL. Pick that
+    URL with the canonical preference order in
+    [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
+    rather than writing your own, so the bot and the rest of your product cite
+    the same page. This is what makes the bot trustworthy: users can click
+    through and read the law themselves. Vaquill AI complements existing research
+    tools, it does not replace a lawyer.
   </Accordion>
   <Accordion title="Handle the empty case honestly" icon="circle-question">
     When search returns no results or the body is unavailable, say so plainly

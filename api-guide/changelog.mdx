@@ -7,13 +7,135 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
-<Update label="2026-09-06" description="One measurement now backs both the docs and the marketing site: 4,844,957 sections">
-  ## Coverage is now one measurement, and it is 4,844,957 sections
+<Update label="2026-09-06" description="IRS written determinations now covered, and they are not precedent">
+  ## IRS Written Determinations join Agency guidance
 
-  Yesterday two figures were published for the same corpus: **4.5M sections** here and **4M+** on vaquill.ai.
-  Neither was a typo. Each surface was resynced independently, from a different source, and the two rounded different definitions: one carved the CFR annual editions out of the total as "versions", the other measured before those editions had landed.
+  `corpusType=AGENCY_GUIDANCE` now also covers IRS written determinations
+  released under 26 U.S.C. § 6110 (`source=irs_written_determination`): **35,485
+  documents across 296,630 retrieval passages**, which makes it the largest
+  source in this token by document count. It breaks down as 27,258 Private
+  Letter Rulings, 5,553 Chief Counsel Advice memoranda, 681 Technical Advice
+  Memoranda and 579 Tax Exempt and Government Entities determination letters,
+  plus 1,414 the IRS does not type on the document itself.
 
-  Both surfaces now carry a single measurement, taken on 2026-09-06 by calling the shipped counters read-only, which is the exact definition `GET /statutes/coverage` publishes as `sectionCount`. All 52 jurisdictions scrolled, none failed.
+  Each carries the publisher's own `Number`, `UILC` code list, `Subject` and
+  `Release Date`, so `effectiveDate`, `effectiveYear` and the UILC issue codes
+  come from the IRS rather than from inference. Coverage runs **1999-01-08 to
+  2026-09-04**, 28 distinct years.
+
+  <Warning>
+    **A written determination binds one taxpayer and may not be cited as
+    precedent.** 26 U.S.C. § 6110(k)(3) provides that it "may not be used or
+    cited as precedent" - that is the statute, not our caveat. Every one of the
+    35,485 therefore carries `actStatus: "non_precedential"` rather than
+    `in_force`, and says so again in `currencyNote`. Read one as evidence of how
+    the Service analysed one taxpayer's facts, never as a rule of general
+    application.
+  </Warning>
+
+  **`goodLawStatus` is `unknown` on all of them, deliberately.** The Service
+  publishes no status or revocation field for written determinations, so whether
+  a later determination revoked or modified any given one is **not asserted
+  here**. We would rather say we do not know than imply currency we cannot
+  measure.
+
+  **9,946 of the 45,431 determinations the IRS lists are not yet served.** They
+  are image-only scans with no text layer and need OCR, which is separately
+  scheduled. That is a measured, known absence rather than a silent gap: the
+  split was decided on each document's actual text layer, never on its date.
+</Update>
+
+<Update label="2026-09-06" description="CMS Medicare Internet-Only Manuals now covered">
+  ## CMS Medicare Internet-Only Manuals join Agency guidance
+
+  `corpusType=AGENCY_GUIDANCE` now also covers the CMS Medicare Internet-Only
+  Manuals (`source=cms_iom`, 11,018 sections across 21 publications, 26,153
+  retrieval passages), addressed at CMS's own section numbering and cited
+  `Medicare Claims Processing Manual (Pub. 100-04), Ch. 12 SS 20.1`. This is how
+  Medicare actually runs day to day: Pub. 100-04 says what a provider may bill
+  and how, Pub. 100-02 says what Medicare covers, and Pub. 100-08 is what a MAC
+  reads before it opens an audit.
+
+  **Every section carries its own revision stamp.** CMS prints
+  `(Rev. N, Issued, Effective, Implementation)` on each revised section, so
+  `amendmentYears`, `lastAmendedYear`, `effectiveDate` and `transmittalNumber`
+  come from the publisher rather than from inference. **98.4% of sections carry
+  at least one stamp**, spanning 2000 to 2026 across 27 distinct years.
+
+  <Warning>
+    **These manuals are agency procedure, not law.** They instruct CMS's own
+    Medicare administrative contractors on how to administer the program. Courts
+    have repeatedly held that manual provisions are not binding substantive
+    rules; the binding requirements are in the Social Security Act and
+    42 C.F.R. Every passage carries that statement in `currencyNote` and
+    `goodLawStatus` is `unknown` on all of them. Do not read a billing
+    instruction here as a regulation.
+  </Warning>
+
+  **Five of CMS's 25 publications hold nothing or almost nothing, and those are
+  the publisher's gaps rather than ours.** Pub. 100-12 (State Medicaid Manual),
+  100-13 (Medicaid CHIP) and 100-23 (Payment Error Rate Measurement) publish no
+  chapters at all; 100-21 is titled Reserved; and 100-18, the Medicare
+  Prescription Drug Benefit (Part D) Manual, is a two-page table of contents
+  whose own text states that several chapters "have not been disseminated via
+  HPMS or Pub. 100-18". Pub. 100-14 does not exist.
+
+  That scope statement is now a FIELD rather than a footnote:
+  `GET /statutes/coverage` returns `sourceScopeNotes` on each `corpusTypes`
+  entry, keyed by the `source` value you can filter on. It carries a per-source
+  declaration for a token that fans out to many unrelated sources, where the
+  existing whole-token `scopeNote` cannot describe any one of them.
+
+  CMS replaces manual chapters in place and publishes no superseded editions, so
+  `asOf` is **not bounded** for this corpus and every passage states the date we
+  captured it.
+</Update>
+
+<Update label="2026-09-06" description="FTC Part 3 administrative filings now covered">
+  ## FTC Part 3 administrative filings join Administrative Adjudications
+
+  `corpusType=AGENCY_ADJUDICATION` now also covers the Federal Trade Commission's
+  Part 3 adjudicative docket (`source=ftc_administrative_decision`, 18,023
+  documents), 1995 to date. This is where the Section 5 doctrine on unfair and
+  deceptive acts and unfair methods of competition actually lives: administrative
+  complaints, initial decisions, Commission opinions, consent agreements and the
+  orders that modify them, across the Franchise Rule, the Telemarketing Sales
+  Rule, COPPA, Made in USA, HSR and the Safeguards Rule.
+
+  Cited by docket (`FTC Docket 9436`) where the record prints one, and always by
+  the Commission's permanent File Number in `caseNumber`.
+
+  **The unit is a FILING, not a decision**, which is the thing to know before
+  querying it. A Part 3 docket is mostly documents written by the parties:
+  measured on the corpus, 21% of passages are the operative instruments
+  (complaints, decisions and orders, consent agreements) and the rest are
+  motions, notices of appearance, exhibits and public-comment analyses. The
+  whole docket is served; nothing is dropped on that basis.
+
+  Each filing is stored with the Commission's own label ("Complaint", "Decision
+  and Order", "Agreement Containing Consent Order") and a normalised class.
+  **Neither is exposed as a response field or a search filter yet**, so today a
+  retrieval over this corpus returns operative and procedural filings together.
+
+  Scope is the **Part 3 administrative body only**. The FTC's 2,039 federal-court
+  records and ~2,636 records carrying neither action type are not held, and FTC
+  rules are excluded because they are codified at 16 C.F.R. and served under
+  `corpusType=CFR`. `caseStatus` and `docketNumber` are record-type dependent
+  (88.2% and 73.6% respectively) rather than extraction gaps.
+
+  **`goodLawStatus` is `unknown` on every filing.** A consent order's standard
+  20-year sunset is stated in the order's own text and the Commission publishes
+  no machine-readable field for it, so whether an order still binds is not
+  asserted.
+
+  The FTC's ADVISORY opinions decide no case and remain under
+  `corpusType=AGENCY_GUIDANCE`.
+</Update>
+
+<Update label="2026-09-06" description="Coverage is 4,844,957 sections">
+  ## Coverage is 4,844,957 sections
+
+  Counts are on the definition `GET /statutes/coverage` publishes as `sectionCount`, across all 52 jurisdictions.
 
   | | Sections |
   |---|---:|
@@ -22,23 +144,21 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   | State and territory | 3,481,377 |
   | Retrieval passages | 16,201,932 |
 
-  The CFR annual editions enter that total at their **section** count, 312,132, not at their 886,066 stored versions.
-  The collapse is applied by the counter itself, so there is no second carve-out to make, and the corpus is depth in time over the same regulations rather than extra breadth of distinct ones.
+  Two counting units are in play and they are not interchangeable.
+  A **section** is one provision or document, which is what `sectionCount` reports.
+  A **retrieval passage** is one indexed chunk, and a long document has many.
 
-  <Warning>
-    **`GET /statutes/coverage` still returns 4,180,527 until the API is refreshed.**
-    The endpoint reads section counts from an overlay that a worker loads at boot, and the workers have not been restarted since the overlay for this measurement was written.
-    The figures above are what it returns once that restart lands.
-  </Warning>
+  The CFR annual editions enter the total at their **section** count, 312,132, not at their 886,066 stored versions.
+  These are editions over time of the same regulations, not additional distinct ones.
 
   ## Two corpus types are counted but cannot be filtered on yet
 
   Checked against the deployed OpenAPI document on 2026-09-06: the published `corpusType` enum carries 17 tokens, and **`CFR_ANNUAL` and `FEDERAL_REGISTER_NOTICE` are not among them**.
   Both corpora are in the index and both are counted by `/statutes/coverage`, but a search scoped to either token is rejected.
-  The 2026-09-05 entry announcing `CFR_ANNUAL` is correct about the data and premature about the filter; that filter ships with the next API deploy.
+  Both filters ship with the next API deploy.
 
-  Six `source` values are in the same position and are listed here so nobody has to discover them by trial: `nlrb_board_decision`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `cfpb_enforcement_action` and `irs_irm` are not in the deployed `source` enum.
-  Unlike the two above, those documents **are** retrievable today, under `corpusType=AGENCY_ADJUDICATION` and `corpusType=AGENCY_GUIDANCE`. What is missing is the per-body filter, not the data.
+  Six `source` values are also absent from the deployed `source` enum: `nlrb_board_decision`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `cfpb_enforcement_action` and `irs_irm`.
+  Those per-body filters ship with the same deploy.
 
   ## Things that stay true when the number goes up
 
@@ -48,6 +168,62 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - The **Internal Revenue Manual** is agency procedure, not law. It is the IRS's own instruction manual for its employees and does not bind the agency against a taxpayer.
   - The **adjudication** corpora (NLRB, MSPB, BIA, SEC, OLC, CFPB) carry no verified doctrinal currency. `goodLawStatus` is `unknown` by design on all but the CFPB slice, and nothing here implies good-law assurance.
   - **Statutes at Large** is held from 137 of the 140 volumes. Volumes 7, 8 and 44 are not held.
+</Update>
+
+<Update label="2026-09-06" description="OFAC sanctions FAQs join AGENCY_GUIDANCE, with their prior versions as separately citable documents">
+  ## OFAC Frequently Asked Questions, and their revision history
+
+  `source=ofac_faq` under `corpusType=AGENCY_GUIDANCE`. **989 current FAQs**, cited `OFAC FAQ 401`,
+  covering all 38 sanctions programs the Office of Foreign Assets Control administers. This is the
+  interpretive layer over 31 C.F.R. chapter V: how the 50 Percent Rule reaches through an ownership
+  chain (FAQ 401), whether a non-U.S. person is exposed for a transaction a General License
+  authorizes (FAQ 1247), whether an institution may wait for its screening vendor's overnight report
+  (FAQ 43). None of it is in the CFR.
+
+  ## Prior versions are separate documents, not a field
+
+  **361 prior versions** are served as their own citable documents with `actStatus: "superseded"`,
+  taken from OFAC's own FAQ Archive and stamped with the publisher's timestamps, so the earlier text
+  is retrievable rather than described. A superseded version never competes with the current answer
+  in search; ask for it by act_id.
+
+  **238 FAQs (24.1%) carry at least one observed revision**; the deepest is FAQ 999 with 12. A
+  version whose text is byte-identical to the one before it is NOT counted as a revision - OFAC
+  re-saves FAQs without changing them, and 183 of its 1,533 archive rows are exactly that.
+
+  ## Two bounds, served on every passage
+
+  **The revision trail begins 2023-03-22 and goes no further back.** OFAC migrated its FAQs to a new
+  website that day and states that FAQs active at the time display the migration date rather than the
+  date it first published that version. Those 860 version records carry `observedDate` and **no**
+  `effectiveDate`, because that date is when we observed the text and not when OFAC published it.
+
+  **279 FAQ numbers have been rescinded and OFAC publishes nothing for them** - no text, no date, no
+  reason. A rescinded FAQ is absent from this corpus rather than marked withdrawn, so a gap in the
+  numbering is a rescission, not a hole in our coverage. Both bounds are in `currencyNote` and
+  `coverageNote` on every passage.
+
+  ## `asOf` answers from the stored version, not a reconstruction
+
+  `GET /statutes/section/{act_id}/body?asOf=2026-04-01` returns the version OFAC published on that
+  date, verbatim, with `asOf.source` = `stored_edition`. There is no diff walk and no
+  `basisChangeId`: the earlier text is a document we hold, so we serve it rather than rebuild it.
+
+  Three answers are distinguished, and the difference matters:
+
+  | Your date | What comes back |
+  |---|---|
+  | on or after the FAQ's first version | that version's text, `isBounded: false` |
+  | after 2023-03-22 but before the FAQ existed | `existed: false`, no text - a real answer |
+  | before 2023-03-22 | the earliest text we hold, `isBounded: true` |
+
+  That last row is the one to read. **`isBounded: true` means the text is the earliest we hold and
+  NOT the text in force on your date.** Rendering it as point-in-time law makes a claim we did not
+  make. Note `isBounded` does not mean the same thing on the `stored_edition` engine used by
+  `CFR_ANNUAL`; read `engine` first.
+
+  Sanctions LISTS (SDN, consolidated) and General Licenses are deliberately not here. General License
+  links are served as cross-references.
 </Update>
 
 <Update label="2026-09-06" description="FinCEN AML Act of 2020 implementation material is live as source=fincen_amla_material">
@@ -68,9 +244,11 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   | `source` | Contents | Documents |
   |---|---|---:|
   | `state_insurance_bulletin` | Department of Insurance bulletins, circular letters and commissioner's orders, 49 states and territories | 13,182 |
-  | `state_financial_bulletin` | Financial-institutions regulator bulletins, alerts and substantive policy statements, Arizona and Oregon only | 45 |
+  | `state_financial_bulletin` | Financial-institutions regulator bulletins, alerts and substantive policy statements: Arizona, Oregon, New Jersey and Vermont | 155 |
 
-  **45 new documents across 117 retrieval passages**: 35 from the Arizona Department of Insurance and Financial Institutions (banks, credit unions, trust companies, escrow agents, consumer lenders, money transmitters, loan originators, collection agencies, sales finance) and 10 from the Oregon Division of Financial Regulation (investment advisers, collection agencies and pawnbrokers, student loan servicers, income share agreements, debt management).
+  **155 new documents across 584 retrieval passages**, from four regulators that each share an index with their state's insurance regulator: **New Jersey** DOBI banking (81), **Arizona** DIFI (35, covering banks, credit unions, trust companies, escrow agents, consumer lenders, money transmitters, loan originators, collection agencies and sales finance), **Vermont** DFR banking and securities (29), and **Oregon** DFR financial services (10, covering investment advisers, collection agencies and pawnbrokers, student loan servicers, income share agreements and debt management).
+
+  New Jersey and Vermont are the clearest illustration of why this is scoped the way it is. DOBI runs ONE numbered series across insurance, banking AND the Real Estate Commission; the real-estate bulletins are in neither corpus, because licensing brokers is neither insurance nor a financial institution. Vermont runs a SEPARATE series per division, so `Banking Bulletin #50` and `Insurance Bulletin #50` are different documents and each carries its series in its identifier.
 
   **Nothing you already query changes.** Existing insurance-bulletin results keep their citations, their `actId` values and their counts, and a search with no `source` filter now spans both. A search for insurance guidance will never be handed a credit-union bulletin: the two are separate categories, and each document's `source` says which it is.
 
@@ -103,10 +281,10 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   These sources are **not** offered as a change-alert board; they refresh weekly with the rest of the agency-guidance registry.
 </Update>
 
-<Update label="2026-09-05" description="CFR annual editions 1996-2026 are live under corpusType=CFR_ANNUAL">
+<Update label="2026-09-05" description="CFR annual editions 1996-2026 are indexed under corpusType=CFR_ANNUAL">
   ## CFR annual editions, 1996 to 2026
 
-  `corpusType=CFR_ANNUAL` previously held nothing and returned zero results for every query. It now serves GPO's officially published annual editions of the Code of Federal Regulations: **31 editions across all 49 titles**.
+  `corpusType=CFR_ANNUAL` covers GPO's officially published annual editions of the Code of Federal Regulations: **31 editions across all 49 titles**. The corpus is indexed and counted by `/statutes/coverage`; the `corpusType` filter itself ships with the next API deploy.
 
   | | |
   |---|---:|
@@ -124,54 +302,6 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   This corpus is deliberately **not** offered as a change-alert board. The existing `cfr` board already carries the daily change signal for the same regulations, so a second board would fire once a year on a whole edition and repeat what subscribers had already been told the day each change happened.
 
   `CFR_ANNUAL` and the `asOf` parameter are both point-in-time routes and are **not** interchangeable. The corpus serves an edition **as published**; `asOf=YYYY-MM-DD` on `GET /us/statutes/section/{actId}/body` **reconstructs** a section from observed change history against the current CFR.
-</Update>
-
-<Update label="2026-09-05" description="Coverage figures re-measured against the live corpus">
-  ## Published coverage re-measured
-
-  Every figure on [API Coverage](/api-guide/coverage) and [Corpus Types](/api-guide/concepts/corpus-types) was re-measured against the live corpus on 2026-09-05.
-  Where a published number disagreed with the measurement, the measurement won.
-  The corrections:
-
-  | What | Published | Measured |
-  |---|---|---|
-  | Corpus totals | 4.1M sections / 13.1M passages | **4.5M sections / 13.3M passages** (superseded 2026-09-06: this measurement excluded the CFR annual editions; the single figure is 4,844,957 sections / 16,201,932 passages) |
-  | Federal law | 12 corpora, ~711K sections | **13 corpora, ~1.06M sections** |
-  | Statutes at Large (`SESSION_LAW`) | 5,256 laws, ~110K sections, 1999-2026 | **93,422 laws (48,437 public, 44,985 private), 423,928 sections, 1789-2026**, from 137 of the 140 volumes |
-  | Code of Federal Regulations | 222,348 | **222,330** |
-  | Federal Acquisition Regulation (FAR) | 5,537 | **3,118** |
-  | Defense FAR Supplement (DFARS) | 2,877 | **1,705** |
-  | Executive Orders | 3,783 | **3,771** |
-  | US Sentencing Guidelines | 302 | **1,281** (Appendix A, and Appendix B Part III's former guideline text, are separate documents) |
-  | Agency guidance, all sources | 23,776 | **23,809** |
-  | MSPB nonprecedential orders | 5,349 | **5,355** (so MSPB totals 5,461, not 5,455) |
-  | Senate treaty records | 781 | **780** |
-  | CPSC OGC Advisory Opinions | 139 | **304** |
-  | OCC Bulletins | 606 | **611** |
-  | FDIC Financial Institution Letters | 2,313 | **2,320** |
-  | Federal Reserve SR / CA Letters | 336 | **337** |
-  | Illinois regulations | 52,798 | **55,944** |
-  | State regulations, all jurisdictions | ~1.51M | **~1.45M** |
-  | State court rules, all jurisdictions | ~47.6K | **~51.4K** |
-
-  Two counting units are in play and they are not interchangeable.
-  A **section** is one provision or document, which is what `GET /statutes/coverage` reports and what every table column here holds.
-  A **retrieval passage** is one indexed chunk, and a long document has many.
-  Publishing a passage count in a section column overstates a corpus by roughly 1.5x to 3x, which is what the FAR and DFARS rows were doing.
-
-  ## ~~`CFR_ANNUAL` is a reserved token that holds no data~~ (superseded the same day)
-
-  <Warning>
-    **Superseded later on 2026-09-05.** The corpus landed hours after this note was written; see the entry above. The paragraph below is kept as the record of what was true at the time and no longer describes the API.
-  </Warning>
-
-  `corpusType=CFR_ANNUAL` is accepted by the API and **returns zero results**, because GPO's published annual editions of the CFR have not been ingested.
-  The token was registered ahead of a corpus that was then deliberately deferred in favor of shipping `asOf` point-in-time reconstruction over data we already hold.
-
-  Both reference pages now say so explicitly, because a token carrying a rich description and returning nothing reads as "there is no CFR history" rather than "this has not shipped".
-  It stays on the [roadmap](/api-guide/roadmap#point-in-time-and-as-applied-federal-law), and it is excluded from the corpus-type count until it lands.
-
-  For a regulation as it read on a past date, use `asOf=YYYY-MM-DD` on `GET /us/statutes/section/{actId}/body`.
 </Update>
 
 <Update label="2026-09-04" description="New corpusType: FEDERAL_REGISTER_NOTICE, a curated 17,612-notice slice of the Federal Register notice series">

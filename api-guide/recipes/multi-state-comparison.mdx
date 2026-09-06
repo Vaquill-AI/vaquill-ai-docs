@@ -1,29 +1,177 @@
 ---
 title: "Compare a rule across states"
-description: "Run the same query across several state codes and assemble a side-by-side comparison"
+description: "Get the comparable provision in other states from one section you already have, or run one multi-state search, instead of looping a search per jurisdiction"
 icon: "scale-balanced"
 ---
 
-**What this gets you:** a 50-state comparison table for any rule, built automatically instead of by hand - useful for due diligence, multi-state compliance, or any "how does this vary by state" question.
+**What this gets you:** a multi-state comparison table for any rule, built automatically instead of by hand - useful for due diligence, multi-state compliance, or any "how does this vary by state" question.
 
-Many legal questions are really the same question asked of many jurisdictions: how does each state handle security deposits, non-competes, or breach notice? This recipe runs one query with `corpusType=STATE` across a list of `state` codes, keeps the top section per state, and assembles a comparison table of state to citation to excerpt and source link.
+Many legal questions are really the same question asked of many jurisdictions: how does each state handle security deposits, non-competes, or breach notice?
+There are three ways to answer that here, and they differ by an order of magnitude in cost.
+Start at the top.
 
-**Endpoints used:** `GET /statutes/coverage` to pick states, then `POST /statutes/search`.
+| Approach | Calls | Credits | Gives you |
+|---|---|---|---|
+| `GET /us/statutes/section/{actId}/cross-state` | 1 | 6 | At most one provision per state, most similar first, up to 25 states |
+| `POST /us/statutes/search` with `state` as a list | 1 | 4 | One merged ranking across the states you named |
+| One search per state | 1 per state | 4 per state, so 208 for 52 | A guaranteed top hit for each state, including the ones with no strong match |
 
-<Tip>
-  Call `/statutes/coverage` first and keep only the states that actually carry the `STATE` corpus. That way you never run a search against a jurisdiction that has no data to return.
-</Tip>
+**Endpoints used:** `GET /us/statutes/section/{actId}/cross-state`, `POST /us/statutes/search`, and `GET /us/statutes/coverage` (free) to check which jurisdictions carry the corpus.
+
+## Best: start from one section you already have
+
+If you can name the provision in one state, `cross-state` finds its analogue elsewhere.
+This is the endpoint built for this question.
+It returns at most one provision per state, ordered most similar first, so the response reads as a jurisdiction comparison rather than a relevance list.
+
+<CodeGroup>
+```bash cURL
+curl -G https://api.vaquill.ai/api/v1/us/statutes/section/STATE_CA_Cciv_D3_P4_T5_C2_S1950.5/cross-state \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "limit=10"
+```
+
+```python Python
+import requests
+
+BASE_URL = "https://api.vaquill.ai/api/v1/us"
+HEADERS = {"Authorization": "Bearer vq_key_..."}
+
+
+def cross_state(act_id: str, limit: int = 10) -> list[dict]:
+    resp = requests.get(
+        f"{BASE_URL}/statutes/section/{act_id}/cross-state",
+        headers=HEADERS,
+        params={"limit": limit},
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    # Each neighbor is {"state", "similarity", "section"}, most similar first,
+    # at most one per state. `statesCovered` says how many states are here.
+    for n in data["neighbors"]:
+        state = n["state"].upper()
+        citation = n["section"]["citation"]
+        print(f"{state:4} {n['similarity']:.2f}  {citation}")
+    return data["neighbors"]
+```
+
+```javascript JavaScript
+const BASE_URL = "https://api.vaquill.ai/api/v1/us";
+
+async function crossState(actId, limit = 10) {
+  const url = new URL(`${BASE_URL}/statutes/section/${actId}/cross-state`);
+  url.searchParams.set("limit", String(limit));
+  const resp = await fetch(url, {
+    headers: { Authorization: "Bearer vq_key_..." },
+  });
+  if (!resp.ok) throw new Error(`cross-state failed: ${resp.status}`);
+  const data = await resp.json();
+  // data.neighbors: [{ state, similarity, section }], most similar first.
+  return data.neighbors;
+}
+```
+</CodeGroup>
+
+Take the `actId` from a `/us/statutes/search` result rather than assembling the string yourself.
+Do not have one? Spend one 4-credit search to find it, then one 6-credit `cross-state` call.
+That is 10 credits for a multi-state comparison against 208 for the 52-state loop.
+
+<Warning>
+  `similarity` is a retrieval score between 0 and 1 describing how closely two
+  provisions read. It is not a legal opinion. A high score means the provisions
+  cover the same ground, never that they impose the same obligation, and the
+  differences are usually the point. Treat the response as the shortlist to read,
+  not the answer.
+</Warning>
+
+A trimmed response:
+
+```json
+{
+  "section": { "actId": "STATE_CA_Cciv_D3_P4_T5_C2_S1950.5", "citation": "Cal. Civ. Code § 1950.5" },
+  "neighbors": [
+    {
+      "state": "ny",
+      "similarity": 0.79,
+      "section": { "citation": "N.Y. Gen. Oblig. Law § 7-108", "title": "..." }
+    }
+  ],
+  "statesCovered": 1,
+  "creditsConsumed": 6
+}
+```
+
+`statesCovered` below the `limit` you asked for means no provision in the remaining states cleared the similarity floor.
+It does not mean those states are missing from the corpus.
+
+<Note>
+  `cross-state` is scoped to state statute sections. USC, CFR, regulations and
+  court rules return empty with a `note`, refunded, because a federal section has
+  no state analogue by definition. `limit` caps at 25.
+</Note>
+
+## Next best: one search across several states
+
+`state` accepts a list, so one call covers every jurisdiction you name.
+Use this when you have no starting section, or when you want the corpus to pick the states rather than picking them yourself.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "security deposit return deadline", "corpusType": "STATE", "state": ["ca", "ny", "tx", "fl", "wa"], "limit": 25, "fields": ["title", "excerpt", "state", "stateHtmlUrl", "htmlUrl"]}'
+```
+
+```python Python
+def search_states(query: str, states: list[str], limit: int = 25) -> list[dict]:
+    resp = requests.post(
+        f"{BASE_URL}/statutes/search",
+        headers={**HEADERS, "Content-Type": "application/json"},
+        json={
+            "query": query,
+            "corpusType": "STATE",
+            "state": states,
+            "limit": limit,
+            # A result carries 40+ fields, most null on any row. Ask for the
+            # handful the comparison table actually renders.
+            "fields": ["title", "excerpt", "state", "stateHtmlUrl", "htmlUrl"],
+        },
+    )
+    resp.raise_for_status()
+    return resp.json()["results"]
+
+
+def best_per_state(results: list[dict]) -> dict[str, dict]:
+    """Keep the highest-ranked hit for each state."""
+    best: dict[str, dict] = {}
+    for r in results:  # already in rank order
+        best.setdefault(r.get("state"), r)
+    return best
+```
+</CodeGroup>
+
+One caveat that decides whether this is enough: the response is **one merged ranking**, not one slot per state.
+A jurisdiction whose provision is worded unusually can be pushed off the page by five strong hits from another state.
+Raise `limit` (up to 50) and group by each result's `state`, and treat a missing state as "not in the top N", not as "no such law".
+
+<Note>
+  `relevanceScore` is a relative rank within a single response. Do not compare
+  scores across separate responses to decide which jurisdiction is "more
+  relevant".
+</Note>
+
+## Fallback: one search per state
+
+Loop only when you need a guaranteed slot for every named jurisdiction, including the ones with a weak match, and the visible gaps matter more than the spend.
+At 4 credits a call this is 208 credits for all 52 jurisdictions, against 6 for `cross-state`.
 
 <Steps>
-  <Step title="Pick states that have the corpus">
-    Read the coverage matrix and collect the codes of `state` jurisdictions whose `corpora` includes the corpus you want to compare (here, `STATE`).
+  <Step title="Drop the states that do not carry the corpus">
+    `GET /us/statutes/coverage` is free. Read it once, cache it, and never spend a
+    search on a jurisdiction with no data to return.
 
     ```python Python
-    import requests
-
-    BASE_URL = "https://api.vaquill.ai/api/v1"
-    HEADERS = {"Authorization": "Bearer vq_key_..."}
-
     def states_with_corpus(token: str = "STATE") -> list[str]:
         cov = requests.get(
             f"{BASE_URL}/statutes/coverage", headers=HEADERS
@@ -36,130 +184,60 @@ Many legal questions are really the same question asked of many jurisdictions: h
     ```
   </Step>
 
-  <Step title="Search one state at a time">
-    Send the same `query` for each state, scoping with `corpusType="STATE"` and the 2-letter lowercase `state` code. Keep `limit` small since you only want the best match per state.
-
-    <CodeGroup>
-    ```bash cURL
-    curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-      -H "Authorization: Bearer vq_key_..." \
-      -H "Content-Type: application/json" \
-      -d '{"query": "security deposit return deadline", "corpusType": "STATE", "state": "ca", "limit": 3}'
-    ```
-
-    ```python Python
-    def top_section_for_state(query: str, state: str) -> dict | None:
-        resp = requests.post(
-            f"{BASE_URL}/statutes/search",
-            headers={**HEADERS, "Content-Type": "application/json"},
-            json={
-                "query": query,
-                "corpusType": "STATE",
-                "state": state,
-                "limit": 3,
-            },
-        )
-        resp.raise_for_status()
-        results = resp.json()["results"]
-        return results[0] if results else None
-    ```
-    </CodeGroup>
-
-    A trimmed single-state response:
-
-    ```json
-    {
-      "results": [
-        {
-          "actId": "STATE_CA_Cciv_D3_P4_T5_C2_S1950.5",
-          "citation": "Cal. Civ. Code § 1950.5",
-          "title": "Security for rental of residential property",
-          "corpusType": "STATE",
-          "state": "ca",
-          "relevanceScore": 0.88,
-          "excerpt": "Any payment or deposit of money the primary function of which is to secure...",
-          "stateHtmlUrl": "https://...",
-          "htmlUrl": "https://..."
-        }
-      ],
-      "total": 3,
-      "hasMore": false
-    }
-    ```
-  </Step>
-
-  <Step title="Pick the best source link per result">
-    Each result carries several optional source URLs. Prefer the official government link when present, falling back gracefully.
-
-    ```python Python
-    def best_source_url(result: dict) -> str | None:
-        for field in ("stateHtmlUrl", "govInfoHtmlUrl", "htmlUrl", "externalUrl"):
-            url = result.get(field)
-            if url:
-                return url
-        return None
-    ```
-  </Step>
-
-  <Step title="Assemble the comparison">
-    Iterate over your chosen states, collect the top section for each, and build one row per state. States with no match are recorded so gaps are visible.
+  <Step title="Search each state and assemble the table">
+    States with no match are recorded so the gaps stay visible.
 
     ```python Python
     def compare_across_states(query: str, states: list[str]) -> list[dict]:
         rows: list[dict] = []
         for state in states:
-            top = top_section_for_state(query, state)
-            if top is None:
-                rows.append({"state": state, "citation": None, "excerpt": None, "url": None})
-                continue
+            hits = search_states(query, [state], limit=3)
+            top = hits[0] if hits else None
             rows.append(
                 {
                     "state": state,
-                    "citation": top.get("citation"),
-                    "excerpt": (top.get("excerpt") or "")[:200],
-                    "url": best_source_url(top),
+                    "citation": top.get("citation") if top else None,
+                    "excerpt": (top.get("excerpt") or "")[:200] if top else None,
+                    # best_source_url() is the shared helper linked below.
+                    "url": best_source_url(top) if top else None,
                 }
             )
         return rows
 
-    if __name__ == "__main__":
-        target_states = ["ca", "ny", "tx", "fl", "wa"]
-        available = set(states_with_corpus("STATE"))
-        target_states = [s for s in target_states if s in available]
 
-        table = compare_across_states("security deposit return deadline", target_states)
-        for row in table:
-            citation = row["citation"] or "(no match)"
-            print(f"{row['state'].upper():4}  {citation}")
-            if row["url"]:
-                print(f"      {row['url']}")
+    if __name__ == "__main__":
+        available = set(states_with_corpus("STATE"))
+        targets = [s for s in ["ca", "ny", "tx", "fl", "wa"] if s in available]
+        for row in compare_across_states("security deposit return deadline", targets):
+            print(f"{row['state'].upper():4}  {row['citation'] or '(no match)'}")
     ```
 
     Example output:
 
     ```text
     CA    Cal. Civ. Code § 1950.5
-          https://...
     NY    N.Y. Gen. Oblig. Law § 7-108
-          https://...
     TX    Tex. Prop. Code § 92.103
-          https://...
     ```
   </Step>
 </Steps>
 
-<Note>
-  `relevanceScore` is a relative rank within a single response. Do not compare scores across states to decide which jurisdiction is "more relevant"; use it only to order results inside one state's response.
-</Note>
+<Tip>
+  Each result carries several optional source URL fields and any may be null. Use
+  the canonical preference order in
+  [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
+  rather than writing your own, so the same section gets the same official link
+  everywhere in your product.
+</Tip>
 
 ## Related
 
 <CardGroup cols={2}>
   <Card title="Monitor corpus coverage" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
-    Poll the coverage endpoint and diff snapshots over time.
+    Poll for what changed since your last sync.
   </Card>
   <Card title="Enrich a citation database" icon="database" href="/api-guide/recipes/citation-enrichment">
-    Attach canonical citations, excerpts, and source links to a batch of topics.
+    Attach canonical citations, excerpts, and source links to a batch of rows.
   </Card>
   <Card title="Coverage matrix" icon="table-cells" href="/api-guide/coverage">
     See which states carry which corpora.

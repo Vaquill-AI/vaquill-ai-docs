@@ -1,29 +1,64 @@
 ---
 title: "Status & Currency"
-description: "Tell whether a statute section is still good law: actStatus, goodLawStatus, currency notes, and renumbering pointers"
+description: "Tell whether a section is still good law: the actStatus vocabulary, the goodLawStatus verdict, how to filter on both, and the move pointers"
 icon: "circle-check"
 ---
 
-Every statute result carries status and currency metadata so you can tell, before you rely on a section, whether it is still in force, has been repealed or moved, and how current the text is. These fields appear on `POST /statutes/search`, `GET /statutes/section/{actId}`, and `POST /statutes/sections`.
+Two fields answer "can I rely on this section today", and they answer different questions.
+
+`actStatus` is the publisher's own word for the section, stored as we read it.
+`goodLawStatus` is our verdict, derived from that word plus whether the jurisdiction publishes a repeal signal we trust.
+
+Both appear on `POST /us/statutes/search`, `GET /us/statutes/section/{actId}`, and `POST /us/statutes/sections`.
+`actStatus` is also a search filter, which is covered below.
 
 ## actStatus
 
 The raw status of the section, straight from the source structure.
+It is the only one of the two that is indexable, so it is what you filter on.
+
+**Operative**
 
 | Value | Meaning |
 |-------|---------|
 | `in_force` | The section is currently operative. |
-| `repealed` | The section has been repealed. |
-| `renumbered` | The section moved to a new number (see `renumberedTo`). |
-| `transferred` | The section moved to a different code or title (see `transferredTo`). |
-| `omitted` | Omitted from the code (often editorially, without repeal). |
+
+**Dormant: it exists, but has no operative force right now**
+
+| Value | Meaning |
+|-------|---------|
 | `reserved` | A reserved or held-open placeholder with no current text. |
 | `vacant` | A vacant number with no content. |
+| `inactive` | Present and revivable, marked inactive by the publisher. |
+| `not_funded` | Enacted subject to appropriation, and not yet funded. |
+| `not_yet_effective` | Enacted with a later commencement date it has not reached. |
+
+**Dead: it is not law, or is no longer at this citation**
+
+| Value | Meaning |
+|-------|---------|
+| `repealed` | Repealed. |
 | `unconstitutional` | Held unconstitutional. |
+| `expired` | Reached its own sunset date. |
+| `omitted` | Omitted from the code, often editorially, without repeal. |
+| `deleted` | Deleted by the publisher. |
+| `superseded` | Replaced by a later version of the same instrument. |
+| `renumbered` | Moved to a new number. See `renumberedTo`. |
+| `transferred` | Moved to a different code or title. See `transferredTo`. |
+| `recodified` / `recompiled` / `relocated` | The provision still exists, but not at this citation. |
+| `rescinded` / `revoked` / `withdrawn` | An agency retired its own rule or guidance. |
+| `terminated` / `abolished` / `removed` | The body or provision was ended by the publisher's own word. |
+| `vetoed` | Passed by the legislature and vetoed. |
+| `rejected` | A proposed constitutional article or amendment the electorate voted down. |
+| `proposed` | A draft published for comment. Full text, no legal force, and never law. |
+
+A dead or dormant status is a real answer about the law, not a data quality flag.
+Several of these exist because one jurisdiction uses its own verb: `recompiled` is New Mexico's, `not_funded` is the District of Columbia's, `relocated` is Alaska's, `terminated` and `vetoed` are Wyoming's.
+We store the publisher's word rather than flattening it, so a section whose entire printed body is `Recompiled.` is not served as live law that happens to say almost nothing.
 
 ## goodLawStatus
 
-A derived, conservative verdict that answers "can I rely on this section today?" It is computed on top of `actStatus` and jurisdiction-specific repeal signals.
+A derived, conservative verdict computed on top of `actStatus` and jurisdiction-specific repeal signals.
 
 | Value | Meaning |
 |-------|---------|
@@ -33,120 +68,41 @@ A derived, conservative verdict that answers "can I rely on this section today?"
 | `unknown` | The jurisdiction has no reliable repeal signal, so we do not claim it is current. |
 
 <Warning>
-  `goodLawStatus` is deliberately conservative. Some jurisdictions do not
-  publish a reliable repeal signal, so their sections resolve to `unknown`
-  rather than over-claiming `good_law`.
+  `goodLawStatus` is deliberately conservative. Some jurisdictions and some
+  publishers do not publish a reliable repeal signal, so their sections resolve
+  to `unknown` rather than over-claiming `good_law`.
 
   Treat `unknown` as "verify against the official source," not as "current."
   The field is `null` when currency checking is disabled.
 </Warning>
 
-### State agency guidance: the verdict is per PUBLISHER, not per state
+## Filtering on status
 
-`goodLawStatus` under `corpusType=STATE_AGENCY_GUIDANCE` is decided by the
-publisher that issued the document, and a state can hold two publishers with
-different answers.
+There are two filters on `POST /us/statutes/search`, and they are not inverses of each other in the way the names suggest.
 
-**Arizona is the worked example.** Its insurance regulator marks rescissions
-diligently, so `source=state_insurance_bulletin` earns `good_law`: 15 of its
-199 bulletins are served with a dead `actStatus` on the strength of the
-Department's own withdrawal statements. Its financial-institutions regulator,
-which shares the same index, has rescinded nothing we hold: 0 of 35. So
-`source=state_financial_bulletin` is served `unknown` in both Arizona and
-Oregon, and will be until a regulator actually withdraws something and we
-store it.
-
-Same state, same `corpusType`, same `actStatus` - two different verdicts,
-because they are two different publishers. Read `unknown` here as "we make no
-claim", not as "probably still current".
-
-**The rule is an allow-list**, as it is for federal guidance and
-administrative adjudications: a source earns a good-law verdict only after its
-own rescission signal has been measured, and a new source is `unknown` until
-then rather than certified by default.
-
-### Administrative adjudications: the text is served, the doctrine is not certified
-
-Every corpus under `corpusType=AGENCY_ADJUDICATION` except one is served with `goodLawStatus: "unknown"`, and that is a construction rather than a gap.
-
-**We serve the decision exactly as the body issued it, and we have NOT verified that it is still good law.**
-Read `unknown` as "we make no claim", not as "still good".
-
-The reason is the publisher, not the pipeline.
-An adjudication is superseded by ANOTHER DECISION, not by an amendment to itself, so the document never changes when it stops being law and none of the ordinary currency instruments fire.
-**No publisher in this family ships a structured overruling or supersession field.**
-Currency here is an allow-list keyed on the source: a source earns a good-law verdict only once it has been MEASURED to publish a real signal, and a source that has not is `unknown` with no action required.
-
-`nlrb_board_decision` is the clearest case, and it is deliberately not on that list.
-Board doctrine swings hard with Board composition, so an overruling is the normal course rather than an edge case, and the NLRB publishes nothing machine-readable that records one.
-Its CITENET Classified Index is a subject digest, not a citator: it carries an overruling only as editorial prose on the decision doing the overruling, with no reverse edge on the decision that was overruled.
-Two independent measurements, the citenet probe and a supersession sweep over the landed corpus, both returned no signal.
-So we serve the Board's text faithfully and refuse to assert what a later Board has done to it, and every section says so in its own `coverageNote`.
-
-`mspb_precedential`, `mspb_nonprecedential`, `olc_opinion`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent` and `immigration_admin_precedent` are `unknown` for the same reason.
-The two sections below cover the two places where a partial signal does exist, and neither of them changes that verdict.
-
-<Warning>
-  Do not treat `goodLawStatus: "unknown"` under this corpusType as a soft yes.
-  On a body whose doctrine turns over with its membership, a decision served as
-  issued may have been overruled the week after it was decided, and nothing in
-  this API will tell you.
-  If your use of an adjudication depends on it still being good law, check the
-  body's own subsequent output.
-</Warning>
-
-### An adjudicator overruling another: BIA and Attorney General decisions
-
-An administrative adjudication is superseded by ANOTHER DECISION, not by an amendment to itself, so the document never changes when it stops being good law. The `I&N Dec.` reporter is the one place in this corpus where the publisher states that relation itself, in the holdings prose it prints beside each decision.
-
-We resolve those statements into a graph. `supersedes` and `supersededBy` carry act ids, and `dispositionVerb` carries the publisher's own verb.
-
-🔴 **The verb's object is the CITED decision, not the one you are reading.** A headnote under `Matter of Diji, 30 I&N Dec. 1 (BIA 2026)` reading "*Matter of G-Y-R-*, 23 I&N Dec. 181 (BIA 2001), overruled" means G-Y-R- is dead and Diji is in force, not the other way round.
-
-🔴 **Read the verb before treating a link as fatal.** Most links are `followed`, `modified`, `clarified`, `distinguished` or `reaffirmed`, and none of those kills the cited decision. `overruled_in_part` and `modified_in_part` are stored distinctly and do NOT carry a dead `actStatus`, because a partly overruled decision is still law for everything else it held. Only an unqualified `overruled`, `vacated`, `superseded` or `withdrawn` moves the status.
-
-The whole corpus is still served as `goodLawStatus: "unknown"`, because the signal cannot certify the decisions it says nothing about: the Board publishes holdings prose only from volume 19 onward, and a court of appeals can reject a precedent for its own circuit while it remains in force elsewhere without EOIR publishing anything at all.
-
-### An agency's own status enum: CFPB enforcement actions
-
-Most of the corpus derives `goodLawStatus` from a repeal signal in the text. One
-source instead carries the issuing agency's own published lifecycle status, and
-it is worth knowing because it behaves differently from everything around it.
-
-The Consumer Financial Protection Bureau assigns every enforcement action one of
-three statuses and [publishes the definitions itself](https://www.consumerfinance.gov/enforcement/actions/enforcement-action-definitions/):
-
-| CFPB status | Meaning, in the Bureau's words | What we serve |
-|---|---|---|
-| `Post-order/Post-judgment` | "resolved ... and has ongoing compliance obligations" | `actStatus: "in_force"` |
-| `Expired/Terminated/Dismissed` | "did not result in, or is no longer subject to, ongoing compliance obligations" | `actStatus: "terminated"` (a dead status) |
-| `Pending Litigation` | "in ongoing litigation or under appeal" | `actStatus: "in_force"` |
-
-Two consequences you should plan for.
-
-**185 of the 386 actions carry the dead status, so they are excluded from
-ordinary search results.** That is close to half the source, and it is correct:
-an order that no longer binds anyone should not be returned as live law. Query
-them explicitly if you need the historical record.
-
-**That status bundles three different endings and the Bureau does not separate
-them.** A matter it lost or withdrew is not the same event as an order that ran
-its term, and no field distinguishes them. So each record also carries the
-Bureau's raw status string verbatim in `history`, and you should read that
-rather than inferring an outcome from `actStatus` alone.
+`excludeRepealed: true` drops everything whose own status says it is no longer operative: the dead and dormant vocabularies above, in full.
 
 <Note>
-  **`goodLawStatus` is not uniform within `corpusType=AGENCY_ADJUDICATION`.**
-  CFPB enforcement actions carry a real verdict, because the Bureau publishes a
-  defined and complete status enum. Every other source under this token - MSPB
-  decisions, DOJ Office of Legal Counsel opinions, SEC opinions, NLRB Board
-  decisions and the `I&N Dec.` reporter - carries `unknown`, because no
-  publisher among them ships a supersession field at all: an adjudication is
-  superseded by *another decision*, and the document itself never changes when
-  it stops being good law.
+**`excludeRepealed` removes what we KNOW is dead. It does not promise the
+remainder is good law.**
 
-  Filter on `source` if you need one behavior or the other.
+A section survives that filter when its status is `in_force` OR when we hold no
+trustworthy repeal signal for its jurisdiction, and those two are not the same
+thing. Read `goodLawStatus` on each surviving result to tell them apart:
+`good_law` is checked, `unknown` is unchecked.
 </Note>
+
+`actStatus` on the request scopes positively to one or more raw statuses, as a string or a list.
+It is what you want for a compliance diff that asks what was LOST rather than what remains.
+
+```json
+{ "query": "security deposit", "state": "tx", "actStatus": ["repealed", "expired"] }
+```
+
+The values you may pass are the values a result carries, listed above.
+An unrecognized one is rejected with a 422 rather than silently matching nothing, so read the enum on the endpoint's OpenAPI schema if you want the machine-readable set.
+
+Combining a dead status here with `excludeRepealed: true` contradicts itself and is rejected with a 422 as well.
 
 ## Currency and move pointers
 
@@ -156,32 +112,6 @@ rather than inferring an outcome from `actStatus` alone.
 
 Follow `renumberedTo` / `transferredTo` to fetch the section's current home.
 
-## Cross-references between statutes and regulations
-
-USC and CFR sections carry each other's citations where the source material draws the link, so you can walk from a statute to the regulations that implement it, or from a regulation back to the law that authorizes it, without a separate search.
-
-- **`statutoryAuthority`** (CFR results): the USC citation(s) the regulation cites as its authorizing statute.
-- **`implementingRegulations`** (USC results): the reverse index - which CFR sections cite this statute as their authority.
-- **`crossReferencesCfr`** / **`crossReferencesUsc`**: parsed cross-references to the other corpus found in the section's own text, as a list of section strings (e.g. `['1.6011-4']`). A section referencing itself is represented as `'self:<section>'` rather than omitted.
-
-All four are nullable and populated only where the underlying source material actually draws the connection - absence does not mean no relationship exists, only that it was not extractable from the text.
-
-## Federal Register tracking fields
-
-`FEDERAL_REGISTER` results (final and proposed rules) carry rulemaking-lifecycle fields not present on statute or regulation results, useful for tracking a rule from proposal through effect:
-
-| Field | Meaning |
-|-------|---------|
-| `frEffectiveOn` | The rule's effective date. |
-| `frCommentsCloseOn` | Deadline for public comment, on a proposed rule. |
-| `frSignificant` | Whether the rule is flagged as economically/otherwise significant. |
-| `frCorrectionOf` / `frCorrections` | Links a correction notice to the rule it corrects, and vice versa. |
-| `frRelatedDocuments` | Other Federal Register documents sharing the same Regulation Identifier Number (RIN) - the proposed rule, final rule, and any corrections grouped together. |
-| `frRegulationIdNumbers` | The RIN(s) assigned to the rulemaking. |
-| `frDocketIds` | The regulations.gov docket ID(s) for the rulemaking. |
-
-These are populated on `GET /statutes/section/{actId}` (not on search results) for sections under `corpusType=FEDERAL_REGISTER`.
-
 ## Using it
 
 Gate your product on `goodLawStatus`, surface `currencyNote`, and follow a move pointer when a section has been relocated.
@@ -190,7 +120,7 @@ Gate your product on `goodLawStatus`, surface `currencyNote`, and follow a move 
 ```python Python
 import requests
 
-BASE_URL = "https://api.vaquill.ai/api/v1"
+BASE_URL = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
 def section(act_id: str) -> dict:
@@ -213,7 +143,7 @@ print(sec.get("citation"), "-", sec.get("currencyNote") or "no currency note")
 ```
 
 ```javascript JavaScript
-const BASE_URL = "https://api.vaquill.ai/api/v1";
+const BASE_URL = "https://api.vaquill.ai/api/v1/us";
 const HEADERS = { Authorization: "Bearer vq_key_..." };
 
 async function section(actId) {
@@ -232,14 +162,161 @@ if (sec.actStatus === "renumbered" && sec.renumberedTo) {
 ```
 </CodeGroup>
 
+## Cross-references between statutes and regulations
+
+USC and CFR sections carry each other's citations where the source material draws the link, so you can walk from a statute to the regulations that implement it, or from a regulation back to the law that authorizes it, without a separate search.
+
+- **`statutoryAuthority`** (CFR results): the USC citation(s) the regulation cites as its authorizing statute.
+- **`implementingRegulations`** (USC results): the reverse index, which CFR sections cite this statute as their authority.
+- **`crossReferencesCfr`** / **`crossReferencesUsc`**: parsed cross-references to the other corpus found in the section's own text, as a list of section strings (e.g. `['1.6011-4']`). A section referencing itself is represented as `'self:<section>'` rather than omitted.
+
+All four are nullable and populated only where the underlying source material actually draws the connection.
+Absence does not mean no relationship exists, only that it was not extractable from the text.
+
+## Federal Register tracking fields
+
+`FEDERAL_REGISTER` results (final and proposed rules) carry rulemaking-lifecycle fields not present on statute or regulation results, useful for tracking a rule from proposal through effect:
+
+| Field | Meaning |
+|-------|---------|
+| `frEffectiveOn` | The rule's effective date. |
+| `frCommentsCloseOn` | Deadline for public comment, on a proposed rule. |
+| `frSignificant` | Whether the rule is flagged as economically or otherwise significant. |
+| `frCorrectionOf` / `frCorrections` | Links a correction notice to the rule it corrects, and vice versa. |
+| `frRelatedDocuments` | Other documents sharing the same Regulation Identifier Number (RIN). |
+| `frRegulationIdNumbers` | The RIN(s) assigned to the rulemaking. |
+| `frDocketIds` | The regulations.gov docket ID(s) for the rulemaking. |
+
+These are populated on `GET /us/statutes/section/{actId}` (not on search results) for sections under `corpusType=FEDERAL_REGISTER`.
+
+## Why the verdict differs by corpus
+
+`goodLawStatus` is not uniform inside a `corpusType`.
+It is decided by the PUBLISHER, because only a publisher that records a retirement lets us detect one.
+The rule is an allow-list: a source earns a good-law verdict only after its own rescission signal has been measured, and a new source is `unknown` until then rather than certified by default.
+
+Read these if you depend on one of the corpora named.
+
+<AccordionGroup>
+
+<Accordion title="State agency guidance: the verdict is per publisher, not per state">
+`goodLawStatus` under `corpusType=STATE_AGENCY_GUIDANCE` is decided by the publisher that issued the document, and a state can hold two publishers with different answers.
+
+**Arizona is the worked example.**
+Its insurance regulator marks rescissions diligently, so `source=state_insurance_bulletin` earns `good_law`: 15 of its 199 bulletins are served with a dead `actStatus` on the strength of the Department's own withdrawal statements.
+Its financial-institutions regulator, which shares the same index, has rescinded nothing we hold: 0 of 35.
+So `source=state_financial_bulletin` is served `unknown` in both Arizona and Oregon, and will be until a regulator actually withdraws something and we store it.
+
+Same state, same `corpusType`, same `actStatus`, two different verdicts, because they are two different publishers.
+Read `unknown` here as "we make no claim", not as "probably still current".
+</Accordion>
+
+<Accordion title="Administrative adjudications: the text is served, the doctrine is not certified">
+Every corpus under `corpusType=AGENCY_ADJUDICATION` except one is served with `goodLawStatus: "unknown"`, and that is a construction rather than a gap.
+
+**We serve the decision exactly as the body issued it, and we have NOT verified that it is still good law.**
+Read `unknown` as "we make no claim", not as "still good".
+
+The reason is the publisher, not the pipeline.
+An adjudication is superseded by ANOTHER DECISION, not by an amendment to itself, so the document never changes when it stops being law and none of the ordinary currency instruments fire.
+**No publisher in this family ships a structured overruling or supersession field.**
+
+`nlrb_board_decision` is the clearest case, and it is deliberately not on the allow-list.
+Board doctrine swings hard with Board composition, so an overruling is the normal course rather than an edge case, and the NLRB publishes nothing machine-readable that records one.
+Its CITENET Classified Index is a subject digest, not a citator: it carries an overruling only as editorial prose on the decision doing the overruling, with no reverse edge on the decision that was overruled.
+Two independent measurements, the citenet probe and a supersession sweep over the landed corpus, both returned no signal.
+So we serve the Board's text faithfully and refuse to assert what a later Board has done to it.
+
+`mspb_precedential`, `mspb_nonprecedential`, `olc_opinion`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent` and `immigration_admin_precedent` are `unknown` for the same reason.
+
+<Warning>
+  Do not treat `goodLawStatus: "unknown"` under this corpusType as a soft yes.
+  On a body whose doctrine turns over with its membership, a decision served as
+  issued may have been overruled the week after it was decided, and nothing in
+  this API will tell you.
+  If your use of an adjudication depends on it still being good law, check the
+  body's own subsequent output.
+</Warning>
+</Accordion>
+
+<Accordion title="FTC administrative decisions: the sunset is in the order, not in the metadata">
+`ftc_administrative_decision` is `unknown` for a related but distinct reason, because it is the one place where the document tells you something the API cannot.
+
+Since 1995 the Commission's standard consent order **terminates 20 years after it issues**, and many orders carry an explicit sunset paragraph in their own text.
+So a 2001 consent order is very likely spent today.
+
+Nothing in the FTC's published metadata says so.
+The sunset is prose inside the order, with its own conditions, exceptions and tolling, and **we deliberately do not compute an expiry from `issued_date + 20 years`**.
+Inferring a legal conclusion from arithmetic on a date is exactly the kind of invented fact this API refuses to serve.
+Read the order's own terms.
+
+The Commission's Case Status facet does not close that gap either, and should not be read as if it did: it says a MATTER is closed, not that the order which closed it stopped binding.
+It is held with the document and is never mapped to a dead `actStatus`, and it is not exposed as a response field.
+</Accordion>
+
+<Accordion title="BIA and Attorney General decisions: reading a supersession link">
+The `I&N Dec.` reporter is the one place in this corpus where the publisher states the supersession relation itself, in the holdings prose it prints beside each decision.
+
+We resolve those statements into a graph.
+`supersedes` and `supersededBy` carry act ids.
+
+🔴 **The direction is the CITED decision, not the one you are reading.**
+A headnote under `Matter of Diji, 30 I&N Dec. 1 (BIA 2026)` reading "*Matter of G-Y-R-*, 23 I&N Dec. 181 (BIA 2001), overruled" means G-Y-R- is dead and Diji is in force, not the other way round.
+
+🔴 **A link is not by itself fatal, so read `actStatus` rather than the link's presence.**
+Most of the relations the publisher states are `followed`, `modified`, `clarified`, `distinguished` or `reaffirmed`, and none of those kills the cited decision.
+Partial dispositions are stored distinctly and do NOT carry a dead `actStatus`, because a partly overruled decision is still law for everything else it held.
+Only an unqualified overruling, vacatur, supersession or withdrawal moves the status.
+The publisher's exact verb is held with the document and is not exposed as its own response field; `actStatus` is the field that carries the consequence.
+
+The whole corpus is still served as `goodLawStatus: "unknown"`, because the signal cannot certify the decisions it says nothing about: the Board publishes holdings prose only from volume 19 onward, and a court of appeals can reject a precedent for its own circuit while it remains in force elsewhere without EOIR publishing anything at all.
+</Accordion>
+
+<Accordion title="CFPB enforcement actions: an agency's own status enum">
+Most of the corpus derives `goodLawStatus` from a repeal signal in the text.
+One source instead carries the issuing agency's own published lifecycle status, and it behaves differently from everything around it.
+
+The Consumer Financial Protection Bureau assigns every enforcement action one of three statuses and [publishes the definitions itself](https://www.consumerfinance.gov/enforcement/actions/enforcement-action-definitions/):
+
+| CFPB status | Meaning, in the Bureau's words | What we serve |
+|---|---|---|
+| `Post-order/Post-judgment` | "resolved ... and has ongoing compliance obligations" | `actStatus: "in_force"` |
+| `Expired/Terminated/Dismissed` | "no longer subject to ongoing compliance obligations" | `actStatus: "terminated"` |
+| `Pending Litigation` | "in ongoing litigation or under appeal" | `actStatus: "in_force"` |
+
+Two consequences you should plan for.
+
+**185 of the 386 actions carry the dead status, so they are excluded from ordinary search results.**
+That is close to half the source, and it is correct: an order that no longer binds anyone should not be returned as live law.
+Query them explicitly with `actStatus: "terminated"` if you need the historical record.
+
+**That status bundles three different endings and the Bureau does not separate them.**
+A matter it lost or withdrew is not the same event as an order that ran its term, and no field distinguishes them.
+Each record also carries the Bureau's raw status string verbatim in `history`, and you should read that rather than inferring an outcome from `actStatus` alone.
+
+This is why CFPB enforcement actions carry a real verdict while every other source under `AGENCY_ADJUDICATION` carries `unknown`.
+Filter on `source` if you need one behavior or the other.
+</Accordion>
+
+<Accordion title="Agency guidance: what a document does to earlier documents">
+`supersessionActions` records what a document does to EARLIER documents, keyed by the issuer's own verb: `modifies`, `obsoletes`, `amplifies`, `clarifies`, `rescinds`, each mapping to the documents affected.
+
+`supersedes` and `supersededBy` cover only the strongest of those verbs.
+Without `supersessionActions` a caller cannot tell a modified revenue procedure from an untouched one, nor see which memorandum rescinded which.
+
+`rescindedOn` carries the date, where the issuer states one.
+</Accordion>
+
+</AccordionGroup>
+
 ## Related
 
 <CardGroup cols={2}>
   <Card title="Section Identifiers" icon="hashtag" href="/api-guide/concepts/section-ids">
     The `actId` handle and the search then section then body workflow.
   </Card>
-  <Card title="Corpus Types" icon="layer-group" href="/api-guide/concepts/corpus-types">
-    The corpora you can query and how to scope with `corpusType`.
+  <Card title="Response Fields" icon="table-columns" href="/api-guide/concepts/response-fields">
+    Which fields each corpus populates, and point-in-time text with `asOf`.
   </Card>
   <Card title="Grounding LLMs" icon="shield-halved" href="/api-guide/grounding-llms">
     Cite only good-law sections and link back to the official source.

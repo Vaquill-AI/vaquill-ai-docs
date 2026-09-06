@@ -1,49 +1,161 @@
 ---
 title: "Monitor corpus coverage and changes"
-description: "Poll the coverage endpoint on a schedule and diff snapshots to detect new or expanded corpora"
+description: "Poll changedSince for sections that moved since your last sync, and diff coverage snapshots to catch a jurisdiction gaining a whole new corpus"
 icon: "chart-line"
 ---
 
-**What this gets you:** an early-warning system for your own product - know automatically the moment a state or agency you depend on gets new coverage, instead of finding out by accident.
+**What this gets you:** an early-warning system for your own product - know when the law you depend on moved, and when a state or agency you depend on gains coverage, instead of finding out by accident.
 
-<Tip>
-  Looking for **section-level** changes within a corpus you already have (an amendment, a repeal) rather than a brand new corpus appearing? [Law Change Alerts](/api-guide/alerts) does that natively, with a webhook or email per change and a before/after diff, no polling required. Keep reading if what you want is this recipe's job: detecting when a jurisdiction gains a whole new corpus.
-</Tip>
+Two different questions live on this page, and they need two different tools.
 
-The corpus grows every week. This recipe polls the `GET /statutes/coverage` endpoint on a schedule, saves a snapshot of each jurisdiction's `corpora` counts, and diffs it against the previous snapshot so you can react when a jurisdiction gains a new corpus (for example a state adding regulations) or an existing corpus expands.
+| Question | Use |
+|---|---|
+| Did any section I care about change since my last run? | `changedSince` on `POST /us/statutes/search` |
+| Did a jurisdiction gain a whole new corpus? | Snapshot and diff `GET /us/statutes/coverage` |
+| Tell me the moment one specific section changes | [Law Change Alerts](/api-guide/alerts), webhook or email, no polling |
 
-**Endpoints used:** `GET /statutes/coverage`.
+## The sync filter: `changedSince`
+
+`changedSince` takes a `YYYY-MM-DD` date and restricts a search to sections we have OBSERVED change on since then.
+It is the purpose-built answer to "what moved since my last run", and it needs no snapshot files and no diffing of your own.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "data breach notification", "corpusType": "STATE", "state": ["ca", "ny", "tx"], "changedSince": "2026-08-01", "limit": 50, "fields": ["title", "state", "lastAmendedDate", "actStatus"]}'
+```
+
+```python Python
+import requests
+
+BASE_URL = "https://api.vaquill.ai/api/v1/us"
+HEADERS = {
+    "Authorization": "Bearer vq_key_...",
+    "Content-Type": "application/json",
+}
+
+
+def changed_since(query: str, since: str, **scope) -> list[dict]:
+    """Sections matching `query` that we observed change on or after `since`."""
+    resp = requests.post(
+        f"{BASE_URL}/statutes/search",
+        headers=HEADERS,
+        json={
+            "query": query,
+            "changedSince": since,
+            "limit": 50,
+            # Ask for only what your sync writes back. A result carries 40+
+            # fields, most null on any row; actId and citation always come back.
+            "fields": ["title", "state", "lastAmendedDate", "actStatus"],
+            **scope,
+        },
+    )
+    if resp.status_code == 422:
+        # The window matched too many sections to answer safely. Narrow it.
+        raise RuntimeError(resp.json())
+    resp.raise_for_status()
+    return resp.json()["results"]
+```
+</CodeGroup>
+
+Then read each hit's history with `GET /us/statutes/section/{actId}/changes` (1 credit) when you need to know what actually moved.
+`changedSince` and that endpoint are the same event stream, so a hit here always has a history there.
+
+### Four things that decide whether your job is correct
+
+- **These are observed changes, not effective dates.**
+  A refresh compared the publisher against the copy we held and found it different.
+  The date is when we SAW it, which is an upper bound on when it took effect.
+- **Coverage is bounded by capture, not by the age of the law.**
+  Change capture began long after the corpus did, it is per-source, and events are swept at 24 months.
+  An empty result means no captured change in the window, never that nothing was amended.
+- **A window that is too broad is refused, not truncated.**
+  Match too many sections and the call returns `422` telling you to use a later date or a `state` filter.
+  That is deliberate: a partial change set would look complete to a sync job, which would then mark itself current having never seen the sections that were cut.
+  Narrow with `corpusType` and `state`.
+- **A search still needs a `query`.**
+  `changedSince` narrows a search, it is not a firehose of everything that moved.
+  Run it once per topic you actually track, which is what makes the result small enough to act on.
 
 <Note>
-  `/statutes/coverage` is authenticated and rate limited, so run it on a sensible cadence (daily or weekly is plenty) rather than in a tight loop.
+  Paging is bounded: `limit` caps at 50 and `offset` at 70, so the deepest
+  reachable result is 120. If a window is returning full pages, tighten it with a
+  later date, a `state` list, or a narrower `corpusType` rather than trying to
+  page through it.
 </Note>
 
-<Steps>
-  <Step title="Fetch the coverage matrix">
-    The response is wrapped as `{ "data": {...}, "meta": {...} }`. Inside `data` you get a `corpusTypes` legend and a `jurisdictions` array, where each jurisdiction carries a `corpora` object mapping a corpusType token to its ingested section count (the same distinct-section count [Coverage](/api-guide/coverage) shows, not the larger passage/chunk count used internally for retrieval).
+<Note>
+  An empty window is a real answer and is charged the ordinary 4-credit search
+  price. "Nothing moved since Tuesday" is what lets a nightly job do nothing with
+  confidence. Read `creditsConsumed` rather than assuming.
+</Note>
 
-    <CodeGroup>
-    ```bash cURL
-    curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
-      -H "Authorization: Bearer vq_key_..."
-    ```
+### A nightly job
+
+```python Python
+from datetime import date, timedelta
+
+TOPICS = [
+    {"query": "data breach notification", "corpusType": "STATE", "state": ["ca", "ny", "tx"]},
+    {"query": "hazard communication standard", "corpusType": "CFR"},
+]
+
+
+def run(since: str) -> None:
+    for topic in TOPICS:
+        scope = {k: v for k, v in topic.items() if k != "query"}
+        query = topic["query"]
+        hits = changed_since(query, since, **scope)
+        if not hits:
+            continue
+        print(f"{len(hits)} change(s) touching {query!r} since {since}")
+        for h in hits:
+            print(f"  {h['citation']}  {h.get('lastAmendedDate') or ''}")
+
+
+if __name__ == "__main__":
+    # Overlap the window by a day so a run that fails cannot open a gap.
+    run(since=(date.today() - timedelta(days=2)).isoformat())
+```
+
+## The other question: a jurisdiction gaining a new corpus
+
+`changedSince` tells you a section moved.
+It cannot tell you that a state you do not yet query has just gained regulations, because there was nothing there to change.
+For that, snapshot `GET /us/statutes/coverage` on a schedule and diff the snapshots.
+Coverage is free and rate limited, so daily or weekly is plenty.
+
+<Steps>
+  <Step title="Fetch and flatten the coverage matrix">
+    The response is wrapped as `{ "data": {...}, "meta": {...} }`. Inside `data`
+    you get a `corpusTypes` legend and a `jurisdictions` array, where each
+    jurisdiction carries a `corpora` object mapping a corpusType token to its
+    ingested section count (the same distinct-section count
+    [Coverage](/api-guide/coverage) shows, not the larger passage count used
+    internally for retrieval).
 
     ```python Python
-    import requests
+    def fetch_coverage() -> dict:
+        resp = requests.get(
+            f"{BASE_URL}/statutes/coverage",
+            headers={"Authorization": HEADERS["Authorization"]},
+        )
+        resp.raise_for_status()
+        return resp.json()["data"]
 
-    resp = requests.get(
-        "https://api.vaquill.ai/api/v1/us/statutes/coverage",
-        headers={"Authorization": "Bearer vq_key_..."},
-    )
-    cov = resp.json()["data"]
 
-    for j in cov["jurisdictions"]:
-        if j["hasData"]:
-            print(j["code"], j["corpora"])
+    def to_snapshot(coverage_data: dict) -> dict:
+        """Flatten coverage into {code: {corpusToken: count}}."""
+        return {
+            j["code"]: dict(j["corpora"])
+            for j in coverage_data["jurisdictions"]
+            if j["hasData"]
+        }
     ```
-    </CodeGroup>
 
-    A trimmed `data` payload looks like this:
+    A trimmed `data` payload:
 
     ```json
     {
@@ -67,22 +179,10 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
     ```
   </Step>
 
-  <Step title="Reduce the response to a comparable snapshot">
-    Keep only the fields you want to track. A dictionary keyed by jurisdiction code, holding each jurisdiction's `corpora` map, is compact and easy to diff.
-
-    ```python Python
-    def to_snapshot(coverage_data: dict) -> dict:
-        """Flatten coverage into {code: {corpusToken: count}}."""
-        return {
-            j["code"]: dict(j["corpora"])
-            for j in coverage_data["jurisdictions"]
-            if j["hasData"]
-        }
-    ```
-  </Step>
-
-  <Step title="Save each snapshot to disk">
-    Persist the snapshot as JSON so the next run has a baseline to compare against. Timestamp the file name so you keep a history.
+  <Step title="Persist and diff">
+    Save each snapshot as JSON so the next run has a baseline, then compare the
+    two maps for a new jurisdiction, a new corpus within a known jurisdiction, or
+    an existing corpus whose count grew.
 
     ```python Python
     import json
@@ -91,6 +191,7 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
 
     SNAPSHOT_DIR = Path("coverage_snapshots")
 
+
     def save_snapshot(snapshot: dict) -> Path:
         SNAPSHOT_DIR.mkdir(exist_ok=True)
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -98,74 +199,28 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
         path.write_text(json.dumps(snapshot, indent=2, sort_keys=True))
         return path
 
+
     def load_latest_snapshot() -> dict | None:
         files = sorted(SNAPSHOT_DIR.glob("coverage-*.json"))
-        if not files:
-            return None
-        return json.loads(files[-1].read_text())
-    ```
-  </Step>
+        return json.loads(files[-1].read_text()) if files else None
 
-  <Step title="Diff the new snapshot against the last one">
-    Compare the two maps to surface three kinds of change: a brand new jurisdiction, a new corpus within a known jurisdiction, and an existing corpus whose count grew.
 
-    ```python Python
     def diff_snapshots(old: dict, new: dict) -> list[str]:
         changes: list[str] = []
-
         for code, corpora in new.items():
             if code not in old:
                 changes.append(f"NEW jurisdiction {code}: {sorted(corpora)}")
                 continue
-
             prev = old[code]
             for token, count in corpora.items():
                 if token not in prev:
                     changes.append(f"{code}: new corpus {token} ({count} sections)")
                 elif count > prev[token]:
-                    delta = count - prev[token]
                     changes.append(
-                        f"{code}: {token} grew by {delta} "
+                        f"{code}: {token} grew by {count - prev[token]} "
                         f"({prev[token]} -> {count})"
                     )
-
         return changes
-    ```
-  </Step>
-
-  <Step title="Run it on a schedule">
-    Wire the pieces together into one job you can trigger from cron, a scheduled task, or a worker. It fetches coverage, diffs against the last snapshot, prints what changed, and saves the new baseline.
-
-    ```python Python
-    import requests
-
-    BASE_URL = "https://api.vaquill.ai/api/v1"
-    HEADERS = {"Authorization": "Bearer vq_key_..."}
-
-    def fetch_coverage() -> dict:
-        resp = requests.get(f"{BASE_URL}/statutes/coverage", headers=HEADERS)
-        resp.raise_for_status()
-        return resp.json()["data"]
-
-    def run() -> None:
-        new_snapshot = to_snapshot(fetch_coverage())
-        previous = load_latest_snapshot()
-
-        if previous is None:
-            print("First run. Saving baseline snapshot.")
-        else:
-            changes = diff_snapshots(previous, new_snapshot)
-            if changes:
-                print(f"{len(changes)} coverage change(s) detected:")
-                for line in changes:
-                    print("  -", line)
-            else:
-                print("No coverage changes since last snapshot.")
-
-        save_snapshot(new_snapshot)
-
-    if __name__ == "__main__":
-        run()
     ```
 
     Example output on a run where a state gained regulations:
@@ -178,9 +233,12 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
   </Step>
 </Steps>
 
-<Tip>
-  You can alert on any diff (a message to your team, a webhook, a ticket). Reserve `POST /statutes/search` calls for when a change actually affects your product.
-</Tip>
+<Warning>
+  A growing count is a coarse signal. It says the corpus got bigger, not which
+  sections moved, and a re-ingest that replaces sections one for one leaves the
+  count flat. Use the diff to decide that something happened, then use
+  `changedSince` to find out what.
+</Warning>
 
 ## Related
 
@@ -189,15 +247,12 @@ The corpus grows every week. This recipe polls the `GET /statutes/coverage` endp
     Section-level change notifications with a webhook or email, no polling.
   </Card>
   <Card title="Compare a rule across states" icon="scale-balanced" href="/api-guide/recipes/multi-state-comparison">
-    Run one query across several states and assemble a comparison table.
+    Get the comparable provision in other states in one call.
   </Card>
   <Card title="Enrich a citation database" icon="database" href="/api-guide/recipes/citation-enrichment">
-    Attach canonical citations, excerpts, and source links to a batch of topics.
+    Attach canonical citations, excerpts, and source links to a batch of rows.
   </Card>
   <Card title="Coverage matrix" icon="table-cells" href="/api-guide/coverage">
     The human-readable jurisdiction and corpus matrix.
-  </Card>
-  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
-    Cache coverage, scope queries, and handle errors well.
   </Card>
 </CardGroup>

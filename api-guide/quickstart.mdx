@@ -86,16 +86,23 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
           "govInfoPdfUrl": "https://..."
         }
       ],
-      "total": 5,
+      "count": 5,
       "offset": 0,
       "hasMore": true,
       "query": "civil rights deprivation under color of law",
-      "processingTimeMs": 412.6
+      "processingTimeMs": 412.6,
+      "creditsConsumed": 4
     }
     ```
 
     <Note>
-      `total` is the count returned on this page, not the corpus-wide match count. Use `hasMore` to decide whether to fetch the next page. See [Pagination](/api-guide/pagination).
+      `count` is how many results came back on **this page**, not a corpus-wide match count. No such total exists, because the API ranks a bounded candidate set rather than scoring the whole corpus. Use `hasMore` to decide whether to fetch the next page. See [Pagination](/api-guide/pagination).
+
+      The response also carries `total`, a **deprecated** alias for `count` kept for backward compatibility. Its name reads as a corpus-wide total, which it never was. Read `count` in new code.
+    </Note>
+
+    <Note>
+      `creditsConsumed` is what this call actually cost. Read it rather than assuming the list price: failed and refunded work bills 0, and `includeBody: true` adds 6 credits for every row that returns text. See [Credit costs](/api-guide/overview#credit-costs).
     </Note>
   </Step>
 

@@ -14,34 +14,55 @@ Pass `corpusType` (and `state` for state-scoped corpora) on `POST /us/statutes/s
 { "query": "security deposit return deadline", "corpusType": "STATE", "state": "ca" }
 ```
 
-You can scope tighter still. `code` (state, e.g. `tx_pe` from `GET /us/statutes/codes`) and `titleNumber` (USC/CFR) narrow a search to one code or title. To go one level deeper, `chapter` (USC/state) and `part` (CFR) confine a search to a single subtree. These are the search-side of the `parent` object on every result: take a hit's `parent` and pass it straight back to search that section's neighbors. `chapter`/`part` must be paired with `titleNumber` or `code` (which `parent` always carries), since a chapter number alone repeats across every title.
+You can scope tighter still. `code` (state, e.g. `tx_pe`) and `titleNumber` (USC/CFR) narrow a search to one code or title. Get a state's `code` values from `GET /us/statutes/divisions?corpusType=STATE&state=XX`. To go one level deeper, `chapter` (USC/state) and `part` (CFR) confine a search to a single subtree. These are the search-side of the `parent` object on every result: take a hit's `parent` and pass it straight back to search that section's neighbors. `chapter`/`part` must be paired with `titleNumber` or `code` (which `parent` always carries), since a chapter number alone repeats across every title.
 
 ```json
 { "query": "damages for intentional discrimination", "corpusType": "USC", "titleNumber": 42, "chapter": "21" }
 ```
 
+## Choose the right matchType
+
+`matchType` is the only exact-match control in the API, and it is what you reach for when hybrid ranking is too loose.
+
+| Value | Behaviour | Use it for |
+|---|---|---|
+| `any` (default) | Hybrid semantic plus keyword ranking | Natural-language questions |
+| `all` | Every query term must appear in the text | Multi-term lookups where recall is hurting you |
+| `phrase` | The exact phrase must appear | Defined terms and statutory phrases |
+
+`any` ranks on intent, so a query can rank a section that shares no wording with it.
+That is what you want for "how long does a landlord have to return a deposit", and wrong for "material adverse effect", where a section that merely discusses the idea is noise.
+
+`all` and `phrase` trade recall for precision.
+Both can return nothing, and an empty result under them is a real answer: the corpus contains no section with those terms, so fall back to `any` rather than assuming a coverage gap.
+
+```json
+{ "query": "material adverse effect", "corpusType": "STATE", "state": "de", "matchType": "phrase" }
+```
+
+<Tip>
+  To pull up one specific section, pass its citation as the query (for example `42 U.S.C. § 1983`) and leave `matchType` at `any`. It resolves to that section at rank 1. `GET /us/statutes/resolve` does the same job for 2 credits instead of 4 when you already hold a well-formed citation.
+</Tip>
+
 ## Control what a search returns
 
-Two options tune the search payload:
+- `excerptChars`: how much matching text each result carries (default 500, up to 4000). The excerpt is windowed around the match and can begin mid-section, dropping a leading subsection marker, so it is a ranking preview and not safe to quote.
+- `includeBody`: attaches each hit's full text on `body` in the same call. It bills 6 credits per row that returns text on top of the 4-credit search, so `limit: 50` with it set is 304 credits. Use it with a small `limit`, and read `creditsConsumed`.
 
-- `matchType`: `any` (default) is intent-ranked hybrid search. Use `all` to require every query term, or `phrase` to require the exact phrase, when you need precision over recall.
-- `excerptChars`: how much matching text each result carries (default 500). Raise it for more context inline, or fetch the full text from `/us/statutes/section/{actId}/body`.
+For text you intend to quote, use `body` or `GET /us/statutes/section/{actId}/body`, never a raised `excerptChars`.
 
-Each result also carries a `parent` object: the `/us/statutes/divisions` query that lists the section's siblings, so you can walk up the hierarchy from any hit. Section responses now also include amendment provenance (`sourceCredit`, `amendmentYears`, `lastAmendedYear`, `publicLaws`, `federalRegisterCitations`).
+Each result also carries a `parent` object: the `/us/statutes/divisions` query that lists the section's siblings, so you can walk up the hierarchy from any hit. Section responses also include amendment provenance (`sourceCredit`, `amendmentYears`, `lastAmendedYear`, `publicLaws`, `federalRegisterCitations`).
 
 ## Discover before you search
 
-Call `GET /us/statutes/coverage` first to learn what is queryable. Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids guessing a token that has no data for that state and wasting a call on an empty result.
+Two endpoints answer everything about what is queryable.
 
-For a named catalog rather than a count matrix, call `GET /us/statutes/laws` (or `?jurisdiction=ca` / `federal`). Each entry is a body of law with a human `name`, a `lawType`, and its `corpusType` ready to pass to search, which is what you want to render a "search in ..." picker or to tell an LLM which bodies of law exist.
-
-<Tip>
-  Use `GET /us/statutes/codes?state=XX` to see the individual statutory codes (Penal, Civil, and so on) ingested for a state, and their section counts, when you want to explain a state's structure to a user.
-</Tip>
+- `GET /us/statutes/coverage` is the corpus matrix. Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids guessing a token that has no data for that state and wasting a call on an empty result.
+- `GET /us/statutes/divisions` is the hierarchy. Pass `corpusType=STATE&state=XX` to list a state's individual statutory codes (Penal, Civil, and so on) and their `code` values, or drill in with `titleNumber`, `code`, `chapter` and `part`.
 
 ## Cache coverage
 
-Coverage grows weekly, not hourly. Cache the responses of `/us/statutes/coverage`, `/us/statutes/states`, `/us/statutes/codes`, and `/us/statutes/laws` for hours or a day rather than calling them on every request. They still count against your [rate limits](/api-guide/rate-limits).
+Coverage grows weekly, not hourly. Cache `/us/statutes/coverage` and `/us/statutes/divisions` for hours or a day rather than calling them on every request. They still count against your [rate limits](/api-guide/rate-limits).
 
 ## Store the actId values you care about
 

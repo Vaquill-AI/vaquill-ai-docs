@@ -29,18 +29,18 @@ it, and pass it back unchanged.
 
 <Steps>
   <Step title="Search to get an actId">
-    `POST /statutes/search` returns result objects, each with an `actId`.
+    `POST /us/statutes/search` returns result objects, each with an `actId`.
   </Step>
   <Step title="Fetch section metadata">
-    `GET /statutes/section/{actId}` returns the full result object for that one
+    `GET /us/statutes/section/{actId}` returns the full result object for that one
     section (citation, hierarchy, source URLs).
   </Step>
   <Step title="Fetch full text">
-    `GET /statutes/section/{actId}/body` returns the section's full text.
+    `GET /us/statutes/section/{actId}/body` returns the section's full text.
     Returned only when text is available.
   </Step>
   <Step title="Optional: fetch its neighbors">
-    `GET /statutes/section/{actId}/related` returns the section's immediate
+    `GET /us/statutes/section/{actId}/related` returns the section's immediate
     statutory neighbors - the previous and next section within the same
     container (chapter, part, or code). This is not numeric adjacency; it's
     what a lawyer would actually turn to next when reading a section in
@@ -171,9 +171,48 @@ console.log(body.available ? body.plain.slice(0, 500) : "text unavailable");
   reading `html` or `plain`.
 </Tip>
 
+## When an actId misses
+
+The batch route `POST /us/statutes/sections` takes up to 50 `actIds` and tells
+you WHY each one missed, which is the difference between a bug in your code and
+a gap in ours.
+
+Alongside `sections` it returns `notFound` (the bare ids) and `notFoundDetail`,
+one entry per missed id:
+
+| Field | Contains |
+|---|---|
+| `actId` | The identifier from your request that did not resolve. |
+| `reason` | `assembled_id` or `not_in_corpus`. See below. |
+| `didYouMean` | Real act ids carrying the section number your id pointed at, best first, at most 3. |
+
+`reason: "assembled_id"` means **this id does not exist, but the section does**,
+under the ids in `didYouMean`.
+That is almost always an id built from a citation.
+The chapter, article and part segments are not derivable from a citation, so
+`Tex. Property Code § 93.005` is `STATE_TX_Cpr_C93_S93.005`, not
+`STATE_TX_C93_S93.005`.
+Send one of the suggested ids back and you get the section.
+
+`reason: "not_in_corpus"` means nothing matching was found: either the id is
+malformed beyond recovery, or the section is genuinely absent.
+Check `GET /us/statutes/coverage` for that jurisdiction before reading it as
+missing coverage.
+
+<Note>
+  Ids in `notFound` are **not charged**, so a batch with misses costs less than
+  50 times the per-section rate. `notFoundDetail` is diagnostic only and never
+  charged. It can come back empty if the suggestion lookup is unavailable, so
+  treat it as a hint rather than a contract.
+</Note>
+
+If you are starting from a citation rather than a search result, use
+`GET /us/statutes/resolve` instead of assembling an id.
+That is what it is for.
+
 ## Finding a section's neighbors
 
-`GET /statutes/section/{actId}/related` returns the sections immediately
+`GET /us/statutes/section/{actId}/related` returns the sections immediately
 before and after the one you already have, within the same container:
 
 ```bash cURL

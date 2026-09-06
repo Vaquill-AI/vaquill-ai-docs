@@ -62,30 +62,53 @@ These carry a value on every section in every corpus.
 | `frVolume` / `frStartPage` | - | - | - | o | - |
 | `president` / `signingDate` | - | - | - | - | o |
 | `documentNumber` | - | - | - | o | o |
-| `ruleSet` / `ruleSetCode` | - | - | - | - | - |
-| `articleNumber` / `articleName` | - | - | - | - | - |
 
-`ruleSet` belongs to `STATE_RULES` and `FEDERAL_RULES`; `articleNumber` to
-`CONSTITUTION` and `STATE_CONSTITUTION`.
+Two families sit outside this table because they belong to corpora it does not
+have a column for.
+`ruleSet` and `ruleSetCode` belong to `STATE_RULES` and `FEDERAL_RULES`.
+`articleNumber` and `articleName` belong to `CONSTITUTION` and
+`STATE_CONSTITUTION`.
 
-## Fields that are reserved and not yet populated
+## Version and supersession fields
 
-We publish these keys so the shape does not change under you when they start
-carrying values. Today they are null everywhere.
+These are populated where a publisher states the relation itself, and null
+everywhere else.
+Null here means the publisher drew no link we could read, not that the field is
+unimplemented.
 
-| Field | Intended meaning |
-|-------|------------------|
-| `supersededBy` / `supersedes` | Links between a section and the version that replaced it. |
-| `priorEffectiveDates` | Earlier effective dates for the same section. |
-| `versionId` | An identifier for one version of a section. |
+| Field | Meaning |
+|-------|---------|
+| `supersededBy` | `actId` of the document that replaced this one. |
+| `supersedes` | `actId` of the earlier document this one replaced. |
+| `priorEffectiveDates` | Earlier effective dates the publisher records for the same section. |
+| `versionId` | The publisher's own identifier for THIS version of the document. |
 
-<Warning>
-We do not currently serve prior versions of a section, for any corpus.
-A section object is the current text as of `currentThrough` or the edition in
-its `citation`, and there is no endpoint that returns what it said previously.
-If point-in-time matters to your use case, tell us: it changes what we build
-next.
-</Warning>
+Where each one actually carries a value:
+
+- `supersededBy` and `supersedes` are populated on the corpora whose publishers
+  print a supersession statement: state agency guidance bulletins, state court
+  rules, and the `I&N Dec.` reporter under `AGENCY_ADJUDICATION`.
+  A document can supersede several predecessors, so the value can be more than
+  one `actId` joined by `; `.
+  See [Status & Currency](/api-guide/concepts/status-and-currency) for how to
+  read the direction of the link before treating it as fatal.
+- `versionId` is populated where a publisher versions a document separately from
+  the document itself, which today means Colorado regulations, where it is the
+  only version pointer that exists.
+
+## Point-in-time text: `asOf`
+
+`GET /us/statutes/section/{actId}/body` accepts `asOf=YYYY-MM-DD` and returns the section's text as
+it stood on that date, for the same 6 credits as an ordinary body fetch.
+The response carries an `asOf` block naming what you are holding: a published edition, a
+reconstruction from observed change history, or neither.
+
+Read `source` and `isBounded` before using the text.
+`isBounded: true` means we observed no change affecting that date, which is not the same as there
+having been none.
+
+**Full contract, per-corpus behaviour and the billing rules are on
+[Point-in-time law](/api-guide/point-in-time).**
 
 ## Amendment fields on the Federal Register
 
@@ -103,9 +126,11 @@ enacted law on the field a currency query trusts.
 `yearFrom` and `yearTo` match a section on any of three years, in this order:
 
 1. `lastAmendedYear`, the publisher's own credited amendment.
-2. `effectiveYear`, for a section adopted once and never amended. Calling an
-   adoption an amendment would be a wrong answer rather than a missing one, so
-   those sections carry no `lastAmendedYear` and are reached this way instead.
+2. The year of the section's `effectiveDate`, for a section adopted once and
+   never amended. Calling an adoption an amendment would be a wrong answer
+   rather than a missing one, so those sections carry no `lastAmendedYear` and
+   are reached this way instead. The year itself is an index field and is not
+   returned on a result; read `effectiveDate` for the date it came from.
 3. The document's own **publication or issue year**, for the corpora where that
    is what the document is dated by: Federal Register proposed rules, agency
    guidance, adjudications and the treaty record.
@@ -119,15 +144,9 @@ recent-year window with entire state codes.
 
 A section carrying none of the three is not reachable by a year filter and
 returns zero results rather than an error.
-
-<Note>
-**Changed 2026-09-04.** Proposed rules are now reachable by their publication
-year; before this they matched no year window at all.
-They still carry no `amendmentYears`, and that has not changed: a proposed rule
-amended nothing, and the asymmetry described above is deliberate.
-"When was this published" and "what did this amend" are different questions, and
-only the second one is silent for a proposed rule.
-</Note>
+That is why a proposed rule is reachable by its publication year while carrying
+no `amendmentYears`: "when was this published" and "what did this amend" are
+different questions, and only the second one is silent for a proposal.
 
 ## Related
 

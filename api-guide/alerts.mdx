@@ -24,26 +24,44 @@ A **board** is a source you can watch: `GET /boards` lists every one, each with 
 
 A **watch** is your subscription to one board, on one or more channels (webhook, email, or both). By default a watch covers the whole board; see [Narrow a watch to a citation](#narrow-a-watch-to-a-citation) to follow one title or part instead.
 
-Two fields on each board tell you whether narrowing is available. **`scopable`** is `true` when `POST /watches` accepts a `scope` for that source. It is `false` for sources whose documents are not citations, such as the Federal Register, where an item is a numbered document rather than a section of a code, so there is no title or part to narrow by. **`scopeBrowseCorpus`** is the `corpusType` to pass to [`GET /statutes/divisions`](/api-reference/us-statutes/browse-the-statutory-hierarchy) if you want to enumerate a source's titles, chapters and parts. Note that it is deliberately a different vocabulary from the board's own `corpusType`: a board is `cfr`, and `/statutes/divisions` wants `CFR`. When `scopable` is `true` and `scopeBrowseCorpus` is `null`, narrowing works but there is no endpoint that lists that source's hierarchy for you.
+Two fields on each board tell you whether narrowing is available. **`scopable`** is `true` when `POST /watches` accepts a `scope` for that source. It is `false` for sources whose documents are not citations, such as the Federal Register, where an item is a numbered document rather than a section of a code, so there is no title or part to narrow by. **`scopeBrowseCorpus`** is the `corpusType` to pass to [`GET /us/statutes/divisions`](/api-reference/us-statutes/browse-the-statutory-hierarchy) if you want to enumerate a source's titles, chapters and parts. Note that it is deliberately a different vocabulary from the board's own `corpusType`: a board is `cfr`, and `/us/statutes/divisions` wants `CFR`. When `scopable` is `true` and `scopeBrowseCorpus` is `null`, narrowing works but there is no endpoint that lists that source's hierarchy for you.
 
 <CodeGroup>
 ```bash cURL
-curl https://api.vaquill.ai/api/v1/boards \
+curl "https://api.vaquill.ai/api/v1/boards?limit=500&offset=0" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
 ```python Python
 import requests
 
-boards = requests.get(
-    "https://api.vaquill.ai/api/v1/boards",
-    headers={"Authorization": "Bearer vq_key_..."},
-).json()["data"]["boards"]
+def all_boards():
+    """Page /boards. The default limit is also its maximum, so do not skip this."""
+    boards, offset = [], 0
+    while True:
+        data = requests.get(
+            "https://api.vaquill.ai/api/v1/boards",
+            headers={"Authorization": "Bearer vq_key_..."},
+            params={"limit": 500, "offset": offset},
+        ).json()["data"]
+        boards.extend(data["boards"])
+        if not data.get("hasMore"):
+            break
+        offset += 500
+    return boards
 
-for b in boards:
+for b in all_boards():
     print(b["corpusType"], b.get("state"), b["label"], b["cadence"])
 ```
 </CodeGroup>
+
+<Warning>
+  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There are about 216 boards today, so the default covers the whole registry right now, but that is a fact about today. Read `data.total` and `data.hasMore` and page on `offset`, as above.
+
+  `GET /boards` is free, so paging it costs nothing but a request against your [rate limit](/api-guide/rate-limits).
+</Warning>
+
+Filter instead of paging where you can: `corpusType` and `state` both narrow the list server-side. Pass `state=federal` for the boards that have no state (USC, eCFR, the Federal Register), which is not the same as omitting `state`.
 
 ```json
 {
@@ -53,7 +71,9 @@ for b in boards:
        "scopable": true, "scopeBrowseCorpus": "STATE"},
       {"corpusType": "federal_register", "label": "Federal Register", "cadence": "daily",
        "scopable": false, "scopeBrowseCorpus": null}
-    ]
+    ],
+    "total": 216,
+    "hasMore": false
   },
   "meta": { "processingTimeMs": 12.4, "creditsConsumed": 0 }
 }
@@ -366,13 +386,54 @@ while True:
 
 | Parameter | Notes |
 | --- | --- |
-| `sinceId` | Return changes with an `id` greater than this. The cursor to build on. |
-| `since` | ISO-8601 timestamp, strictly after. Coarser (one refresh writes many rows at the same instant), but useful if all you kept was a `detectedAt` from a webhook body. Combines with `sinceId`. |
+| `sinceId` | Return changes with an `id` **greater** than this. The cursor to build on, for walking forward. |
+| `beforeId` | Return changes with an `id` **less** than this. How you page backwards into history. |
+| `since` | ISO-8601 timestamp, strictly after. Combines with `sinceId`. See below. |
 | `changeKind` | `added`, `amended`, or `removed`. Repeat for several: `?changeKind=added&changeKind=amended`. |
 | `order` | `desc` (default) for a recent-activity view; `asc` when catching up from a cursor. |
 | `limit` | 1 to 200, default 50. |
 
+`since` is coarser than `sinceId`, because one refresh writes many rows at the same instant, but it is what you want if all you kept was a `detectedAt` from a webhook body.
+
 `meta.hasMore` is true when the page filled to `limit`, so keep calling with the new cursor until it is false. Use `order=asc` while catching up: walking forward means a page that hits `limit` leaves the gap at a known end.
+
+### Paging backwards with beforeId
+
+`sinceId` only walks forward, so it cannot get you the history that already existed when you created the watch. `beforeId` is how you backfill.
+
+Keep `order=desc` (the default), and pass the **lowest** `id` you have seen as `beforeId` to fetch the page behind it. Repeat until a page comes back empty.
+
+```python Python
+before = None
+history = []
+
+while True:
+    params = {"limit": 200, "order": "desc"}
+    if before is not None:
+        params["beforeId"] = before
+
+    page = requests.get(
+        f"https://api.vaquill.ai/api/v1/watches/{watch_id}/changes",
+        headers={"Authorization": "Bearer vq_key_..."},
+        params=params,
+    ).json()
+
+    changes = page["data"]["changes"]
+    if not changes:
+        break
+    history.extend(changes)
+
+    # meta.cursor is the HIGHEST id on the page, so it is the wrong end for
+    # walking backwards. Take the lowest id yourself.
+    before = min(c["id"] for c in changes)
+
+    if not page["meta"]["hasMore"]:
+        break
+```
+
+<Note>
+  `meta.cursor` is always the **highest** `id` on the page, which is what you want for `sinceId` and not for `beforeId`. Compute the lowest id from the page yourself when walking backwards.
+</Note>
 
 <Tip>
   Running both channels is a reasonable design: take the webhook as the low-latency path, and poll on a slow timer as a backstop for deliveries your endpoint missed while it was down. Dedup on the change `id`, or on `deliveryId` for whole webhook payloads.

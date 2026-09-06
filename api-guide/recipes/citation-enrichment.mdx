@@ -1,154 +1,195 @@
 ---
 title: "Enrich a citation database with source text"
-description: "Search a batch of topics or citations, take the best match, and attach a canonical citation, excerpt, and official source URL"
+description: "Batch-resolve a column of citations, fall back to search for the rows that are only topics, and attach a canonical citation, excerpt, and official source URL"
 icon: "database"
 ---
 
 **What this gets you:** turn a messy spreadsheet or database of topics and half-formed citations into a clean table of verified law, each row backed by a real citation and an official source link, without doing it by hand.
 
-If you keep a list of topics or rough citations, you can ground each one against authoritative text. This recipe walks a batch of inputs, searches each one, takes the best match, and attaches the canonical citation, an excerpt, and the official government source URL back onto your record. It paces requests to respect the rate limit and backs off on a `429`.
+Most rows in a spreadsheet like this already carry a citation, however roughly it is typed.
+Those do not need searching, they need resolving, and `POST /us/statutes/resolve` does 50 of them per call.
+The rows that carry only a topic are the ones that need `POST /us/statutes/search`.
+Split your inputs that way and the job is a handful of calls instead of one per row.
 
-**Endpoints used:** `POST /statutes/search`. Optionally `GET /statutes/section/{actId}/body` when you want full text rather than the excerpt.
+**Endpoints used:** `POST /us/statutes/resolve` (2 credits per citation, up to 50 per call), `POST /us/statutes/search` (4 credits per call) for topic-only rows, and optionally `GET /us/statutes/section/{actId}/body` (6 credits) for full text.
 
 <Warning>
-  The base plan allows 30 requests per minute per key. Space your calls and honor the `Retry-After` header on a `429` so a large batch does not get throttled. See [Rate limits](/api-guide/errors).
+  Vaquill API Pro allows 30 requests per minute and 1,000 per day per key.
+  Batching is what keeps you inside both: 500 citations is 10 resolve calls, not
+  500 search calls. Honor the `Retry-After` header on a `429`. See
+  [Rate limits](/api-guide/rate-limits).
 </Warning>
 
-<Steps>
-  <Step title="Define your batch of inputs">
-    Each input is a natural language topic or a rough citation you want to resolve. Scope with `corpusType` and `state` where you already know them; omit them to search the whole corpus.
+## Start with the rows that carry a citation
 
-    ```python Python
-    INPUTS = [
-        {"topic": "civil rights deprivation under color of law", "corpusType": "USC"},
-        {"topic": "security deposit return deadline", "corpusType": "STATE", "state": "ca"},
-        {"topic": "hazard communication standard", "corpusType": "CFR"},
-    ]
-    ```
-  </Step>
+Chunk the citation column into batches of 50 and resolve them.
+Every input gets an entry back, in order, so an unresolved row is flagged rather than silently dropped.
 
-  <Step title="Search with rate-limit-aware pacing">
-    Wrap the search call so it sleeps between requests to stay under the per-minute cap, and retries with a backoff when the API returns `429`. Failed searches (for example a `404`) return no match.
+```python Python
+import requests
 
-    ```python Python
-    import time
-    import requests
+BASE_URL = "https://api.vaquill.ai/api/v1/us"
+HEADERS = {
+    "Authorization": "Bearer vq_key_...",
+    "Content-Type": "application/json",
+}
 
-    BASE_URL = "https://api.vaquill.ai/api/v1"
-    HEADERS = {
-        "Authorization": "Bearer vq_key_...",
-        "Content-Type": "application/json",
-    }
+BATCH_SIZE = 50  # the API's per-call maximum
 
-    # Base plan: 30/min. Stay under it with a fixed gap between calls.
-    MIN_INTERVAL_SECONDS = 2.1
 
-    def search_once(payload: dict, max_retries: int = 5) -> dict | None:
-        for attempt in range(max_retries):
-            resp = requests.post(
-                f"{BASE_URL}/statutes/search", headers=HEADERS, json=payload
-            )
-            if resp.status_code == 429:
-                wait = int(resp.headers.get("Retry-After", 2 ** attempt))
-                time.sleep(wait)
-                continue
-            resp.raise_for_status()
-            results = resp.json()["results"]
-            return results[0] if results else None
-        return None
-    ```
-  </Step>
-
-  <Step title="Choose the best source URL">
-    Prefer the official government link. `govInfoHtmlUrl` and `stateHtmlUrl` point at the authoritative federal and state publishers; `htmlUrl` is the general source link.
-
-    ```python Python
-    def best_source_url(result: dict) -> str | None:
-        for field in ("govInfoHtmlUrl", "stateHtmlUrl", "htmlUrl", "externalUrl"):
-            url = result.get(field)
-            if url:
-                return url
-        return None
-    ```
-  </Step>
-
-  <Step title="Enrich each record">
-    Build the search payload from each input, take the top match, and attach the canonical citation, excerpt, source URL, and `actId` (so you can fetch full text later).
-
-    ```python Python
-    def enrich(inputs: list[dict]) -> list[dict]:
-        enriched: list[dict] = []
-        for i, item in enumerate(inputs):
-            payload = {"query": item["topic"], "limit": 3}
-            if "corpusType" in item:
-                payload["corpusType"] = item["corpusType"]
-            if "state" in item:
-                payload["state"] = item["state"]
-
-            top = search_once(payload)
-            enriched.append(
-                {
-                    "topic": item["topic"],
-                    "actId": top.get("actId") if top else None,
-                    "citation": top.get("citation") if top else None,
-                    "excerpt": (top.get("excerpt") if top else None),
-                    "sourceUrl": best_source_url(top) if top else None,
-                }
-            )
-
-            # Pace all but the last request.
-            if i < len(inputs) - 1:
-                time.sleep(MIN_INTERVAL_SECONDS)
-
-        return enriched
-
-    if __name__ == "__main__":
-        for row in enrich(INPUTS):
-            status = row["citation"] or "(no match)"
-            print(f"{row['topic']}\n  -> {status}  {row['sourceUrl'] or ''}\n")
-    ```
-
-    Example output:
-
-    ```text
-    civil rights deprivation under color of law
-      -> 42 U.S.C. § 1983  https://...
-
-    security deposit return deadline
-      -> Cal. Civ. Code § 1950.5  https://...
-    ```
-  </Step>
-
-  <Step title="Optionally attach full text">
-    When you need the whole section rather than the excerpt, take the `actId` from a match and call the body endpoint. It returns text only when it is available.
-
-    <CodeGroup>
-    ```bash cURL
-    curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body \
-      -H "Authorization: Bearer vq_key_..."
-    ```
-
-    ```python Python
-    def fetch_body(act_id: str) -> str | None:
-        resp = requests.get(
-            f"{BASE_URL}/statutes/section/{act_id}/body",
-            headers={"Authorization": HEADERS["Authorization"]},
+def resolve_citations(citations: list[str]) -> dict[str, dict | None]:
+    """Map each input citation to its resolved section, or None."""
+    out: dict[str, dict | None] = {}
+    for i in range(0, len(citations), BATCH_SIZE):
+        chunk = citations[i : i + BATCH_SIZE]
+        resp = requests.post(
+            f"{BASE_URL}/statutes/resolve", headers=HEADERS, json={"citations": chunk}
         )
         resp.raise_for_status()
-        data = resp.json()
-        return data["plain"] if data.get("available") else None
-    ```
-    </CodeGroup>
-  </Step>
-</Steps>
+        for item in resp.json()["results"]:
+            out[item["inputCitation"]] = item["section"] if item["resolved"] else None
+    return out
+```
+
+Scope the whole batch with `state` or `corpusType` when every row belongs to one jurisdiction or corpus.
+A spreadsheet that spans jurisdictions should omit both and let each citation name its own.
 
 <Note>
-  Store the returned `actId` on your record. It is the stable handle for that section, so a later job can re-fetch metadata or full text without searching again.
+  Duplicates are collapsed before pricing, so a column with the same citation on
+  forty rows costs one resolution. Read `creditsConsumed` on the response rather
+  than multiplying 2 by your row count.
+</Note>
+
+<Note>
+  A resolved row has no `excerpt`: an excerpt is windowed around a query match,
+  and resolving a citation runs no query. Take the excerpt from the search path,
+  or fetch the body when a resolved row needs quotable text.
+</Note>
+
+## Then search the rows that are only a topic
+
+A row with no citation to resolve needs a search.
+Scope with `corpusType` and `state` where you know them, and use `fields` to return only what you are writing back onto the record.
+
+```python Python
+INPUTS = [
+    {"topic": "civil rights deprivation under color of law", "corpusType": "USC"},
+    {"topic": "security deposit return deadline", "corpusType": "STATE", "state": "ca"},
+    {"topic": "hazard communication standard", "corpusType": "CFR"},
+]
+
+# Ask for only the fields you store. A full result carries 40+ fields, most of
+# them null on any given row. `actId` and `citation` always come back.
+ENRICH_FIELDS = ["title", "excerpt", "state", "govInfoHtmlUrl", "stateHtmlUrl", "htmlUrl"]
+
+
+def search_topic(item: dict) -> dict | None:
+    payload = {"query": item["topic"], "limit": 3, "fields": ENRICH_FIELDS}
+    for key in ("corpusType", "state"):
+        if key in item:
+            payload[key] = item[key]
+    resp = requests.post(
+        f"{BASE_URL}/statutes/search", headers=HEADERS, json=payload
+    )
+    resp.raise_for_status()
+    results = resp.json()["results"]
+    return results[0] if results else None
+```
+
+<Tip>
+  Reach for `matchType: "phrase"` when the topic column holds a defined term or a
+  statutory phrase rather than a question. It forces an exact-phrase match
+  instead of hybrid semantic ranking, which is what you want when the wording is
+  the identifier.
+</Tip>
+
+## Attach the source link and write the row back
+
+Every match carries several optional source URL fields, and any of them may be null.
+Use the canonical preference order in [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format) rather than writing your own, so a citation gets the same official link everywhere in your product.
+
+```python Python
+# best_source_url() is the shared helper from the page linked above.
+# Copy it once and reuse it; do not re-derive the field order per recipe.
+
+
+def enrich(rows: list[dict]) -> list[dict]:
+    """rows: dicts with either a 'citation' or a 'topic' key."""
+    cited = [r["citation"] for r in rows if r.get("citation")]
+    resolved = resolve_citations(cited)
+
+    enriched = []
+    for row in rows:
+        if row.get("citation"):
+            match = resolved.get(row["citation"])
+        else:
+            match = search_topic(row)
+
+        enriched.append(
+            {
+                **row,
+                "actId": match.get("actId") if match else None,
+                "canonicalCitation": match.get("citation") if match else None,
+                "excerpt": match.get("excerpt") if match else None,
+                "sourceUrl": best_source_url(match) if match else None,
+            }
+        )
+    return enriched
+```
+
+Example output:
+
+```text
+42 USC 1983
+  -> 42 U.S.C. § 1983  https://...
+
+security deposit return deadline
+  -> Cal. Civ. Code § 1950.5  https://...
+
+42 U.S.C. 19833
+  -> (unresolved, flag for review)
+```
+
+## Optionally attach full text
+
+When you need the whole section rather than the excerpt, take the `actId` from a match and call the body endpoint.
+It returns text only when it is available, and charges nothing when it is not.
+
+<CodeGroup>
+```bash cURL
+curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```python Python
+def fetch_body(act_id: str) -> str | None:
+    resp = requests.get(
+        f"{BASE_URL}/statutes/section/{act_id}/body",
+        headers={"Authorization": HEADERS["Authorization"]},
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data["plain"] if data.get("available") else None
+```
+</CodeGroup>
+
+<Note>
+  At 6 credits a section this is the expensive half of the job, so fetch bodies
+  only for the rows that need quotable text. If you are enriching a topic row and
+  know up front you want the text, `"includeBody": true` on the search returns it
+  inline for the same 4 + 6 per row, saving the round trip rather than the money.
+</Note>
+
+<Note>
+  Store the returned `actId` on your record. It is the stable handle for that section, so a later job can re-fetch metadata or full text without searching or resolving again.
 </Note>
 
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+    The resolve routes in full, including what an unresolved verdict means.
+  </Card>
   <Card title="Compare a rule across states" icon="scale-balanced" href="/api-guide/recipes/multi-state-comparison">
     Run one query across several states and build a comparison.
   </Card>
@@ -157,8 +198,5 @@ If you keep a list of topics or rough citations, you can ground each one against
   </Card>
   <Card title="Monitor corpus coverage" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
     Detect when new corpora appear so you can re-enrich.
-  </Card>
-  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
-    Pace requests, cache coverage, and handle errors well.
   </Card>
 </CardGroup>

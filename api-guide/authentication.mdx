@@ -80,9 +80,33 @@ req.Header.Set("Content-Type", "application/json")
   Never expose your API key in client-side code or public repositories. If compromised, revoke it from your [dashboard](https://app.vaquill.ai/settings) and generate a new one immediately.
 </Warning>
 
-<Tip>
-  **Rotate keys on a schedule.** Generate a new key, deploy it to your application, then revoke the old one. Vaquill AI supports multiple live keys per workspace so you can rotate without downtime.
-</Tip>
+## How many keys you can hold
+
+Active keys are capped per account, and the cap is enforced in the database, so creating one past it fails rather than silently succeeding.
+
+| Plan | Active keys |
+|------|------------:|
+| Vaquill API Business | 5 |
+| Every other plan, including Vaquill API Pro | 2 |
+
+The cap of 2 is smaller than it looks in practice, because the console's Playground mints a key of its own when it cannot reuse one.
+An account running one integration key plus a Playground key is already at the cap.
+
+Revoking a key frees its slot immediately.
+The cap is only checked when a key is created or reactivated, so lowering a plan never revokes a key you already hold.
+
+## Rotating a key
+
+**On Business**, rotate without downtime: create the new key, deploy it, then revoke the old one.
+Five slots leave room to overlap.
+
+**On any other plan sitting at 2 keys**, you cannot create the replacement first.
+Revoke the old key, then create the new one and deploy it, and accept a short window where the old key is dead and the new one is not yet live.
+Do the revoke and the deploy close together, or upgrade if an overlap window matters to you.
+
+<Warning>
+  A revoked key stops working immediately. If you are at the cap, confirm your deploy pipeline is ready before you revoke, because there is no free slot to hold the old key open while you roll out.
+</Warning>
 
 ## Related
 

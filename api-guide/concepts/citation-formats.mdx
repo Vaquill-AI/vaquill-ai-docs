@@ -4,9 +4,10 @@ description: "Which citation strings resolve, why the form your state prints is 
 icon: "quote-left"
 ---
 
-`GET /statutes/resolve` turns a citation string into one exact section. This page
-answers the two questions that decide whether it works for you: **what to send**,
-and **when to scope it**.
+`GET /us/statutes/resolve` turns a citation string into one exact section, and
+`POST /us/statutes/resolve` does the same for up to 50 at a time.
+This page answers the two questions that decide whether either works for you:
+**what to send**, and **when to scope it**.
 
 ## The short answer: send back the citation we gave you
 
@@ -14,7 +15,7 @@ Every section we return carries a `citation` field. That string is the form the
 publishing jurisdiction itself prints, and feeding it back is guaranteed to
 resolve to the same section.
 
-```json Result from /statutes/search
+```json Result from /us/statutes/search
 {
   "actId": "STATE_GA_T51_C1_S51-1-6",
   "citation": "O.C.G.A. § 51-1-6",
@@ -161,14 +162,85 @@ wrong one:
   citation turns a good result into `resolved: false`.
 </Tip>
 
+## Checking a whole document: `POST /us/statutes/resolve`
+
+Everything above applies unchanged to the batch route.
+It takes up to **50 citations** in one call and returns the same verdict per
+citation.
+
+Use it when you are checking the citations in a document rather than looking one
+up.
+A brief, a memo or a model's output typically carries dozens, and the
+single-citation route makes that dozens of round trips.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.vaquill.ai/api/v1/us/statutes/resolve \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"citations": ["42 U.S.C. 1983", "16 C.F.R. 444.1", "Cal. Civ. Code 1950.5"]}'
+```
+
+```python Python
+import requests
+
+resp = requests.post(
+    "https://api.vaquill.ai/api/v1/us/statutes/resolve",
+    headers={"Authorization": "Bearer vq_key_..."},
+    json={
+        "citations": [
+            "42 U.S.C. 1983",
+            "16 C.F.R. 444.1",
+            "Cal. Civ. Code 1950.5",
+        ]
+    },
+).json()
+
+for item in resp["results"]:
+    if item["resolved"]:
+        print(item["inputCitation"], "->", item["section"]["actId"])
+    else:
+        print(item["inputCitation"], "-> unresolved")
+
+print(resp["resolvedCount"], "of", resp["count"], "resolved")
+```
+
+</CodeGroup>
+
+Four things to know about the response and the price.
+
+**Every input gets an entry.**
+An unresolved citation comes back with `resolved: false`, never as an omission.
+A caller checking thirty citations needs to know WHICH failed, and a shorter
+array cannot say that.
+
+**Duplicates are collapsed** before pricing and before the response is built, so
+sending the same citation twice costs once and returns one entry.
+`results` lines up with the de-duplicated input, in the order supplied, and
+`count` is its length.
+
+**Scoping applies to the whole batch.**
+`state` and `corpusType` are the same constraint they are on the single route,
+applied to every citation in the call.
+A batch spanning jurisdictions should omit them and let each citation name its
+own.
+
+**Batching buys a round trip, not a discount.**
+It is 2 credits per citation, exactly as if you resolved them one at a time.
+Unresolved citations are charged, because a confident "this does not resolve" is
+the answer you are paying for when you are verifying a model's output.
+Only citations we failed to process because of a backend error are refunded, so
+read `creditsConsumed` rather than multiplying.
+
 ## Scoping on search is a different thing
 
-On `POST /statutes/search`, `state` and `corpusType` filter the candidate pool
+On `POST /us/statutes/search`, `state` and `corpusType` filter the candidate pool
 before ranking. Two consequences worth knowing:
 
 - A **recognized citation** passed as the `query` is pinned to rank 1 at
   `relevanceScore: 1.0`, scoped or not. If you want one exact section, prefer
-  `/statutes/resolve`: it is cheaper and it tells you whether the citation is
+  `/us/statutes/resolve`: it is cheaper and it tells you whether the citation is
   real.
 - For a **natural-language query**, scoping changes which candidates are
   considered, so scoped and unscoped searches legitimately return different
@@ -187,7 +259,7 @@ before ranking. Two consequences worth knowing:
     problem.
   </Step>
   <Step title="Search for it instead">
-    `POST /statutes/search` with the citation as the `query` will surface the
+    `POST /us/statutes/search` with the citation as the `query` will surface the
     section even when the string is not a form we parse, and the result carries
     the `citation` we do recognize.
   </Step>

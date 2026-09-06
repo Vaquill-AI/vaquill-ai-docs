@@ -13,7 +13,19 @@ claim, and link back to the official government source. This is the classic
 retrieve-then-ground (RAG) loop, and it is the single most reliable way to keep a
 legal assistant from making things up.
 
-**Endpoints used:** `POST /statutes/search` (retrieve), `GET /statutes/section/{actId}/body` (full text).
+**Endpoints used:** `POST /us/statutes/search` (retrieve, 4 credits), `GET /us/statutes/section/{actId}/body` (full text, 6 credits per section).
+
+<Tip>
+  **You can collapse the two calls into one.** Pass `"includeBody": true` on the
+  search and every hit comes back with its full text on `body`, so three grounded
+  sources take one round trip instead of four. It costs the same: the 4-credit
+  search plus the ordinary 6 credits for each row that actually returns text, so
+  3 sourced rows is 22 credits either way, and a row whose text cannot be
+  resolved comes back with `body: null` and is not charged. It buys latency, not
+  a discount, and it multiplies with `limit`, so page deliberately. The two-call
+  version below is written out because it is the one to use when you rank more
+  candidates than you ground on.
+</Tip>
 
 <Info>
   Vaquill AI provides the authoritative text and the source links. The LLM in your
@@ -26,7 +38,7 @@ legal assistant from making things up.
 
 <Steps>
   <Step title="Retrieve candidate sections">
-    Send the user question to `POST /statutes/search`. Scope the search with
+    Send the user question to `POST /us/statutes/search`. Scope the search with
     `corpusType` and `state` when you know them (for example `USC` for federal
     statutes, or `STATE` with `state: "ca"` for California). Take the top few
     results.
@@ -34,7 +46,7 @@ legal assistant from making things up.
   <Step title="Fetch the full text of each section">
     Search returns an `excerpt` (up to 500 chars). That is enough to rank, not to
     ground on. For each result you want to cite, call
-    `GET /statutes/section/{actId}/body` to get the complete `plain` text.
+    `GET /us/statutes/section/{actId}/body` to get the complete `plain` text.
   </Step>
   <Step title="Build a grounded prompt">
     Assemble a prompt that contains the retrieved sections, each labeled with its
@@ -67,7 +79,7 @@ curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body \
 ```python Python
 import requests
 
-BASE = "https://api.vaquill.ai/api/v1"
+BASE = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
 
@@ -92,7 +104,7 @@ def fetch_body(act_id):
 ```
 
 ```javascript JavaScript
-const BASE = "https://api.vaquill.ai/api/v1";
+const BASE = "https://api.vaquill.ai/api/v1/us";
 const HEADERS = {
   Authorization: "Bearer vq_key_...",
   "Content-Type": "application/json",
@@ -189,12 +201,9 @@ def answer_question(question, corpus_type=None, state=None):
         text = fetch_body(r["actId"])
         if not text:
             continue  # skip sections whose text is unavailable
-        source_url = (
-            r.get("htmlUrl")
-            or r.get("stateHtmlUrl")
-            or r.get("govInfoHtmlUrl")
-            or r.get("externalUrl")
-        )
+        # best_source_url() is the shared helper from Text Formats and Source
+        # URLs, linked below. Copy it once; do not re-derive the field order.
+        source_url = best_source_url(r)
         sources.append(
             {
                 "citation": r.get("citation") or r["actId"],
@@ -246,10 +255,12 @@ if __name__ == "__main__":
     the whole corpus.
   </Accordion>
   <Accordion title="Always link back to the official source" icon="link">
-    Every result carries source URLs (`htmlUrl`, `stateHtmlUrl`, `govInfoHtmlUrl`,
-    `pdfUrl`, and others; any may be null). Pick the first one present and surface
-    it in the answer. This is what lets your users verify the law themselves, and
-    it is what keeps your product honest.
+    Every result carries several optional source URL fields and any may be null.
+    Use the canonical preference order in
+    [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
+    rather than writing your own, so the same section links to the same official
+    page everywhere in your product. This is what lets your users verify the law
+    themselves, and it is what keeps your product honest.
   </Accordion>
 </AccordionGroup>
 

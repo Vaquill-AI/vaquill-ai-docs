@@ -8,7 +8,7 @@ icon: "plug"
 
 Grounding an AI agent in authoritative legal text is one of the most common uses of this API. There are two ways to do it: connect an MCP-compatible client to the hosted Vaquill MCP server, or wrap the REST API as a tool your own agent can call. Both return citations and source links, so answers stay grounded in official government text.
 
-**Endpoints used:** `POST /statutes/search` for the custom-tool path. The hosted server path needs no direct REST calls from you.
+**Endpoints used:** `POST /us/statutes/search` for the custom-tool path. The hosted server path needs no direct REST calls from you.
 
 ## Path A: Hosted Vaquill MCP server
 
@@ -22,20 +22,35 @@ Use this path when your agent runs inside an MCP-compatible client and you want 
 
 ## Path B: Wrap the REST API as your own tool
 
-When you are building your own tool-calling agent, define a `search_statutes` function backed by `POST /statutes/search` and register it as a tool. The agent decides when to call it, and you return cited results the model can quote.
+When you are building your own tool-calling agent, define a `search_statutes` function backed by `POST /us/statutes/search` and register it as a tool. The agent decides when to call it, and you return cited results the model can quote.
 
 <Steps>
   <Step title="Implement the tool function">
-    The function takes a query and optional scoping, calls search, and returns a compact, citation-first list. Trimming the payload to the fields the model needs keeps token use low.
+    Ask the API for a narrow result with `fields` rather than fetching 40+ fields
+    and throwing most of them away in Python. Every field you did not ask for is
+    a field that never crossed the wire, never entered the tool result, and never
+    entered the model's context window. `actId` and `citation` always come back,
+    because a row without them cannot be used or attributed.
 
     ```python Python
     import requests
 
-    BASE_URL = "https://api.vaquill.ai/api/v1"
+    BASE_URL = "https://api.vaquill.ai/api/v1/us"
     HEADERS = {
         "Authorization": "Bearer vq_key_...",
         "Content-Type": "application/json",
     }
+
+    # Exactly what the model needs to answer and cite, and nothing else.
+    # An unknown name here is rejected with 422, so a typo cannot silently
+    # drop a field you were relying on.
+    TOOL_FIELDS = [
+        "title",
+        "excerpt",
+        "govInfoHtmlUrl",
+        "stateHtmlUrl",
+        "htmlUrl",
+    ]
 
     def search_statutes(
         query: str,
@@ -44,7 +59,7 @@ When you are building your own tool-calling agent, define a `search_statutes` fu
         limit: int = 5,
     ) -> list[dict]:
         """Search US statutes and regulations. Returns cited results."""
-        payload: dict = {"query": query, "limit": limit}
+        payload: dict = {"query": query, "limit": limit, "fields": TOOL_FIELDS}
         if corpus_type:
             payload["corpusType"] = corpus_type
         if state:
@@ -55,23 +70,28 @@ When you are building your own tool-calling agent, define a `search_statutes` fu
         )
         resp.raise_for_status()
 
-        results = []
-        for r in resp.json()["results"]:
-            results.append(
-                {
-                    "actId": r.get("actId"),
-                    "citation": r.get("citation"),
-                    "title": r.get("title"),
-                    "excerpt": r.get("excerpt"),
-                    "sourceUrl": (
-                        r.get("govInfoHtmlUrl")
-                        or r.get("stateHtmlUrl")
-                        or r.get("htmlUrl")
-                    ),
-                }
-            )
-        return results
+        # best_source_url() is the shared helper from Text Formats and Source
+        # URLs, linked below. Copy it once; do not re-derive the field order.
+        return [
+            {
+                "actId": r.get("actId"),
+                "citation": r.get("citation"),
+                "title": r.get("title"),
+                "excerpt": r.get("excerpt"),
+                "sourceUrl": best_source_url(r),
+            }
+            for r in resp.json()["results"]
+        ]
     ```
+
+    <Note>
+      A result carries 40+ fields and most of them are null on any given row, so
+      a page of 50 unfiltered results ships a lot of nulls. Trimming in Python
+      fixes the context window but not the transfer; `fields` fixes both, and it
+      is the one lever that scales with `limit`. See
+      [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
+      for the canonical source-link preference order.
+    </Note>
   </Step>
 
   <Step title="Declare the tool schema">
@@ -139,7 +159,7 @@ When you are building your own tool-calling agent, define a `search_statutes` fu
 </Steps>
 
 <Tip>
-  For heavy agent traffic, cache the `/statutes/coverage` response and reuse it to steer `corpusType` and `state` on tool calls. That narrows searches and avoids searching jurisdictions with no data.
+  For heavy agent traffic, cache the `/us/statutes/coverage` response and reuse it to steer `corpusType` and `state` on tool calls. That narrows searches and avoids searching jurisdictions with no data.
 </Tip>
 
 ## Related

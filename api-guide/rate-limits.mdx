@@ -14,7 +14,7 @@ Rate limits are enforced per API key and cap your request volume. If you exceed 
 | Vaquill API Business | 150 | 2,500 | 10,000 |
 
 <Note>
-  Discovery endpoints (`/statutes/states`, `/statutes/codes`, `/statutes/coverage`) still count against these rate limits. Cache their responses rather than calling them on every request.
+  The discovery endpoints (`GET /us/statutes/coverage` and `GET /us/statutes/divisions`) cost no credits or one credit, but they still count against these rate limits. Coverage changes weekly, not hourly, so cache both rather than calling them on every request.
 </Note>
 
 ## Handling a 429

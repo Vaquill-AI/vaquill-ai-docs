@@ -11,7 +11,7 @@ end with the governing sections: federal regulations, agency guidance, and the
 relevant state rules, each with its citation and a link to the official source.
 This is the backbone of a RegTech or compliance-mapping feature.
 
-**Endpoints used:** `POST /statutes/search`, `GET /statutes/section/{actId}/body`, `GET /statutes/coverage` (to discover which corpora a jurisdiction has).
+**Endpoints used:** `POST /us/statutes/search` (4 credits per call), `GET /us/statutes/section/{actId}/body` (6 credits), `GET /us/statutes/coverage` (free, to discover which corpora a jurisdiction has).
 
 <Info>
   Vaquill AI returns the authoritative regulatory text and links back to the official
@@ -28,11 +28,15 @@ This is the backbone of a RegTech or compliance-mapping feature.
     notices), and `REGULATION` (state administrative rules, paired with a `state`).
   </Step>
   <Step title="Search each corpus for the obligation">
-    Run `POST /statutes/search` once per corpus, using the same plain-language
-    query. Collect the top governing sections from each.
+    Run `POST /us/statutes/search` once per corpus, using the same plain-language
+    query, and filter each corpus with what that corpus actually carries:
+    `agency` / `documentType` / `publishedFrom` / `publishedTo` on
+    `FEDERAL_REGISTER`, `source` on `AGENCY_GUIDANCE`. Add
+    `"excludeRepealed": true` so a rule the publisher has already killed cannot
+    enter the map as an obligation.
   </Step>
   <Step title="Pull the text and group the results">
-    Fetch each section's full text with `GET /statutes/section/{actId}/body`, then
+    Fetch each section's full text with `GET /us/statutes/section/{actId}/body`, then
     group by `corpusType` and jurisdiction so the map reads by source of authority.
   </Step>
   <Step title="Present with citations and official links">
@@ -52,11 +56,12 @@ curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Content-Type: application/json" \
   -d '{"query": "data breach notification timeline", "corpusType": "CFR", "limit": 5}'
 
-# Federal Register agency rules
+# Federal Register agency rules. Filter, or you are ranking one query against
+# every rule every agency has published.
 curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_..." \
   -H "Content-Type: application/json" \
-  -d '{"query": "data breach notification timeline", "corpusType": "FEDERAL_REGISTER", "limit": 5}'
+  -d '{"query": "data breach notification timeline", "corpusType": "FEDERAL_REGISTER", "agency": "federal-trade-commission", "documentType": "final", "publishedFrom": "2020-01-01", "limit": 5}'
 
 # Agency guidance
 curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
@@ -74,24 +79,29 @@ curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
 ```python Python
 import requests
 
-BASE = "https://api.vaquill.ai/api/v1"
+BASE = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
 
-def search(query, corpus_type, state=None, limit=5):
+def search(query, corpus_type, state=None, limit=5, **filters):
     body = {"query": query, "corpusType": corpus_type, "limit": limit}
     if state:
         body["state"] = state
+    # agency / documentType / publishedFrom / publishedTo for FEDERAL_REGISTER,
+    # source for AGENCY_GUIDANCE, excludeRepealed anywhere.
+    body.update(filters)
     resp = requests.post(f"{BASE}/statutes/search", headers=HEADERS, json=body)
     resp.raise_for_status()
     return resp.json()["results"]
 ```
 
 ```javascript JavaScript
-const BASE = "https://api.vaquill.ai/api/v1";
+const BASE = "https://api.vaquill.ai/api/v1/us";
 
-async function search(query, corpusType, { state, limit = 5 } = {}) {
-  const body = { query, corpusType, limit };
+async function search(query, corpusType, { state, limit = 5, ...filters } = {}) {
+  // filters: agency / documentType / publishedFrom / publishedTo for
+  // FEDERAL_REGISTER, source for AGENCY_GUIDANCE, excludeRepealed anywhere.
+  const body = { query, corpusType, limit, ...filters };
   if (state) body.state = state;
   const resp = await fetch(`${BASE}/statutes/search`, {
     method: "POST",
@@ -109,11 +119,55 @@ async function search(query, corpusType, { state, limit = 5 } = {}) {
 </CodeGroup>
 
 <Tip>
-  Not sure which corpora a state has? Call `GET /statutes/coverage` and read the
+  Not sure which corpora a state has? Call `GET /us/statutes/coverage` and read the
   jurisdiction's `corpora` keys, then pass one as `corpusType`. State regulations
   (`REGULATION`) are ingested for a subset of states, so check before you scope to
   one.
 </Tip>
+
+## Narrowing the Federal Register sweep
+
+`FEDERAL_REGISTER` is the noisiest corpus on this list, because it holds every
+rule and every proposal every agency has published.
+An unfiltered sweep ranks your obligation against all of it.
+Four filters cut it down, and a compliance map usually wants all four.
+
+| Filter | What it does |
+|---|---|
+| `documentType` | `final` for a rule in force, `proposed` for an NPRM, `presidential` for a Presidential Document |
+| `agency` | Federal Register agency slug, or a list of them |
+| `publishedFrom` | Only documents published on or after this date (`YYYY-MM-DD`) |
+| `publishedTo` | Only documents published on or before this date |
+
+```json
+{
+  "query": "emissions standards for power plants",
+  "corpusType": "FEDERAL_REGISTER",
+  "agency": "environmental-protection-agency",
+  "documentType": "final",
+  "publishedFrom": "2024-01-01",
+  "publishedTo": "2024-12-31",
+  "limit": 5
+}
+```
+
+For a compliance map, `documentType: "final"` is usually the right default.
+A proposed rule is not yet an obligation, and folding the two into one map is how a draft requirement ends up presented as law.
+Run a second `proposed` pass when you want the pipeline of what is coming, and label it as such.
+
+<Tip>
+  Agency slugs come back on the results themselves. Ask for `agencySlugs` in
+  `fields`, or read it off a broad sweep, and use what you find to scope the
+  follow-up query. `publishedFrom` is the PUBLICATION date, which is not the same
+  as `yearFrom`: that one filters the version year of a section.
+</Tip>
+
+<Note>
+  `agency`, `documentType`, `publishedFrom` and `publishedTo` apply to
+  `FEDERAL_REGISTER` (`agency` also applies to `EXECUTIVE_ACTION`). Other corpora
+  carry no agency or publication date, so combining these with them returns
+  nothing.
+</Note>
 
 ## Narrowing to one named source
 
@@ -126,7 +180,7 @@ memoranda all live under the same `corpusType`. `FEDERAL_RULES` and `CFR`
 similarly fold in several sets (the Federal Rules of Procedure plus Supreme
 Court Rules; FAR and DFARS within CFR Title 48).
 
-If you already know an obligation is, say, an FCTC swaps-clearing question or
+If you already know an obligation is, say, a CFTC swaps-clearing question or
 a BSA/AML question, skip the broader sweep and add `source` to go straight to
 that one registry entry instead of ranking it against everything else in the
 corpus:
@@ -153,7 +207,7 @@ nothing.
 import requests
 from collections import defaultdict
 
-BASE = "https://api.vaquill.ai/api/v1"
+BASE = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
 
@@ -164,29 +218,35 @@ def fetch_body(act_id):
     return data.get("plain") if data.get("available") else None
 
 
-def source_link(result):
-    return (
-        result.get("htmlUrl")
-        or result.get("stateHtmlUrl")
-        or result.get("govInfoHtmlUrl")
-        or result.get("pdfUrl")
-        or result.get("externalUrl")
-    )
+# best_source_url() is the shared helper from Text Formats and Source URLs,
+# linked below. Copy it once; do not re-derive the field order per recipe.
 
 
 def map_requirement(obligation, states=None, limit=5):
     # Federal regulatory corpora, plus one REGULATION pass per requested state.
     plan = [
-        ("CFR", None),
-        ("FEDERAL_REGISTER", None),
-        ("AGENCY_GUIDANCE", None),
+        ("CFR", None, {}),
+        # Rules in force, recent enough to still govern. Add "agency" once you
+        # know which regulator owns the obligation.
+        ("FEDERAL_REGISTER", None, {"documentType": "final", "publishedFrom": "2020-01-01"}),
+        ("AGENCY_GUIDANCE", None, {}),
     ]
     for st in states or []:
-        plan.append(("REGULATION", st))
+        plan.append(("REGULATION", st, {}))
 
     grouped = defaultdict(list)
-    for corpus_type, state in plan:
-        for r in search(obligation, corpus_type, state=state, limit=limit):
+    for corpus_type, state, filters in plan:
+        # excludeRepealed drops what the publisher's own status says is dead.
+        # It does not promise the remainder is good law: read goodLawStatus on
+        # each survivor to tell "checked" from "unchecked".
+        for r in search(
+            obligation,
+            corpus_type,
+            state=state,
+            limit=limit,
+            excludeRepealed=True,
+            **filters,
+        ):
             text = fetch_body(r["actId"])
             if not text:
                 continue  # skip sections with no available text
@@ -197,7 +257,7 @@ def map_requirement(obligation, states=None, limit=5):
                 {
                     "citation": r.get("citation") or r["actId"],
                     "title": r.get("title"),
-                    "sourceUrl": source_link(r),
+                    "sourceUrl": best_source_url(r),
                     "text": text,
                 }
             )
@@ -251,12 +311,15 @@ Governing law for: data breach notification timeline
   <Accordion title="Scope state regulations deliberately" icon="location-dot">
     `REGULATION` is state-scoped: always pair it with a two-letter `state` code.
     Coverage spans a subset of states and expands weekly, so drive the state list
-    from `GET /statutes/coverage` rather than assuming every state is present.
+    from `GET /us/statutes/coverage` rather than assuming every state is present.
   </Accordion>
   <Accordion title="Keep the official link on every row" icon="link">
-    Each result carries source URLs (`htmlUrl`, `stateHtmlUrl`, `govInfoHtmlUrl`,
-    `pdfUrl`, and others; any may be null). Surface the first present link on every
-    mapped section so a reviewer can open the primary source and confirm the text.
+    Each result carries several optional source URL fields and any may be null.
+    Use the canonical preference order in
+    [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
+    rather than writing your own, so a reviewer opening the link from your
+    compliance map lands on the same official page as everywhere else in your
+    product.
   </Accordion>
 </AccordionGroup>
 

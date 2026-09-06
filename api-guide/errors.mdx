@@ -33,13 +33,41 @@ Validation errors (422) include field-level details:
 | Code | Meaning | Action |
 |------|---------|--------|
 | `200` | Success | |
+| `400` | Bad Request | The request parsed but the API refused it. See [400 versus 422](#400-versus-422) |
 | `401` | Unauthorized | Check your API key and `Authorization` header |
 | `402` | Payment Required | Check your account dashboard. |
-| `403` | Forbidden | Your key lacks the required scope, or your plan does not include the feature. Webhook delivery on a watch is Business-only; use `channel: "email"` or upgrade |
+| `403` | Forbidden | Your key lacks the required scope, or your plan does not include the feature. Webhook delivery is Business-only |
 | `404` | Not Found | Resource does not exist |
+| `409` | Conflict | You already hold this watch. See [409 on watches](#409-on-watches) |
 | `422` | Validation Error | Check request body for missing or invalid fields |
-| `429` | Rate Limited | Back off and retry with exponential backoff. Also returned when you exceed your plan's watch cap (3 outside Business, 100 on Business) |
+| `429` | Rate Limited | Back off and retry with exponential backoff. Also returned when you exceed your plan's watch cap |
 | `500` | Internal Error | Retry after a brief delay. [Contact support](mailto:contact@vaquill.ai) if it persists |
+
+On `403`, webhook delivery on a watch requires the Business plan: use `channel: "email"` or upgrade.
+On `429`, the watch cap is 3 outside Business and 100 on Business.
+
+### 400 versus 422
+
+A `422` is schema validation: a field is missing, or its type or range is wrong.
+FastAPI rejects it before your request reaches any business logic, and the response carries the `loc` array shown above.
+
+A `400` is a request that is well-formed but not allowed.
+`POST /watches` and `PATCH /watches/{id}` return it for:
+
+- a `scope` the board cannot be narrowed by, or an `actId` scope that does not exist on that board,
+- a source that is not scopable at all, meaning a board whose `scopable` is `false` such as the Federal Register,
+- a missing `webhookUrl` or `emailAddress` for the `channel` you asked for, or one set on a channel that does not use it,
+- a `webhookUrl` the API refuses as a delivery target,
+- a `webhookAuth.headerName` that is not a legal header name, or outbound auth set on an email-only watch.
+
+The `detail` string names the specific problem, so read it rather than retrying.
+
+### 409 on watches
+
+`POST /watches` returns `409` when you already hold a watch on the same board, the same channel, and the same scope.
+Watches are unique on that triple, so this means the subscription you were about to create already exists rather than that something went wrong.
+`PATCH /watches/{id}` returns it for the same reason, when narrowing a watch's `scope` would collide with another watch you already hold.
+List your watches with `GET /watches` and reuse the existing one.
 
 ## Rate Limiting
 
