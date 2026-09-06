@@ -1,0 +1,331 @@
+---
+title: "India legislation coverage"
+description: "What the Indian legislation API holds: acts, sections and jurisdictions, how deep the amendment and repeal record goes, and the limits you would otherwise discover in production"
+icon: "scale-balanced"
+---
+
+**64,179 served acts and 745,970 distinct sections**, covering Union legislation, the legislation of
+every State and Union Territory we hold, and instruments issued by statutory regulators.
+Act-level figures were measured by a full distinct-act scan on **2026-09-06**.
+
+```bash
+# The live, self-describing answer. Free, and authoritative over this page.
+curl https://api.vaquill.ai/api/v1/in/acts/coverage \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+This is a separate corpus, a separate OpenAPI document and a separate set of routes from the US
+statutes API.
+Nothing on this page describes the US surface, and no `corpusType` token from the US API applies
+here.
+
+<Note>
+  **Two different units, measured two different ways.**
+  A **section** is one distinct (act, section) pair, and it is the unit a lawyer thinks in.
+  A **passage** is one retrieval chunk, and a section spans about 3.4 of them, so the collection
+  holds far more passages than sections.
+  Act and section counts on this page come from a dated scan; passage counts on
+  `GET /acts/coverage` are faceted live.
+  Divide passages by sections if you must, never multiply sections by anything, and never read a
+  passage count as a section count.
+</Note>
+
+## What the corpus holds
+
+Distinct acts and distinct (act, section) pairs, measured 2026-09-06.
+
+| | Acts | Sections |
+|---|---:|---:|
+| Served | **64,179** | **745,970** |
+| Retired, held but not served | 703 | not served |
+| Total distinct act ids | 64,882 | |
+
+Served acts are indexed as **2,461,060 retrieval passages**, inside a collection of 2,532,537
+points that also carries the retired records.
+
+### By category
+
+`category` is the top-level split, and it is what you filter on when you want a whole class of
+instrument rather than one jurisdiction.
+
+| `category` | Acts | What the word means |
+|---|---:|---|
+| `state` | 32,268 | Legislation of a State or Union Territory legislature, and state subordinate instruments. The `state` filter narrows within this. |
+| `central` | 19,965 | Legislation of the Union Parliament, and central subordinate instruments made under it. |
+| `regulatory` | 11,946 | Instruments issued by a statutory regulator (SEBI, RBI, MCA, TRAI, IRDAI and others) under powers delegated by an act. The `department` filter narrows within this. |
+
+`repealed` and `spent` are also accepted as `category` values for backward compatibility.
+They resolve against `act_status` rather than `category`, so they select acts the publisher records
+as repealed or spent in any jurisdiction.
+`GET /acts/coverage` publishes this same legend as `categoryLegend`, and
+`GET /acts/filters` returns the live vocabulary with counts, free.
+
+### By publisher status
+
+| `actStatus` | Acts |
+|---|---:|
+| `in_force` | 60,719 |
+| `repealed` | 3,404 |
+| `superseded` | 55 |
+| `spent` | 1 |
+
+Read [Status is a claim, not our verdict](#status-is-a-claim-not-our-verdict) before treating any of
+these as a currency judgement.
+
+### Subordinate instruments
+
+**37,013 of the 64,179 served acts are subordinate instruments**: rules, regulations, notifications
+and orders made under a parent act rather than enacted by a legislature.
+Include or exclude them with the `isSubordinate` filter on search.
+
+Every response that names a parent resolves it **by title match, not by a stored key**, and says so
+in `matchBasis`.
+Title matching resolves a parent for 85.8% of the instruments that name one.
+The stored `parent_act_id` field is not usable for this: all 35,502 values are the publisher's own
+identifiers, not ours, so a hard link would resolve to nothing.
+
+## Jurisdictions
+
+Distinct acts and sections per jurisdiction, measured 2026-09-06, sorted by act volume.
+The middle column is the literal value to pass to the `state` filter.
+
+<Warning>
+  **These rows sum to 45,578 acts and 574,399 sections, not to the corpus total.**
+  18,601 served acts carry no jurisdiction value at all and cannot appear here.
+  Most of them are the 11,946 regulator instruments, which are filed under `category=regulatory`
+  with no state, and the rest are central legislation that carries no jurisdiction key.
+  Reach those with `category`, not with `state`.
+</Warning>
+
+| Jurisdiction | `state` | Acts | Sections |
+|---|---|---:|---:|
+| Central (Union) | `central` | 13,514 | 176,900 |
+| Maharashtra | `maharashtra` | 2,844 | 27,163 |
+| Uttar Pradesh | `uttar-pradesh` | 2,799 | 18,329 |
+| Delhi | `delhi` | 2,359 | 22,113 |
+| Haryana | `haryana` | 2,209 | 15,555 |
+| West Bengal | `west-bengal` | 1,927 | 23,924 |
+| Chhattisgarh | `chhattisgarh` | 1,923 | 23,127 |
+| Madhya Pradesh | `madhya-pradesh` | 1,895 | 17,647 |
+| Rajasthan | `rajasthan` | 1,753 | 26,106 |
+| Punjab | `punjab` | 1,511 | 19,751 |
+| Karnataka | `karnataka` | 1,326 | 22,571 |
+| Bihar | `bihar` | 1,230 | 10,230 |
+| Assam | `assam` | 1,217 | 6,218 |
+| Tamil Nadu | `tamil-nadu` | 945 | 15,987 |
+| Jharkhand | `jharkhand` | 943 | 12,056 |
+| Chandigarh | `chandigarh` | 773 | 10,563 |
+| Tripura | `tripura` | 767 | 8,419 |
+| Kerala | `kerala` | 664 | 12,783 |
+| Odisha | `odisha` | 528 | 7,084 |
+| Goa | `goa` | 392 | 13,338 |
+| Himachal Pradesh | `himachal-pradesh` | 382 | 8,862 |
+| Arunachal Pradesh | `arunachal-pradesh` | 381 | 5,232 |
+| Gujarat | `gujarat` | 375 | 6,983 |
+| Telangana | `telangana` | 342 | 9,149 |
+| Uttarakhand | `uttarakhand` | 315 | 3,275 |
+| Dadra and Nagar Haveli and Daman and Diu **[split]** | `dadra-and-nagar-haveli-and-daman-and-diu` | 298 | 8,233 |
+| Andhra Pradesh | `andhra-pradesh` | 259 | 6,410 |
+| Nagaland | `nagaland` | 248 | 2,279 |
+| Manipur | `manipur` | 232 | 2,509 |
+| Andaman and Nicobar Islands **[split]** | `andaman-and-nicobar-islands` | 201 | 4,604 |
+| Meghalaya | `meghalaya` | 149 | 3,112 |
+| Dadra and Nagar Haveli **[split]** | `dadra-nagar-haveli` | 146 | 5,048 |
+| Mizoram | `mizoram` | 138 | 1,206 |
+| Sikkim | `sikkim` | 138 | 1,576 |
+| Puducherry | `puducherry` | 137 | 4,934 |
+| Jammu and Kashmir **[split]** | `jammu-kashmir` | 128 | 4,352 |
+| Jammu and Kashmir **[split]** | `jammu-and-kashmir` | 79 | 2,296 |
+| Ladakh | `ladakh` | 68 | 2,210 |
+| Andaman and Nicobar Islands **[split]** | `andaman-nicobar` | 37 | 2,060 |
+| Lakshadweep | `lakshadweep` | 6 | 205 |
+
+<Warning>
+  **[split] marks three jurisdictions that are stored under two slugs each, and a single-slug filter
+  will silently miss the other half.**
+  Jammu and Kashmir is `jammu-kashmir` (128 acts) and `jammu-and-kashmir` (79).
+  The Andaman and Nicobar Islands are `andaman-and-nicobar-islands` (201) and `andaman-nicobar`
+  (37).
+  Dadra and Nagar Haveli is `dadra-and-nagar-haveli-and-daman-and-diu` (298) and
+  `dadra-nagar-haveli` (146).
+  Pass both slugs, or use search without a `state` filter and read the value off each result, until
+  this is fixed at ingest.
+</Warning>
+
+## Depth: what we hold about an act, not just the act
+
+This is the part of the page to read before you build on this API.
+"We hold the text of this act" and "we hold the record of what amended it" are different claims,
+and only the first is true for most of the corpus.
+`GET /acts/coverage` publishes the same four columns as a `depth` block so your code can read them
+rather than trusting this page.
+
+| Claim | Acts | Share of 64,179 |
+|---|---:|---:|
+| We serve the publisher's text | **64,179** | 100% |
+| We hold a machine-readable citation | 64,117 | 99.9% |
+| We serve a link to the publisher's own document | 57,316 | 89.3% |
+| We hold parsed chapter or part hierarchy | 16,465 | 25.7% |
+| We hold at least one **structured amendment event** | **1,061** | **1.7%** |
+| We hold a repeal claim | 655 | 1.0% |
+
+A further **840 acts carry a non-zero amendment count with no parseable amendment record behind
+them**.
+Those acts return an empty event list, and the response says so in its own `coverage` block rather
+than leaving the emptiness to be read as "nothing ever changed".
+1,901 acts claim an amendment; we hold the events for 1,061 of them.
+
+### Inside the amendment record
+
+| | Records |
+|---|---:|
+| Structured amendment records held | **32,808** |
+| carrying an ISO effective date | 17,333 (52.8%) |
+| carrying the quoted original text | 11,568 (35.3%) |
+
+About 3.15% of those records (1,035) are exact duplicates of another record on the same section,
+so a count of events on one provision can overstate the number of distinct amendments.
+
+Every event carries an `appliedStatus`.
+It is `not_applied` on all of them, because of the next point.
+
+## Limits you would otherwise find in production
+
+### We do not apply amendments to the text we serve
+
+We serve the publisher's text as published.
+We do not rewrite it to incorporate the amendments we list.
+Every amendment event states this on itself, so currency never has to be inferred from silence.
+
+There is consequently **no point-in-time text reconstruction on this API**.
+An `asOf` parameter over unversioned text would be a wrong answer shaped like a right one, so it is
+not offered.
+The US statutes API does offer point-in-time reconstruction; that is a different corpus with
+versioned editions behind it.
+
+### Status is a claim, not our verdict
+
+`actStatus`, `repealedBy` and `repealedByYear` are the publisher's statements.
+We do not verify that a repealing Act was ever brought into force, and at least one repeal on
+record involves an Act that never commenced.
+
+`GET /acts/{actId}/status` keeps three vocabularies apart on purpose:
+
+- `publisherStatus`, which is India Code's claim;
+- `servedStatus`, which is our own serving decision;
+- `repealClaim`, which is the repeal record plus our caveat, including `commencementVerified`.
+
+A derived `goodLawStatus` maps an unverified repeal claim to **`unknown`**, not to `not_good_law`.
+The Factories Act, 1948 is the worked example: its recorded repeal is by the Industrial Relations
+Code, 2020, which has never been brought into force.
+
+### `GET /acts/list` cannot see most of the corpus
+
+`GET /acts/list` enumerates about **22,000 of the roughly 64,000 served acts**.
+It reads a separate act table that predates the current corpus, so about two thirds of what
+`POST /acts/search` will happily return is invisible to it.
+Every `/list` response now carries a `note` saying so.
+
+Use `POST /acts/search` for discovery, and `GET /acts/coverage` for what exists.
+An act id you cannot find through `/list` is very often held; a `notFound` from a lookup route is
+more often a discovery gap than a corpus gap.
+
+A properly paged act-level index is the fix and it is not built yet.
+
+### 10.7% of acts carry no link to the publisher's document
+
+We serve `sourceUrl` for 57,316 acts, which is 89.3%.
+The remaining 6,863 return a **named reason** rather than a bare null, so "we have no link" is
+distinguishable from "not applicable".
+
+The main cause is that India Code migrated from `indiacode.nic.in` to `indiacode.gov.in` around
+2026-08-19 and re-minted every item handle with no redirect map.
+The stored deep links are not merely stale, they 404.
+They are blanked rather than rewritten, because pointing an old handle at the new host produces a
+different 404 that merely looks current.
+An empty provenance URL is allowed; a broken one would be a false statement.
+
+Only live official Indian publishers are served in this field: `.gov.in` and `.nic.in` hosts, plus
+`rbi.org.in`, the Reserve Bank of India.
+No commercial legal database is a source or a link target.
+
+### 703 acts are retired and are not served
+
+They are held and deliberately withheld: 305 as duplicates of an act we kept, 190 as withdrawn by
+the publisher, and 208 with no reason recorded.
+Nothing was deleted.
+
+A retired act returns 404 with a reason from the text and amendment routes, and is refunded.
+`GET /acts/{actId}/status` answers it rather than 404ing, with `servedStatus: retired` and the
+reason, because "we withdrew this" is a more useful answer than "no such thing".
+
+### Citation strings are served with known cosmetic defects
+
+`citation` is present on 99.9% of served acts and is what you would paste into a brief, so these
+are worth knowing about before you render it verbatim:
+
+- **6,646 acts (10.4%)** have a title ending in a period, so the citation reads
+  `The Maharashtra Value Added Tax Act, 2002., s. 23`.
+- **3,003 acts (4.7%)** carry no year in the title and no year field, so the citation identifies no
+  edition.
+
+Both are ingest repairs, not serving bugs, and neither affects which provision you get back.
+
+### The IPC to BNS mapping is a curated slice, not a complete table
+
+`GET /acts/corresponding-provisions/{actCode}` holds **30 mapped pairs against the Indian Penal
+Code's 511 sections, about 6%**.
+The response states `mappedProvisions`, `isComplete: false`, and that the basis is curated rather
+than official.
+Both codes remain live law simultaneously for the lifetime of pending trials, so a mapping is a
+research aid and not a substitution rule.
+
+## Endpoints and what they cost
+
+Twelve routes, all under `https://api.vaquill.ai/api/v1/in/acts`.
+Costs are in API credits, taken from the live pricing matrix; `GET /api-credits/pricing` is
+authoritative.
+
+| Route | Credits | What it answers |
+|---|---:|---|
+| `GET /coverage` | **0** | What the corpus holds, by jurisdiction, regulator and status, and how deep that holding goes. |
+| `GET /filters` | **0** | The live filter vocabulary with counts. |
+| `POST /search` | 2 | Search Central, State and regulator legislation down to the individual section. |
+| `GET /list` | 1 | Browse enactments by jurisdiction, regulator, year and status. See the coverage limit above. |
+| `GET /{actId}/status` | 1 | Whether an enactment is still law, as three separate statements rather than one verdict. |
+| `GET /corresponding-provisions/{actCode}` | 1 | IPC to BNS and CrPC to BNSS section mapping. |
+| `GET /{actId}/structure` | 2 | The act's table of contents: chapters and parts where the publisher gives any, and the provisions under each. |
+| `GET /{actId}/sections/{n}` | 2 | One provision as a resource: its citation, its place in the act, and what it refers to. |
+| `GET /{actId}/sections/{n}/history` | 2 | Every amendment recorded against one provision, with the amending act, its section, and the effective date where published. |
+| `GET /{actId}/text` | 3 | The source text URLs for one enactment, pointing at the publisher's own document. |
+| `GET /{actId}/sections/{n}/body` | 3 | The publisher's full text for one provision. Refunded when the text cannot be reproduced. |
+| `GET /{actId}/amendments` | 5 | The amendment history recorded for a whole enactment. |
+
+Full request and response shapes are in the [India API Reference](https://api.vaquill.ai/in/openapi.json).
+
+<Note>
+  `GET /acts/coverage` is free for the same reason the US coverage endpoint is: a consumer who
+  cannot see what the corpus holds cannot tell a gap from a bad query, and charging for that answer
+  compounds the confusion.
+</Note>
+
+## Sources and refresh
+
+The corpus is built from **India Code**, the Government of India's official repository of Central
+and State legislation, and from statutory regulators' own sites for the `regulatory` category.
+No commercial database is a source.
+
+India Code is re-swept on a weekly cadence, and each sweep is diffed against the previous one to
+produce added, changed and withdrawn sets.
+Act-level counts on this page move only when a new census scan is run, which is why every figure
+here is stamped with the date it was measured.
+
+<CardGroup cols={2}>
+  <Card title="US coverage" icon="map-location-dot" href="/api-guide/coverage">
+    The separate US statutes corpus: federal, all 52 state and territory jurisdictions, and agency
+    guidance.
+  </Card>
+  <Card title="Authentication" icon="key" href="/api-guide/authentication">
+    One `vq_key_` credential and one credit ledger serve both jurisdictions.
+  </Card>
+</CardGroup>
