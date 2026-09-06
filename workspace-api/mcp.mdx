@@ -7,8 +7,12 @@ icon: "plug"
 Every operation in this API is also published as an MCP tool. Point an agent at one endpoint with one credential and it can create matters, read extracted text, run a playbook review, generate a draft, build a matrix and collect the results, using the same authorization as your HTTP integration.
 
 ```
-https://api.vaquill.ai/workspace/mcp
+https://api.vaquill.ai/workspace/mcp/
 ```
+
+<Note>
+**Keep the trailing slash.** That is the path the server is mounted on and the one it answers directly. Without it, the request gets a `307` redirect to the same URL with the slash. Most clients follow it and re-send the credential, but one configured not to follow redirects fails on connect for a reason that reads like an authentication problem. The automation console's copy button gives the form without the slash; both reach the same endpoint.
+</Note>
 
 There is no second catalog to maintain. The tool list is derived from the same route registry the REST API is built from, so an operation and its tool are the same thing described twice, and the server refuses to start if the two ever disagree.
 
@@ -19,7 +23,7 @@ The credential is a static header on the MCP connection. That is the whole authe
 <CodeGroup>
 ```bash Claude Code
 claude mcp add --transport http --scope user vaquill-workspace \
-  https://api.vaquill.ai/workspace/mcp \
+  https://api.vaquill.ai/workspace/mcp/ \
   --header "Authorization: Bearer vq_ws_..."
 ```
 
@@ -28,7 +32,7 @@ claude mcp add --transport http --scope user vaquill-workspace \
 {
   "mcpServers": {
     "vaquill-workspace": {
-      "url": "https://api.vaquill.ai/workspace/mcp",
+      "url": "https://api.vaquill.ai/workspace/mcp/",
       "headers": {
         "Authorization": "Bearer vq_ws_..."
       }
@@ -53,7 +57,7 @@ claude mcp add --transport http --scope user vaquill-workspace \
   "servers": {
     "vaquill-workspace": {
       "type": "http",
-      "url": "https://api.vaquill.ai/workspace/mcp",
+      "url": "https://api.vaquill.ai/workspace/mcp/",
       "headers": {
         "Authorization": "${input:vaquill-workspace-authorization}"
       }
@@ -68,7 +72,7 @@ claude mcp add --transport http --scope user vaquill-workspace \
 {
   "mcpServers": {
     "vaquill-workspace": {
-      "serverUrl": "https://api.vaquill.ai/workspace/mcp",
+      "serverUrl": "https://api.vaquill.ai/workspace/mcp/",
       "headers": {
         "Authorization": "Bearer vq_ws_..."
       }
@@ -104,7 +108,7 @@ The practical consequence for you is short. Configure the header, and ignore any
 
 ## What the agent sees
 
-**133 tools**, one per REST operation. Names come from the operation id, so `matters.list` is `matters_list`, `documents.text` is `documents_text`, `workflows.run` is `workflows_run` and `playbookTemplates.list` is `playbook_templates_list`.
+**One tool per REST operation**, 133 of them on 2026-09-06. Names come from the operation id, so `matters.list` is `matters_list`, `documents.text` is `documents_text`, `workflows.run` is `workflows_run` and `playbookTemplates.list` is `playbook_templates_list`.
 
 Arguments follow the HTTP call closely. Path and query parameters keep their published names, so `matterId` is `matterId`. A JSON request body is nested under a single `body` argument, which avoids a collision when a name such as `limit` is a query parameter on one operation and a body field on another.
 
@@ -126,13 +130,25 @@ Your organization is fixed by the credential. No tool accepts an organization ar
 
 **Uploading bytes is not an MCP flow.** `uploads_initiate`, `uploads_presign_part` and `uploads_complete` are all published, but the bytes themselves are `PUT` directly to presigned storage URLs, which is a plain HTTP call outside this server. An agent can start and finish an upload; something else has to move the file.
 
-**The catalog is filtered to your credential's scopes.** Listing all 133 tools costs about 71,000 tokens the first time a session asks for them, which is the honest price of publishing the whole API rather than a hand-picked subset. A credential holding only the scopes one integration needs is listed as only those tools: a read-only credential is 55 tools and about 18,000 tokens, and a credential scoped to one job, say reading matters and writing documents, is 17 tools and about 6,000. Either way it is paid once per session, so issue the narrowest credential the integration needs.
+**The catalog is filtered to your credential's scopes.** A credential holding only the scopes one integration needs is listed as only those tools, and the listing is paid once per session, so issue the narrowest credential the integration needs.
+
+Measured on 2026-09-06, against the same catalog builder the server uses:
+
+| Credential | Tools | Approximate tokens |
+| --- | --- | --- |
+| Every scope | 133 | 71,000 |
+| Read-only | 55 | 18,000 |
+| One job (`matters:read`, `documents:read`, `documents:write`) | 17 | 6,000 |
+
+The full figure is the honest price of publishing the whole API rather than a hand-picked subset, and it grows with every operation added, which is the argument for the narrow credential rather than a fact about this release. Token counts are an offline approximation of a payload size, not a bill.
 
 ## Transport details
 
 Streamable HTTP, stateless, JSON responses. No session id and no server-initiated stream.
 
-`GET` and `DELETE` on the endpoint answer `405` with `Allow: POST`, which is the correct answer for a server that implements no standalone event stream and no protocol-level session. An unauthenticated request gets `401` before that, since authentication runs in front of the mount.
+`GET` and `DELETE` answer `405` with `Allow: POST`, which is the correct answer for a server that implements no standalone event stream and no protocol-level session.
+
+Two things happen before that answer, in this order. An unauthenticated request gets `401` first, because authentication runs in front of routing, so every method on this path answers `401` without a credential. A request to the path **without** its trailing slash then gets `307` to the form with it, on every method including `POST`. So the `405` is what the endpoint itself says, once a credential is present and the URL has its slash.
 
 The protocol version is mirrored back from what your client asks for, capped at `2025-11-25`. A client asking for `2026-07-28` negotiates `2025-11-25`. The only capability advertised is `tools`, with `listChanged: false`, because the catalog is fixed when the server starts.
 

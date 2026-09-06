@@ -51,6 +51,8 @@ The last six characters are a checksum, so a truncated or mistyped credential is
 
 A credential carries scopes in the form `resource:action`. Write implies read on the same resource; `run` does not, so a reporting integration can be given read access without the ability to start billable work.
 
+These are every scope that governs at least one operation. Measured from the route registry on 2026-09-06: 37 of them, across 133 operations.
+
 ```
 clients:read      clients:write
 matters:read      matters:write
@@ -58,9 +60,15 @@ documents:read    documents:write    documents:download
 drafting:read     drafting:run
 review:read       review:run
 compare:read      compare:run
-playbooks:read    playbooks:write
+playbooks:read    playbooks:write    playbooks:run
 matrices:read     matrices:write     matrices:run
-workflows:read    workflows:run
+workflows:read    workflows:write    workflows:run
+research:read     research:run
+nda:read          nda:run
+compliance:read   compliance:run
+facts:read        facts:run
+summaries:read    summaries:run
+chronology:read   chronology:write
 exports:create    exports:read
 operations:read
 ```
@@ -68,7 +76,19 @@ operations:read
 Most integrations want far less than this. A good default is the narrowest set that makes your first call work, widened when a `403` tells you exactly what is missing.
 
 <Note>
-The scope vocabulary is slightly wider than the list above, because it was frozen before every capability shipped. A few names are accepted but govern no endpoint yet. Granting one is harmless and grants nothing, so build against the list above.
+Three further names are accepted when you mint a credential and govern nothing: `credentials:rotate`, `webhooks:read` and `webhooks:write`. Granting one is harmless and grants nothing. They are not features in progress: rotation is deliberately a two-credential sequence you run yourself, and outbound webhooks were cut, so polling the operation resource is the only completion signal. The names stay accepted because the taxonomy is frozen, not because something is coming.
+</Note>
+
+<Note>
+`chronology:read` and `chronology:write` govern the matter timeline and are separate from `matters:*` on purpose. `matters:write` means "create and rename matters"; a customer who granted that has not agreed to let a credential edit a timeline a lawyer curated.
+</Note>
+
+<Note>
+`nda:*` and `compliance:*` are their own pairs rather than a reuse of `review:*`. An NDA triage is not a contract review, and a credential restricted to reviews must not get triages by implication. `research:*` means the chat and legal-research surface, not document screening.
+</Note>
+
+<Note>
+`facts` and `summaries` have `read` and `run` but no `write`, so there is no scope that grants editing a generated fact or summary. `documents:write` implies `documents:read` but never `documents:download`.
 </Note>
 
 <Note>

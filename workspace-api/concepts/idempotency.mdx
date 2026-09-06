@@ -13,26 +13,43 @@ curl -X POST https://api.vaquill.ai/workspace/v1/matters/mat_.../reviews \
   -H "Authorization: Bearer vq_ws_..." \
   -H "Idempotency-Key: 8f1c2b4e-9a10-4d5f-8e2b-1c7d3a6f0b91" \
   -H "Content-Type: application/json" \
-  -d '{"playbookId":"pbk_...","documentId":"doc_..."}'
+  -d '{
+        "documentText": "MASTER SERVICES AGREEMENT. 8. LIMITATION OF LIABILITY. Supplier total liability shall be unlimited for any claim arising out of this Agreement. 12. GOVERNING LAW. Delaware.",
+        "contractType": "saas",
+        "userSide": "vendor",
+        "playbookId": "pbk_9f2c8b1e4a7d43c9b6e0f1a2c3d4e5f6"
+      }'
 ```
 
 Generate one UUID per logical action, and **reuse it on every retry of that action**. Generating the key inside your retry loop produces a new key each attempt, which defeats the whole mechanism.
 
 ## Which endpoints take it
 
-The seven that launch a job:
+Every endpoint that launches a job.
+There are sixteen, measured against the published OpenAPI document on 2026-09-06.
 
 | Endpoint | Starts |
 | --- | --- |
-| `POST /v1/matters/{matterId}/reviews` | A playbook review |
+| `POST /v1/matters/{matterId}/reviews` | A contract review |
 | `POST /v1/matters/{matterId}/comparisons` | A comparison |
 | `POST /v1/matters/{matterId}/drafts` | A draft generation |
 | `POST /v1/matters/{matterId}/drafts/{draftId}/improvements` | A draft improvement |
+| `POST /v1/matters/{matterId}/drafts/{draftId}/documents` | Saving a draft back as a document |
 | `POST /v1/matters/{matterId}/matrices/{matrixId}/runs` | A matrix run |
 | `POST /v1/matters/{matterId}/templates/{templateId}/runs` | A template run |
 | `POST /v1/matters/{matterId}/workflows/{workflowId}/runs` | A workflow run |
+| `POST /v1/matters/{matterId}/nda-triages` | An NDA triage |
+| `POST /v1/matters/{matterId}/compliance-checks` | A compliance check |
+| `POST /v1/matters/{matterId}/fact-sets` | A fact set generation |
+| `POST /v1/matters/{matterId}/summaries` | A matter summary generation |
+| `POST /v1/matters/{matterId}/chats/{chatId}/messages` | An ask |
+| `POST /v1/matters/{matterId}/chats/{chatId}/deep-research` | A deep research run |
+| `POST /v1/matters/{matterId}/messages/{messageId}/verifications` | A verification of one answer |
+| `POST /v1/playbook-extractions` | A playbook extraction |
 
-One other call answers `202` with an operation and takes no key: `POST /v1/uploads/{uploadId}/complete`. It does not need one, because the upload id is already the thing that makes it repeatable. Ordinary writes such as creating a matter or a client take no key either, because they are cheap, fast, and already tell you plainly whether they succeeded.
+Seventeen calls answer `202` with an operation.
+The sixteen above take the key; the seventeenth, `POST /v1/uploads/{uploadId}/complete`, does not, because the upload id is already the thing that makes it repeatable.
+Ordinary writes such as creating a matter or a client take no key either, because they are cheap, fast, and already tell you plainly whether they succeeded.
 
 The header is optional. Omitting it is a legitimate way of saying "no idempotency promise", and if you never retry a launch you never need it. Sending it **empty** is a `400`, since an empty value is a bug in your client rather than a decision.
 

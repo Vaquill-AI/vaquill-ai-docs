@@ -10,20 +10,22 @@ The matrix exists, your credential can write to it, and this particular edit wou
 
 `409` rather than `422`: your request is well formed. What blocks it is the state of the grid, and you can change that.
 
-## A document that is already a row
+## What to do
+
+### A document that is already a row
 
 `enrolledDocumentIds` lists the `doc_` ids that are already in this matrix.
 
-A document appears at most once in a grid. The refusal exists because the alternative is silence: the underlying insert filters duplicates out rather than failing, so a request naming five documents of which two were already rows would answer `201` having added three, with nothing in the response saying which two it dropped. You would be billed for what you asked for and get something else.
+A document appears at most once in a grid. The refusal exists because the alternative is silence: the underlying insert filters duplicates out rather than failing, so a request naming five documents of which two were already rows would answer `201` having added three, with nothing in the response saying which two it dropped.
 
-**What to do:** drop the ids named in `enrolledDocumentIds` and send the rest. Adding zero documents is not a request worth making, so send only the ones that are new.
+Drop the ids named in `enrolledDocumentIds` and send the rest. Adding zero documents is not a request worth making, so send only the ones that are new.
 
-## A column another column is conditional on
+### A column another column is conditional on
 
 `dependentColumns` lists the labels of the columns that gate on the one you tried to delete.
 
 Deleting it would not break those columns; it would make them silently unconditional. The dependency is `ON DELETE SET NULL`, so each dependant would keep its `gateExpression`, lose the column it was gating on, and start answering its question of every document rather than only the ones where the premise held. An extraction that runs when it should not have is worse than one that errors, because nothing in the result says so.
 
-**What to do:** either clear the dependants first (`PATCH .../columns/{columnId}` with `"dependsOnColumnId": null`), or delete them, then delete the parent.
+Either clear the dependants first (`PATCH .../columns/{columnId}` with `"dependsOnColumnId": null`), or delete them, then delete the parent.
 
 Full error reference: [Errors](/workspace-api/concepts/errors)

@@ -6,7 +6,7 @@ icon: "diagram-project"
 
 A workflow is a multi-step pipeline over several documents in one matter. It takes a set of documents in named roles, a handful of answers up front, and produces finished deliverables: an executive summary, a per-document detail pack, a privilege log. `nda-bulk-review` takes a stack of NDAs and your side of the table, and writes a portfolio risk summary plus per-document redline suggestions.
 
-Four calls cover the whole surface. List the catalog, launch a run, poll the operation, fetch the artifacts.
+Six calls cover the whole surface. List the catalog, launch a run, poll the operation, fetch the artifacts, list the runs in a matter, delete one.
 
 ## The catalog is fixed, and there is no create endpoint
 
@@ -161,17 +161,50 @@ This is the opposite of `GET /v1/matters/{matterId}/documents/{documentId}/downl
 
 A `409 export-not-available` means this run has no artifact under that key: usually the run has not succeeded yet. Poll the operation first, then fetch.
 
-## Scopes
+## Listing the runs in a matter
 
-| Call | Scope |
-| --- | --- |
-| `GET /v1/workflows` | `workflows:read` |
-| `GET /v1/matters/{matterId}/workflow-runs/{runId}` | `workflows:read` |
-| `POST /v1/matters/{matterId}/workflows/{workflowId}/runs` | `workflows:run` |
-| `GET /v1/matters/{matterId}/workflow-runs/{runId}/artifact` | `exports:read` |
+```bash
+curl "https://api.vaquill.ai/workspace/v1/matters/mat_.../workflow-runs?limit=50" \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+Every run in that matter, newest first, in the standard page envelope. This is how you recover a run id you lost, and how a cleanup job enumerates what it has to remove.
+
+Runs started in the app outside any matter are not here and cannot be: every route on this resource is matter-nested, so a flat list would name rows this API has no URL for. Everything started through this API appears.
+
+## Deleting a run
+
+```bash
+curl -X DELETE "https://api.vaquill.ai/workspace/v1/matters/mat_.../workflow-runs/wfr_..." \
+  -H "Authorization: Bearer vq_ws_..."
+```
+
+Answers `204`, and removes the run and its event history.
+
+**Documents the run produced are not deleted.** They stay filed in the matter and simply stop pointing back at the run, so deleting the record of the work does not delete the work.
+
+Refused with `409 operation-in-flight` while the run has not finished; poll the operation that started it first. There is no undo, and a repeated delete answers `404`, so on a delete that timed out treat a subsequent `404` as success.
+
+## Every operation on this page
+
+Six, derived from the route registry on 2026-09-06. Nothing about workflows lives outside this table.
+
+| Call | Does | Scope |
+| --- | --- | --- |
+| `GET /v1/workflows` | Lists the fixed catalog of definitions | `workflows:read` |
+| `POST /v1/matters/{matterId}/workflows/{workflowId}/runs` | Launches a run, answers `202` | `workflows:run` |
+| `GET /v1/matters/{matterId}/workflow-runs` | Lists the runs in a matter, newest first | `workflows:read` |
+| `GET /v1/matters/{matterId}/workflow-runs/{runId}` | Reads one run and its artifact list | `workflows:read` |
+| `GET /v1/matters/{matterId}/workflow-runs/{runId}/artifact` | Signs a 15-minute URL for one deliverable | `exports:read` |
+| `DELETE /v1/matters/{matterId}/workflow-runs/{runId}` | Deletes the run record | `workflows:write` |
+
+<Warning>
+Deleting a run costs **`workflows:write`**, which `workflows:run` does not imply. A credential that can launch runs cannot necessarily remove them. `workflows:write` does imply `workflows:read`.
+</Warning>
 
 <Warning>
 The artifact download costs **`exports:read`**, not `workflows:read`. The deliverable is a rendered document built from the matter's contents, so pulling it out of the workspace is the same risk class as any other export. A credential with `workflows:read` and `workflows:run` can start runs and watch them finish, and still get a `403 insufficient-scope` on the file.
 </Warning>
 
-`workflows:run` does not imply `workflows:read`, so a credential that only starts runs cannot enumerate the catalog. Most integrations want both, plus `exports:read` if they collect the output.
+`workflows:run` does not imply `workflows:read`, so a credential that only starts runs cannot enumerate the catalog.
+Most integrations want both, plus `exports:read` if they collect the output and `workflows:write` if they clean up afterwards.

@@ -4,7 +4,7 @@ description: "Deleting what your integration created, and what refuses to be del
 icon: "trash"
 ---
 
-An integration that creates clients, matters, folders, documents, drafts, comparisons, matrices, reviews and workflow runs needs to be able to undo that. This page is how.
+An integration that creates clients, matters, folders, documents, drafts, templates, chats, comparisons, matrices, reviews and workflow runs needs to be able to undo that. This page is how.
 
 ## The rule, in one line
 
@@ -14,7 +14,7 @@ That means "delete an empty thing" for a container and "delete this thing" for a
 
 ## Deleted means deleted
 
-Some resources go to a trash a person can see in the app. Drafts and comparisons do; documents, clients, matters, folders, reviews, workflow runs and matrices do not.
+Some resources go to a trash a person can see in the app. Drafts and comparisons do; documents, clients, matters, folders, reviews, workflow runs, matrices, chats and templates do not. A chronology event is soft-deleted in the database and is not restorable from anywhere you can reach.
 
 **From this API the two are indistinguishable, on purpose.** A deleted resource answers `404` on its own `GET`, disappears from its own list, and stops being exportable. Nothing here brings it back.
 
@@ -35,7 +35,7 @@ There is no `Idempotency-Key` on a delete.
 Every refusal is a `409`, never a `403`. On this API a `403` means your credential is missing a scope or your installation is inactive, and both send you to rotate a credential. A refusal about the state of a row must not read like that.
 
 <AccordionGroup>
-  <Accordion title="409 resource-not-empty — the container still holds something">
+  <Accordion title="409 resource-not-empty: the container still holds something">
     Read `blockers`. It names every reason and how many of each, so you can clear them in one pass rather than discovering them one at a time.
 
     ```json
@@ -56,17 +56,19 @@ Every refusal is a `409`, never a `403`. On this API a `403` means your credenti
     | A matter | Any document, folder, draft, comparison, matrix, workflow run, review or chat |
     | A folder | Any folder inside it. Documents and drafts filed in it are unfiled, not deleted |
   </Accordion>
-  <Accordion title="409 operation-in-flight — a job is still writing to it">
+  <Accordion title="409 operation-in-flight: a job is still writing to it">
     Poll `operationId` when the problem carries one, then repeat the delete. It is absent when the work was started in the app, because there is no operation of ours to poll; read the resource's own `status` instead.
 
     There is no way to cancel work through this API. A delete that killed a running job would be a second way to spend your money and lose the result.
   </Accordion>
-  <Accordion title="409 matter-not-deletable — it is the default matter">
+  <Accordion title="409 matter-not-deletable: it is the default matter">
     Every organization has exactly one, minted at signup, and it cannot be deleted here or in the app. Emptying it will not help. Create matters explicitly with `POST /v1/matters` rather than writing into the default one, and a matter your integration created can be emptied and deleted.
   </Accordion>
 </AccordionGroup>
 
 ## Per resource
+
+Every `DELETE` this API publishes. Fifteen of them, derived from the route registry on 2026-09-06.
 
 | Resource | Operation | Notes |
 | --- | --- | --- |
@@ -77,17 +79,25 @@ Every refusal is a `409`, never a `403`. On this API a `403` means your credenti
 | Draft | `DELETE /v1/matters/{matterId}/drafts/{draftId}` | Goes to the app's trash; restorable there |
 | Comparison | `DELETE /v1/matters/{matterId}/comparisons/{comparisonId}` | Goes to the app's trash; restorable there. Rendered redlines are left in storage and stop being reachable |
 | Matrix | `DELETE /v1/matters/{matterId}/matrices/{matrixId}` | Its cells, columns, rows and comments go with it |
+| Matrix row | `DELETE /v1/matters/{matterId}/matrices/{matrixId}/rows/{rowId}` | Removes one document from the grid with every answer for it. The document is untouched |
+| Matrix column | `DELETE /v1/matters/{matterId}/matrices/{matrixId}/columns/{columnId}` | Removes one question with every answer to it. Refused with `409` while another column depends on it |
 | Review | `DELETE /v1/matters/{matterId}/reviews/{reviewId}` | The contract itself is untouched: a review takes text, not a document |
 | Workflow run | `DELETE /v1/matters/{matterId}/workflow-runs/{runId}` | Documents the run produced survive, and stop pointing back at it |
+| Chat | `DELETE /v1/matters/{matterId}/chats/{chatId}` | Takes its messages, threads, reading outlines, edit history and verifications with it |
+| Chronology event | `DELETE /v1/matters/{matterId}/chronology/events/{eventId}` | A soft delete: it stops being served everywhere and the row is not destroyed |
+| Template | `DELETE /v1/templates/{templateId}` | Not matter-scoped. Runs that already used it keep working and stay readable |
 | Upload session | `DELETE /v1/uploads/{uploadId}` | Cancels the upload and discards the parts. Refused once completed: delete the document instead |
 
-**Playbooks cannot be deleted through this API.** There is no `playbooks.delete`
-operation, and a `DELETE` against a playbook path answers `405
-method-not-allowed`. A playbook you no longer want can be emptied with
-`playbooks.update`, or deleted by its owner in the app. The gap is deliberate
-for now: a review records the playbook it ran against as a plain JSONB key with
-no foreign key, so nothing in the database stops a deletion from leaving twelve
-completed reviews pointing at a row that is gone.
+Matrix row and column positions are not renumbered after a delete, so `position` stays ascending and stops being contiguous.
+
+Deleting a chat is refused with `409` while an ask, a deep-research run or a verification on it is still running.
+
+Deleting a chronology event is not the only way one disappears: deleting the **document** an event was extracted from hard-deletes every event derived from it, past this soft delete and with no record.
+
+**Playbooks cannot be deleted through this API.**
+There is no `playbooks.delete` operation, and a `DELETE` against a playbook path answers `405 method-not-allowed`.
+A playbook you no longer want can be emptied with `playbooks.update`, or deleted by its owner in the app.
+The gap is deliberate for now: a review records the playbook it ran against as a plain JSONB key with no foreign key, so nothing in the database stops a deletion from leaving twelve completed reviews pointing at a row that is gone.
 
 ## Deleting a document reaches further than the document
 
@@ -102,15 +112,19 @@ That last one changes the shape of a matrix somebody already finished, with no e
 
 ## Scopes
 
-Most deletes carry the resource's write scope. Three do not, because the scope taxonomy has no write scope for them:
+Most deletes carry the resource's write scope. Five do not, because the scope taxonomy has no write scope for them:
 
 | Operation | Scope |
 | --- | --- |
 | `drafts.delete` | `drafting:run` |
+| `templates.delete` | `drafting:run` |
 | `comparisons.delete` | `compare:run` |
 | `reviews.delete` | `review:run` |
+| `chats.delete` | `research:run` |
 
-`:run` reads as "starting work" and these are deletes. The taxonomy is a frozen contract, and adding `compare:write` would make the operation answer `403` for every credential already issued, including yours. If you are minting a credential for a cleanup job, grant the `:run` scope for those three.
+`:run` reads as "starting work" and these are deletes. The taxonomy is a frozen contract, and adding `compare:write` would make the operation answer `403` for every credential already issued, including yours. If you are minting a credential for a cleanup job, grant the `:run` scope for those five.
+
+Two more are worth checking before you mint that credential. `folders.delete` carries `matters:write`, because folders have no scope of their own, and `workflowRuns.delete` carries `workflows:write`, which is not implied by the `workflows:run` a launching integration already holds.
 
 ## A worked cleanup
 
@@ -118,7 +132,10 @@ Undoing everything one run created, in the order the refusals allow:
 
 <Steps>
   <Step title="Delete the runs and results">
-    `comparisons.list`, `reviews.list`, `workflowRuns.list` and `matrices.list` inside the matter, then delete each. Anything still running answers `409 operation-in-flight`; poll it and come back.
+    `comparisons.list`, `reviews.list`, `workflowRuns.list` (`GET /v1/matters/{matterId}/workflow-runs`) and `matrices.list` inside the matter, then delete each. Anything still running answers `409 operation-in-flight`; poll it and come back.
+  </Step>
+  <Step title="Delete the chats">
+    `chats.list` inside the matter, then delete each. A chat is a blocker on the matter and is easy to forget, because your integration may never have created one deliberately.
   </Step>
   <Step title="Delete the drafts and documents">
     `drafts.list` and `documents.list`, then delete each. Abort any upload session you left open with `DELETE /v1/uploads/{uploadId}`; find them with `GET /v1/uploads?status=in_progress`.

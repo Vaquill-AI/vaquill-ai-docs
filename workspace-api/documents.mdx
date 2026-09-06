@@ -47,7 +47,15 @@ Presigned URLs expire, and `expiresAt` tells you when. If one lapses part way th
 
 ## Supported file types
 
-The Workspace API accepts every format Vaquill supports: **37 extensions** and 42 media types, spanning PDF and Word, plain text and markup, spreadsheets, presentations, images, audio, email and archives.
+**Read the list from the API rather than hardcoding it.**
+
+```bash
+GET /workspace/v1/uploads/formats
+```
+
+It needs `documents:read`, starts nothing and answers `{mediaTypes, extensions, maxBytes, minPartSizeBytes, maxParts}`. It is the same list the `unsupported-media-type` problem document carries, from the same constant, so the two cannot disagree. Read it once at build time instead of discovering the allowlist from `415`s.
+
+Measured on 2026-09-06 it published 37 extensions and 42 media types, spanning PDF and Word, plain text and markup, spreadsheets, presentations, images, audio, email and archives:
 
 ```
 .pdf  .doc  .docx .dotx .rtf  .txt  .md   .markdown
@@ -57,7 +65,9 @@ The Workspace API accepts every format Vaquill supports: **37 extensions** and 4
 .mp3  .m4a  .wav
 ```
 
-Both the extension and the `contentType` are checked at initiate, against their own allowlists.
+That snapshot is here to tell you the shape of the set, not to be the set. It moves without a docs release; `uploads.formats` does not.
+
+Both the extension and the `contentType` are checked at initiate, against their own allowlists. Media types are matched case-insensitively.
 
 <Warning>
 They are checked **separately**. Nothing verifies that they agree, so `{"filename": "contract.pdf", "contentType": "text/plain"}` is accepted and a URL is signed for it. The mismatch surfaces later, when the worker reads the file's actual magic bytes, which is after you have uploaded every byte. Send the content type that matches the file.
@@ -67,15 +77,33 @@ They are checked **separately**. Nothing verifies that they agree, so `{"filenam
 Accepted for upload is not the same as usable by every operation. Compare produces a redline and needs a document format, so a plain text file is refused there with `415`. Check the page for the operation you intend to run.
 </Warning>
 
-## Reading a document
+## Every operation on this page
+
+Thirteen, derived from the route registry on 2026-09-06. Nothing about documents or uploads lives outside this table.
 
 | Call | Gives you | Scope |
 | --- | --- | --- |
+| `GET /v1/uploads/formats` | The accepted extensions, media types and part limits | `documents:read` |
+| `POST /v1/uploads` | An upload session with presigned part URLs | `documents:write` |
+| `GET /v1/uploads/{uploadId}/parts/{partNumber}` | A replacement URL for one part | `documents:write` |
+| `POST /v1/uploads/{uploadId}/complete` | `202` and an operation; assembles and ingests | `documents:write` |
+| `GET /v1/uploads` | Your organization's upload sessions, newest first | `documents:read` |
+| `DELETE /v1/uploads/{uploadId}` | Aborts a session and discards its parts | `documents:write` |
 | `GET /v1/matters/{matterId}/documents` | The matter's documents, newest first, paged | `documents:read` |
 | `GET /v1/matters/{matterId}/documents/{documentId}` | Metadata and ingestion status | `documents:read` |
-| `GET .../text` | The extracted text, for your own analysis or to feed a review | `documents:read` |
-| `GET .../download` | The **original bytes**, streamed | `documents:download` |
-| `DELETE /v1/matters/{matterId}/documents/{documentId}` | A hard delete | `documents:write` |
+| `GET .../documents/{documentId}/text` | The extracted text, for your own analysis or to feed a review | `documents:read` |
+| `GET .../documents/{documentId}/download` | The **original bytes**, streamed | `documents:download` |
+| `GET .../documents/{documentId}/summary` | A stored summary, if one was generated | `documents:read` + `summaries:read` |
+| `PATCH .../documents/{documentId}` | Moves the document between folders | `documents:write` |
+| `DELETE .../documents/{documentId}` | A hard delete | `documents:write` |
+
+`GET /v1/uploads` never returns part URLs. A page of them would be presigned capabilities for files you are not currently uploading. Pass `status=in_progress` to find sessions you left open; one past its `expiresAt` cannot be completed even while it still reads `in_progress`, because storage has discarded the parts.
+
+`PATCH` accepts one field, `folderId`, and `null` unfiles the document. Filename and matter are not changeable: both are part of the stored file's identity, so moving a document to another matter is an upload into the new matter followed by a delete from the old one.
+
+`GET .../summary` is a **read and never a generator**. A summary is a map-reduce over every chunk, and this API does not start work behind a `GET`. Generate one in the app, then read it here. `404 summary-not-found` means the document exists and has never been summarized, which is deliberately a different answer from `404 document-not-found`.
+
+## Reading a document
 
 The list takes one filter, `folderId`, and it is the only content filter anywhere on this API:
 

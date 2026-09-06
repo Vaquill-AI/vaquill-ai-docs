@@ -33,7 +33,8 @@ Read `total` when you need to size a job before you start it, and `hasMore` to k
 
 ## Ordering
 
-Every list has a fixed order and none of them lets you change it. Paging is only stable because the order is.
+Every list has a fixed order, and only one of them lets you change it.
+Paging is only stable because the order is.
 
 | List | Ordered by |
 | --- | --- |
@@ -44,8 +45,22 @@ Every list has a fixed order and none of them lets you change it. Paging is only
 
 ## Filtering
 
-There is essentially none, and that is a deliberate cut rather than an omission. `GET /v1/matters/{matterId}/documents` takes a `folderId`, and that is the only content filter on the API. There is no search, no date range, no status filter and no sort parameter anywhere.
+Most lists take `limit` and `offset` and nothing else.
+Six take a filter, measured against the published OpenAPI document on 2026-09-06:
 
+| List | Filters |
+| --- | --- |
+| `GET /v1/matters/{matterId}/documents` | `folderId` |
+| `GET /v1/folders` | `parentId` |
+| `GET /v1/matters/{matterId}/drafts` | `state` |
+| `GET /v1/uploads` | `status` |
+| `GET /v1/operations` | `status`, `type`, `matterId` |
+| `GET /v1/matters/{matterId}/chronology/events` | Thirteen, below |
+
+Chronology events is the exception on purpose: a timeline is the one surface here you narrow rather than page.
+It takes `dateFrom`, `dateTo`, `eventTypes`, `categories`, `significance`, `documentId`, `isAiExtracted`, `minConfidence`, `searchQuery`, `party` and `primaryOnly`, and it is the only list with `sortBy` and `sortOrder`.
+
+Nothing else has a search, a date range, a status filter or a sort parameter, and that is a deliberate cut rather than an omission.
 If you need "every matter touched since yesterday", page the list and filter client-side, or hold your own index keyed on the ids we return.
 
 ## Why offsets and not cursors

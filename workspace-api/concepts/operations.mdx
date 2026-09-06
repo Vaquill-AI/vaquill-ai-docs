@@ -4,11 +4,13 @@ description: "One job envelope for every long-running call"
 icon: "clock"
 ---
 
-Anything that takes more than a few seconds answers `202 Accepted` with an operation, not a result. Ingestion, review, drafting, draft improvement, template runs, compare, matrix runs and workflow runs all use the same envelope, so you write one polling loop rather than one per feature.
+Anything that takes more than a few seconds answers `202 Accepted` with an operation, not a result.
+Sixteen kinds of work do, from ingesting a document to running a matrix, and every one of them uses this envelope, so you write one polling loop rather than one per feature.
+The `type` values are listed under [Finding operations you did not keep](#finding-operations-you-did-not-keep).
 
 ```json
 {
-  "id": "op_01J8XQ...",
+  "id": "op_9f2c8b1e4a7d43c9b6e0f1a2c3d4e5f6",
   "type": "review.run",
   "status": "queued",
   "createdAt": "2026-08-19T10:00:00Z",
@@ -58,6 +60,7 @@ Respect `Retry-After` on the first poll, then back off. Operations remain readab
 
 <Warning>
 There are no webhooks. Polling this resource is the only way you learn a job finished, which is why `Retry-After` is worth honoring rather than picking your own interval.
+</Warning>
 
 ## Finding operations you did not keep
 
@@ -72,8 +75,17 @@ Three filters, and they combine:
 | Filter | Effect |
 | --- | --- |
 | `status` | One of the five. `queued` and `running` are what is still in flight |
-| `type` | One operation type, for example `review.run` |
+| `type` | One operation type, from the sixteen below |
 | `matterId` | Only operations belonging to that matter |
+
+The sixteen `type` values, measured against the job registry on 2026-09-06:
+
+`document.ingest`, `review.run`, `review.runDeep`, `compare.run`, `matrix.run`, `workflow.run`, `template.run`, `draft.generate`, `summary.generate`, `factSet.generate`, `ndaTriage.run`, `complianceCheck.run`, `playbook.extract`, `research.ask`, `deepResearch.run`, `message.verify`.
+
+Three of those do not match the endpoint you called.
+`review.runDeep` is what `POST /v1/matters/{matterId}/reviews` produces when you send `"depth": "deep"`.
+`document.ingest` covers both completing an upload and saving a draft back as a document.
+A draft improvement reports as `draft.generate`.
 
 <Warning>
 **A running operation's status in this list can lag.** Each row is the last status we recorded for it, not a fresh read of the underlying job. That is what keeps a page of 200 to a single query instead of several hundred.
@@ -84,7 +96,6 @@ Use this route to find out **which** operations to poll, and `GET /v1/operations
 You only see operations whose capability your credential can read. A credential with `review:read` and nothing else sees reviews and no matrix runs, and one with no capability scope at all gets an empty page rather than an error. An unknown `type` is likewise an empty page, never a `422`.
 
 Operations drop out of this list at the same 30 days after which they stop being readable individually, so the list can never offer you an id that then answers `404`.
-</Warning>
 
 ## When it fails
 

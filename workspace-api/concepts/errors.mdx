@@ -21,7 +21,9 @@ Every error is `application/problem+json`, following [RFC 9457](https://datatrac
 
 Branch on `type`, never on `detail`. The slug is stable; the wording may improve.
 
-**The `type` is a real URL.** Open it and it lands on a page for that exact error: what it means, and what to do about it. Every one of the 49 types has one.
+**The `type` is a real URL.**
+Open it and it lands on a page for that exact error: what it means, and what to do about it.
+Every type has one.
 
 ## Always quote the requestId
 
@@ -49,7 +51,7 @@ If you send your own `X-Request-ID`, we echo it back as `X-Correlation-ID` and l
 | 413 | `file-too-large`, `run-too-large`, `export-too-large` | Split the work. The message states the limit you crossed |
 | 429 | `rate-limited` | Honor `Retry-After`. See [Rate limits](/workspace-api/concepts/rate-limits) |
 | 429 | `concurrency-limit-reached` | Too many of your jobs are already running. Wait for one to finish, do not just slow down |
-| 503 | `credential-store-unavailable`, `dispatch-unavailable`, `storage-unavailable` | Ours, not yours. Retry with backoff |
+| 503 | `credential-store-unavailable`, `dispatch-unavailable`, `run-guard-unavailable`, `storage-unavailable` | Ours, not yours. Retry with backoff |
 
 <Warning>
 A `503 credential-store-unavailable` is deliberately **not** a `401`. During an outage on our side we will not tell you your credential is bad, because that would send you off rotating a credential that was never the problem.
@@ -81,6 +83,10 @@ Unknown fields are rejected rather than ignored, so a typo in a field name is a 
 
 ## The full list
 
-There are 48 error types in all. Most are the specific not-found and conflict types for one resource, and they read exactly as you would expect: `draft-not-found`, `matrix-not-found`, `upload-not-completable`, `review-not-finished`. The capability pages name the ones that particular capability can raise.
+The types above are the ones every integration meets.
+The rest are the specific not-found and conflict types for one resource, and they read exactly as you would expect: `draft-not-found`, `matrix-not-found`, `upload-not-completable`, `review-not-finished`.
+The capability pages name the ones that particular capability can raise, and the `type` URL on any problem document lands on that slug's own page, so there is nothing to look up in a list.
 
-The general rule holds everywhere: `4xx` slugs describe something you can fix, `5xx` and `503` slugs describe something we have to fix, and nothing in either group is worth parsing out of the `detail` string.
+The general rule holds everywhere: a `4xx` slug describes something you can fix, and a `5xx` slug describes something we have to fix.
+There are six `5xx` slugs: `internal-error` (500), `web-research-unavailable` (502), and the four `503`s in the table above.
+Nothing in either group is worth parsing out of the `detail` string.

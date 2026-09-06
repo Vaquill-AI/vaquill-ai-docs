@@ -22,18 +22,35 @@ The two credentials are not interchangeable. A `vq_key_` sent to a Workspace rou
 
 ## What you can do
 
+Every capability has a page. This is all of them, in the order they appear in the sidebar.
+
 <CardGroup cols={2}>
   <Card title="Clients and matters" icon="folder" href="/workspace-api/clients-and-matters">
-    Create and manage the client and matter structure everything else hangs off.
+    Create and manage the client, matter and folder structure everything else hangs off.
   </Card>
   <Card title="Documents" icon="file" href="/workspace-api/documents">
     Upload at any size, poll ingestion, read extracted text, download the original bytes, delete.
   </Card>
+  <Card title="Drafting" icon="pen-nib" href="/workspace-api/drafting">
+    Generate a draft, revise it, apply a template, export it.
+  </Card>
+  <Card title="The draft lifecycle" icon="arrows-rotate" href="/workspace-api/draft-lifecycle">
+    Import a document as a draft, copy it, file it into a matter, and undo a delete.
+  </Card>
+  <Card title="Authoring templates" icon="file-pen" href="/workspace-api/template-authoring">
+    Create, import, edit, copy and retire the boilerplate your drafting runs on.
+  </Card>
   <Card title="Contract review" icon="clipboard-check" href="/workspace-api/review-and-playbooks">
     Run a playbook against a contract and get clauses, redlines, missing clauses and negotiation priorities.
   </Card>
-  <Card title="Drafting" icon="pen-nib" href="/workspace-api/drafting">
-    Generate a draft, revise it, apply a template, export it.
+  <Card title="Playbook extraction" icon="file-import" href="/workspace-api/playbook-extraction">
+    Read your negotiating positions out of a contract you already signed.
+  </Card>
+  <Card title="NDA triage" icon="traffic-light" href="/workspace-api/nda-triage">
+    Screen an inbound NDA against ten criteria and your own playbook, for a green, yellow or red answer.
+  </Card>
+  <Card title="Compliance checks" icon="shield-check" href="/workspace-api/compliance">
+    Check a DPA, a privacy policy or a security plan against one regulation's requirement checklist.
   </Card>
   <Card title="Compare" icon="code-compare" href="/workspace-api/compare">
     Diff two versions of a document and export a redline.
@@ -41,8 +58,22 @@ The two credentials are not interchangeable. A `vq_key_` sent to a Workspace rou
   <Card title="Matrices" icon="table-cells" href="/workspace-api/matrices">
     Ask the same questions across hundreds of documents and get cited answers.
   </Card>
+  <Card title="Matter analysis" icon="magnifying-glass-chart" href="/workspace-api/matter-analysis">
+    A fact ledger, a narrative summary and a timeline, across every document in a matter.
+  </Card>
+  <Card title="Research and chat" icon="magnifying-glass" href="/workspace-api/research">
+    Ask legal questions from your own backend and get grounded, cited answers.
+  </Card>
   <Card title="Workflows" icon="diagram-project" href="/workspace-api/workflows">
     Run multi-step pipelines over a set of documents and collect their artifacts.
+  </Card>
+</CardGroup>
+
+Two more pages are about driving and undoing all of the above rather than about one capability.
+
+<CardGroup cols={2}>
+  <Card title="Cleaning up" icon="trash" href="/workspace-api/cleanup">
+    Every delete this API publishes, what each takes with it, and what refuses.
   </Card>
   <Card title="MCP server" icon="plug" href="/workspace-api/mcp">
     Every operation is also an MCP tool, so an AI agent can drive the same surface.

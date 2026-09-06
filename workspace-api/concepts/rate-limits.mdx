@@ -20,7 +20,10 @@ Every operation declares which kind of work it is, and the kind sets the budget.
 Polling is the most generous tier on purpose. There are no webhooks, so polling is the only way you learn a job finished, and a completion signal you are charged to use is not much of a signal.
 
 <Warning>
-The Download tier is wider than its name suggests, and this is the budget people trip over. Six operations sit on it: `documents.download`, **`documents.text`**, and the four exports (draft, review, comparison, workflow artifact). Reading extracted text is a `GET` that returns a whole contract, so it costs a download and not a read. A batch job that pulls text for 60 documents in a minute is over the limit even though it never downloaded a file.
+The Download tier is wider than its name suggests, and this is the budget people trip over.
+Twelve operations sit on it, measured against the route registry on 2026-09-06: `documents.download`, **`documents.text`**, `workflowRuns.artifact`, and the nine exports (chronology, comparison, compliance check, draft, fact set, matrix, NDA triage, review, summary).
+Reading extracted text is a `GET` that returns a whole contract, so it costs a download and not a read.
+A batch job that pulls text for 60 documents in a minute is over the limit even though it never downloaded a file.
 </Warning>
 
 ## When you hit one
@@ -42,12 +45,25 @@ The cap is per capability, not one shared pool, and it is sized by what that wor
 | --- | --- |
 | Comparisons | 10 |
 | Reviews | 5 |
+| NDA triages | 5 |
+| Compliance checks | 5 |
 | Draft generations | 5 |
 | Template runs | 5 |
 | Workflow runs | 5 |
+| Asks | 5 |
+| Deep research runs | 5 |
+| Answer verifications | 5 |
+| Fact set generations | 3 |
+| Matter summaries | 3 |
+| Playbook extractions | 3 |
 | Matrix runs | 3 |
 
-Comparisons and reviews, drafts, template runs and workflow runs count across your whole organization. Matrix runs count against the installation the credential belongs to.
+Fourteen caps, measured against `limits.py` on 2026-09-06.
+Thirteen of them count across your whole organization, so two credentials in the same organization draw on one budget and the count is of rows still unfinished, not of requests you sent.
+
+Matrix runs are the exception.
+They count against the Vaquill user your installation attributes its writes to, which is the person who provisioned it, and that is the same counter the product's own matrix runs use.
+So a matrix that person starts in the browser consumes one of your three.
 
 <Note>
 The `Retry-After` on a `202` and on a `200` read of an unfinished operation is guidance about the job, not about your budget. Only the one on a `429` is a limit.
