@@ -1,0 +1,206 @@
+---
+title: "State and territory coverage"
+description: "Per-jurisdiction section counts for statutes, regulations, constitutions and court rules across all 52 US jurisdictions"
+icon: "map"
+---
+
+**3,481,377 sections across 52 jurisdictions**, 50 states plus DC and Puerto Rico.
+
+Each column maps to a `corpusType` filter paired with `state`: statutes to `STATE`, regulations
+to `REGULATION`, constitutions to `STATE_CONSTITUTION`, court rules to `STATE_RULES`.
+
+```json
+{ "query": "landlord retaliation", "corpusType": "STATE", "state": "ms" }
+```
+
+Pass a **list** to `state` to search several jurisdictions in one call, which costs one search
+rather than one per jurisdiction.
+
+## Per-jurisdiction matrix
+
+Measured 2026-09-05, sorted by statute volume. A dash means we do not serve that corpus for that
+jurisdiction, and the bracketed marker points to the reason in
+[Why six jurisdictions show no court rules](#why-six-jurisdictions-show-no-court-rules).
+
+<Note>
+  These rows are counted on a slightly different rule from the corpus totals: they exclude
+  superseded records and do not collapse versioned duplicates, so summing a column lands a little
+  under the matching `corpusType` total. Court rules are the widest case, 51,395 summed here
+  against 53,628 for `STATE_RULES`. Take `GET /us/statutes/coverage` as authoritative for a total
+  and this table as the per-jurisdiction shape.
+</Note>
+
+| Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
+|---|---|---|---|---|
+| California | 161,366 | 74,764 | 362 | 1,521 |
+| Texas | 122,535 | 43,489 | 401 | 1,007 |
+| Indiana | 83,148 | 37,449 | 196 | 743 |
+| Oregon | 72,664 | 40,789 | 415 | 632 |
+| Illinois | 72,251 | 55,944 | 170 | 839 |
+| New Jersey | 55,987 | 53,319 | 216 | 1,685 |
+| Washington | 51,488 | 51,026 | 282 | 1,182 |
+| Nevada | 49,747 | 30,785 | 234 | 1,338 |
+| Alabama | 45,984 | 18,864 | 381 | 870 |
+| Louisiana | 43,512 | 26,716 | 328 | 480 |
+| North Carolina | 41,290 | 45,823 | 155 | 384 |
+| Michigan | 40,889 | 22,148 | 307 | 1,025 |
+| New York | 40,146 | 52,312 | 204 | 1,088 |
+| South Dakota | 39,589 | 28,988 | 290 | - [3] |
+| Maryland | 39,552 | 12,739 | 312 | 1,220 |
+| Arkansas | 38,935 | 27,837 | 513 | - [1] |
+| Colorado | 35,758 | 1,155 | 424 | - [2] |
+| Oklahoma | 35,330 | 56,847 | 545 | - [3] |
+| Tennessee | 34,756 | 11,608 | 152 | 626 |
+| Virginia | 33,860 | 22,396 | 134 | 358 |
+| Ohio | 33,158 | 19,354 | 266 | 986 |
+| New Mexico | 31,109 | 36,310 | 299 | 3,462 |
+| Montana | 30,514 | 28,217 | 196 | 238 |
+| South Carolina | 29,947 | 6,189 | 245 | 557 |
+| Mississippi | 29,772 | 56,800 | 318 | 794 |
+| Missouri | 29,325 | 13,116 | 445 | - [4] |
+| Georgia | 29,212 | 19,795 | 287 | 1,090 |
+| North Dakota | 29,042 | 14,343 | 203 | 732 |
+| Iowa | 28,223 | 27,587 | 190 | 1,294 |
+| Minnesota | 27,747 | 15,391 | 138 | 958 |
+| Utah | 27,556 | 19,381 | 189 | 906 |
+| Nebraska | 27,157 | 13,624 | 448 | 702 |
+| West Virginia | 25,664 | 15,252 | 209 | 1,116 |
+| New Hampshire | 25,375 | 38,491 | 157 | 970 |
+| Maine | 25,316 | 1,717 | 153 | 722 |
+| Florida | 25,019 | 26,357 | 217 | 936 |
+| Arizona | 24,956 | 23,099 | 332 | 1,719 |
+| Kansas | 24,361 | 18,806 | 229 | 432 |
+| Puerto Rico (territory) | 24,305 | 124,281 | 102 | 1,528 |
+| District of Columbia (territory) | 23,694 | 27,401 | - | 987 |
+| Vermont | 23,521 | 1,116 | 120 | - [1] |
+| Massachusetts | 23,152 | 24,723 | 103 | 968 |
+| Idaho | 22,754 | 8,672 | 240 | 766 |
+| Delaware | 22,669 | 1,164 | 225 | 1,385 |
+| Rhode Island | 21,107 | 1,185 | 118 | 1,033 |
+| Wyoming | 20,995 | 13,345 | 315 | 996 |
+| Kentucky | 20,894 | 4,780 | 274 | 1,427 |
+| Hawaii | 19,197 | 27,121 | 171 | 1,259 |
+| Wisconsin | 18,158 | 17,823 | 175 | 395 |
+| Alaska | 17,935 | 25,717 | 243 | 763 |
+| Connecticut | 16,082 | 18,012 | 174 | 1,723 |
+| Pennsylvania | 14,617 | 50,313 | 186 | 5,553 |
+
+### Why six jurisdictions show no court rules
+
+Every gap is a source problem rather than a coverage decision, and each has a different cause.
+Statutes, regulations and constitutions for these jurisdictions are unaffected.
+
+**[1] No government-published consolidated text** - Arkansas, Vermont.
+Both publish their amendment stream (promulgation orders, rule changes, proposed amendments) on
+the judiciary's own site, but the consolidated current text is published only by a commercial
+licensee. The rule text itself is a government edict and in the public domain; what is missing is
+a government-published compilation.
+
+**[2] Only rule-change orders are published** - Colorado.
+The judiciary posts adopted and proposed rule changes, not consolidated text, and the most recent
+government compilation is from 2023. Ingesting it would serve superseded procedure as current
+law, so it is deliberately not ingested.
+
+**[3] Already served under `corpusType=STATE`** - Oklahoma, South Dakota.
+Both codify their rules of court into the statute book (Okla. Stat. tit. 12; SDCL tits. 15, 19
+and 23A). Those rules are already in the corpus, cited the way the state cites them
+(`SDCL 15-6-12(b)`). Ingesting them again under `STATE_RULES` would be duplicate coverage.
+
+**[4] Publisher policy** - Missouri.
+Missouri's published court policy does not permit automated access to its judicial websites, and
+we honor it. Coverage there needs a license from the state, not a workaround.
+
+## State agency guidance
+
+State-issued regulatory guidance that interprets state law, the state-scoped analog of federal
+agency guidance. Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
+
+**13,224 documents across 49 jurisdictions.** Unlike statutes, regulations, constitutions and
+court rules, this is **not** on a comprehensive 52-jurisdiction rollout: it lands state by state,
+and some states may never be built.
+
+Almost all of it is insurance-regulator guidance (`source=state_insurance_bulletin`). Four states,
+Arizona, Oregon, New Jersey and Vermont, publish their **financial-institutions** regulator's
+guidance on the same index, and those documents are served separately as
+`source=state_financial_bulletin` so an insurance search is never handed a credit-union bulletin.
+
+That second source covers banking, credit unions, trust companies, escrow agents, consumer
+lenders, money transmitters, loan originators and investment advisers. It exists only for these
+four states, because most states' banking regulators publish no numbered series and there is
+nothing to cite. It is not a claim to cover state banking law.
+
+`state_financial_bulletin` is served `goodLawStatus: "unknown"`: neither regulator has rescinded
+anything we hold, so there is no measured signal to certify against. The insurance source keeps
+its own per-state verdict.
+
+| State | Source | Documents | Refresh |
+|---|---|---|---|
+| California | Dept. of Insurance Bulletins | 176 | Weekly |
+| Illinois | Dept. of Insurance Company Bulletins | 156 | Weekly |
+| New York | DFS (Department of Financial Services) Insurance Circular Letters | 1,199 | Weekly |
+| Texas | Dept. of Insurance Commissioner's Bulletins | 1,254 | Weekly |
+| Florida | Office of Insurance Regulation Informational Memoranda | 43 | Weekly |
+| Georgia | Office of Commissioner of Insurance and Safety Fire Bulletins | 66 | Weekly |
+| Ohio | Dept. of Insurance Bulletins | 112 | Weekly |
+| Virginia | State Corporation Commission (SCC) Bureau of Insurance Administrative Letters | 89 | Weekly |
+| Washington | Office of the Insurance Commissioner (OIC) Technical Assistance Advisories and Emergency Orders | 24 | Weekly |
+| New Jersey | Dept. of Banking and Insurance Bulletins, insurance series | 441 | Weekly |
+| New Jersey | DOBI Banking Bulletins, same numbered series (`source=state_financial_bulletin`) | 81 | Weekly |
+| Michigan | Department of Insurance and Financial Services (DIFS) Insurance Bulletins | 145 | Weekly |
+| North Carolina | Dept. of Insurance Bulletins | 120 | Weekly |
+| Wisconsin | Office of the Commissioner of Insurance Bulletins | 232 | Weekly |
+| Connecticut | Insurance Department Bulletins | 369 | Weekly |
+| Maryland | Insurance Administration Bulletins | 675 | Weekly |
+| Minnesota | Dept. of Commerce Insurance Bulletins | 34 | Weekly |
+| Indiana | Dept. of Insurance Bulletins | 281 | Weekly |
+| Massachusetts | Division of Insurance Bulletins | 417 | Weekly |
+| Utah | Insurance Department Bulletins and Orders of the Commissioner | 168 | Weekly |
+| Delaware | Dept. of Insurance Bulletins (seven subject series, current and archived) | 303 | Weekly |
+| Vermont | Dept. of Financial Regulation Insurance and Health Bulletins | 187 | Weekly |
+| Vermont | DFR Banking and Securities Bulletins (`source=state_financial_bulletin`) | 29 | Weekly |
+| West Virginia | Offices of the Insurance Commissioner Bulletins + pre-2020 Informational Letters | 174 | Weekly |
+| Hawaii | Insurance Division Commissioner's Memoranda | 168 | Weekly |
+| Rhode Island | DBR Insurance Bulletins, Guidance Documents and Notices | 134 | Weekly |
+| District of Columbia | DISB Insurance Bulletins and Notices | 23 | Weekly |
+| Wyoming | Dept. of Insurance Memoranda and Bulletins | 62 | Weekly |
+| South Dakota | Division of Insurance Bulletins | 27 | Weekly |
+| Arizona | Dept. of Insurance and Financial Institutions Regulatory Bulletins and Circular Letters (insurance series) | 199 | Weekly |
+| Arizona | DIFI Financial-Institutions Regulatory Bulletins, Alerts and Substantive Policy Statements (`source=state_financial_bulletin`) | 35 | Weekly |
+| Nevada | Division of Insurance Bulletins | 199 | Weekly |
+| Oklahoma | Insurance Department Bulletins | 144 | Weekly |
+| Iowa | Insurance Division Commissioner's Bulletins | 83 | Weekly |
+| Kansas | Insurance Department Bulletins | 79 | Weekly |
+| Missouri | Dept. of Commerce and Insurance Bulletins (incl. Division of Workers' Compensation tax memoranda) | 106 | Weekly |
+| Oregon | Division of Financial Regulation Bulletins (insurance series) | 92 | Weekly |
+| Oregon | Division of Financial Regulation Bulletins, financial-services series (`source=state_financial_bulletin`) | 10 | Weekly |
+| Tennessee | Dept. of Commerce and Insurance Bulletins (1983-present, three archive eras) | 173 | Weekly |
+| Maine | Bureau of Insurance Bulletins | 228 | Weekly |
+| Puerto Rico | Oficina del Comisionado de Seguros Cartas Normativas and Cartas Circulares (Spanish, the enacted language) | 1,641 | Weekly |
+| Alaska | Division of Insurance Bulletins | 398 | Weekly |
+| Arkansas | Insurance Department Bulletins and Directives | 359 | Weekly |
+| South Carolina | Department of Insurance Bulletins | 319 | Weekly |
+| New Mexico | Office of Superintendent of Insurance Bulletins | 274 | Weekly |
+| Mississippi | Insurance Department Bulletins | 240 | Weekly |
+| North Dakota | Insurance Department Bulletins and Commissioner Directives | 235 | Weekly |
+| Kentucky | Department of Insurance Bulletins and Advisory Opinions | 232 | Weekly |
+| Alabama | Department of Insurance Bulletins | 207 | Weekly |
+| Montana | Commissioner of Securities and Insurance Advisory Memos (insurance series only) | 149 | Weekly |
+| New Hampshire | Insurance Department Bulletins | 177 | Weekly |
+| Nebraska | DOI Insurance Guidance Documents and Company Bulletins | 120 | Weekly |
+| Idaho | Dept. of Insurance Bulletins (July 2016 to present; earlier series rescinded by the Department) | 75 | Weekly |
+
+<Note>
+  This corpus is a pilot. It does not include NAIC (National Association of Insurance
+  Commissioners) model law text, which is a copyrighted, commercially sold publication rather than
+  open government primary law. Only each state's own published bulletin, issued under that state's
+  own authority, is in scope.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="Federal coverage" icon="landmark" href="/api-guide/coverage/federal">
+    14 federal corpora, with per-corpus scope limits.
+  </Card>
+  <Card title="Refresh cadence" icon="clock-rotate-left" href="/api-guide/coverage#refresh-cadence">
+    How often each jurisdiction is re-pulled, and which 24 refresh weekly.
+  </Card>
+</CardGroup>

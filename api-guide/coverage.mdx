@@ -4,508 +4,154 @@ description: "Exactly which US jurisdictions and corpus types the Vaquill statut
 icon: "map-location-dot"
 ---
 
-Every US jurisdiction and corpus type the API has ingested: federal law, state statutes, constitutions, court rules, and regulations, each scoped with the `corpusType` filter.
+**4,881,275 distinct sections, indexed as 17,038,641 retrieval passages.**
+That splits 1,399,898 federal and 3,481,377 state and territory, measured **2026-09-06**.
 
-**4,844,957 distinct sections, indexed as 16,201,932 retrieval passages.** That splits 1,363,580 federal and 3,481,377 state and territory.
-Measured on **2026-09-06**; query it live from `GET /statutes/coverage` and `GET /statutes/states`.
+```bash
+# The live, self-describing answer. Free, and authoritative over this page.
+curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
+  -H "Authorization: Bearer vq_key_..."
+```
 
-The **CFR annual editions** corpus added on 2026-09-05 contributes **312,132 distinct CFR sections** to that total, stored as 886,066 point-in-time section **versions** across 2,844,809 passages.
-Versions are counted separately from sections throughout this page: one section observed across 31 editions is one section and many versions.
-The section figure is the one that enters the total, and it covers the same regulations as the `CFR` corpus observed at published dates, not additional breadth of distinct regulations.
-
-<Warning>
-  **The live endpoint has not picked this measurement up yet.**
-  `GET /statutes/coverage` reads its section counts from an overlay that an API worker loads at boot, and the workers have not been restarted since the overlay for this measurement was written, so the endpoint still reports 4,180,527.
-  The figures on this page are what it returns once that restart lands. Until then, a smaller number from the endpoint is the stale one, and the API has to be refreshed for this page and the endpoint to agree.
-</Warning>
-
-<Note>
-  Counts here are **distinct sections**, one per provision or document, matching what `GET /statutes/coverage` returns. Longer documents split into several passages for retrieval, so the index holds more entries than sections, over half of them Federal Register rules at 13-15 passages each.
-
-  That does not change what you get back: a citation lookup still resolves to one section with its full text.
-</Note>
-
-## What's in the corpus
-
-<CardGroup cols={2}>
-  <Card title="State statutes" icon="building-columns">
-    **52 jurisdictions** (50 states + DC + Puerto Rico), **1,934,326 sections**. 24 jurisdictions refresh every 7 days, the rest monthly ([details](#which-statute-cadence-applies-where)). Queryable via the statutes API.
+<CardGroup cols={3}>
+  <Card title="Federal" icon="landmark" href="/api-guide/coverage/federal">
+    **1,399,898 sections**, 14 corpora. US Code, CFR, Statutes at Large, Federal Register,
+    adjudications, and per-corpus scope limits.
   </Card>
-  <Card title="Federal law" icon="landmark">
-    **14 corpora, 1,363,580 sections** - US Code, the Statutes at Large, statute compilations, CFR, the CFR annual editions 1996-2026, Federal Register rules and a curated slice of its notices, Executive Orders, agency guidance, adjudications, court rules, the Constitution, and more. See the [Federal table](#federal) for the full breakdown, including the two corpora the deployed `corpusType` filter does not accept yet.
+  <Card title="States and territories" icon="map" href="/api-guide/coverage/states">
+    **3,481,377 sections** across 52 jurisdictions. Statutes, regulations, constitutions, court
+    rules, and state agency guidance.
   </Card>
-  <Card title="Statutes at Large" icon="feather-pointed">
-    **93,422 public and private laws, 423,928 sections**, 1789-2026, from 137 of the 140 Statutes at Large volumes. Federal law **as enacted**, session by session, which is the source the US Code is compiled from: a US Code section's `publicLawCites` resolve here to the enacting text. Sourced from the official federal publisher and refreshed weekly.
-  </Card>
-  <Card title="State constitutions" icon="scroll">
-    **51 jurisdictions** (50 states + Puerto Rico), **12,762 sections**, with article/section structure and clickable citations, sourced from each state's own official publisher. Queryable via the API (`corpusType=STATE_CONSTITUTION`).
-  </Card>
-  <Card title="Court rules" icon="gavel">
-    **46 jurisdictions** (44 states + DC + Puerto Rico), **53,628 rules** (civil, criminal, appellate, evidence, professional conduct, and local), refreshed monthly, each taken from the edition that jurisdiction designates as its official text. Queryable via the API (`corpusType=STATE_RULES`).
-  </Card>
-  <Card title="State regulations" icon="clipboard-list">
-    **All 52 jurisdictions** (50 states + DC + Puerto Rico), **1,467,437 rules**, with effective dates and statutory authority. Queryable via the API (`corpusType=REGULATION`).
+  <Card title="Agency guidance" icon="building-columns" href="/api-guide/coverage/agency-guidance">
+    **82,733 documents** from 51 named federal sources, each filterable with `source`.
   </Card>
 </CardGroup>
 
-Every section is indexed for hybrid semantic + keyword search and mirrored in
-multiple formats (HTML, PDF, XML, plain text, DOCX) where the source provides
-them.
+## What's in the corpus
+
+| Corpus | Jurisdictions | Sections | `corpusType` |
+|---|---|---:|---|
+| State statutes | 52 | 1,934,326 | `STATE` |
+| State regulations | 52 | 1,467,437 | `REGULATION` |
+| State court rules | 46 | 53,628 | `STATE_RULES` |
+| State constitutions | 51 | 12,762 | `STATE_CONSTITUTION` |
+| State agency guidance | 49 | 13,224 | `STATE_AGENCY_GUIDANCE` |
+| Federal, 14 corpora | Federal | 1,399,898 | See [Federal](/api-guide/coverage/federal) |
+
+Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats
+(HTML, PDF, XML, plain text, DOCX) where the source provides them.
+
+<Note>
+  Counts here are **distinct sections**, one per provision or document, matching what
+  `GET /us/statutes/coverage` returns. Longer documents split into several passages for retrieval,
+  so the index holds more entries than sections, over half of them Federal Register rules at 13 to
+  15 passages each. That does not change what you get back: a citation lookup still resolves to
+  one section with its full text.
+</Note>
 
 ## Federal
 
-1,363,580 sections across 14 corpus types, all measured 2026-09-06 on the same definition as the page total.
+**1,399,898 sections across 14 corpus types.** The US Code and the Statutes at Large, the CFR both
+as a live compilation and as 31 published annual editions, Federal Register rules and a curated
+slice of its notices, Executive Orders, agency guidance from 51 named sources, seven bodies of
+administrative adjudication, the Federal Rules, the Constitution, the Sentencing Guidelines, tax
+treaties and GovInfo statute compilations.
 
-<Warning>
-  **Two of these corpora are counted by `/statutes/coverage` but are not selectable with a `corpusType` filter yet**, verified against the deployed OpenAPI document on 2026-09-06: **`CFR_ANNUAL`** and **`FEDERAL_REGISTER_NOTICE`**.
-  The published `corpusType` enum carries 17 tokens and neither of these is among them, so a search filtered to either one is rejected.
-  Their rows below are marked, and their sections are inside the 1,363,580 total because that is what the coverage endpoint reports.
+**[Full federal table with per-corpus scope limits →](/api-guide/coverage/federal)**
 
-  Six `source` values are in the same position: `nlrb_board_decision`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `cfpb_enforcement_action` and `irs_irm` are not in the deployed `source` enum.
-  Those documents do come back under their `corpusType` (`AGENCY_ADJUDICATION` and `AGENCY_GUIDANCE`, both of which are published), so they are retrievable today. What is missing is the per-body filter, not the data.
-</Warning>
-
-| Corpus | Sections | Refresh |
-|---|---|---|
-| United States Code (USC) - 2024 edition, current through 2025-01-06 | 60,170 | Annual edition; checked weekly for a new one |
-| Statutes at Large - federal public and private laws **as enacted**, 1789-2026. Held from 137 of the 140 Statutes at Large volumes; volumes 7, 8 and 44 are not held. | 423,928 | Weekly |
-| Code of Federal Regulations (CFR) - the continuously refreshed CURRENT compilation | 222,251 | Daily |
-| ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 (within CFR above) | 3,118 | Daily |
-| ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 (within CFR above) | 1,705 | Daily |
-| CFR annual editions (`corpusType=CFR_ANNUAL`) - **NOT SELECTABLE with a `corpusType` filter yet**, see the warning above. GPO's officially published annual edition of the CFR, 31 editions from 1996 to 2026, all 49 titles. A separate corpus from the `CFR` row above, not a subset of it: that row is the continuously refreshed current compilation, this one is the edition as printed. It is the SAME regulations observed at published dates, so read it as depth in time rather than as extra breadth of distinct regulations. A section is stored once per distinct run of text rather than once per edition, so **312,132 distinct sections** are held as 886,066 section VERSIONS and 2,844,809 retrieval passages; the column carries the section count, which is the figure `/statutes/coverage` publishes. A section unchanged across the whole span is one record listing every year in `editionsObserved`. That field is an enumeration and never a range, so a date falling in an unobserved gap returns `asOf.isBounded: false` instead of the nearest year we hold. Citation years are each volume's own `<REVISED>` year, not the folder GPO filed it under, because GPO reprints unchanged volumes forward without re-dating them; 167 versions in title 26 therefore carry 1990 while sitting in the 1997 folder. Not watchable as a change board: the `CFR` row already carries the daily change signal for the same regulations. | 312,132 | Weekly check; new editions post on four quarterly revision dates |
-| Federal Register agency rules (final + proposed), 1994-present | 196,237 | Weekly |
-| Federal Register **notices**, 1994-present - **NOT SELECTABLE with a `corpusType` filter yet**, see the warning above. A **CURATED SLICE**, not the whole series (`corpusType=FEDERAL_REGISTER_NOTICE`). **Held:** notices that act on a rulemaking - withdrawing a proposed rule, extending or reopening a comment period, publishing significant agency guidance, and announcing negotiated rulemaking. That is about **2.3% of the 766,073 notices** the Federal Register published in this period. **Not held:** Paperwork Reduction Act information collections (about 18% of the series), meeting notices (about 17%), permits and applications (about 7%), antidumping proceedings (about 3%), Privacy Act system-of-records notices (about 1%), and the unclassified remainder (about 52%). Every point carries `frNoticeClass` naming the rule that admitted it, and every one of the 748,461 excluded documents is recorded with its Federal Register document number in our candidate ledger, so this scope can be widened without a re-crawl. ⚠️ Notices carry an **empty CFR cross-reference graph** - `crossReferencesCfr` and `frTopics` are 0% and `frRegulationIdNumbers` is 2%, against 100%/94% on rules - so a notice is NOT reachable by a CFR-citation filter; `frDocketIds` (73.5%) is the join key that works. A notice does not amend anything and the publisher prints no amendment credit for it, so `amendmentYears` is empty by design and `goodLawStatus` is `unknown` rather than a claim either way. | 17,612 | Weekly |
-| Executive Orders (Federal Register Presidential Documents), 2015-present | 3,643 | Daily |
-| Agency guidance - 46 named sources across 23 agencies (see table below). Includes the Internal Revenue Manual, which is agency PROCEDURE and not law; `source=irs_irm` is not in the deployed spec yet, so it comes back under `corpusType=AGENCY_GUIDANCE` but cannot be narrowed to on its own. | 24,720 | Weekly |
-| Federal Rules of Procedure - Civil (FRCP), Criminal (FRCrP), Evidence (FRE), Appellate (FRAP) and Bankruptcy (FRBP), incl. Supplemental Admiralty and Social Security Rules - and Rules of the Supreme Court of the United States | 589 | Monthly |
-| US Constitution | 74 | On amendment |
-| US Sentencing Guidelines (U.S.S.G.) - the 302 current guideline sections, plus Appendix A (the statutory index) and Appendix B, whose Part III carries the text of FORMER guidelines and commentary as they read before amendment. The former versions are separate documents, not variants of the current section. | 1,281 | Annual |
-| US Tax Treaties and the Senate Treaty Record - two sources under one `corpusType=US_TAX_TREATY`. **The IRS mirror** (173): every instrument the IRS publishes for 68 countries - 71 bilateral **income** tax conventions, 71 Treasury Technical Explanations, 23 protocols, 6 exchanges of notes, 1 memorandum of understanding and 1 negotiation statement. A protocol is what changes withholding rates, limitation-on-benefits articles and entry-into-force dates, so it is served as its own document rather than folded into the convention it amends. No estate or gift tax treaties. **The Senate record** (1,476, `source=senate_treaty` / `senate_treaty_resolution` / `senate_treaty_document`): the Senate's own account of all 780 treaties it has considered since 1949, not tax treaties only. `senate_treaty` (780) carries each treaty's title, parties, subject index and full dated procedural history; `senate_treaty_resolution` (406) is the **resolution of advice and consent**, independently retrievable, which is where the reservations, understandings and declarations that narrow a treaty's actual effect in US law live; `senate_treaty_document` (290) is the Treaty Document (the President's transmittal message) itself, sourced from GPO. Not every treaty has a resolution or a document: about 60% of the Senate record is metadata with no instrument text from either publisher, which is stated in `source` rather than hidden. Termination is not tracked (no source we hold states it), so `goodLawStatus` is `unknown` on every record in this row, deliberately. Whole-instrument documents, 19,646 retrieval passages total. | 1,649 | As treaties are signed |
-| Administrative Adjudications - federal matters decided through a formal process, with precedential weight on later decisions of the same body. Six bodies. **Two of them are filterable with `source` on the deployed API today** (MSPB and OLC); the `source` values for the NLRB, SEC, BIA/AG and CFPB slices are not in the published spec yet, so those come back under `corpusType=AGENCY_ADJUDICATION` but cannot be narrowed to on their own. **Merit Systems Protection Board** (5,461): 106 precedential decisions, cited `YYYY MSPB N`, which bind Board administrative judges, and 5,355 nonprecedential orders, which do not; split them with `source=mspb_precedential` / `source=mspb_nonprecedential` or on the `precedential` boolean. **DOJ Office of Legal Counsel** (1,371, `source=olc_opinion`), cited `NN Op. O.L.C. NNN`, the executive branch's own controlling legal advice: an OLC opinion binds executive agencies unless the Attorney General or the President overrides it. OLC covers the official bound volumes, volume 1 (1977) through volume 44 (2020), plus Supplemental volume 1 (`NN Op. O.L.C. Supp. NNN`), which carries opinions written 1933-1977 and published later. **OLC opinions issued in 2021 and later are NOT included**: they have not yet appeared in a bound volume, and the Department's slip-opinion listing cannot be paginated by any client. Every section states its own boundary in `coverageNote`. **Consumer Financial Protection Bureau enforcement actions** (386, `source=cfpb_enforcement_action`): every action the Bureau publishes at consumerfinance.gov/enforcement/actions, brought under the CFPA, TILA, RESPA, EFTA, FCRA, FDCPA, ECOA and the Military Lending Act. Both of the Bureau's forums are included and are separable on `forum`: 225 administrative proceedings, carried on a Bureau File No. such as `2024-CFPB-0002` and cited that way, and 162 civil actions the Bureau files in federal district court, which carry the court's own case number in `caseNumber` and no Bureau citation, because that identifier belongs to the court rather than to the Bureau. One action carries both labels. The unit is the ACTION, not the filing: a consent order and the stipulation consenting to it are one record, and `relatedDocuments` names every filing whose text it carries (993 documents in total, mean 2.6 per action). Twelve actions are served with the Bureau's own summary alone, because it posts no document for them. **185 of the 386 are served with a dead `actStatus` and are therefore excluded from ordinary search**: the Bureau assigns them its own `Expired/Terminated/Dismissed` status, meaning the matter "did not result in, or is no longer subject to, ongoing compliance obligations". That status bundles three different endings and the Bureau does not separate them, so each record also carries the publisher's raw status string verbatim in `history`. This is the one source under this corpusType whose supersession signal has been measured and accepted, so its `goodLawStatus` is real rather than `unknown`; MSPB and OLC remain `unknown`.  **BIA and Attorney General precedent decisions** (3,292), the `I&N Dec.` reporter. A published decision of the Board of Immigration Appeals BINDS every immigration judge and every DHS officer nationwide under 8 C.F.R. 1003.1(g) unless and until it is overruled, and an Attorney General decision reviews the Board and can overrule it outright. THREE sources, because the reporter carries three: `source=bia_precedent` (2,714), `source=ag_precedent` (94), and `source=immigration_admin_precedent` (484) for the legacy INS and USCIS administrative decisions the same reporter publishes, decided by Regional Commissioners, District Directors, Assistant Commissioners, the Commissioner and the Administrative Appeals Office. The deciding authority is in `decidedBy`, verbatim as EOIR prints it, across 37 distinct authorities. The Board publishes its own doctrinal effect on earlier decisions in the holdings prose beside each entry, and 343 of those statements resolve into `supersedes` / `supersededBy` links carrying the publisher's own verb in `dispositionVerb`; a PARTIAL overruling is stored as `overruled_in_part` and does NOT carry a dead `actStatus`, because a partly overruled decision is still law for everything else it held. 70 decisions are served with a dead `actStatus` on that evidence. **Four limits are stated rather than left to look like gaps.** (1) Volumes 1 to 7 of the reporter (Interim Decision IDs 1 to 937) are NOT published on EOIR's precedent page and are not held; the 'Volume 1' to 'Volume 7' links on that page belong to a separate OCAHO table, a different tribunal. (2) The Board began publishing holdings prose at volume 19, so an overruling of a pre-1984 decision BY a pre-1984 decision is not visible to us: coverage is 0% for volumes 8 to 18 and ~100% for 19 to 30. (3) A court of appeals can reject a precedent for its own circuit while it remains in force elsewhere, and EOIR does not publish that, so a decision rejected on judicial review is not marked here. (4) Three decisions the index links (Interim Decisions 1817, 2009 and 2606) are not served by the publisher, and 7 more numbers its printed ranges imply are not listed at all. Unpublished single-member Board orders are not precedent, are not published as a series, and are out of scope by design. Dates come from scanned prints in the early volumes, so `issuedDate` is emitted only where the PDF's own date line and the index citation AGREE on the year (81.2%); where they disagree (172 decisions) the publisher's printed string is kept in `effectiveDate` as evidence and the year is taken from the index. **National Labor Relations Board decisions** (2,762, `source=nlrb_board_decision`): the unfair-labor-practice and representation cases decided by the five-member Board itself, which bind future Board panels and administrative law judges. **A bounded 15-year window, 2012 to date**, of a 90-year archive of 66,612 decisions; the full backfill is a named follow-up rather than a silent omission. Both citation forms are served and neither is normalized into the other, because they are different facts: a decision is cited `NNN NLRB No. N` as a slip opinion and `NNN NLRB NNN` once the bound volume closes and assigns it a page, and the page number does not exist until then. 42.55% carry a bound `pageNumber`, 57.45% a `slipOpinionNumber`, and 56.07% carry the Board's own notice that the opinion "is subject to formal revision before publication in the bound volumes", which is the one supersession event this publisher does emit in a machine-readable place. 🔴 **`goodLawStatus` is `unknown` for every decision, deliberately.** Board doctrine swings with Board composition, and the NLRB publishes no overruling or supersession field at all: its CITENET Classified Index is a subject digest rather than a citator, and its records carry an overruling only as editorial prose on the OVERRULING decision, with no reverse edge on the decision that was overruled. Measured against the landed corpus, zero decisions carry a dead status. So a decision is served as the Board issued it, and whether a later Board has overruled it is NOT asserted; each section says so in its own `coverageNote`. Unpublished Board decisions are summary dispositions with no independent precedential value, are a separate series, and are out of scope by design. **Securities and Exchange Commission opinions and adjudicatory orders** (5,790, `source=sec_commission_opinion`): the Commission's own rulings on appeal from an administrative law judge, on review of a self-regulatory organization's disciplinary action (FINRA, an exchange), and on an application for review, 1996 to date. Cited by release number (`Exchange Act Release No. 34-106254`); an action issued under several statutes at once carries every one of its release numbers in `citableAs`. Every document carries its Administrative Proceeding File Number in `fileNumber` (99.6%), and documents sharing one are ONE proceeding: they are linked in date order through `supersedes` / `supersededBy`. **Those links record a SEQUENCE, not a currency verdict.** A later document in a proceeding may affirm the earlier one, schedule briefing, or merely notice an initial decision as final, so no SEC document is served with a dead `actStatus` on the strength of a later sibling, and `goodLawStatus` is `unknown` for the series. **ALJ initial decisions are deliberately NOT included** (1,812 of them): an initial decision is what one judge concluded before the Commission acted, the SEC publishes no supersession field, and serving one as current authority would misstate its weight. Where an opinion names the initial decision it reviews, the citation is carried in `relatedCitations` and the document itself is not in the corpus; that happens on 3.3% of the series. The 18,637-item settled-order and Fair Fund docket is also excluded, because a consent order reciting allegations is not a decision holding them proven. Federal court review under 15 U.S.C. 78y is not published on the SEC's adjudication listings and is therefore not reflected here, which every section states in its own `coverageNote`. | 19,062 | Monthly |
-| Statute Compilations - an act's own text **as amended through** a stated later public law, from GovInfo's official compilations (`corpusType=STATUTE_COMPILATION`). Act-organized, not codified: a citation like "Section 210 of the Public Utility Regulatory Policies Act" resolves here even though it has no `USC` address, because that section was never codified into a positive-law title. Distinct from Statutes at Large above, which holds the same acts **as enacted** - a frozen historical record with `goodLawStatus: "unknown"` by design. Each section states its own currency in `currentThrough` (ranging `Public Law 96-308`, 1980, to `Public Law 119-75`, 2026, across the collection); 2.6% of compilations state no currency at all and carry `compilationCurrencyState: "unstated"` rather than a guessed date. Cross-references into `USC` are captured as `crossReferencesUsc`. | 80,232 | Monthly |
-
-<Note>
-  **`corpusType=CFR_ANNUAL` holds GPO's published annual editions of the CFR, 1996 to 2026.** It landed on 2026-09-05 and is no longer a roadmap item.
-
-  **The table above carries its SECTION count, 312,132, which is what `/statutes/coverage` publishes.** A section is stored once per distinct run of text, not once per edition: a section whose wording never changed from 1996 to 2026 is ONE record whose `editionsObserved` lists every year it was observed in, not thirty-one records. So those 312,132 distinct CFR sections across 49 titles and 31 published editions are held as 886,066 section versions and served as 2,844,809 retrieval passages. Do not read the version count as breadth: it is the same regulations as `corpusType=CFR`, observed at published dates.
-
-  **`corpusType=CFR_ANNUAL` is not accepted by the deployed search filter yet.** The published `corpusType` enum does not carry the token, verified 2026-09-06, so a search scoped to it is rejected even though `/statutes/coverage` counts it.
-
-  Two things to know before querying it.
-
-  **`editionsObserved` is an enumeration, never a range.** A version observed in 1998, 1999 and 2003 lists exactly those years. It does not imply 2000 to 2002, and a date falling in a gap is reported with `asOf.isBounded: false` rather than answered from the nearest year we happen to hold.
-
-  **The year in a citation is the volume's own revision year, not the folder GPO filed it under.** GPO reprints unchanged volumes into the next year's folder without re-dating them, so only the `<REVISED>` date inside the volume is authoritative. That is why a few records carry revision years before 1996: 167 versions in title 26 (parts 502, 503 and 509) sit in the 1997 folder and are genuinely stamped 1990.
-
-  For regulatory text as it reads today use `corpusType=CFR`. Both routes answer a point-in-time question and they are not interchangeable: `CFR_ANNUAL` serves the official edition as published, while `asOf` on `GET /us/statutes/section/{actId}/body` reconstructs a section from observed change history. The annual edition is the officially published CFR; what any continuously refreshed corpus serves between editions, ours included, is a current compilation of it.
-</Note>
-
-<Note>
-  The Federal Register and Executive Order cadence depends on
-  `federalregister.gov`, which has been throttling and rate-limiting traffic in
-  2026. That can occasionally push a weekly pull later.
-</Note>
-
-<Note>
-  **The US Code is an annual publication, so "weekly" here means a weekly check, not a weekly update.**
-  Our source is the federal publisher's own annual `USCODE` package on GovInfo, which is issued once per edition rather than amended in place.
-  A job runs every Monday, asks GovInfo whether an edition newer than the one we hold has been released, and re-ingests the whole Code when one has.
-  Between editions the text does not move, so that job correctly reports no change: every run recorded to date has found no new edition, and we are still serving the 2024 edition, current through 2025-01-06.
-  For federal law enacted after that date, use `corpusType=SESSION_LAW` (the Statutes at Large), which does refresh weekly, or `corpusType=FEDERAL_REGISTER` for agency rulemaking.
-</Note>
-
-<Note>
-  **Statutes at Large sections are searchable and retrievable now**, filterable
-  with **`corpusType=SESSION_LAW`**, and resolve by `actId` (for example
-  `SAL_PL116-136_DVA_TII_S1109`, CARES Act section 1109). They are listed as
-  their own corpus on `GET /statutes/coverage`.
-
-  Because these are laws **as enacted**, they are a historical record rather
-  than a statement of current law: they carry `actStatus: "enacted"` and
-  `goodLawStatus: "unknown"` deliberately. For what the law says *today*, use
-  the US Code (`corpusType=USC`).
-</Note>
-
-**Agency guidance** is a registry of named sources. Each is independently
-filterable with `source`, but all sit behind the single
-`corpusType=AGENCY_GUIDANCE` token - new sources land as one registry entry,
-not a new API token.
-
-Some rows cover more than one filterable source: the IRS row covers four.
-`GET /statutes/coverage` names every source in its `AGENCY_GUIDANCE` legend, and
-the `source` filter's own error message lists each code with its full name, so
-**treat those two as authoritative over this page** - a source count written out
-here has drifted twice already.
-
-**Every count in this table was re-measured against the live collection on
-2026-08-30**, earlier than the page-wide date above, so treat the
-`AGENCY_GUIDANCE` total of 24,720 in the Federal table as authoritative over the
-sum of these rows. A document is one citable item (`act_id`); where a source has
-few documents but long ones, the retrieval passage count is given beside it.
-
-| Source | Docs | Coverage | Citable as |
-|---|---|---|---|
-| Social Security Administration (SSA) Rulings | 1,115 | - | - |
-| Internal Revenue Service (IRS) Revenue Procedures/Rulings/Notices/Announcements - four separately filterable sources (`irs_rev_proc`, `irs_rev_rul`, `irs_notice`, `irs_announcement`) | 1,469 | 2015-present | - |
-| Internal Revenue Manual (IRM) (`irs_irm`) - the IRS's own instruction manual for its employees, what an examiner, revenue officer or appeals officer actually follows. **Agency procedure, not law**, and served as such: every retrieval passage carries "(Internal Revenue Manual, IRS internal procedure)" in its label, and `goodLawStatus` is `unknown` on every section because no IRS source states when an IRM section is superseded. 26 Parts. 121,234 retrieval passages, by far the largest guidance source here. Each section carries the Effective Date the IRS prints on it; 54 sections (3.0%) are published with no Manual Transmittal block at all and therefore no section-level effective date, and those still carry a real amendment year taken from the per-subsection revision stamps. One further section, IRM 2.4.19, is listed in the IRS's own index but served as an empty page, and is deliberately not ingested. | 1,777 sections, 26 Parts | current | "IRM 4.10.3" |
-| Department of Justice (DOJ) & Federal Trade Commission (FTC) Merger Guidelines | 1 document, 128 passages | 2023 | - |
-| DOJ Antitrust Division Leniency Policy | 1 document, 8 passages | - | - |
-| DOJ Antitrust Division Business Review Letters (`doj_business_review`) - the Division's statements of its enforcement intentions on proposed conduct, issued under 28 C.F.R. § 50.6. Each document is the Division's response letter with the requesting party's own request letter appended, so a reader sees the facts the response turns on. The Division publishes **no machine-readable withdrawal signal** (it withdrew a 1987 letter to a proxy advisory firm by press release in August 2026), so `goodLawStatus` is `unknown` on every letter and every passage carries a note saying so. 215 of the 216 letters the Division lists; the 216th (97-16) is a broken link on the Division's own site. The Division suspended the program after January 2021 and restarted it in July 2026. | 215 letters, 4,760 passages | 1991-2021 | "DOJ Antitrust Div. Business Review Letter No. 20-7" |
-| US Copyright Office Circulars | 58 circulars, 704 passages | - | - |
-| DOJ Justice Manual | 1,548 sections, 9 Titles | - | "Justice Manual § 9-27.420" |
-| US Citizenship and Immigration Services (USCIS) Policy Manual | 456 chapters, 12 volumes | - | "USCIS Policy Manual, Vol. 12, Pt. D, Ch. 3" |
-| US Patent and Trademark Office (USPTO) Manual of Patent Examining Procedure (MPEP) | 2,024 sections, 29 chapters | - | "MPEP § 2106" |
-| USPTO Trademark Manual of Examining Procedure (TMEP) | 2,109 sections, 19 chapters | - | "TMEP § 1207.01" |
-| DFARS Procurement Guidance and Information (PGI) | 397 documents, 47 Parts | - | "PGI 225.370" |
-| National Labor Relations Board (NLRB) General Counsel Memoranda | 300 | 1973-present | "NLRB General Counsel Memorandum GC 22-04" |
-| NLRB Division of Advice Memoranda | 339 | Rolling 10-year window | "NLRB Division of Advice Memorandum, Case No. 13-CA-182757 (Savage Fueling)" |
-| Commodity Futures Trading Commission (CFTC) Staff Letters (no-action, exemptive, interpretative, advisory) | 943 | 2008-present | "CFTC Letter No. 26-17"; filterable by regulation part or topic tag |
-| Federal Reserve Supervision and Regulation (SR) / Consumer Affairs (CA) Letters | 337 | Since 1990 | "SR 21-4 / CA 21-2" |
-| Office of the Comptroller of the Currency (OCC) Bulletins | 611 | Since 1994 | - |
-| OCC Interpretive Letters | 448 | 1996-present | "OCC Interpretive Letter No. 1188" |
-| Federal Deposit Insurance Corporation (FDIC) Financial Institution Letters (FILs) | 2,320 | Since 1994 | Spans active + inactive FIL indexes; superseded letters queryable with `act_status=superseded` |
-| Financial Crimes Enforcement Network (FinCEN) Administrative Rulings | 85 | Since 1988 | "FinCEN Ruling FIN-2009-R001" |
-| FinCEN Guidance (alerts, advisories, notices, bulletins, fact sheets) | 127 | - | "FinCEN Guidance FIN-2019-G001" |
-| FinCEN Beneficial Ownership Information (BOI) FAQs | 122 FAQs, 133 passages | Issued 2023-2024 | "FinCEN BOI FAQ C.2"; 15 lettered categories A-O. Predates the 2026 final rule, see the note below |
-| FinCEN BOI Rulemaking Q&As | 22 Q&As, 22 passages | 2025-2026 | Covers both the March 26, 2025 interim final rule (10 Q&As, served `actStatus: "superseded"`) and the August 11, 2026 final rule that replaced it (12 Q&As, current) |
-| FinCEN Small Entity Compliance Guide (Beneficial Ownership Information Reporting) | 1 document, 65 passages | v1.4, March 2025 | Predates the 2026 final rule, see the note below |
-| FinCEN Anti-Money Laundering Act of 2020 implementation material | 13 documents, 159 passages | 2021-2026 | "FinCEN, Statement for Banks (AML Act of 2020 Sec. 6101, June 30, 2021)"; fact sheets, interagency statements, threat-pattern reports, a Report to Congress and the whistleblower bulletin. The AML Act rulemakings themselves are Federal Register documents and are served under `FEDERAL_REGISTER`, not duplicated here |
-| Consumer Product Safety Commission (CPSC) Office of General Counsel (OGC) Advisory Opinions | 304 | 1973-2012 | "CPSC OGC Advisory Opinion No. 82" - historical archive, not currently updated |
-| Bureau of Industry and Security (BIS) Advisory Opinions (Export Administration Regulations, EAR) | 33 | 2003-2023 | "BIS Advisory Opinion, 09/25/23: Export guidance and BIS interpretation of 'gene' related to ECCN 1C353" |
-| Directorate of Defense Trade Controls (DDTC) Commodity Jurisdiction Determinations (International Traffic in Arms Regulations / US Munitions List vs. EAR) | 5,903 | 2010-present | From DDTC's own published XLSX export |
-| DDTC Guidance (incl. Guidelines for Preparing Agreements, ITAR Risk Matrix) | 7 | - | - |
-| CPSC Small Entity Compliance Guides | 34 | - | "CPSC Small Entity Compliance Guide: Safety Standard for Neck Floats (90 FR 58096)" |
-| Federal Communications Commission (FCC) Declaratory Rulings | 172 | - | "DA-26-680: {title} (07/07/26)" |
-| Federal Energy Regulatory Commission (FERC) Policy Statements | 45 statements, 2,698 passages | Since 1996 | "___ FERC ¶ _____" (bound-volume Reports form) |
-| Department of Energy (DOE) Appliance Standards Guidance and FAQs | 60 | - | "DOE Appliance Standards Guidance: {question} ({date})"; draft guidance excluded |
-| Health and Human Services (HHS) Office for Civil Rights (OCR) guidance on the Health Insurance Portability and Accountability Act (HIPAA) | 44 | - | - |
-| Consumer Financial Protection Bureau (CFPB) Consumer Financial Protection Circulars (`cfpb_circular`) | 16 | Since 2022 | "Circular 2023-01" |
-| CFPB Supervisory Guidance (`cfpb_supervisory_guidance`) - bulletins, policy statements, interpretive rules and rescissions. A page here is usually a landing stub over a PDF, and the PDF's text is what is served. | 95 | Since 2011 | "Bulletin 2016-02" where the Bureau assigns a number; most carry none |
-| HHS OCR resolution agreements and civil money penalties | 144 | - | - |
-| HHS OCR HIPAA FAQs (deduplicated from HHS's cross-listed topic pages) | 444 | - | - |
-| Vaquill-synthesized administrative guidance | State and local tax (SALT) cap, Child Tax Credit (CTC), 401(k) limits | - | - |
-
-<Note>
-  FERC Policy Statements are FERC's generally-applicable interpretive
-  vehicle - deliberately narrower than the docket-based eLibrary universe of
-  case-specific orders.
-</Note>
-
-<Warning>
-  **Corporate Transparency Act: the BOI sources are not all current, and FinCEN
-  says so itself.**
-
-  On August 11, 2026 FinCEN issued a final rule that permanently narrowed BOI
-  reporting. Entities created in the United States, previously called "domestic
-  reporting companies", and their beneficial owners are now exempt; only certain
-  companies formed under foreign law and registered to do business in a US State
-  or tribal jurisdiction must report, and they do not report BOI for US-person
-  beneficial owners or company applicants. This made permanent the interim final
-  rule of March 26, 2025.
-
-  The BOI FAQs (issued 2023-2024) and the Small Entity Compliance Guide (v1.4,
-  March 2025) both predate that rule, and FinCEN's own pages carry a notice
-  saying some of their content is outdated. We serve them as published, because
-  they remain the authoritative FinCEN text and much of it, such as the
-  beneficial-owner and substantial-control definitions in FAQ category D, is
-  untouched by the scope change. Every passage from these sources carries
-  FinCEN's notice verbatim in `currencyNote`, with `currencyYear: 2026`.
-
-  Disregard any statement in them that US companies or their beneficial owners
-  must report BOI, that BOI must be reported for US persons, that US persons
-  must update or correct FinCEN ID information, or that reports were due before
-  April 25, 2025.
-
-  For the current position, use the FinCEN BOI Rulemaking Q&As. The 12 final-rule
-  Q&As are current; the 10 interim-rule Q&As are served with
-  `actStatus: "superseded"` and are excluded from good-law retrieval.
-</Warning>
+Agency guidance is the one corpus with a registry behind it: **51 named sources across 26
+agencies** behind the single `corpusType=AGENCY_GUIDANCE` token, each narrowable with `source`.
+**[Source registry →](/api-guide/coverage/agency-guidance)**
 
 ## State and territory matrix
 
-Per-jurisdiction counts, measured 2026-09-05. A dash means we do not serve that
-corpus for that jurisdiction. Sorted by statute volume.
+All **52 jurisdictions** carry statutes and regulations. 51 carry constitutions and 46 carry court
+rules; the six gaps are source problems, not coverage decisions, and each is explained.
 
-These rows are counted on a slightly different rule from the corpus totals at the
-top of this page: they exclude superseded records and they do not collapse
-versioned duplicates, so summing a column lands a little under the matching
-`corpusType` total. Court rules are the widest case, 51,395 summed here against
-53,628 for `STATE_RULES`. Take `/statutes/coverage` as authoritative for a total
-and this table as the per-jurisdiction shape.
-
-| Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
-|---|---|---|---|---|
-| California | 161,366 | 74,764 | 362 | 1,521 |
-| Texas | 122,535 | 43,489 | 401 | 1,007 |
-| Indiana | 83,148 | 37,449 | 196 | 743 |
-| Oregon | 72,664 | 40,789 | 415 | 632 |
-| Illinois | 72,251 | 55,944 | 170 | 839 |
-| New Jersey | 55,987 | 53,319 | 216 | 1,685 |
-| Washington | 51,488 | 51,026 | 282 | 1,182 |
-| Nevada | 49,747 | 30,785 | 234 | 1,338 |
-| Alabama | 45,984 | 18,864 | 381 | 870 |
-| Louisiana | 43,512 | 26,716 | 328 | 480 |
-| North Carolina | 41,290 | 45,823 | 155 | 384 |
-| Michigan | 40,889 | 22,148 | 307 | 1,025 |
-| New York | 40,146 | 52,312 | 204 | 1,088 |
-| South Dakota | 39,589 | 28,988 | 290 | - [3] |
-| Maryland | 39,552 | 12,739 | 312 | 1,220 |
-| Arkansas | 38,935 | 27,837 | 513 | - [1] |
-| Colorado | 35,758 | 1,155 | 424 | - [2] |
-| Oklahoma | 35,330 | 56,847 | 545 | - [3] |
-| Tennessee | 34,756 | 11,608 | 152 | 626 |
-| Virginia | 33,860 | 22,396 | 134 | 358 |
-| Ohio | 33,158 | 19,354 | 266 | 986 |
-| New Mexico | 31,109 | 36,310 | 299 | 3,462 |
-| Montana | 30,514 | 28,217 | 196 | 238 |
-| South Carolina | 29,947 | 6,189 | 245 | 557 |
-| Mississippi | 29,772 | 56,800 | 318 | 794 |
-| Missouri | 29,325 | 13,116 | 445 | - [4] |
-| Georgia | 29,212 | 19,795 | 287 | 1,090 |
-| North Dakota | 29,042 | 14,343 | 203 | 732 |
-| Iowa | 28,223 | 27,587 | 190 | 1,294 |
-| Minnesota | 27,747 | 15,391 | 138 | 958 |
-| Utah | 27,556 | 19,381 | 189 | 906 |
-| Nebraska | 27,157 | 13,624 | 448 | 702 |
-| West Virginia | 25,664 | 15,252 | 209 | 1,116 |
-| New Hampshire | 25,375 | 38,491 | 157 | 970 |
-| Maine | 25,316 | 1,717 | 153 | 722 |
-| Florida | 25,019 | 26,357 | 217 | 936 |
-| Arizona | 24,956 | 23,099 | 332 | 1,719 |
-| Kansas | 24,361 | 18,806 | 229 | 432 |
-| Puerto Rico (territory) | 24,305 | 124,281 | 102 | 1,528 |
-| District of Columbia (territory) | 23,694 | 27,401 | - | 987 |
-| Vermont | 23,521 | 1,116 | 120 | - [1] |
-| Massachusetts | 23,152 | 24,723 | 103 | 968 |
-| Idaho | 22,754 | 8,672 | 240 | 766 |
-| Delaware | 22,669 | 1,164 | 225 | 1,385 |
-| Rhode Island | 21,107 | 1,185 | 118 | 1,033 |
-| Wyoming | 20,995 | 13,345 | 315 | 996 |
-| Kentucky | 20,894 | 4,780 | 274 | 1,427 |
-| Hawaii | 19,197 | 27,121 | 171 | 1,259 |
-| Wisconsin | 18,158 | 17,823 | 175 | 395 |
-| Alaska | 17,935 | 25,717 | 243 | 763 |
-| Connecticut | 16,082 | 18,012 | 174 | 1,723 |
-| Pennsylvania | 14,617 | 50,313 | 186 | 5,553 |
-
-### Why six jurisdictions show no court rules
-
-Every gap is a source problem rather than a coverage decision, and each has a
-different cause. Statutes, regulations and constitutions for these
-jurisdictions are unaffected.
-
-**[1] No government-published consolidated text** - Arkansas, Vermont.
-Both publish their *amendment stream* (promulgation orders, rule changes,
-proposed amendments) on the judiciary's own site, but the consolidated current
-text is published only by a commercial licensee. The rule text itself is a
-government edict and in the public domain; what is missing is a
-government-published compilation.
-
-**[2] Only rule-change orders are published** - Colorado.
-The judiciary posts adopted and proposed rule changes, not consolidated text,
-and the most recent government compilation is from 2023. Ingesting it would
-serve superseded procedure as current law, so it is deliberately not ingested.
-
-**[3] Already served under `corpusType=STATE`** - Oklahoma, South Dakota.
-Both codify their rules of court into the statute book (Okla. Stat. tit. 12;
-SDCL tits. 15, 19 and 23A). Those rules are already in the corpus, cited the way
-the state cites them (`SDCL 15-6-12(b)`). Ingesting them again under
-`STATE_RULES` would be duplicate coverage, not new coverage.
-
-**[4] Publisher policy** - Missouri.
-Missouri's published court policy does not permit automated access to its
-judicial websites, and we honor it. Coverage there needs a license from the
-state, not a workaround.
+**[Per-jurisdiction counts for all 52 →](/api-guide/coverage/states)**
 
 ## State agency guidance
 
-State-issued regulatory guidance (bulletins, circular letters) that
-interprets state law - the state-scoped analog of Agency guidance above.
-Unlike statutes, regulations, constitutions, and court rules, this is not on
-a comprehensive 52-jurisdiction rollout: it lands state by state, and some
-states may never be built. Queryable via `corpusType=STATE_AGENCY_GUIDANCE`,
-paired with `state`.
+State-issued regulatory guidance that interprets state law, **13,224 documents across 49
+jurisdictions**, almost all of it insurance-regulator bulletins. Queryable with
+`corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
 
-**13,224 documents across 49 jurisdictions.** Almost all of it is insurance-regulator guidance
-(`source=state_insurance_bulletin`). Two states, Arizona and Oregon, publish
-their **financial-institutions** regulator's guidance on the same index, and
-those documents are served separately as `source=state_financial_bulletin` so
-an insurance search is never handed a credit-union bulletin. That second
-source covers banking, credit unions, trust companies, escrow agents, consumer
-lenders, money transmitters, loan originators and investment advisers. It
-exists only for these two states, because most states' banking regulators
-publish no numbered series and there is nothing to cite; it is not a claim to
-cover state banking law.
+Unlike statutes and regulations this is **not** a comprehensive rollout: it lands state by state,
+and some states may never be built.
 
-`source=state_financial_bulletin` is served `goodLawStatus: "unknown"`: neither
-regulator has rescinded anything we hold, so there is no measured signal to
-certify against. The insurance source is unaffected and keeps its own
-per-state verdict.
-
-| State | Source | Documents | Refresh |
-|---|---|---|---|
-| California | Dept. of Insurance Bulletins | 176 | Weekly |
-| Illinois | Dept. of Insurance Company Bulletins | 156 | Weekly |
-| New York | DFS (Department of Financial Services) Insurance Circular Letters | 1,199 | Weekly |
-| Texas | Dept. of Insurance Commissioner's Bulletins | 1,254 | Weekly |
-| Florida | Office of Insurance Regulation Informational Memoranda | 43 | Weekly |
-| Georgia | Office of Commissioner of Insurance and Safety Fire Bulletins | 66 | Weekly |
-| Ohio | Dept. of Insurance Bulletins | 112 | Weekly |
-| Virginia | State Corporation Commission (SCC) Bureau of Insurance Administrative Letters | 89 | Weekly |
-| Washington | Office of the Insurance Commissioner (OIC) Technical Assistance Advisories and Emergency Orders | 24 | Weekly |
-| New Jersey | Dept. of Banking and Insurance Bulletins | 441 | Weekly |
-| Michigan | Department of Insurance and Financial Services (DIFS) Insurance Bulletins | 145 | Weekly |
-| North Carolina | Dept. of Insurance Bulletins | 120 | Weekly |
-| Wisconsin | Office of the Commissioner of Insurance Bulletins | 232 | Weekly |
-| Connecticut | Insurance Department Bulletins | 369 | Weekly |
-| Maryland | Insurance Administration Bulletins | 675 | Weekly |
-| Minnesota | Dept. of Commerce Insurance Bulletins | 34 | Weekly |
-| Indiana | Dept. of Insurance Bulletins | 281 | Weekly |
-| Massachusetts | Division of Insurance Bulletins | 417 | Weekly |
-| Utah | Insurance Department Bulletins and Orders of the Commissioner | 168 | Weekly |
-| Delaware | Dept. of Insurance Bulletins (seven subject series, current and archived) | 303 | Weekly |
-| Vermont | Dept. of Financial Regulation Insurance Bulletins | 187 | Weekly |
-| West Virginia | Offices of the Insurance Commissioner Bulletins + pre-2020 Informational Letters | 174 | Weekly |
-| Hawaii | Insurance Division Commissioner's Memoranda | 168 | Weekly |
-| Rhode Island | DBR Insurance Bulletins, Guidance Documents and Notices | 134 | Weekly |
-| District of Columbia | DISB Insurance Bulletins and Notices | 23 | Weekly |
-| Wyoming | Dept. of Insurance Memoranda and Bulletins | 62 | Weekly |
-| South Dakota | Division of Insurance Bulletins | 27 | Weekly |
-| Arizona | Dept. of Insurance and Financial Institutions Regulatory Bulletins and Circular Letters (insurance series) | 199 | Weekly |
-| Arizona | DIFI Financial-Institutions Regulatory Bulletins, Alerts and Substantive Policy Statements (`source=state_financial_bulletin`) | 35 | Weekly |
-| Nevada | Division of Insurance Bulletins | 199 | Weekly |
-| Oklahoma | Insurance Department Bulletins | 144 | Weekly |
-| Iowa | Insurance Division Commissioner's Bulletins | 83 | Weekly |
-| Kansas | Insurance Department Bulletins | 79 | Weekly |
-| Missouri | Dept. of Commerce and Insurance Bulletins (incl. Division of Workers' Compensation tax memoranda) | 106 | Weekly |
-| Oregon | Division of Financial Regulation Bulletins (insurance series) | 92 | Weekly |
-| Oregon | Division of Financial Regulation Bulletins, financial-services series (`source=state_financial_bulletin`) | 10 | Weekly |
-| Tennessee | Dept. of Commerce and Insurance Bulletins (1983-present, three archive eras) | 173 | Weekly |
-| Maine | Bureau of Insurance Bulletins | 228 | Weekly |
-| Puerto Rico | Oficina del Comisionado de Seguros Cartas Normativas and Cartas Circulares (Spanish, the enacted language) | 1,641 | Weekly |
-| Alaska | Division of Insurance Bulletins | 398 | Weekly |
-| Arkansas | Insurance Department Bulletins and Directives | 359 | Weekly |
-| South Carolina | Department of Insurance Bulletins | 319 | Weekly |
-| New Mexico | Office of Superintendent of Insurance Bulletins | 274 | Weekly |
-| Mississippi | Insurance Department Bulletins | 240 | Weekly |
-| North Dakota | Insurance Department Bulletins and Commissioner Directives | 235 | Weekly |
-| Kentucky | Department of Insurance Bulletins and Advisory Opinions | 232 | Weekly |
-| Alabama | Department of Insurance Bulletins | 207 | Weekly |
-| Montana | Commissioner of Securities and Insurance Advisory Memos (insurance series only) | 149 | Weekly |
-| New Hampshire | Insurance Department Bulletins | 177 | Weekly |
-| Nebraska | DOI Insurance Guidance Documents and Company Bulletins | 120 | Weekly |
-| Idaho | Dept. of Insurance Bulletins (July 2016 to present; earlier series rescinded by the Department) | 75 | Weekly |
-
-<Note>
-  This corpus is a pilot. It does not include NAIC (National Association of
-  Insurance Commissioners) model law text, which is a copyrighted, commercially
-  sold publication, not open government primary law - only each state's own
-  published bulletin, issued under that state's own authority, is in scope.
-</Note>
+**[Per-state sources and counts →](/api-guide/coverage/states#state-agency-guidance)**
 
 ## Refresh cadence
 
-How often each corpus is re-pulled from its official source. The counts above are
-current as of the date at the top of this page and grow between updates; call
-`/statutes/coverage` or `/statutes/states` for the live count of any
-jurisdiction.
+How often each corpus is re-pulled from its official source. Counts grow between updates, so call
+`GET /us/statutes/coverage` for a live figure.
 
 | Corpus | Cadence |
 |---|---|
-| Federal | See the [Federal table](#federal): daily to weekly, and on amendment for the Constitution. |
-| State statutes | **24 jurisdictions re-pull every 7 days** because their code can be pulled whole; the rest are on a monthly cycle or carry text as of their ingest date. See [Which statute cadence applies where](#which-statute-cadence-applies-where). |
-| State regulations | All 52 jurisdictions carry regulations, on a monthly cycle where the publisher supports one. Treat the cadence as per-state rather than uniform, and call [`GET /boards`](/api-guide/alerts) for the age of any one of them: it is free and carries `lastRetrievedAt`, `cadence` and `retrievalStatus` per source. `/statutes/coverage` reports what each corpus is *current through* in the publisher's own words, which is a different question and is not available for every state. |
-| State court rules | Monthly, for the states that carry them. Court rules change less often than statutes, and when they do the change is procedural and effective on a published date rather than immediately. |
-| State constitutions | Monthly per jurisdiction. Constitutions change on the order of years via ballot-measure amendments, so this is deliberately lower-frequency than statutes and regulations. |
+| Federal | Daily to weekly, and on amendment for the Constitution. See the [federal table](/api-guide/coverage/federal). |
+| State statutes | 24 jurisdictions every 7 days, the rest monthly. See below. |
+| State regulations | Monthly where the publisher supports one. Treat cadence as per-state, not uniform. |
+| State court rules | Monthly, for the jurisdictions that carry them. |
+| State constitutions | Monthly. Constitutions change on the order of years, via ballot measure. |
+
+For the age of any single source, call [`GET /boards`](/api-guide/alerts). It is free and carries
+`lastRetrievedAt`, `cadence` and `retrievalStatus` per source. `GET /us/statutes/coverage` reports
+what each corpus is *current through* in the publisher's own words, which is a different question
+and is not available for every state.
 
 ### Which statute cadence applies where
 
-**Every 7 days - 24 jurisdictions.** Arkansas, California, Colorado, Florida,
-Georgia, Idaho, Illinois, Indiana, Iowa, Louisiana, Michigan, Mississippi,
-Missouri, Nevada, New Jersey, New York, Oregon, Pennsylvania, Puerto Rico,
-South Dakota, Tennessee, Virginia, Wisconsin and Wyoming publish their code in a
-form that can be pulled whole - an official bulk export, an API, or a complete
-per-section fetch - so every run re-pulls the entire code and reconciles it
-against what is stored rather than crawling for what looks new.
+**Every 7 days, 24 jurisdictions.** Arkansas, California, Colorado, Florida, Georgia, Idaho,
+Illinois, Indiana, Iowa, Louisiana, Michigan, Mississippi, Missouri, Nevada, New Jersey, New York,
+Oregon, Pennsylvania, Puerto Rico, South Dakota, Tennessee, Virginia, Wisconsin and Wyoming
+publish their code in a form that can be pulled whole, an official bulk export, an API, or a
+complete per-section fetch. Every run re-pulls the entire code and reconciles it against what is
+stored rather than crawling for what looks new.
+
+**Everywhere else**, statutes are re-pulled monthly or carry text as of their ingest date. That is
+a fact you can read rather than assume: `GET /us/statutes/coverage` returns `lastRetrievedAt` for
+every jurisdiction in its `retrieval` array, and anything we have deliberately stopped re-pulling
+is declared `paused` in `freshness` with its reason.
 
 <Note>
-  **Colorado is checked weekly but re-pulled annually, and that is deliberate.**
-  The Colorado Revised Statutes are published once a year, with no process for
-  periodic updates, so Colorado's weekly slot re-pulls all 46 titles only when a
-  new edition appears.
+  **Colorado is checked weekly but re-pulled annually, and that is deliberate.** The Colorado
+  Revised Statutes are published once a year with no process for periodic updates, so Colorado's
+  weekly slot re-pulls all 46 titles only when a new edition appears.
 </Note>
 
 <Note>
-  The `cadence` field on `/statutes/coverage` and `/boards` reports `monthly`
-  for every state statute board, these 24 included. Read it as the declared
-  staleness window a board is alerted against, not as a ceiling on how often the
-  corpus is re-pulled.
+  The `cadence` field on `/us/statutes/coverage` and `/boards` reports `monthly` for every state
+  statute board, these 24 included. Read it as the declared staleness window a board is alerted
+  against, not as a ceiling on how often the corpus is re-pulled.
 </Note>
-
-**Everywhere else**, statutes are re-pulled on a monthly cycle or carry text as
-of their ingest date, which is a fact you can read rather than one you have to
-assume: `/statutes/coverage` returns `lastRetrievedAt` for every jurisdiction in
-its `retrieval` array, and anything we have deliberately stopped re-pulling is
-declared `paused` in `freshness` with its reason.
 
 <Note>
-  Pennsylvania's Consolidated Statutes are complete; its older unconsolidated
-  (Purdon's) statutes are a separate later addition, prioritized for backfill.
-  Constitutions and court rules roll out state by state.
+  Pennsylvania's Consolidated Statutes are complete; its older unconsolidated (Purdon's) statutes
+  are a separate later addition, prioritized for backfill.
 </Note>
 
-## Coming next
+## Point-in-time and change history
 
-This page covers what is queryable today. Corpora that are planned but not yet
-served, along with what is deliberately out of scope, live on the
+Every corpus here can be asked what it said on a past date, and the answer states whether it is a
+published edition or a reconstruction. See [Point-in-time law](/api-guide/point-in-time).
+
+## Detecting a change
+
+`GET /us/statutes/coverage` is self-describing, so new corpora appear there as they land. To find
+sections that moved rather than corpora that appeared, use the `changedSince` filter on
+`POST /us/statutes/search`. See
+[Coverage monitoring](/api-guide/recipes/coverage-monitoring) for both patterns, and
+[Law change alerts](/api-guide/alerts) to be pushed a change instead of polling for one.
+
+Corpora that are planned but not yet served, and what is deliberately out of scope, are on the
 [Roadmap](/api-guide/roadmap).
 
-<Note>
-  `GET /statutes/coverage` is self-describing: new corpora appear there as they
-  land, so polling it is the reliable way to detect one rather than tracking
-  either page. See
-  [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled
-  diff you can wire up.
-</Note>
-
-## How to query a jurisdiction
-
-```bash
-# Self-describing coverage matrix: every corpusType and its per-jurisdiction counts
-curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
-  -H "Authorization: Bearer vq_key_..."
-
-# Live coverage with current section counts
-curl https://api.vaquill.ai/api/v1/us/statutes/states \
-  -H "Authorization: Bearer vq_key_..."
-
-# Statutory codes for one state (e.g. Mississippi)
-curl "https://api.vaquill.ai/api/v1/us/statutes/codes?state=ms" \
-  -H "Authorization: Bearer vq_key_..."
-
-# Search within a state
-curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-  -H "Authorization: Bearer vq_key_..." \
-  -H "Content-Type: application/json" \
-  -d '{"query": "landlord retaliation", "corpusType": "STATE", "state": "ms"}'
-
-# Search state regulations (corpusType REGULATION, paired with a state)
-curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-  -H "Authorization: Bearer vq_key_..." \
-  -H "Content-Type: application/json" \
-  -d '{"query": "stormwater discharge permit", "corpusType": "REGULATION", "state": "wa"}'
-```
-
-Each column in the matrix above maps to a `corpusType` filter on `/statutes/search`: statutes to `STATE`, regulations to `REGULATION`, constitutions to `STATE_CONSTITUTION`, and court rules to `STATE_RULES`. Federal Register agency rules use `FEDERAL_REGISTER` and agency guidance uses `AGENCY_GUIDANCE`. State agency guidance (the section above) uses `STATE_AGENCY_GUIDANCE`, paired with `state`.
-
 <CardGroup cols={2}>
-  <Card title="API Reference" icon="code" href="/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions">
-    Every endpoint with parameters and examples.
+  <Card title="Corpus types" icon="filter" href="/api-guide/concepts/corpus-types">
+    Every `corpusType` token, and how `source` and `state` combine with it.
   </Card>
   <Card title="Open source: Vaquill-AI/open-us-law" icon="github" href="https://github.com/Vaquill-AI/open-us-law">
-    The ingestion pipeline behind this corpus - the bulk-source parsers, scrapers,
-    and the JSONL schema for US statutes, regulations, court rules, and federal law -
-    is open source under a permissive license. Build your own copy of the corpus, or
-    contribute a source.
+    The ingestion pipeline behind this corpus is open source under a permissive license. Build your
+    own copy, or contribute a source.
   </Card>
 </CardGroup>

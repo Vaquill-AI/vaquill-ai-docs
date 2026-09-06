@@ -1,0 +1,182 @@
+---
+title: "Section Intelligence"
+description: "Four routes that answer questions about a section you already have: what cites it, what its terms mean, how other states word it, and what has changed"
+icon: "diagram-project"
+---
+
+A section lookup tells you what one provision says.
+These four routes answer the questions you ask next, each starting from an
+`actId` you already hold.
+
+| Route | Answers | Credits |
+|---|---|:---:|
+| `/section/{actId}/changes` | Has this moved since we last looked at it? | 1 |
+| `/section/{actId}/cited-by` | What else breaks if this changes? | 2 |
+| `/section/{actId}/definitions` | What do this section's terms of art actually mean? | 4 |
+| `/section/{actId}/cross-state` | How do other states word the same rule? | 6 |
+
+All four are `GET`, all sit under `https://api.vaquill.ai/api/v1/us/statutes`,
+and all refund a call that cannot answer.
+Each carries a `note` explaining an empty answer that is not a real zero, so an
+empty result with `note: null` is a genuine "nothing here".
+
+## Changes: what has moved
+
+`GET /us/statutes/section/{actId}/changes` returns every change our refreshes
+have observed to one section: when it was added, each time its text was
+replaced, and whether it has since been removed. **1 credit.**
+
+| Parameter | Default | Notes |
+|---|---|---|
+| `limit` | 50 | Max 200. |
+| `order` | `desc` | `desc` is newest first. `asc` replays a section's life forward. |
+| `changeKind` | all | `added`, `amended`, `removed`. Repeat the parameter for several. |
+| `sinceId` | - | Poll forward: return changes with an `id` above this. Carry `cursor`. |
+| `beforeId` | - | Walk back: return changes with an `id` below this. |
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/changes?limit=10" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+Each event carries `changeKind`, `detectedAt`, `displayCitation`, `hasDiff` and
+the `corpusType` board it was captured on.
+
+<Warning>
+  These are OBSERVED changes. `detectedAt` is when our refresh saw the
+  difference, an upper bound on when it took effect, never the effective date
+  itself. For the publisher's own dates read `amendmentHistory` on
+  `GET /us/statutes/section/{actId}`.
+
+  Coverage is bounded by capture, not by the age of the law. Change capture
+  began long after the corpus did, runs per source, and events are swept at 24
+  months. An empty `changes` list means **no captured change**, not **never
+  amended**. The `coverage` field on the response says so in prose. Surface it
+  rather than rendering an empty list as "unchanged".
+</Warning>
+
+A `removed` as the newest change means the section is gone from the corpus, so
+`section` comes back null.
+That is a successful, charged response rather than a 404: learning that a
+provision was repealed is the point.
+
+## Cited-by: the reverse index
+
+`GET /us/statutes/section/{actId}/cited-by` returns the sections whose text
+cross-references the one you asked about. **2 credits.**
+
+| Parameter | Default | Notes |
+|---|---|---|
+| `limit` | 25 | Max 100. `truncated` is true when more exist. |
+
+A section lookup already tells you what a section cites.
+This is the other direction, and it is the one you cannot get by reading the
+section: which provisions elsewhere depend on this one.
+That is the question behind "if this changes, what else is affected".
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/cited-by?limit=50" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+Results are one row per citing section, in statutory order, never one row per
+matching chunk.
+`total` is the size of `citers` on this page, not a corpus-wide count.
+
+**Scope: USC and CFR.**
+State codes and Federal Register rules carry no section-level cross-reference
+index, so a section from either returns an empty list with a `note` and is
+refunded.
+
+<Note>
+  This reads references as the publisher wrote them. A citation the source never
+  recorded in machine-readable form cannot appear here, so treat a result as
+  evidence of a citation rather than proof there are no others.
+</Note>
+
+## Definitions: the terms that govern a section
+
+`GET /us/statutes/section/{actId}/definitions` returns the defined terms that
+apply to a section, parsed from its chapter's definitions section.
+**4 credits.** No parameters.
+
+Statutes do not use ordinary English.
+"Person" routinely includes corporations, "employee" routinely excludes
+independent contractors, and the section you are reading almost never says so:
+the definition lives in a separate section elsewhere in the chapter.
+Reading a provision without it is how a clause gets misread.
+
+```bash
+curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T15_C1_S1/definitions \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+Each entry in `terms` carries the `term` as the statute writes it, the
+`definition` verbatim, and the `marker` it sits under where the source numbers
+its definitions.
+`definitionsSection` names where the terms came from, so a definition can be
+quoted and cited to the provision that actually carries it.
+
+**Scope**: strongest on the U.S. Code, where a chapter's definitions section is
+conventionally structured and parses reliably.
+CFR and state codes are best-effort, because publishers format definitions
+inconsistently.
+A definitions section we can locate but not parse returns empty with a `note`
+and is refunded, with `definitionsSection` still populated so you can fetch its
+text from `/section/{actId}/body` and read it yourself.
+
+## Cross-state: the same rule elsewhere
+
+`GET /us/statutes/section/{actId}/cross-state` returns provisions in other
+states that address the same subject as a state statute section.
+**6 credits.**
+
+| Parameter | Default | Notes |
+|---|---|---|
+| `limit` | 5 | Max 25. Counts STATES, one provision each. |
+
+Answering "how does this rule differ across the states we operate in" normally
+means running the same search 50 times and reconciling by hand, because every
+state words and numbers its provisions differently.
+This starts from one section you already have.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/STATE_TX_Cpr_C93_S93.005/cross-state?limit=10" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+At most one provision per state, most similar first, so the response reads as a
+jurisdiction comparison rather than a relevance list.
+`statesCovered` says how many distinct states are represented.
+Fewer than you asked for means no provision in the remaining states cleared the
+similarity floor, not that those states are missing from the corpus.
+
+**Scope**: state statute sections.
+USC, CFR, regulations and court rules return empty with a `note`, refunded,
+since a federal section has no state analogue by definition.
+
+<Warning>
+  `similarity` is a retrieval score between 0 and 1 describing how closely two
+  provisions read. It is not a legal opinion.
+
+  A high score means the provisions cover the same ground, never that they
+  impose the same obligation, and the differences are usually the point. Treat
+  this as the shortlist to read, not the answer.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Section Identifiers" icon="hashtag" href="/api-guide/concepts/section-ids">
+    Where an `actId` comes from, and what to do when one misses.
+  </Card>
+  <Card title="Status & Currency" icon="circle-check" href="/api-guide/concepts/status-and-currency">
+    Whether the section you are analysing is still good law.
+  </Card>
+  <Card title="Response Fields" icon="table-columns" href="/api-guide/concepts/response-fields">
+    Point-in-time text with `asOf`, and which fields each corpus populates.
+  </Card>
+  <Card title="Law Change Alerts" icon="bell" href="/api-guide/alerts">
+    Be told about future changes instead of polling a section's history.
+  </Card>
+</CardGroup>

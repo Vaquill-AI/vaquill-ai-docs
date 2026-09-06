@@ -1,0 +1,190 @@
+---
+title: "Federal coverage"
+description: "Every federal corpus the Vaquill statutes API serves, with section counts, refresh cadence and per-corpus scope limits"
+icon: "landmark"
+---
+
+**1,399,898 sections across 14 corpus types**, measured 2026-09-06.
+
+| Corpus | Sections | Refresh |
+|---|---|---|
+| United States Code (USC) | 60,170 | Annual edition, checked weekly |
+| Statutes at Large | 423,928 | Weekly |
+| Code of Federal Regulations (CFR) | 222,330 | Daily |
+| ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 | 3,118 | Daily |
+| ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 | 1,705 | Daily |
+| CFR annual editions, 1996-2026 | 312,132 | Weekly check, quarterly editions |
+| Federal Register agency rules, final and proposed | 196,237 | Weekly |
+| Federal Register **notices**, a curated slice | 17,612 | Weekly |
+| Executive Orders, 2015-present | 3,771 | Daily |
+| Agency guidance, 51 named sources | 82,733 | Weekly |
+| Federal Rules of Procedure | 589 | Monthly |
+| US Constitution | 74 | On amendment |
+| US Sentencing Guidelines | 1,281 | Annual |
+| US Tax Treaties and the Senate treaty record | 1,649 | As treaties are signed |
+| Administrative Adjudications | 37,085 | Monthly |
+| Statute Compilations | 80,276 | Monthly |
+
+The `corpusType` token for each is in [Corpus types](/api-guide/concepts/corpus-types).
+The FAR and DFARS rows are inside the CFR row, not additional to it: they split existing Title 48
+data by chapter.
+
+## Scope limits by corpus
+
+Read the entry for any corpus you are about to rely on. Each one states what is deliberately
+not held.
+
+<AccordionGroup>
+
+<Accordion title="United States Code - an annual publication, so weekly means a weekly check">
+  The source is the federal publisher's own annual `USCODE` package on GovInfo, issued once per
+  edition rather than amended in place. A weekly job asks GovInfo whether a newer edition exists
+  and re-ingests the whole Code when one appears. Between editions the text does not move.
+
+  The edition served is **2024, current through 2025-01-06**. For federal law enacted after that
+  date use `corpusType=SESSION_LAW`, which does refresh weekly, or `corpusType=FEDERAL_REGISTER`
+  for agency rulemaking.
+</Accordion>
+
+<Accordion title="Statutes at Large - as enacted, so deliberately not current law">
+  Federal public and private laws **as enacted**, session by session, 1789-2026, from 137 of the
+  140 volumes. Volumes 7, 8 and 44 are not held. This is the source the US Code is compiled from,
+  so a US Code section's `publicLawCites` resolve here to the enacting text.
+
+  Sections resolve by `actId`, for example `SAL_PL116-136_DVA_TII_S1109` (CARES Act section 1109).
+
+  Because these are laws as enacted they are a historical record rather than a statement of
+  current law: they carry `actStatus: "enacted"` and `goodLawStatus: "unknown"` deliberately.
+  For what the law says today, use `corpusType=USC`.
+</Accordion>
+
+<Accordion title="CFR annual editions - a section observed at published dates, not extra breadth">
+  GPO's officially published annual edition of the CFR, 31 editions from 1996 to 2026, all 49
+  titles. A section is stored once per distinct run of text rather than once per edition, so
+  312,132 distinct sections are held as 886,066 section versions and served as 2,844,809 passages.
+
+  The section count is what enters the federal total. This is the same body of regulation as the
+  `CFR` corpus observed at published dates, not additional breadth.
+
+  Two behaviors a caller needs. **`editionsObserved` is an enumeration, never a range**: a version
+  observed in 1998, 1999 and 2003 lists exactly those years, and a date in an unobserved gap comes
+  back with `asOf.isBounded: false` rather than the nearest year held. **A citation year is the
+  volume's own `<REVISED>` year, not the folder GPO filed it under**, because GPO reprints
+  unchanged volumes forward without re-dating them; 167 versions in title 26 sit in the 1997
+  folder stamped 1990.
+
+  `CFR_ANNUAL` serves an edition as published, while `asOf` on
+  `GET /us/statutes/section/{actId}/body` reconstructs a section from observed change history.
+  See [Point-in-time law](/api-guide/point-in-time) for when each applies.
+</Accordion>
+
+<Accordion title="Federal Register notices - a curated 2.3% slice, not the notice series">
+  **Held:** notices that act on a rulemaking, which is withdrawing a proposed rule, extending or
+  reopening a comment period, publishing significant agency guidance, and announcing negotiated
+  rulemaking. That is 17,612 of the 766,073 notices published in the period, about 2.3%. Every
+  point carries `frNoticeClass` naming the rule that admitted it.
+
+  **Not held:** Paperwork Reduction Act information collections, meeting notices, permits and
+  applications, antidumping proceedings, Privacy Act system-of-records notices, and the
+  unclassified remainder. Do not read this token as complete notice coverage.
+
+  Notices carry an **empty CFR cross-reference graph** (`crossReferencesCfr` and `frTopics` at 0%,
+  `frRegulationIdNumbers` at 2%, against 100% and 94% on rules), so a notice is not reachable by a
+  CFR-citation filter. `frDocketIds` at 73.5% is the join key that works. A notice amends nothing,
+  so `amendmentYears` is empty and `goodLawStatus` is `unknown`.
+</Accordion>
+
+<Accordion title="Administrative adjudications - seven bodies, and no overruling signal">
+  Federal matters decided by an agency through a formal process, with precedential weight on that
+  body's later decisions.
+
+  | Body | Sections | `source` |
+  |---|---:|---|
+  | FTC Part 3 administrative filings, 1995 to date | 18,023 | `ftc_administrative_decision` |
+  | SEC opinions and adjudicatory orders, 1996 to date | 5,790 | `sec_commission_opinion` |
+  | Merit Systems Protection Board | 5,461 | `mspb_precedential`, `mspb_nonprecedential` |
+  | BIA and Attorney General precedent decisions | 3,292 | `bia_precedent`, `ag_precedent`, `immigration_admin_precedent` |
+  | NLRB decisions, 2012 to date | 2,762 | `nlrb_board_decision` |
+  | DOJ Office of Legal Counsel | 1,371 | `olc_opinion` |
+  | CFPB enforcement actions | 386 | `cfpb_enforcement_action` |
+
+  Citation forms: `FTC Docket 9436`, `Exchange Act Release No. 34-106254`, `YYYY MSPB N`,
+  `I&N Dec.`, `NNN NLRB No. N`, `NN Op. O.L.C. NNN`, Bureau File No. `2024-CFPB-0002`.
+
+  **`goodLawStatus` is `unknown` on every body except the CFPB slice.** No publisher here emits a
+  machine-readable overruling signal, so a decision is served as issued and whether a later
+  decision overruled it is not asserted.
+
+  Five further scope limits:
+
+  - The FTC slice is the **Part 3 administrative body only**, 1,431 records carrying the
+    Commission's own `Administrative` action type. Its 2,039 federal-court records and roughly
+    2,636 records carrying neither action type are not held. FTC rules are excluded because they
+    are codified at 16 C.F.R. and served under `corpusType=CFR`.
+  - **The FTC unit is a FILING, not a decision.** A Part 3 docket is mostly documents written by
+    the parties: 21% of passages are the operative instruments (complaints, decisions and orders,
+    consent agreements) and the rest are motions, notices of appearance, exhibits and
+    public-comment analyses. Nothing is dropped on that basis, the whole docket is served, but the
+    per-filing label is not yet a response field or a search filter.
+  - The NLRB slice is a **bounded 15-year window, 2012 to date**, of a 66,612-decision archive.
+  - **OLC opinions issued in 2021 and later are not included.** They have not appeared in a bound
+    volume, and the Department's slip-opinion listing cannot be paginated.
+  - **SEC ALJ initial decisions are not held**, and neither are BIA reporter volumes 1 to 7,
+    which EOIR does not publish.
+</Accordion>
+
+<Accordion title="US tax treaties - about 60% of the Senate record has no instrument text">
+  Two sources under one `corpusType=US_TAX_TREATY`, 19,646 retrieval passages.
+
+  **The IRS mirror** (173, `us_tax_treaty` and `us_tax_treaty_technical_explanation`): 71
+  bilateral income tax conventions for 68 countries, 71 Treasury Technical Explanations, 23
+  protocols, 6 exchanges of notes, 1 memorandum of understanding, 1 negotiation statement. A
+  protocol is served as its own document rather than folded into the convention it amends, because
+  a protocol is what moves withholding rates, limitation-on-benefits articles and entry-into-force
+  dates. No estate or gift tax treaties.
+
+  **The Senate record** (1,476): all 780 treaties the Senate has considered since 1949, tax and
+  non-tax alike. `senate_treaty` (780) carries title, parties, subject index and dated procedural
+  history; `senate_treaty_resolution` (406) is the resolution of advice and consent, where the
+  reservations, understandings and declarations that narrow a treaty's effect in US law live;
+  `senate_treaty_document` (290) is the President's transmittal message, from GPO.
+
+  Two limits. **About 60% of the Senate record is metadata with no instrument text** from either
+  publisher, which `source` states rather than hides. **Termination is not tracked**, because no
+  source held states it, so `goodLawStatus` is `unknown` on every record.
+</Accordion>
+
+<Accordion title="Statute Compilations - an act as amended through a stated public law">
+  An act's own text **as amended through** a stated later public law, from GovInfo's official
+  compilations. Act-organized rather than codified, so a citation like "Section 210 of the Public
+  Utility Regulatory Policies Act" resolves here even though that section was never codified into
+  a positive-law title and has no `USC` address.
+
+  Distinct from Statutes at Large, which holds the same acts as enacted. Each section states its
+  own currency in `currentThrough`, ranging from `Public Law 96-308` (1980) to `Public Law 119-75`
+  (2026). **2.6% of compilations state no currency at all** and carry
+  `compilationCurrencyState: "unstated"` rather than a guessed date. Cross-references into `USC`
+  are captured as `crossReferencesUsc`.
+</Accordion>
+
+<Accordion title="US Sentencing Guidelines - former versions are separate documents">
+  The 302 current guideline sections, plus Appendix A (the statutory index) and Appendix B, whose
+  Part III carries the text of FORMER guidelines and commentary as they read before amendment.
+  The former versions are separate documents, not variants of the current section.
+</Accordion>
+
+</AccordionGroup>
+
+<Note>
+  Federal Register and Executive Order cadence depends on `federalregister.gov`, which has been
+  throttling and rate-limiting traffic in 2026. That can occasionally push a weekly pull later.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="Agency guidance sources" icon="building-columns" href="/api-guide/coverage/agency-guidance">
+    The 51 named sources behind `AGENCY_GUIDANCE`, with per-source caveats.
+  </Card>
+  <Card title="State and territory coverage" icon="map" href="/api-guide/coverage/states">
+    Per-jurisdiction counts for all 52 jurisdictions.
+  </Card>
+</CardGroup>

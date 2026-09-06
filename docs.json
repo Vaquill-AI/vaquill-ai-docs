@@ -377,6 +377,9 @@
             "group": "DATA COVERAGE",
             "pages": [
               "api-guide/coverage",
+              "api-guide/coverage/federal",
+              "api-guide/coverage/states",
+              "api-guide/coverage/agency-guidance",
               "api-guide/roadmap",
               "api-guide/changelog"
             ]
@@ -403,6 +406,8 @@
               "api-guide/concepts/jurisdictions",
               "api-guide/concepts/citation-formats",
               "api-guide/concepts/section-ids",
+              "api-guide/concepts/section-intelligence",
+              "api-guide/point-in-time",
               "api-guide/concepts/status-and-currency",
               "api-guide/concepts/amendment-history",
               "api-guide/concepts/response-fields",

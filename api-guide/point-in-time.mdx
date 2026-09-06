@@ -1,0 +1,157 @@
+---
+title: "Point-in-time law"
+description: "Retrieve US statutes, regulations and agency guidance as they read on a past date, with provenance saying whether the text is a published edition, a reconstruction, or unavailable"
+icon: "clock-rotate-left"
+---
+
+Ask what a provision said on a date, not just what it says now.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T29_C8_S207/body?asOf=2019-06-01" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+`asOf=YYYY-MM-DD` on `GET /us/statutes/section/{actId}/body` returns the section's text as it stood
+on that date. It costs the same 6 credits as an ordinary body fetch.
+
+This matters when the question is dated: what an employer's obligation was on the day of the
+conduct, which version of a rule a contract signed in 2019 incorporated, what a regulation required
+before an amendment. Answering it from today's text is how a confidently wrong answer gets built.
+
+## Every answer says where it came from
+
+The response carries an `asOf` block. **Read `source` before you use the text**, because the same
+parameter is answered by two different mechanisms and one of them is an estimate.
+
+| `source` | What you are holding | Charged |
+|---|---|---|
+| `live` | We captured no change after your date, so today's text is what stood then, as far as we ever saw. | Yes |
+| `reconstructed` | Rebuilt from the before-side of the first change we captured after your date. | Yes |
+| `unavailable` | We know it changed but cannot rebuild the earlier text. No text is returned. | **No, refunded** |
+
+A fourth outcome is not a `source` value at all: `existed: false` means the earliest thing we ever
+captured for this section is its **addition**, and that addition postdates your date, so it
+demonstrably did not exist yet. That is an answer, arguably the most valuable one this parameter
+gives, so it is charged.
+
+| Field | Meaning |
+|---|---|
+| `requested` | The date you asked for, echoed back. |
+| `source` | `live`, `reconstructed` or `unavailable`. |
+| `existed` | False when the section demonstrably did not exist yet on your date. |
+| `basisChangeId` | The change event whose before-side supplied this text. Null when `source` is `live`. |
+| `observedFrom` | The earliest change we ever captured for this section. |
+| `isBounded` | Whether the answer is limited by when capture began. Read this first. |
+| `coverage` | The same limit in prose, safe to show a reader verbatim. |
+
+Pass `basisChangeId` to
+[`GET /us/statutes/section/{actId}/changes`](/api-guide/concepts/section-intelligence) to see the
+event the answer rests on.
+
+<Warning>
+  **`isBounded: true` means we observed no change affecting that date. That is not the same as
+  there having been none.**
+
+  It is set when your date predates `observedFrom`, or when we captured no change for that section
+  at all. Change capture began long after the corpus did, and runs per source, so a bounded answer
+  is our best reconstruction rather than a verified historical text.
+
+  Surface it. Rendering a bounded answer as authoritative point-in-time law makes a claim we did
+  not make.
+</Warning>
+
+<Note>
+  An `asOf` response never populates `html`, on any corpus. Reconstructed text is plain text, and
+  synthesising markup the publisher never printed would defeat the point of the endpoint. Use
+  `text`, or `content` where the corpus supports it.
+</Note>
+
+## Reconstruction versus a published edition
+
+`asOf` resolves two different ways depending on the corpus, and the difference decides how much
+weight the answer carries.
+
+<CardGroup cols={2}>
+  <Card title="A published edition" icon="book">
+    For corpora where the publisher issues dated editions, `asOf` resolves to **the edition that
+    was in force on your date**, served as published. This is the publisher's own artifact, not our
+    estimate.
+  </Card>
+  <Card title="A reconstruction" icon="wrench">
+    Everywhere else, the corpus holds one current text per citation and the earlier one is rebuilt
+    from observed change history. Accurate to what we captured, bounded by when capture began.
+  </Card>
+</CardGroup>
+
+### Corpora that answer from a published edition
+
+| Corpus | How point-in-time works |
+|---|---|
+| `CFR_ANNUAL` | 31 GPO annual editions, 1996-2026, all 49 titles. `asOf` resolves to the edition in force. |
+| `copyright_compendium` | Three dated releases (2014, 2017, 2021). Resolves to the edition the Copyright Office states applied. |
+| `ofac_faq` | 361 prior FAQ versions are **separate citable documents** from OFAC's own archive, served `actStatus: "superseded"`. |
+
+Two behaviours to expect on `CFR_ANNUAL`. **`editionsObserved` is an enumeration, never a range**:
+a version observed in 1998, 1999 and 2003 lists exactly those years, and a date in an unobserved
+gap returns `asOf.isBounded: false` rather than the nearest year held. **A citation year is the
+volume's own `<REVISED>` year, not the folder GPO filed it under**, because GPO reprints unchanged
+volumes forward without re-dating them.
+
+### Where history is a separate document rather than a date
+
+Some corpora publish their own prior versions, so you retrieve history by citation instead of by
+date. `whd_opinion_letter` keeps withdrawn and superseded letters retrievable under their own
+`act_id`, including the 2009 letters WHD re-issued in 2018 under new numbers. A re-issued pair
+shares one PDF at the publisher but is two documents with opposite status.
+
+### Where point-in-time is weakest
+
+Corpora whose publisher replaces text in place and issues no superseded editions, such as the CMS
+Medicare manuals and the DOL Field Operations Handbook, give us nothing to reconstruct from beyond
+our own capture history. Expect `isBounded: true` on dates before capture began.
+
+## Worked example
+
+```bash
+# What did the FLSA overtime section say before the 2019 salary-threshold rule?
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T29_C8_S207/body?asOf=2019-06-01" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```json
+{
+  "actId": "USC_T29_C8_S207",
+  "text": "...",
+  "asOf": {
+    "requested": "2019-06-01",
+    "source": "reconstructed",
+    "existed": true,
+    "basisChangeId": 91,
+    "observedFrom": "2026-08-09T04:10:00Z",
+    "isBounded": true,
+    "coverage": "Change capture for this source began 2026-08-09..."
+  }
+}
+```
+
+`isBounded: true` here because 2019 predates `observedFrom`. The text is our best reconstruction,
+and a product built on it should say so to its reader.
+
+## Choosing the right tool
+
+| Question | Use |
+|---|---|
+| What did this section say on a date? | `asOf` on `/section/{actId}/body` |
+| What changed, and when? | [`/section/{actId}/changes`](/api-guide/concepts/section-intelligence) |
+| Give me the whole 2004 CFR as printed | `corpusType=CFR_ANNUAL` |
+| Tell me when it changes from now on | [Law change alerts](/api-guide/alerts) |
+| Which sections moved since my last sync? | `changedSince` on `/statutes/search` |
+
+<CardGroup cols={2}>
+  <Card title="Status and currency" icon="scale-balanced" href="/api-guide/concepts/status-and-currency">
+    `actStatus`, `goodLawStatus`, and whether a section is still operative.
+  </Card>
+  <Card title="Federal coverage" icon="landmark" href="/api-guide/coverage/federal">
+    Which corpora hold editions, and how far back each one reaches.
+  </Card>
+</CardGroup>
