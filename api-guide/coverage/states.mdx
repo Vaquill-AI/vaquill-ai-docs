@@ -4,7 +4,7 @@ description: "Per-jurisdiction section counts for statutes, regulations, constit
 icon: "map"
 ---
 
-**3,481,377 sections across 52 jurisdictions**, 50 states plus DC and Puerto Rico.
+**3,481,512 sections across 52 jurisdictions**, 50 states plus DC and Puerto Rico.
 
 Each column maps to a `corpusType` filter paired with `state`: statutes to `STATE`, regulations
 to `REGULATION`, constitutions to `STATE_CONSTITUTION`, court rules to `STATE_RULES`.
@@ -26,7 +26,7 @@ jurisdiction, and the bracketed marker points to the reason in
   These rows are counted on a slightly different rule from the corpus totals: they exclude
   superseded records and do not collapse versioned duplicates, so summing a column lands a little
   under the matching `corpusType` total. Court rules are the widest case, 51,395 summed here
-  against 53,628 for `STATE_RULES`. Take `GET /us/statutes/coverage` as authoritative for a total
+  against 53,638 for `STATE_RULES`. Take `GET /us/statutes/coverage` as authoritative for a total
   and this table as the per-jurisdiction shape.
 </Note>
 
@@ -115,7 +115,7 @@ we honor it. Coverage there needs a license from the state, not a workaround.
 State-issued regulatory guidance that interprets state law, the state-scoped analog of federal
 agency guidance. Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
 
-**13,224 documents across 49 jurisdictions.** Unlike statutes, regulations, constitutions and
+**13,334 documents across 49 jurisdictions.** Unlike statutes, regulations, constitutions and
 court rules, this is **not** on a comprehensive 52-jurisdiction rollout: it lands state by state,
 and some states may never be built.
 

@@ -7,16 +7,58 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
-<Update label="2026-09-06" description="IRS written determinations now covered, and they are not precedent">
+<Update label="2026-09-07" description="NLRB Board decisions widen from a 15-year window to the full 90-year archive: 66,597 decisions back to 1935">
+  ## NLRB Board decisions: the complete archive
+
+  The NLRB slice was a deliberate 15-year window of 2,762 decisions. It is now the
+  **full published archive: 66,597 decisions, 1935-12-30 to date**, under
+  `source=nlrb_board_decision`. That is 24x the previous coverage, and 1,705,304
+  retrievable passages.
+
+  This is the Board's entire body of unfair-labour-practice and representation
+  decisions, the ones that bind later Board panels and the administrative law
+  judges beneath them. The count is the publisher's own: the volume listing
+  enumerates 66,600 decisions across volumes 0 to 375, and 66,597 are served.
+
+  **Currency is still not asserted, and widening the corpus does not change that.**
+  `goodLawStatus` remains `unknown` on every one of these decisions. The Board
+  publishes no overruling or supersession signal, and its CITENET Classified Index
+  is a subject digest rather than a citator, with no reverse edge from an overruled
+  decision to the one that overruled it. A decision is served as issued. Whether a
+  later Board overruled it is a question we do not answer, and the older the
+  decision the likelier that matters, because Board doctrine moves with Board
+  composition. Each point carries a `coverageNote` saying so.
+
+  **Two decisions are excluded, and named rather than silently absent:**
+
+  - `227 NLRB 427` - the publisher's PDF contains only the case caption and no
+    body. Two independent extractors agree, so there is nothing to serve.
+  - `321 NLRB 10` - a file no OCR engine will accept.
+
+  Both are re-tried if the Board re-issues them.
+
+  **Both citation forms are served and neither is normalized into the other**, as
+  before: `NNN NLRB No. N` while a decision is a slip opinion, `NNN NLRB NNNN`
+  once the bound volume closes and assigns it a page. Across the full archive the
+  balance shifts hard toward the bound form, because most of the archive is closed
+  volumes. That is expected, not a regression.
+
+  `corpusType=AGENCY_ADJUDICATION` now serves **100,920 sections** across its seven
+  bodies, up from 37,085.
+</Update>
+
+<Update label="2026-09-07" description="IRS written determinations: the full 45,358-document archive, and they are not precedent">
   ## IRS Written Determinations join Agency guidance
 
   `corpusType=AGENCY_GUIDANCE` now also covers IRS written determinations
-  released under 26 U.S.C. § 6110 (`source=irs_written_determination`): **35,485
-  documents across 296,630 retrieval passages**, which makes it the largest
-  source in this token by document count. It breaks down as 27,258 Private
-  Letter Rulings, 5,553 Chief Counsel Advice memoranda, 681 Technical Advice
-  Memoranda and 579 Tax Exempt and Government Entities determination letters,
-  plus 1,414 the IRS does not type on the document itself.
+  released under 26 U.S.C. § 6110 (`source=irs_written_determination`): **45,358
+  documents across 402,546 retrieval passages**, which makes it the largest
+  source in this token by document count. It breaks down as 28,641 Private
+  Letter Rulings, 5,573 Chief Counsel Advice memoranda, 5,482 Tax Exempt and
+  Government Entities determination letters and 842 Technical Advice Memoranda,
+  plus 4,820 the IRS does not type on the document itself.
+
+  That is **45,358 of the 45,431 determinations the IRS lists, 99.84%**.
 
   Each carries the publisher's own `Number`, `UILC` code list, `Subject` and
   `Release Date`, so `effectiveDate`, `effectiveYear` and the UILC issue codes
@@ -27,7 +69,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
     **A written determination binds one taxpayer and may not be cited as
     precedent.** 26 U.S.C. § 6110(k)(3) provides that it "may not be used or
     cited as precedent" - that is the statute, not our caveat. Every one of the
-    35,485 therefore carries `actStatus: "non_precedential"` rather than
+    45,358 therefore carries `actStatus: "non_precedential"` rather than
     `in_force`, and says so again in `currencyNote`. Read one as evidence of how
     the Service analysed one taxpayer's facts, never as a rule of general
     application.
@@ -39,10 +81,19 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   here**. We would rather say we do not know than imply currency we cannot
   measure.
 
-  **9,946 of the 45,431 determinations the IRS lists are not yet served.** They
-  are image-only scans with no text layer and need OCR, which is separately
-  scheduled. That is a measured, known absence rather than a silent gap: the
-  split was decided on each document's actual text layer, never on its date.
+  **9,873 documents were read by OCR, and `extractionMethod` tells you which.**
+  The IRS publishes much of this series as scans of signed paper rather than as
+  typeset text, so those carry `extractionMethod: "ocr"` and the rest carry
+  `"text_layer"`. Two consequences are worth knowing before you rely on the
+  text. The section symbol survives scanning less reliably than the words around
+  it, so a passage may read `section 501(c)(3)` where the page prints
+  `§ 501(c)(3)` - **search for either form**. And a stamped control number in a
+  letterhead can lose a digit, which is why `actId` and `citation` are taken from
+  the IRS index rather than from the scanned text.
+
+  **73 determinations are not served**: 56 are scans no OCR could read, 14 failed
+  a legibility check, and 3 are not PDFs at the publisher's end. A document that
+  could not be read is withheld rather than served as fragments.
 </Update>
 
 <Update label="2026-09-06" description="CMS Medicare Internet-Only Manuals now covered">
@@ -132,41 +183,39 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `corpusType=AGENCY_GUIDANCE`.
 </Update>
 
-<Update label="2026-09-06" description="Coverage is 4,844,957 sections">
-  ## Coverage is 4,844,957 sections
+<Update label="2026-09-07" description="Coverage is 4,983,685 sections, and every corpus type is now filterable">
+  ## Coverage is 4,983,685 sections
 
   Counts are on the definition `GET /statutes/coverage` publishes as `sectionCount`, across all 52 jurisdictions.
 
   | | Sections |
   |---|---:|
-  | **Total** | **4,844,957** |
-  | Federal | 1,363,580 |
-  | State and territory | 3,481,377 |
-  | Retrieval passages | 16,201,932 |
+  | **Total** | **4,983,685** |
+  | Federal | 1,502,173 |
+  | State and territory | 3,481,512 |
+  | Retrieval passages | 18,723,678 |
 
   Two counting units are in play and they are not interchangeable.
   A **section** is one provision or document, which is what `sectionCount` reports.
   A **retrieval passage** is one indexed chunk, and a long document has many.
 
-  The CFR annual editions enter the total at their **section** count, 312,132, not at their 886,066 stored versions.
+  The CFR annual editions enter the total at their **section** count, 312,132, not at their stored versions.
   These are editions over time of the same regulations, not additional distinct ones.
 
-  ## Two corpus types are counted but cannot be filtered on yet
+  ## Every counted corpus type is now filterable
 
-  Checked against the deployed OpenAPI document on 2026-09-06: the published `corpusType` enum carries 17 tokens, and **`CFR_ANNUAL` and `FEDERAL_REGISTER_NOTICE` are not among them**.
-  Both corpora are in the index and both are counted by `/statutes/coverage`, but a search scoped to either token is rejected.
-  Both filters ship with the next API deploy.
+  Checked against the deployed OpenAPI document on 2026-09-07: the published `corpusType` enum carries all 19 tokens, `CFR_ANNUAL`, `FEDERAL_REGISTER_NOTICE`, `STATUTE_COMPILATION` and `AGENCY_ADJUDICATION` among them.
+  A corpus that `/statutes/coverage` counts is a corpus you can scope a search to; there is no longer a token that is counted but rejected.
 
-  Six `source` values are also absent from the deployed `source` enum: `nlrb_board_decision`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `cfpb_enforcement_action` and `irs_irm`.
-  Those per-body filters ship with the same deploy.
+  The six per-body `source` values are live in the same document: `nlrb_board_decision`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `cfpb_enforcement_action` and `irs_irm`.
 
   ## Things that stay true when the number goes up
 
   Nothing in this entry widens a claim, and four scope limits travel with these figures wherever they are quoted.
 
-  - Federal Register **notices** are 17,612 of the 766,073 published in the period, **2.30%**, four operative classes by design. That is not notice coverage and is never described as such.
+  - Federal Register **notices** are 17,616 of the 766,073 published in the period, **2.30%**, four operative classes by design. That is not notice coverage and is never described as such.
   - The **Internal Revenue Manual** is agency procedure, not law. It is the IRS's own instruction manual for its employees and does not bind the agency against a taxpayer.
-  - The **adjudication** corpora (NLRB, MSPB, BIA, SEC, OLC, CFPB) carry no verified doctrinal currency. `goodLawStatus` is `unknown` by design on all but the CFPB slice, and nothing here implies good-law assurance.
+  - The **adjudication** corpora (FTC Part 3, NLRB, MSPB, BIA, SEC, OLC, CFPB) carry no verified doctrinal currency. `goodLawStatus` is `unknown` by design on all but the CFPB slice, and nothing here implies good-law assurance. A live `corpusType=AGENCY_ADJUDICATION` search returns `nlrb_board_decision` hits with `goodLawStatus: "unknown"`, which is the intended answer and not a gap.
   - **Statutes at Large** is held from 137 of the 140 volumes. Volumes 7, 8 and 44 are not held.
 </Update>
 

@@ -4,8 +4,8 @@ description: "Exactly which US jurisdictions and corpus types the Vaquill statut
 icon: "map-location-dot"
 ---
 
-**4,881,275 distinct sections, indexed as 17,038,641 retrieval passages.**
-That splits 1,399,898 federal and 3,481,377 state and territory, measured **2026-09-06**.
+**4,983,685 distinct sections, indexed as 18,723,678 retrieval passages.**
+That splits 1,502,173 federal and 3,481,512 state and territory, measured **2026-09-07**.
 
 ```bash
 # The live, self-describing answer. Free, and authoritative over this page.
@@ -15,15 +15,15 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
 
 <CardGroup cols={3}>
   <Card title="Federal" icon="landmark" href="/api-guide/coverage/federal">
-    **1,399,898 sections**, 14 corpora. US Code, CFR, Statutes at Large, Federal Register,
+    **1,502,173 sections**, 14 corpora. US Code, CFR, Statutes at Large, Federal Register,
     adjudications, and per-corpus scope limits.
   </Card>
   <Card title="States and territories" icon="map" href="/api-guide/coverage/states">
-    **3,481,377 sections** across 52 jurisdictions. Statutes, regulations, constitutions, court
+    **3,481,512 sections** across 52 jurisdictions. Statutes, regulations, constitutions, court
     rules, and state agency guidance.
   </Card>
   <Card title="Agency guidance" icon="building-columns" href="/api-guide/coverage/agency-guidance">
-    **82,733 documents** from 51 named federal sources, each filterable with `source`.
+    **81,451 documents** from 51 named federal sources, each filterable with `source`.
   </Card>
 </CardGroup>
 
@@ -36,11 +36,11 @@ OpenAPI document, with its own counts, its own filters and its own limits.
 | Corpus | Jurisdictions | Sections | `corpusType` |
 |---|---|---:|---|
 | State statutes | 52 | 1,934,326 | `STATE` |
-| State regulations | 52 | 1,467,437 | `REGULATION` |
-| State court rules | 46 | 53,628 | `STATE_RULES` |
+| State regulations | 52 | 1,467,452 | `REGULATION` |
+| State court rules | 46 | 53,638 | `STATE_RULES` |
 | State constitutions | 51 | 12,762 | `STATE_CONSTITUTION` |
-| State agency guidance | 49 | 13,224 | `STATE_AGENCY_GUIDANCE` |
-| Federal, 14 corpora | Federal | 1,399,898 | See [Federal](/api-guide/coverage/federal) |
+| State agency guidance | 49 | 13,334 | `STATE_AGENCY_GUIDANCE` |
+| Federal, 14 corpora | Federal | 1,502,173 | See [Federal](/api-guide/coverage/federal) |
 
 Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats
 (HTML, PDF, XML, plain text, DOCX) where the source provides them.
@@ -55,7 +55,7 @@ Every section is indexed for hybrid semantic and keyword search, and mirrored in
 
 ## Federal
 
-**1,399,898 sections across 14 corpus types.** The US Code and the Statutes at Large, the CFR both
+**1,502,173 sections across 14 corpus types.** The US Code and the Statutes at Large, the CFR both
 as a live compilation and as 31 published annual editions, Federal Register rules and a curated
 slice of its notices, Executive Orders, agency guidance from 51 named sources, seven bodies of
 administrative adjudication, the Federal Rules, the Constitution, the Sentencing Guidelines, tax
@@ -76,7 +76,7 @@ rules; the six gaps are source problems, not coverage decisions, and each is exp
 
 ## State agency guidance
 
-State-issued regulatory guidance that interprets state law, **13,224 documents across 49
+State-issued regulatory guidance that interprets state law, **13,334 documents across 49
 jurisdictions**, almost all of it insurance-regulator bulletins. Queryable with
 `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
 

@@ -4,26 +4,26 @@ description: "Every federal corpus the Vaquill statutes API serves, with section
 icon: "landmark"
 ---
 
-**1,399,898 sections across 14 corpus types**, measured 2026-09-06.
+**1,502,173 sections across 14 corpus types**, measured 2026-09-07.
 
 | Corpus | Sections | Refresh |
 |---|---|---|
 | United States Code (USC) | 60,170 | Annual edition, checked weekly |
 | Statutes at Large | 423,928 | Weekly |
-| Code of Federal Regulations (CFR) | 222,330 | Daily |
+| Code of Federal Regulations (CFR) | 222,251 | Daily |
 | ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 | 3,118 | Daily |
 | ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 | 1,705 | Daily |
 | CFR annual editions, 1996-2026 | 312,132 | Weekly check, quarterly editions |
 | Federal Register agency rules, final and proposed | 196,237 | Weekly |
-| Federal Register **notices**, a curated slice | 17,612 | Weekly |
-| Executive Orders, 2015-present | 3,771 | Daily |
-| Agency guidance, 51 named sources | 82,733 | Weekly |
+| Federal Register **notices**, a curated slice | 17,616 | Weekly |
+| Executive Orders, 2015-present | 3,643 | Daily |
+| Agency guidance, 51 named sources | 81,451 | Weekly |
 | Federal Rules of Procedure | 589 | Monthly |
 | US Constitution | 74 | On amendment |
 | US Sentencing Guidelines | 1,281 | Annual |
 | US Tax Treaties and the Senate treaty record | 1,649 | As treaties are signed |
-| Administrative Adjudications | 37,085 | Monthly |
-| Statute Compilations | 80,276 | Monthly |
+| Administrative Adjudications | 100,920 | Monthly |
+| Statute Compilations | 80,232 | Monthly |
 
 The `corpusType` token for each is in [Corpus types](/api-guide/concepts/corpus-types).
 The FAR and DFARS rows are inside the CFR row, not additional to it: they split existing Title 48
@@ -81,7 +81,7 @@ not held.
 <Accordion title="Federal Register notices - a curated 2.3% slice, not the notice series">
   **Held:** notices that act on a rulemaking, which is withdrawing a proposed rule, extending or
   reopening a comment period, publishing significant agency guidance, and announcing negotiated
-  rulemaking. That is 17,612 of the 766,073 notices published in the period, about 2.3%. Every
+  rulemaking. That is 17,616 of the 766,073 notices published in the period, about 2.3%. Every
   point carries `frNoticeClass` naming the rule that admitted it.
 
   **Not held:** Paperwork Reduction Act information collections, meeting notices, permits and
@@ -104,7 +104,7 @@ not held.
   | SEC opinions and adjudicatory orders, 1996 to date | 5,790 | `sec_commission_opinion` |
   | Merit Systems Protection Board | 5,461 | `mspb_precedential`, `mspb_nonprecedential` |
   | BIA and Attorney General precedent decisions | 3,292 | `bia_precedent`, `ag_precedent`, `immigration_admin_precedent` |
-  | NLRB decisions, 2012 to date | 2,762 | `nlrb_board_decision` |
+  | NLRB Board decisions, 1935 to date | 66,597 | `nlrb_board_decision` |
   | DOJ Office of Legal Counsel | 1,371 | `olc_opinion` |
   | CFPB enforcement actions | 386 | `cfpb_enforcement_action` |
 
@@ -126,7 +126,11 @@ not held.
     consent agreements) and the rest are motions, notices of appearance, exhibits and
     public-comment analyses. Nothing is dropped on that basis, the whole docket is served, but the
     per-filing label is not yet a response field or a search filter.
-  - The NLRB slice is a **bounded 15-year window, 2012 to date**, of a 66,612-decision archive.
+  - The NLRB slice is now the **full archive, 1935-12-30 to date**: 66,597 of the 66,600
+    decisions the Board's own volume listing enumerates. Two are excluded and named -
+    `227 NLRB 427`, whose PDF contains only the caption and no body under two independent
+    extractors, and `321 NLRB 10`, a file no OCR engine will accept. Neither is a
+    coverage decision; both are re-tried if the Board re-issues the file.
   - **OLC opinions issued in 2021 and later are not included.** They have not appeared in a bound
     volume, and the Department's slip-opinion listing cannot be paginated.
   - **SEC ALJ initial decisions are not held**, and neither are BIA reporter volumes 1 to 7,

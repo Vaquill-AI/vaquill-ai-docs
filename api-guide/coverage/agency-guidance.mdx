@@ -5,7 +5,7 @@ icon: "building-columns"
 ---
 
 Sub-regulatory federal guidance: what an agency says its own rules mean, short of a
-regulation. **51 named sources across 26 agencies, 82,733 documents.**
+regulation. **51 named sources across 26 agencies, 81,451 documents.**
 
 All 51 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one with
 `source`. A new source lands as a registry entry, not a new API token.
@@ -22,9 +22,17 @@ All 51 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one w
 
 ## The registry
 
-Grouped by agency. Documents are citable items (`act_id`), measured 2026-09-06; the column
-sums to the 82,733 above. Sources marked **[note]** have a caveat in
-[Source notes](#source-notes) that changes how you should read their results.
+Grouped by agency. Documents are citable items (`act_id`), measured per source on 2026-09-06.
+Sources marked **[note]** have a caveat in [Source notes](#source-notes) that changes how you
+should read their results.
+
+<Warning>
+  **This column sums to 92,606, and `GET /us/statutes/coverage` reports 81,451 for
+  `AGENCY_GUIDANCE`.** The endpoint is authoritative and the headline above uses its figure.
+  The 11,155 difference is a gap between what the per-source counts measured and what the
+  served corpus answers with today, so read any single row as an upper bound until the two
+  agree. Take the endpoint over this page for a total and for a row.
+</Warning>
 
 | Source | `source` | Documents | Coverage |
 |---|---|---:|---|
@@ -33,7 +41,7 @@ sums to the 82,733 above. Sources marked **[note]** have a caveat in
 | IRS Revenue Rulings | `irs_rev_rul` | 247 | 2015-present |
 | IRS Notices | `irs_notice` | 762 | 2015-present |
 | IRS Announcements | `irs_announcement` | 83 | 2015-present |
-| IRS Written Determinations **[note]** | `irs_written_determination` | 35,485 | 1999-2026 |
+| IRS Written Determinations **[note]** | `irs_written_determination` | 45,358 | 1999-2026 |
 | Internal Revenue Manual **[note]** | `irs_irm` | 1,777 | Current |
 | DOJ and FTC Merger Guidelines | `merger_guidelines` | 1 | 2023 |
 | DOJ Antitrust Leniency Policy | `doj_leniency` | 1 | - |
@@ -111,18 +119,29 @@ sums to the 82,733 above. Sources marked **[note]** have a caveat in
 <AccordionGroup>
 
 <Accordion title="irs_written_determination - by statute, not citable as precedent">
-  IRS Written Determinations under 26 U.S.C. § 6110: **27,258 Private Letter Rulings, 5,553 Chief
-  Counsel Advice memoranda, 681 Technical Advice Memoranda and 579 Tax Exempt and Government
-  Entities determination letters**, plus 1,414 the IRS does not type on the document itself.
-  296,630 retrieval passages, and by document count the largest source in this token.
+  IRS Written Determinations under 26 U.S.C. § 6110: **28,641 Private Letter Rulings, 5,573 Chief
+  Counsel Advice memoranda, 5,482 Tax Exempt and Government Entities determination letters and 842
+  Technical Advice Memoranda**, plus 4,820 the IRS does not type on the document itself.
+  402,546 retrieval passages, and by document count the largest source in this token.
 
   **Each is directed only to the taxpayer who requested it, and § 6110(k)(3) says it "may not be
   used or cited as precedent".** That is not our caveat, it is the statute, and it is why every one
-  of the 35,485 carries `actStatus: "non_precedential"` rather than `in_force`. Read one as evidence
+  of the 45,358 carries `actStatus: "non_precedential"` rather than `in_force`. Read one as evidence
   of how the Service analysed one taxpayer's facts, never as a rule of general application.
 
-  Coverage runs **1999-01-08 to 2026-09-04**, 28 distinct years, which is the full series as the
-  IRS publishes it under § 6110.
+  Coverage runs **1999-01-08 to 2026-09-04**, 28 distinct years, and is **45,358 of the 45,431
+  determinations the IRS lists, 99.84%**.
+
+  **9,873 of these were read by OCR rather than from a text layer**, because the IRS publishes them
+  as scans of signed paper. Those carry `extractionMethod: "ocr"` so you can tell which; the rest
+  carry `"text_layer"`. Two things follow from that and are worth knowing before you rely on the
+  text. The section symbol survives OCR less reliably than the words around it, so a passage may
+  read `section 501(c)(3)` where the page prints `§ 501(c)(3)`; search for either. And a stamped
+  control number in a letterhead can lose a digit, which is why the document's own `actId` and
+  `citation` are taken from the IRS index rather than from the scanned text.
+
+  **73 determinations are not served.** 56 are scans no OCR could read, 14 failed a legibility
+  check, and 3 are not PDFs at the publisher's end. They are a measured absence, not a silent gap.
 </Accordion>
 
 <Accordion title="irs_irm - agency procedure, not law">
