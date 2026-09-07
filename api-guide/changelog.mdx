@@ -216,7 +216,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - Federal Register **notices** are 17,616 of the 766,073 published in the period, **2.30%**, four operative classes by design. That is not notice coverage and is never described as such.
   - The **Internal Revenue Manual** is agency procedure, not law. It is the IRS's own instruction manual for its employees and does not bind the agency against a taxpayer.
   - The **adjudication** corpora (FTC Part 3, NLRB, MSPB, BIA, SEC, OLC, CFPB) carry no verified doctrinal currency. `goodLawStatus` is `unknown` by design on all but the CFPB slice, and nothing here implies good-law assurance. A live `corpusType=AGENCY_ADJUDICATION` search returns `nlrb_board_decision` hits with `goodLawStatus: "unknown"`, which is the intended answer and not a gap.
-  - **Statutes at Large** is held from 137 of the 140 volumes. Volumes 7, 8 and 44 are not held.
+  - **Statutes at Large** is law **as enacted**. It carries `goodLawStatus: "unknown"` deliberately and is a historical record rather than a statement of current law; for what the law says today, use `corpusType=USC`.
 </Update>
 
 <Update label="2026-09-06" description="OFAC sanctions FAQs join AGENCY_GUIDANCE, with their prior versions as separately citable documents">

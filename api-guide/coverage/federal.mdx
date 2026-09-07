@@ -47,9 +47,14 @@ not held.
 </Accordion>
 
 <Accordion title="Statutes at Large - as enacted, so deliberately not current law">
-  Federal public and private laws **as enacted**, session by session, 1789-2026, from 137 of the
-  140 volumes. Volumes 7, 8 and 44 are not held. This is the source the US Code is compiled from,
+  Federal public and private laws **as enacted**, session by session, 1789-2026, across every
+  bound volume GPO publishes, 137 in all. This is the source the US Code is compiled from,
   so a US Code section's `publicLawCites` resolve here to the enacting text.
+
+  Two volumes of the bound series carry no session laws at all: volumes 7 and 8 are the treaty
+  volumes, and that material is served as the treaty corpus under its own identity scheme. The
+  1926 codification in volume 44 is deliberately not duplicated here, because we serve the US
+  Code itself under `corpusType=USC`.
 
   Sections resolve by `actId`, for example `SAL_PL116-136_DVA_TII_S1109` (CARES Act section 1109).
 
