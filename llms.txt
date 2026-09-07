@@ -12,10 +12,15 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 ## API: Core Concepts
 
-- [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 15 corpusType tokens (USC, CFR, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, AGENCY_GUIDANCE, STATE_AGENCY_GUIDANCE, SESSION_LAW, SENTENCING_GUIDELINES, US_TAX_TREATY), federal vs state scope, and how to filter a search.
+- [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 19 corpusType tokens (USC, CFR, CFR_ANNUAL, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, FEDERAL_REGISTER_NOTICE, AGENCY_GUIDANCE, AGENCY_ADJUDICATION, STATE_AGENCY_GUIDANCE, SESSION_LAW, STATUTE_COMPILATION, SENTENCING_GUIDELINES, US_TAX_TREATY), federal vs state scope, and how to filter a search.
 - [Jurisdictions and State Codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The 52 jurisdictions, 2-letter state codes, and discovering what is queryable via /statutes/coverage.
 - [Section Identifiers](https://www.vaquill.ai/docs/api-guide/concepts/section-ids): The actId format and the search then section then body workflow.
 - [Response Formats](https://www.vaquill.ai/docs/api-guide/concepts/formats): HTML, PDF, XML, plain text, DOCX, and official government source links.
+- [Status and Currency](https://www.vaquill.ai/docs/api-guide/concepts/status-and-currency): The actStatus vocabulary, the derived goodLawStatus verdict (good_law, not_good_law, not_operative, unknown), how to filter on each, and the move pointers.
+- [Response Fields](https://www.vaquill.ai/docs/api-guide/concepts/response-fields): Which fields a section carries, which corpus each belongs to, and how to tell 'not applicable' from 'we do not hold it'.
+- [Amendment History](https://www.vaquill.ai/docs/api-guide/concepts/amendment-history): amendmentYears, lastAmendedYear, amendmentsCount and amendmentHistory, taken from the publisher's own credit line.
+- [Citation Formats](https://www.vaquill.ai/docs/api-guide/concepts/citation-formats): Which citation strings resolve, which are refused on purpose, and batch resolution.
+- [Section Intelligence](https://www.vaquill.ai/docs/api-guide/concepts/section-intelligence): What cites a section, what its defined terms mean, how other states word it, and what has changed.
 
 ## API: Working with the API
 
@@ -23,10 +28,16 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 - [Rate Limits](https://www.vaquill.ai/docs/api-guide/rate-limits): Per-key, per-plan limits, 429 handling, and backoff.
 - [Errors](https://www.vaquill.ai/docs/api-guide/errors): Status codes and how to recover from each.
 - [Best Practices](https://www.vaquill.ai/docs/api-guide/best-practices): Scoping, caching coverage, retries, and using discovery before search.
+- [Point-in-time law](https://www.vaquill.ai/docs/api-guide/point-in-time): Read a section as it stood on a past date with asOf, and the provenance block (source, existed, isBounded, coverage) that says how far the answer can be trusted.
+- [Law Change Alerts](https://www.vaquill.ai/docs/api-guide/alerts): Board watches, webhook and email delivery, HMAC signature verification, scoping, and cursor paging with sinceId and beforeId.
+- [Data and Privacy](https://www.vaquill.ai/docs/api-guide/data-privacy): What the API stores about your requests, and for how long.
 
 ## API: Coverage and Data
 
 - [Coverage](https://www.vaquill.ai/docs/api-guide/coverage): The jurisdiction-by-jurisdiction matrix of what is ingested.
+- [Federal coverage](https://www.vaquill.ai/docs/api-guide/coverage/federal): Every federal corpus, with section counts, refresh cadence and per-corpus scope limits.
+- [State and territory coverage](https://www.vaquill.ai/docs/api-guide/coverage/states): Per-jurisdiction counts for statutes, regulations, constitutions and court rules across all 52 US jurisdictions.
+- [Agency guidance sources](https://www.vaquill.ai/docs/api-guide/coverage/agency-guidance): The 51 named federal sources behind corpusType=AGENCY_GUIDANCE, each independently filterable with source.
 
 ## API: Grounding AI
 
@@ -56,7 +67,6 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 - [Resolve a citation to its section](https://www.vaquill.ai/docs/api-reference/us-statutes/resolve-a-citation-to-its-section): GET /api/v1/us/statutes/resolve.
 - [Get the sections around this one](https://www.vaquill.ai/docs/api-reference/us-statutes/get-the-sections-around-this-one): GET /api/v1/us/statutes/section/{act_id}/related.
 - [Coverage matrix by jurisdiction and corpusType](https://www.vaquill.ai/docs/api-reference/us-statutes/coverage-matrix-by-jurisdiction-and-corpustype): GET /api/v1/us/statutes/coverage.
-- [Catalog the bodies of law available](https://www.vaquill.ai/docs/api-reference/us-statutes/catalog-the-bodies-of-law-available): GET /api/v1/us/statutes/laws.
 - [Browse the statutory hierarchy](https://www.vaquill.ai/docs/api-reference/us-statutes/browse-the-statutory-hierarchy): GET /api/v1/us/statutes/divisions.
 - [List watchable boards](https://www.vaquill.ai/docs/api-reference/board-watches/list-watchable-boards): GET /api/v1/boards, the entry point for the free law-change alert endpoints.
 - [Get API credit pricing](https://www.vaquill.ai/docs/api-reference/pricing/get-api-credit-pricing): GET /api/v1/api-credits/pricing, public and unauthenticated.
