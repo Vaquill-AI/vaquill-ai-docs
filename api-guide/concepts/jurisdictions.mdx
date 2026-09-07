@@ -99,7 +99,7 @@ console.log("available corpora:", Object.keys(ca.corpora));
 
 <Note>
   A count is not an age. `data.freshness` names statute corpora that are no
-  longer being refreshed, and `data.retrieval` carries `lastRetrievedAt` and
+  longer being refreshed. `GET /boards` carries `lastRetrievedAt` and
   `cadence` per source, so a count can be read as maintained or frozen.
 
   Each notice names a `(jurisdiction, corpusType)` pair, never a whole

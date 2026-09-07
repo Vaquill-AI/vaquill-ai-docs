@@ -4,7 +4,7 @@ description: "Exactly which US jurisdictions and corpus types the Vaquill statut
 icon: "map-location-dot"
 ---
 
-**4,983,685 distinct sections, indexed as 18,723,678 retrieval passages.**
+**4,983,685 distinct sections, indexed as 18,718,026 retrieval passages.**
 That splits 1,502,173 federal and 3,481,512 state and territory, measured **2026-09-07**.
 
 ```bash
@@ -107,15 +107,17 @@ and is not available for every state.
 
 **Every 7 days, 24 jurisdictions.** Arkansas, California, Colorado, Florida, Georgia, Idaho,
 Illinois, Indiana, Iowa, Louisiana, Michigan, Mississippi, Missouri, Nevada, New Jersey, New York,
-Oregon, Pennsylvania, Puerto Rico, South Dakota, Tennessee, Virginia, Wisconsin and Wyoming
+Oregon, Pennsylvania, South Dakota, Virginia, Wisconsin and Wyoming
 publish their code in a form that can be pulled whole, an official bulk export, an API, or a
 complete per-section fetch. Every run re-pulls the entire code and reconciles it against what is
 stored rather than crawling for what looks new.
 
 **Everywhere else**, statutes are re-pulled monthly or carry text as of their ingest date. That is
-a fact you can read rather than assume: `GET /us/statutes/coverage` returns `lastRetrievedAt` for
-every jurisdiction in its `retrieval` array, and anything we have deliberately stopped re-pulling
+a fact you can read rather than assume: `GET /boards` returns `lastRetrievedAt`, `cadence` and
+`retrievalStatus` per source, and anything we have deliberately stopped re-pulling
 is declared `paused` in `freshness` with its reason.
+
+Arkansas, Georgia, Mississippi and Tennessee are not on that list: their statutes are held at the `currentThrough` the coverage response reports, but they carry no active statute board. Puerto Rico has a board that is currently `failing`. Check `GET /boards` rather than assuming a cadence.
 
 <Note>
   **Colorado is checked weekly but re-pulled annually, and that is deliberate.** The Colorado

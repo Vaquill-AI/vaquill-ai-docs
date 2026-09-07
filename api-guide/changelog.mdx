@@ -59,6 +59,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   plus 4,820 the IRS does not type on the document itself.
 
   That is **45,358 of the 45,431 determinations the IRS lists, 99.84%**.
+  Corrected 2026-09-07: 45,358 is the ingested count. **35,485 are reachable through the API, 78.1%**;
+  the 9,873 OCR-read scans are not currently served. See [Agency guidance coverage](/api-guide/coverage/agency-guidance).
 
   Each carries the publisher's own `Number`, `UILC` code list, `Subject` and
   `Release Date`, so `effectiveDate`, `effectiveYear` and the UILC issue codes

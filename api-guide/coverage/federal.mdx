@@ -48,7 +48,7 @@ not held.
 
 <Accordion title="Statutes at Large - as enacted, so deliberately not current law">
   Federal public and private laws **as enacted**, session by session, 1789-2026, across every
-  bound volume GPO publishes, 137 in all. This is the source the US Code is compiled from,
+  bound volume GPO publishes: 134 of the 137. Volumes 7 and 8 are the treaty volumes and are served under the treaty corpus, and volume 44 (69th Congress, 1925-1927) is not currently held. This is the source the US Code is compiled from,
   so a US Code section's `publicLawCites` resolve here to the enacting text.
 
   Two volumes of the bound series carry no session laws at all: volumes 7 and 8 are the treaty
@@ -87,13 +87,13 @@ not held.
   **Held:** notices that act on a rulemaking, which is withdrawing a proposed rule, extending or
   reopening a comment period, publishing significant agency guidance, and announcing negotiated
   rulemaking. That is 17,616 of the 766,073 notices published in the period, about 2.3%. Every
-  point carries `frNoticeClass` naming the rule that admitted it.
+  point is admitted by one of those four rules. `frNoticeClass` records which, but it is ingest-side metadata and is not currently returned by the API.
 
   **Not held:** Paperwork Reduction Act information collections, meeting notices, permits and
   applications, antidumping proceedings, Privacy Act system-of-records notices, and the
   unclassified remainder. Do not read this token as complete notice coverage.
 
-  Notices carry an **empty CFR cross-reference graph** (`crossReferencesCfr` and `frTopics` at 0%,
+  Notices carry an **empty CFR cross-reference graph** (`crossReferencesCfr` at 0%, and the ingest-side `frTopics` likewise,
   `frRegulationIdNumbers` at 2%, against 100% and 94% on rules), so a notice is not reachable by a
   CFR-citation filter. `frDocketIds` at 73.5% is the join key that works. A notice amends nothing,
   so `amendmentYears` is empty and `goodLawStatus` is `unknown`.
@@ -172,7 +172,7 @@ not held.
   Distinct from Statutes at Large, which holds the same acts as enacted. Each section states its
   own currency in `currentThrough`, ranging from `Public Law 96-308` (1980) to `Public Law 119-75`
   (2026). **2.6% of compilations state no currency at all** and carry
-  `compilationCurrencyState: "unstated"` rather than a guessed date. Cross-references into `USC`
+  an unstated currency rather than a guessed date, recorded ingest-side as `compilationCurrencyState` and not returned by the API. Cross-references into `USC`
   are captured as `crossReferencesUsc`.
 </Accordion>
 

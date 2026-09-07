@@ -17,31 +17,33 @@ All 51 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one w
 <Note>
   `GET /us/statutes/coverage` names every source in its `AGENCY_GUIDANCE` legend, and an
   invalid `source` returns the full list with each code's name. Treat those two as
-  authoritative over this page.
+  authoritative over this page for **which sources exist** and what each code is called.
 </Note>
 
 ## The registry
 
-Grouped by agency. Documents are citable items (`act_id`), measured per source on 2026-09-06.
+Grouped by agency. Documents are citable items (`act_id`), measured per source on 2026-09-07.
 Sources marked **[note]** have a caveat in [Source notes](#source-notes) that changes how you
 should read their results.
 
-<Warning>
-  **This column sums to 92,606, and `GET /us/statutes/coverage` reports 81,451 for
-  `AGENCY_GUIDANCE`.** The endpoint is authoritative and the headline above uses its figure.
-  The 11,155 difference is a gap between what the per-source counts measured and what the
-  served corpus answers with today, so read any single row as an upper bound until the two
-  agree. Take the endpoint over this page for a total and for a row.
-</Warning>
+<Note>
+  `GET /us/statutes/coverage` computes its `AGENCY_GUIDANCE` total out of band rather than per
+  request, so for up to a day after a source is ingested it can report fewer documents than this
+  page.
+  The column above sums to 81,451, which is exactly what `GET /us/statutes/coverage` reports for
+  `AGENCY_GUIDANCE`. Every row is a served count, not an ingested one. The distinction matters most
+  on IRS written determinations, where 45,358 documents are ingested and 35,485 are reachable
+  through the API, the difference being 9,873 OCR-read scans. The endpoint stays authoritative.
+</Note>
 
 | Source | `source` | Documents | Coverage |
 |---|---|---:|---|
-| SSA Rulings | `ssa_ruling` | 2,233 | - |
+| SSA Rulings | `ssa_ruling` | 1,116 | - |
 | IRS Revenue Procedures | `irs_rev_proc` | 378 | 2015-present |
 | IRS Revenue Rulings | `irs_rev_rul` | 247 | 2015-present |
 | IRS Notices | `irs_notice` | 762 | 2015-present |
 | IRS Announcements | `irs_announcement` | 83 | 2015-present |
-| IRS Written Determinations **[note]** | `irs_written_determination` | 45,358 | 1999-2026 |
+| IRS Written Determinations **[note]** | `irs_written_determination` | 35,485 served | 1999-2026 |
 | Internal Revenue Manual **[note]** | `irs_irm` | 1,777 | Current |
 | DOJ and FTC Merger Guidelines | `merger_guidelines` | 1 | 2023 |
 | DOJ Antitrust Leniency Policy | `doj_leniency` | 1 | - |
@@ -49,9 +51,9 @@ should read their results.
 | DOJ Justice Manual | `doj_justice_manual` | 1,548 | - |
 | FTC Advisory Opinions **[note]** | `ftc_advisory_opinion` | 430 | 1982-2024 |
 | FTC Policy Statements **[note]** | `ftc_policy_statement` | 59 | 1967-2026 |
-| Copyright Office Circulars | `copyright_circular` | 62 | - |
+| Copyright Office Circulars | `copyright_circular` | 58 | - |
 | Copyright Office Compendium (Third) **[note]** | `copyright_compendium` | 5,920 | 3 editions, 2014-2021 |
-| CMS Medicare Internet-Only Manuals **[note]** | `cms_iom` | 11,072 | 2000-2026 |
+| CMS Medicare Internet-Only Manuals **[note]** | `cms_iom` | 11,018 | 2000-2026 |
 | USCIS Policy Manual | `uscis_policy_manual` | 456 | 12 volumes |
 | USPTO MPEP | `mpep` | 2,727 | 29 chapters |
 | USPTO TMEP | `tmep` | 2,114 | 19 chapters |
@@ -59,13 +61,13 @@ should read their results.
 | DOL WHD Field Operations Handbook **[note]** | `whd_foh` | 1,500 | 1966-2025 |
 | EEOC Enforcement and Policy Guidance **[note]** | `eeoc_guidance` | 179 | 1970-2024 |
 | DFARS Procurement Guidance (PGI) | `dfars_pgi` | 397 | 47 Parts |
-| NLRB General Counsel Memoranda | `nlrb_gc_memo` | 306 | 1973-present |
+| NLRB General Counsel Memoranda | `nlrb_gc_memo` | 301 | 1973-present |
 | NLRB Division of Advice Memoranda | `nlrb_advice_memo` | 340 | Rolling 10-year window |
-| CFTC Staff Letters | `cftc_staff_letter` | 945 | 2008-present |
+| CFTC Staff Letters | `cftc_staff_letter` | 944 | 2008-present |
 | Federal Reserve SR and CA Letters | `frb_sr_letter` | 342 | Since 1990 |
 | OCC Bulletins | `occ_bulletin` | 612 | Since 1994 |
-| OCC Interpretive Letters | `occ_interpretive_letter` | 449 | 1996-present |
-| FDIC Financial Institution Letters | `fdic_fil` | 2,326 | Since 1994 |
+| OCC Interpretive Letters | `occ_interpretive_letter` | 448 | 1996-present |
+| FDIC Financial Institution Letters | `fdic_fil` | 2,321 | Since 1994 |
 | FinCEN Administrative Rulings | `fincen_ruling` | 85 | Since 1988 |
 | FinCEN Guidance | `fincen_guidance` | 128 | - |
 | FinCEN BOI FAQs **[note]** | `fincen_boi_faq` | 122 | Issued 2023-2024 |
@@ -79,11 +81,11 @@ should read their results.
 | DDTC Commodity Jurisdiction Determinations | `ddtc_commodity_jurisdiction` | 5,903 | 2010-present |
 | DDTC Policy Guidance | `ddtc_guidance` | 7 | - |
 | FCC Declaratory Rulings | `fcc_declaratory_ruling` | 173 | - |
-| FERC Policy Statements **[note]** | `ferc_policy_statement` | 90 | Since 1996 |
+| FERC Policy Statements **[note]** | `ferc_policy_statement` | 82 | Since 1996 |
 | DOE Appliance Standards Guidance | `doe_appliance_guidance` | 60 | Draft guidance excluded |
-| HHS OCR HIPAA Guidance | `hhs_ocr_hipaa_guidance` | 59 | - |
+| HHS OCR HIPAA Guidance | `hhs_ocr_hipaa_guidance` | 44 | - |
 | HHS OCR HIPAA FAQs | `hhs_ocr_hipaa_faq` | 444 | Deduplicated across topic pages |
-| HHS OCR Resolution Agreements and CMPs | `hhs_ocr_resolution_agreement` | 217 | - |
+| HHS OCR Resolution Agreements and CMPs | `hhs_ocr_resolution_agreement` | 145 | - |
 | CFPB Consumer Financial Protection Circulars | `cfpb_circular` | 16 | Since 2022 |
 | CFPB Supervisory Guidance | `cfpb_supervisory_guidance` | 95 | Since 2011 |
 | Vaquill-synthesized reference figures **[note]** | `administrative_guidance` | 10 | Current |
@@ -129,11 +131,12 @@ should read their results.
   of the 45,358 carries `actStatus: "non_precedential"` rather than `in_force`. Read one as evidence
   of how the Service analysed one taxpayer's facts, never as a rule of general application.
 
-  Coverage runs **1999-01-08 to 2026-09-04**, 28 distinct years, and is **45,358 of the 45,431
-  determinations the IRS lists, 99.84%**.
+  Coverage runs **1999-01-08 to 2026-09-04**, 28 distinct years. **35,485 determinations are
+  served, 78.1% of the 45,431 the IRS lists.** The 9,873 OCR-read scans are ingested but are not
+  currently reachable through the API.
 
   **9,873 of these were read by OCR rather than from a text layer**, because the IRS publishes them
-  as scans of signed paper. Those carry `extractionMethod: "ocr"` so you can tell which; the rest
+  as scans of signed paper. Those are recorded ingest-side as `extractionMethod: "ocr"`, which the API does not currently return; the rest
   carry `"text_layer"`. Two things follow from that and are worth knowing before you rely on the
   text. The section symbol survives OCR less reliably than the words around it, so a passage may
   read `section 501(c)(3)` where the page prints `§ 501(c)(3)`; search for either. And a stamped
@@ -311,7 +314,7 @@ should read their results.
 
   **The revision trail starts 2023-03-22 and goes no further back.** OFAC migrated its FAQs to a
   new website that day and stamped every then-active FAQ with the migration date rather than its
-  original publication date, so 860 version records carry it as `observedDate` with no
+  original publication date, so 860 version records carry an ingest-side `observedDate`, not returned by the API, with no
   `effectiveDate`.
 
   **OFAC has rescinded 279 FAQ numbers and publishes nothing for any of them**, so a rescinded
