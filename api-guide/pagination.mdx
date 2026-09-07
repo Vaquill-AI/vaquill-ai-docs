@@ -152,7 +152,7 @@ In practice one page is always enough there, because the watch cap is 3 outside 
 
 `GET /boards` is the one that bites.
 Its `limit` defaults to 500 **and 500 is also the maximum**, so a client that never passes `offset` silently truncates the moment the registry passes 500 boards.
-There are about 216 boards today, so the default still covers the whole registry, but that is a fact about today rather than a guarantee.
+There are about 244 boards today, so the default still covers the whole registry, but that is a fact about today rather than a guarantee.
 Read `total` and page on `offset` instead of trusting one call.
 
 ```python Python

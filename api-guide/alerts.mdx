@@ -20,7 +20,7 @@ Every path below is prefixed with `/api/v1` and every request needs an `Authoriz
 
 ## Boards and watches
 
-A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`. Watching a board does not change how often it refreshes. Read `cadence` as the declared staleness window a board is alerted against, not as a ceiling on how often it is re-pulled: every state statute board declares `monthly`, and the 19 bulk-sourced jurisdictions listed under [Which statute cadence applies where](/api-guide/coverage#which-statute-cadence-applies-where) are in fact re-pulled every 7 days.
+A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`. Watching a board does not change how often it refreshes. Read `cadence` as the declared staleness window a board is alerted against, not as a ceiling on how often it is re-pulled: every state statute board declares `monthly`, and the 24 bulk-sourced jurisdictions listed under [Which statute cadence applies where](/api-guide/coverage#which-statute-cadence-applies-where) are in fact re-pulled every 7 days.
 
 A **watch** is your subscription to one board, on one or more channels (webhook, email, or both). By default a watch covers the whole board; see [Narrow a watch to a citation](#narrow-a-watch-to-a-citation) to follow one title or part instead.
 
@@ -56,7 +56,7 @@ for b in all_boards():
 </CodeGroup>
 
 <Warning>
-  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There are about 216 boards today, so the default covers the whole registry right now, but that is a fact about today. Read `data.total` and `data.hasMore` and page on `offset`, as above.
+  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There are about 244 boards today, so the default covers the whole registry right now, but that is a fact about today. Read `data.total` and `data.hasMore` and page on `offset`, as above.
 
   `GET /boards` is free, so paging it costs nothing but a request against your [rate limit](/api-guide/rate-limits).
 </Warning>
@@ -72,7 +72,7 @@ Filter instead of paging where you can: `corpusType` and `state` both narrow the
       {"corpusType": "federal_register", "label": "Federal Register", "cadence": "daily",
        "scopable": false, "scopeBrowseCorpus": null}
     ],
-    "total": 216,
+    "total": 244,
     "hasMore": false
   },
   "meta": { "processingTimeMs": 12.4, "creditsConsumed": 0 }
