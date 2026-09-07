@@ -1,12 +1,16 @@
 ---
 title: "Vaquill MCP Server"
 sidebarTitle: "Vaquill MCP"
-description: "US statutes MCP for Claude, Cursor, VS Code, and Windsurf. USC + CFR + 50-state statute codes."
+description: "US primary law MCP for Claude, Cursor, VS Code, and Windsurf. Statutes, regulations, court rules, constitutions and agency guidance, plus law-change alerts."
 icon: "scale-balanced"
 keywords: ["vaquill mcp", "legal mcp server", "claude legal mcp", "us law mcp", "usc mcp", "cfr mcp", "cursor legal research", "vs code legal mcp"]
 ---
 
-The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client - Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf - direct access to the Vaquill statutes API. It covers **US federal and 50-state statutes** (the US Code, the CFR, and all 50 state statute codes). Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
+The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client - Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf - direct access to the Vaquill AI Developer API. It covers the full US corpus: the US Code, the CFR, every state and territory statutory code, state and federal regulations, court rules, constitutions, agency guidance and adjudications, session laws and the Federal Register. Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
+
+<Note>
+  **Two mounts, deliberately disjoint.** `https://mcp.vaquill.ai/s/_` serves the US corpus; `https://mcp.vaquill.ai/in/s/_` serves Indian legislation. Each is built from its own OpenAPI document, so a US connection never exposes India tools and the reverse. The same `vq_key_` works on both. Connect only the one you need: every connected server keeps its tool definitions in context for the whole conversation.
+</Note>
 
 <CardGroup cols={3}>
   <Card title="GitHub" icon="github" href="https://github.com/Vaquill-AI/vaquill-mcp">
@@ -219,30 +223,96 @@ claude mcp add --scope user vaquill -e VAQUILL_API_KEY=vq_key_your_key_here \
 
 ## Tools
 
-The server exposes statute tools across three categories.
+Tools are generated from the OpenAPI document at startup, so the catalogue tracks the API rather than the package version. The US mount publishes **25 tools**; the India mount publishes 8.
 
-### General
+<Warning>
+  `act_id` is never assembled by hand. The title and section are derivable from a citation but the chapter is not, so a constructed id usually 404s and the failure reads like missing coverage. Take it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section Identifiers](/api-guide/concepts/section-ids).
+</Warning>
 
-| Tool | Description | Credits |
-|------|-------------|---------|
-| `get_pricing` | Get current API credit pricing. No auth required. | Free |
-
-### US law (USC + CFR)
+### Discovery
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `search_us_statutes` | Semantic search across the United States Code (USC) and Code of Federal Regulations (CFR). Filter by `corpusType` and `titleNumber`. | 4 |
-| `get_us_statute_section` | Metadata for a specific USC / CFR section by `act_id` - citation, title hierarchy, links. | 2 |
-| `get_us_statute_section_text` | Full HTML and plain text of a USC or CFR section. | 6 |
+| `list_statutes_coverage` | The live coverage matrix: corpus legend, per-jurisdiction counts, freshness and retrieval status. Call this before treating an empty result as an absence. | Free |
+| `get_pricing` | Current credit pricing per endpoint. No auth required. | Free |
+| `list_statute_divisions` | Walk the statutory hierarchy one level down. Refunded on an empty level. | 1 |
 
-### Acts and legislation
+### Search and retrieval
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `search_legislation` | Semantic search across acts, regulations, and state legislation. Filter by category, state, department, year. | 1 |
-| `list_legislation` | Browse acts to discover `act_id` values. Filter by category, state, department, status. | 1 |
-| `get_act_text` | URLs for full text, PDF, and HTML versions of an act. | 1 |
-| `get_amendments` | Complete amendment history for an act (substitutions, insertions, omissions). | 1 |
+| `search_us_statutes` | Hybrid semantic and keyword search across every US corpus, with filters for `corpusType`, `state`, `code`, `source`, status, year and Federal Register facets. | 4 |
+| `get_us_statute_section` | Section metadata by `act_id`: citation, hierarchy, breadcrumb, status and every format link. | 2 |
+| `get_us_statute_section_text` | Full text. Supports `format=content` (operative text only, USC), `structured=true` for a subsection tree, and `asOf` for point-in-time. | 6 |
+| `get_sections_batch` | Metadata for up to 50 `act_id`s in one call, with a diagnosis for each miss. | 2 per section returned |
+| `resolve_statute_citation` | Turn one citation string into the exact section, confirmed against the corpus. | 2 |
+| `resolve_statute_citations_batch` | The same verdict for up to 50 citations at once. | 2 per citation |
+
+### Section intelligence
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `get_section_changes` | Every observed add, amend and remove for one section, cursor-paged. | 1 |
+| `get_section_neighbors` | The sections immediately before and after, in statutory order. | 2 |
+| `get_section_cited_by` | Which USC and CFR sections cross-reference this one. | 2 |
+| `get_section_definitions` | The defined terms from the chapter's definitions section that govern this one. | 4 |
+| `get_section_cross_state` | At most one comparable provision per other state, most similar first. | 6 |
+
+Each of these refunds a call it cannot answer, and returns a `note` explaining why. An empty result **with** a note is an explanation; without one it is a real answer.
+
+### Law change alerts
+
+Every tool here is free except the diff. See [Law Change Alerts](/api-guide/alerts).
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `list_boards` | Every watchable board with its cadence, `lastRetrievedAt` and `retrievalStatus`. | Free |
+| `create_watch` / `update_watch` / `delete_watch` | Subscribe, repoint or pause, and remove. | Free |
+| `list_watches` | Your watches with last-notified state. | Free |
+| `test_watch` | Fire a one-off `board.test` delivery. One per watch per 30 seconds. | Free |
+| `list_watch_changes` | What the board added, amended or removed. Metadata only. | Free |
+| `list_watch_deliveries` | Recent webhook delivery attempts. | Free |
+| `get_watch_change_diff` | The before and after text for one change. | 4 |
+
+### Generic aliases
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `search` | Single-string search, for clients that require this exact interface. | 4 |
+| `fetch` | Single-string fetch by id or URL, same constraint. | Varies |
+
+These exist for clients whose retrieval interface is matched by name and shape. Prefer the typed tools above: they take filters these two cannot express.
+
+## Resources and prompts
+
+Beyond tools, the server publishes MCP resources and prompts. Clients that support them get the guidance without spending a tool call.
+
+**Resources**
+
+| URI | Contents |
+|-----|----------|
+| `vaquill://guide` | How to use the corpus correctly: identifier rules, what "still good law" actually means here, what an empty change list does and does not tell you, and where the cost is. Read before a first substantive query. |
+| `vaquill://us/coverage` | The live coverage matrix as a resource. |
+| `vaquill://pricing` | Live per-endpoint credit pricing. |
+| `vaquill://in/filters` | India mount: available act filters. |
+
+**Prompts** (US mount): `good_law_check`, `fifty_state_survey`, `whats_changed`, `cite_check`.
+**Prompts** (India mount): `old_code_citation`, `indian_provision_check`.
+
+## India mount
+
+`https://mcp.vaquill.ai/in/s/_` publishes the Indian legislation surface. It shares nothing with the US tools but the credential.
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `search_acts` | Semantic search across Indian central and state enactments. | 2 |
+| `list_acts` | Browse acts to discover identifiers. | 1 |
+| `list_act_filters` | The filter vocabulary available for the two above. | Free |
+| `get_act_text` | Full text of an act or provision. | 3 |
+| `get_act_amendments` | Amendment history: substitutions, insertions, omissions. | 5 |
+| `get_corresponding_provisions` | Map a provision in a repealed code to its successor. | 1 |
+
+Plus the `search` and `fetch` aliases.
 
 ## Authentication
 
@@ -288,15 +358,35 @@ The package fetches the OpenAPI spec from `https://api.vaquill.ai` at startup an
 
 Type these directly to Claude, Cursor, or any connected assistant.
 
-**US law**
+**Look up federal law**
 
 > *"What does 17 CFR 240.10b-5 say about insider trading?"*
 >
-> *"Find USC sections on equal protection under the Fourteenth Amendment."*
->
 > *"What are the federal penalties for wire fraud under 18 USC 1343?"*
 >
-> *"Pull the full text of 26 USC 501(c)(3)."*
+> *"Pull the operative text of 26 USC 501(c)(3), without the amendment notes."*
+
+**Verify citations**
+
+> *"Check every statutory citation in this brief against the official text, and flag any that are no longer good law."*
+>
+> *"Does `Cal. Civ. Code 1950.5` resolve, and what is its current status?"*
+
+**Compare across states**
+
+> *"How do other states word California's security-deposit return deadline?"*
+>
+> *"Find the data-breach notification statute in New York, Texas and Illinois."*
+
+**Read law as it stood on a date**
+
+> *"What did 15 USC 1681c say on 2019-03-01, and how confident are we in that reconstruction?"*
+
+**Watch for changes**
+
+> *"What has changed in the CFR since last Tuesday?"*
+>
+> *"Set up an alert on Title 21 Part 314 and send it to my webhook."*
 
 ### Ready-to-run research prompt
 
