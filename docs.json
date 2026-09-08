@@ -167,7 +167,9 @@
                 "group": "MCP SERVERS",
                 "pages": [
                   "integrations/mcp/index",
-                  "integrations/mcp/vaquill"
+                  "integrations/mcp/vaquill",
+                  "integrations/mcp/claude-connector",
+                  "integrations/mcp/claude-plugin"
                 ]
               },
               {

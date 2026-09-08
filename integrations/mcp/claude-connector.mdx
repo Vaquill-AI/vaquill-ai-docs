@@ -1,0 +1,101 @@
+---
+title: "Claude Connector"
+sidebarTitle: "Claude Connector"
+description: "Connect US primary law to Claude with a Connect button. OAuth, no API key to paste, and the only path that works in Cowork."
+icon: "link"
+keywords: ["claude connector", "claude custom connector", "vaquill oauth", "claude cowork mcp", "remote mcp oauth", "claude desktop connector"]
+---
+
+The Vaquill connector adds US primary law to Claude through a **Connect** button. You sign in with your Vaquill account and Claude gets the tools. There is no API key to create, paste, or store.
+
+<Note>
+  **This is the only path that works in Cowork.** A Cowork session runs in an Anthropic cloud container that never sees your machine's environment, so a key held in `~/.zshenv` cannot reach it. See [Claude Code plugin](/integrations/mcp/claude-plugin) for the difference, and [why the plugin cannot cover Cowork on its own](#which-one-should-i-use).
+</Note>
+
+## Connect
+
+<Steps>
+  <Step title="Open Claude's connector settings">
+    On **claude.ai**: **Settings > Connectors > Add custom connector**.
+    On **Claude Desktop**: the same **Connectors** panel.
+    In **Claude Code**: `claude mcp add --transport http --scope user vaquill https://mcp.vaquill.ai/mcp`, then `/mcp` to complete sign-in.
+  </Step>
+  <Step title="Paste the URL">
+    ```
+    https://mcp.vaquill.ai/mcp
+    ```
+
+    Nothing else. Leave the API key and header fields empty: this URL authenticates with OAuth, and a key pasted here is ignored.
+  </Step>
+  <Step title="Click Connect and approve">
+    Claude sends you to Vaquill to sign in, then shows a consent screen naming what Claude is asking for. Approve it once and the decision is remembered, so reconnecting later does not ask again.
+  </Step>
+  <Step title="Make one live call">
+    A green connection proves nothing. See [Verify it works](#verify-it-works) below.
+  </Step>
+</Steps>
+
+## Verify it works
+
+<Warning>
+  **Never trust a green connection.** The server completes the MCP handshake and lists all 25 tools with **no credential at all**. Authentication is enforced at the API call behind each tool, not at the protocol layer, so "Connected" and a full tool list are both consistent with a completely broken credential.
+</Warning>
+
+The only real test is one live call, and the cheapest one is free:
+
+> "Use Vaquill to list statutes coverage for California."
+
+`list_statutes_coverage` costs **0 credits**. A normal response means you are done. An error means the connection never carried an identity.
+
+Test each surface separately. Claude Code, claude.ai, Claude Desktop and Cowork take different code paths, and Cowork syncs its tooling at session start, so start a **fresh** Cowork session rather than reloading an open one.
+
+## What happens to your API key
+
+You do not create one. On your first connect, Vaquill provisions a key for the connector automatically and holds it server-side. Claude never sees it.
+
+Two consequences worth knowing:
+
+- **It does not count against your plan's key cap.** Connector keys are tracked separately from the keys you create by hand, so connecting does not consume one of your 2 (or 5, on Business) active-key slots, and it cannot lock you out of creating one.
+- **It does not appear in your dashboard key list.** That list shows only keys you created, so the connector's key cannot be seen or revoked from there. Disconnecting the connector in Claude stops Claude using it, but does not itself revoke the key; contact support if you need it revoked outright.
+
+Billing is unchanged: the connector draws on the same credit balance as any other key. Check your balance before a long session.
+
+## Scope: United States only
+
+The connector serves the **US** corpus: the US Code, all 50 state codes plus DC and Puerto Rico, federal and state regulations, court rules, constitutions, agency guidance and adjudications, session laws and the Federal Register.
+
+**India is not available over OAuth.** The India corpus is served from a separate, deliberately disjoint document at `https://mcp.vaquill.ai/in/mcp`, and it authenticates with a `vq_key_` API key in an `Authorization` header rather than a Connect button. There is no consent flow for it yet. See [Vaquill MCP](/integrations/mcp/vaquill) for the key-based setup.
+
+That separation is intentional in both directions: a US connection never exposes India tools, and the reverse. Connect only the corpus you need, because every connected server keeps its tool definitions in context for the whole conversation.
+
+## Which one should I use
+
+| | Connector | [Plugin](/integrations/mcp/claude-plugin) | [API key](/integrations/mcp/vaquill) |
+| --- | --- | --- | --- |
+| Setup | Click Connect | Install from marketplace, set an env var | Paste a key or header |
+| Works in Cowork | **Yes** | No | No |
+| Works in claude.ai / Desktop | Yes | n/a | Yes |
+| Works in Claude Code | Yes | Yes | Yes |
+| Works in Cursor, VS Code, Windsurf | No | No | **Yes** |
+| Adds slash commands and a research skill | No | **Yes** | No |
+| Key to manage | None | Yours | Yours |
+
+Use the **connector** for Claude with no setup, and as the only option in Cowork. Use the **plugin** in Claude Code when you want the ten slash commands and the research skill on top of the tools. Use an **API key** for any client that is not Claude.
+
+You can run the connector and the plugin together, but there is no reason to: both expose the same 25 tools, and two copies of the same catalogue sit in context for the whole conversation.
+
+## Troubleshooting
+
+| Symptom | Cause |
+| --- | --- |
+| Connected, but every tool call fails | The connection carries no identity. Reconnect and complete the consent screen; do not stop at "Connected" |
+| Asked to approve twice | Approve the second one. The decision is remembered from then on |
+| 402 on every call | Out of credits. Top up in the console. The connector shares your normal balance |
+| 429 | Rate limited. Honour `Retry-After` |
+| 503 | Backend unavailable, and the call was refunded. Retry later |
+| Tools missing in Cowork | Cowork syncs at session start. Start a new session rather than reloading |
+| An empty result | Not an auth problem. An outage returns 503 with a refund, so an empty 200 is a real answer. Check [coverage](/api-guide/coverage) before reading it as an absence of law |
+
+## Attribution
+
+**On the Pro plan, attribution is required**: a visible "Legal data by Vaquill AI" credit, linked to the site, wherever the data is surfaced. Business waives it. This is a licence term, not a suggestion, and it applies to the connector exactly as it does to a key.

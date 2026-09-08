@@ -1,0 +1,117 @@
+---
+title: "Claude Code Plugin"
+sidebarTitle: "Claude Code Plugin"
+description: "The primary-law plugin for Claude Code: ten research commands, a US statute research skill, and the Vaquill MCP server in one install."
+icon: "puzzle-piece"
+keywords: ["claude code plugin", "vaquill plugin", "primary-law plugin", "claude plugin legal", "us law claude code", "legal slash commands"]
+---
+
+The **primary-law** plugin packages the Vaquill MCP server together with ten research commands and a skill that teaches Claude how to use them. It installs into Claude Code from the Vaquill plugin marketplace.
+
+Source: [github.com/Vaquill-AI/vaquill-plugin](https://github.com/Vaquill-AI/vaquill-plugin).
+
+<Note>
+  **The plugin is Claude Code only.** It does not run in Cowork, claude.ai, or Claude Desktop. For those, use the [Claude Connector](/integrations/mcp/claude-connector), which needs no environment variable and no local shell.
+</Note>
+
+## Install
+
+<Steps>
+  <Step title="Add the marketplace">
+    ```bash
+    /plugin marketplace add Vaquill-AI/vaquill-plugin
+    ```
+  </Step>
+  <Step title="Install the plugin">
+    ```bash
+    /plugin install primary-law
+    ```
+  </Step>
+  <Step title="Set your API key where a new shell will see it">
+    The plugin reads `VAQUILL_API_KEY` from the **process** environment. Create a key at [app.vaquill.ai/settings](https://app.vaquill.ai/settings) under **API Keys**, then:
+
+    ```bash
+    echo 'export VAQUILL_API_KEY="vq_key_YOUR_KEY"' >> ~/.zshenv
+    chmod 600 ~/.zshenv
+    ```
+
+    **`~/.zshrc` is not enough.** It is sourced only for interactive shells, and Claude Code's child processes are not always interactive. `~/.zshenv` is sourced for every zsh invocation. On bash, use `~/.bash_profile` plus `~/.bashrc`. A bare `export` typed into a terminal dies with that shell.
+
+    Check it reaches a **new** shell, which is what actually matters:
+
+    ```bash
+    zsh -c 'echo ${VAQUILL_API_KEY:+PRESENT}'    # must print PRESENT
+    ```
+
+    Use the `:+` form. `${VAR:-...}` prints the key itself into your transcript.
+  </Step>
+  <Step title="Fully quit and relaunch Claude Code">
+    Environment is inherited **once, at process start**. None of these pick up a new variable: `/reload`, MCP servers reconnecting, a new session in the same window, or reinstalling the plugin.
+
+    Quit Claude Code itself (`/exit` or Ctrl+D) and run `claude` again from a shell that has the variable. `pgrep -f claude` must return a **different** pid than before.
+  </Step>
+  <Step title="Make one live call">
+    See [Verify it works](#verify-it-works).
+  </Step>
+</Steps>
+
+Never write the key into `.mcp.json`, a committed `.env`, or any file under version control. The variable indirection exists precisely so the key never lands in the repo.
+
+## Verify it works
+
+<Warning>
+  **A green connection proves nothing.** The server completes the handshake and lists all 25 tools with no `Authorization` header at all, with an unexpanded `${VAQUILL_API_KEY}` template, and with an invalid key. `claude mcp list` showing `Connected`, and a full tool list in `/mcp`, are both consistent with a completely broken credential.
+</Warning>
+
+The only real smoke test is one live call, and the cheapest is free:
+
+> "Use Vaquill to list statutes coverage for California."
+
+`list_statutes_coverage` costs **0 credits**. A 401 means the key never reached the server. A normal response means setup is done.
+
+## Commands
+
+Ten slash commands, each written to state its own caveats rather than leave you to infer them.
+
+| Command | What it does |
+| --- | --- |
+| `/research` | Find the controlling US law on a question, answering only from the text the tools return |
+| `/verify-citations` | Verify every citation in a file, selection, or pasted text against the official source text |
+| `/as-of` | Read a section as it stood on a given date, with the observation caveat stated honestly |
+| `/changed` | Sweep a corpus or jurisdiction for what has changed since a date |
+| `/authority` | Trace the chain between a statute and the regulations implementing it, in either direction |
+| `/compare-states` | Compare how different states word the same rule |
+| `/coverage` | Report what Vaquill actually holds for a jurisdiction, before you read an empty result as an absence of law |
+| `/guidance` | Find federal agency guidance on a topic, and say what weight it does and does not carry |
+| `/adjudications` | Search federal administrative adjudications, with the overruling caveat stated up front |
+| `/rulemaking` | Track a Federal Register rulemaking: what was proposed, what became final, when comments close |
+
+## The research skill
+
+The plugin also ships a `us-statute-research` skill. Claude loads it when a question calls for primary law, and it carries the judgement that the tool descriptions cannot: how to scope a search, when a citation needs resolving before it can be read, and why an empty result is more often a malformed `act_id` than a gap in coverage.
+
+## Key caps and rotation
+
+- **Active key caps are low.** Business allows 5 keys; every other plan allows 2. The console's own Playground mints a key when it cannot reuse one, so one integration key plus Playground use already reaches the cap of 2.
+- **Rotation differs by plan.** Business can create the new key before revoking the old one, so there is no gap. Other plans must revoke first and accept downtime.
+
+A key provisioned by the [Claude Connector](/integrations/mcp/claude-connector) does **not** count against this cap, and does not appear in your dashboard key list.
+
+## Troubleshooting
+
+| Symptom | Cause |
+| --- | --- |
+| 401 on every tool | Key missing, malformed, or the `Bearer ` prefix was dropped. The key alone is rejected |
+| 401 right after revoking a key | Key validation is cached about 60 seconds, so a revoked key can work briefly |
+| 401 with a healthy `/mcp` | The variable never reached the process. Check `pgrep -f claude` changed after your relaunch |
+| 402 | Out of credits. Top up in the console |
+| 429 | Rate limited. Honour `Retry-After`. `X-RateLimit-Limit` under-reports on Business keys |
+| 503 | Backend unavailable. The call was refunded. Retry later |
+| Tools missing entirely | The server failed to connect. Check `/mcp` before assuming the key is wrong |
+| Nothing works in Cowork | Expected. Use the [connector](/integrations/mcp/claude-connector) |
+
+An empty result set is not an authentication problem. Since an outage returns 503 with a refund, an empty 200 is a real answer.
+
+## Attribution
+
+**On the Pro plan, attribution is required**: a visible "Legal data by Vaquill AI" credit, linked to the site, wherever the data is surfaced. Business waives it. If you are building something customer-facing on Pro, this is a licence term rather than a suggestion.

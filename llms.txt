@@ -78,3 +78,5 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 - [Changelog](https://www.vaquill.ai/docs/api-guide/changelog): API updates and additions.
 - [Roadmap](https://www.vaquill.ai/docs/api-guide/roadmap): Corpora being built next, and what is deliberately out of scope.
 - [Vaquill MCP](https://www.vaquill.ai/docs/integrations/mcp/vaquill): The hosted MCP server for AI agents.
+- [Claude Connector](https://www.vaquill.ai/docs/integrations/mcp/claude-connector): Connect US primary law to Claude with OAuth and no API key. The only path that works in Cowork.
+- [Claude Code Plugin](https://www.vaquill.ai/docs/integrations/mcp/claude-plugin): Ten research commands, a US statute research skill, and the MCP server in one install.
