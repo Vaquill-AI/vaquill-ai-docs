@@ -119,6 +119,30 @@ The reissue marker itself is held with the document and is not exposed as a resp
 We publish per-jurisdiction figures once a jurisdiction has been measured against its own source, so the two cases can be told apart.
 Ask us for the current position on any jurisdiction you depend on and we will give you the measured number and which of the two cases it is.
 
+### AG opinions have no amendment concept, and that is a measured finding
+
+`corpusType=STATE_AG_OPINION` returns empty `amendmentYears` and
+`amendmentsCount: 0` on every section, and that is the recorded output of a sweep
+rather than an unimplemented field.
+
+**An AG opinion is not amended.** It is issued once, on a date, and is thereafter
+withdrawn, overruled, modified, or left standing. The version event this corpus
+has is supersession, not amendment.
+
+Measured across all 898 documents in the Delaware archive on 2026-09-08:
+
+- **0.00%** carry any publisher-printed statement that the opinion itself was
+  revised, reissued or withdrawn;
+- **100%** carry a publisher-assigned issue date, which is what `effectiveDate`
+  serves;
+- 35.5% carry a CMS "modified" timestamp later than their issue date, with a
+  median gap of 5 days and a maximum of 27.5 YEARS. **That is a content-management
+  touch, not an amendment**, and writing it to an amendment field would
+  manufacture history that never happened. It is served as `observedDate`.
+
+So an empty `amendmentYears` here means the instrument has no amendment concept,
+not that we failed to extract one.
+
 ## Using the fields
 
 Find sections changed recently, then confirm against the text:

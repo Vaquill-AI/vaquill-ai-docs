@@ -63,7 +63,7 @@ figure and for which tokens have data in which jurisdiction.
 | `FEDERAL_REGISTER` | Federal Register agency rules, final and proposed | 196,237 |
 | `FEDERAL_REGISTER_NOTICE` | A **curated slice** of Federal Register notices, those acting on a rulemaking | 17,616 |
 | `EXECUTIVE_ACTION` | Presidential documents: executive orders, proclamations, memoranda | 3,643 |
-| `AGENCY_GUIDANCE` | Sub-regulatory guidance from 51 named sources across 26 agencies | 81,451 |
+| `AGENCY_GUIDANCE` | Sub-regulatory guidance from 53 named sources across 26 agencies | 86,900 |
 | `AGENCY_ADJUDICATION` | Federal matters decided by an agency, seven bodies | 100,920 |
 | `US_TAX_TREATY` | Bilateral income tax treaties, Treasury explanations, the Senate treaty record | 1,649 |
 | `SENTENCING_GUIDELINES` | US Sentencing Guidelines, current sections plus former text in Appendix B | 1,281 |
@@ -80,7 +80,31 @@ Each of these requires `state`, or spans every jurisdiction holding that corpus.
 | `REGULATION` | State administrative codes | 1,467,452 | 52 |
 | `STATE_RULES` | State court rules: civil, criminal, appellate, evidence, professional conduct, local | 53,638 | 46 |
 | `STATE_AGENCY_GUIDANCE` | State regulator guidance, almost all insurance bulletins | 13,334 | 49 |
+| `STATE_AG_OPINION` | State Attorney General opinions. **Persuasive authority, not binding law** | 52,754 | 27 |
 | `STATE_CONSTITUTION` | State constitutions | 12,762 | 51 |
+
+### `STATE_AG_OPINION` in particular
+
+A formal written opinion in which a state's chief legal officer construes that state's own
+statutes, constitution and regulations for a state officer, legislator or local government who
+asked.
+
+<Warning>
+  **An AG opinion is persuasive authority, not binding law.** Officials follow them in practice,
+  and an AG opinion is very often the only interpretive authority that exists for a provision no
+  court has reached -- which is the reason to hold the corpus at all. But it does not bind a court,
+  and it must not be read as the rule.
+
+  Every section in this corpus is served with `goodLawStatus: "unknown"`. That is by construction,
+  not an omission: only three of the 52 jurisdictions publish any supersession signal at all, so we
+  will not certify an opinion as still standing. See
+  [Status and currency](/api-guide/concepts/status-and-currency).
+</Warning>
+
+Where a jurisdiction runs more than one series, the `series` field carries the publisher's own
+label, so you can filter Washington's formal `AGO` apart from its `AGLO` letter opinions, or
+Georgia's Official from its Unofficial opinions. The series is also part of the `actId`, which is
+what makes the field trustworthy rather than derived from a title.
 
 ## Choosing between tokens that look alike
 
@@ -122,10 +146,11 @@ itself is the authoritative list.
 |---|---|
 | `FEDERAL_RULES` | `frcp`, `frcrp`, `fre`, `frap`, `frbp`, `sct` |
 | `CFR` | `far` (48 C.F.R. ch. 1), `dfars` (ch. 2). Every other CFR result has a null `source`. |
-| `AGENCY_GUIDANCE` | 51 codes. See the [source registry](/api-guide/coverage/agency-guidance). |
+| `AGENCY_GUIDANCE` | 53 codes. See the [source registry](/api-guide/coverage/agency-guidance). |
 | `AGENCY_ADJUDICATION` | 7 bodies. See [Federal coverage](/api-guide/coverage/federal). |
 | `US_TAX_TREATY` | `us_tax_treaty`, `us_tax_treaty_technical_explanation`, `senate_treaty`, `senate_treaty_resolution`, `senate_treaty_document` |
 | `STATE_AGENCY_GUIDANCE` | `state_insurance_bulletin`, `state_financial_bulletin` |
+| `STATE_AG_OPINION` | `state_ag_opinion` |
 
 <Note>
   The `far` and `dfars` sources split **existing** Title 48 data by chapter. They are not a

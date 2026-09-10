@@ -1,0 +1,126 @@
+---
+title: "Rights and licensing"
+description: "Straight answers on what you may do with the data: persist it, build embeddings and derived indexes, show it to your own users, redistribute it, and what you keep if you stop paying"
+icon: "scale-balanced"
+---
+
+Most legal-data vendors make you book a call to find out what you are allowed
+to build. Here are the answers.
+
+<Note>
+  This page is a plain-language summary. The
+  [Terms of Service](https://www.vaquill.ai/terms), Section 21, is what actually
+  governs, and it controls if the two ever disagree.
+</Note>
+
+## The short version
+
+| Can I... | Answer |
+|---|---|
+| Cache and persist responses in my own database? | **Yes**, including permanently, where that store powers your product |
+| Build embeddings, vector indexes or other derived indexes? | **Yes**, for your own product |
+| Show the legal text to my own end users? | **Yes**, with a credit unless your plan waives it |
+| Keep what I cached from the API if I stop paying? | **Yes.** No deletion obligation |
+| Keep a bulk delivery after the contract ends? | **No.** Delete the compilation within 30 days |
+| Redistribute the statutory text itself? | **Yes**, without restriction. It is public domain |
+| Resell the structured corpus as a dataset, feed or API? | **No**, not without a separate signed agreement |
+| Ship it under my own brand? | **Under a white-label agreement**, yes |
+| Train a model on it? | **Yes**, unless the model is a competing legal-data service |
+
+## Why the text is unrestricted
+
+The statutory, regulatory and constitutional text is US primary law, and US
+primary law cannot be copyrighted. *Georgia v. Public.Resource.Org, Inc.*,
+590 U.S. 255 (2020) settled it, holding that even annotations prepared under
+contract for a legislature are uncopyrightable government edicts.
+
+We claim no ownership of that text and nothing in our terms restricts your use
+of it.
+
+What is licensed to you is the **compilation**: the schema, the citations, the
+hierarchy, the cross-references, the metadata and the assembled corpus. That is
+the work product, and it is the only thing the restrictions below touch.
+
+<Tip>
+  This is worth checking against any vendor whose corpus derives from a
+  commercial legal publisher's codification, because that layer can carry rights
+  the raw text does not. Ask where each jurisdiction was sourced from.
+</Tip>
+
+## What you keep if you leave
+
+<CardGroup cols={2}>
+  <Card title="Retrieved through the API" icon="circle-check">
+    Responses you cached during a paid term are **yours to keep**. No deletion
+    obligation, and you may keep showing them to your customers. That includes
+    the citations, hierarchy and cross-references those responses carry, because
+    a cached answer is not usable without them.
+  </Card>
+  <Card title="Delivered in bulk" icon="circle-xmark">
+    Different, and deliberately so. On termination or expiry of a bulk
+    arrangement you **delete stored copies of our compilation within 30 days**.
+    There the corpus itself is the deliverable, so permanent retention would let
+    a single period buy it outright.
+
+    You still keep anything you had independently retrieved through the API, the
+    public-domain text, anything obtained under the Open US Law licences, and
+    Output already embedded in work product you delivered to your clients.
+  </Card>
+</CardGroup>
+
+The public-domain text carries no restriction either way, and never did.
+
+Retention is not a licence to redistribute. Whatever you keep, you may not
+resell our compilation as a standalone data product, nor use it to build a
+competing legal-data API or database.
+
+## What you may not do
+
+Without a separate signed agreement, you will not:
+
+- systematically extract, bulk-download, scrape or accumulate the corpus for any
+  purpose other than powering your own end-user product
+- resell, sublicense or redistribute the underlying legal data or our
+  compilation as a standalone dataset, database, feed or API
+- offer the API, or a service substantially derived from it, under your own or a
+  third party's brand
+- use the API or its Output to build, train or improve a product that competes
+  with our legal-research, statute-retrieval or legal-data API services
+- reverse engineer the API or attempt to derive its models or training data
+- exceed or circumvent your plan's rate limits or credit allowance, including by
+  spreading access across accounts
+
+Each of those is available under a written agreement. They are commercial terms,
+not prohibitions on principle.
+
+## Attribution
+
+Unless your plan waives it, display **"Legal data by Vaquill AI"**, linked to
+vaquill.ai, somewhere a user can reasonably find it in any product where the
+Output is shown to your end users. A footer, an about page or a data-sources
+page is fine. One credit per product, not one per response. The console gives
+you the exact snippet.
+
+It is **not** required for internal or back-office use where nothing is shown
+outside your organisation, or for evaluation.
+
+Attribution can be waived commercially. Talk to us.
+
+## The open dataset
+
+Separately from the paid API, the whole corpus is published as
+[Open US Law](/api-guide/bulk-and-sql):
+
+- **Public-domain text**: no restriction
+- **Our compilation**: CC BY 4.0
+- **The ingestion scrapers**: Apache-2.0
+
+CC BY 4.0 already grants commercial use, redistribution, remixing and model
+training, irrevocably, on every version we have published. If your plan is to
+own the corpus outright, start there and you owe us nothing but a credit.
+
+## Still unsure?
+
+Describe what you want to build and we will tell you which of the above it lands
+in, in writing, before you commit to anything.
+[contact@vaquill.ai](mailto:contact@vaquill.ai)

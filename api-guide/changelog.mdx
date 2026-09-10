@@ -7,6 +7,158 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-09-10" description="STATE_AG_OPINION reaches 27 jurisdictions and 52,754 opinions: 22 more states, including California, Missouri, Washington and the Dakotas">
+  ## `STATE_AG_OPINION`: 22 more jurisdictions
+
+  Twenty-two jurisdictions land at once, taking the corpus to **52,754 opinions across 27
+  jurisdictions**. The full per-state table, with each jurisdiction's scope limit, is on
+  [state coverage](/api-guide/coverage/states#state-attorney-general-opinions).
+
+  The larger additions: **Missouri** 8,449, **North Dakota** 5,550, **Washington** 4,428,
+  **Tennessee** 2,650, **California** 1,961, **South Dakota** 1,652, **Illinois** 1,451 and
+  **Nebraska** 1,191. Every one is served `goodLawStatus: "unknown"`, as the whole corpus is.
+
+  Four scope decisions are worth stating plainly, because each one is a boundary rather than a
+  gap, and each is recorded on the coverage page:
+
+  - **Missouri runs 1962 to present.** The 1933-1961 era is not served: the number printed on
+    those opinions is a requester-alphabetical folder position, not a document identifier, so
+    there is nothing stable to cite them by.
+  - **Maine serves its numbered era, 832 opinions.** The earlier material carries no opinion
+    number in the state's own archive and is not served for the same reason.
+  - **Pennsylvania, 653 opinions, is split out of bound volumes.** Its 1895-1930 volumes print
+    no per-opinion number and are not served.
+  - **Illinois is served from our own OCR.** Roughly 1,450 of its 1,456 opinions are scans with
+    no text layer at all, so the text you get is machine-read from the state's page images and
+    gated for readability before it is served. Anything that failed that gate is excluded and
+    counted, not served degraded.
+
+  **California moved to the corpus-wide identifier scheme.** Its 23 legacy `CA_AG_OP_*`
+  identifiers are retired and the jurisdiction is re-served complete at 1,961 opinions under
+  `AGOP_CA_*`, with four series (`OP`, `CV`, `CR`, `SO`) filterable on `series`. If you stored a
+  `CA_AG_OP_` identifier, re-resolve it by citation.
+
+  Where a jurisdiction runs more than one series the `series` field carries the publisher's own
+  label, so Washington's formal `AGO` and its `AGLO` letter opinions, and Georgia's Official and
+  Unofficial, filter apart.
+</Update>
+
+<Update label="2026-09-09" description="STATE_AG_OPINION adds Arkansas, Indiana, Idaho and Oklahoma: 20,273 more opinions, including the two largest jurisdictions in the corpus">
+  ## `STATE_AG_OPINION`: four more jurisdictions, and the two largest
+
+  **Arkansas (10,295), Indiana (9,759), Idaho (151) and Oklahoma (68)** are live,
+  adding 20,273 opinions. Arkansas and Indiana are now the two deepest jurisdictions
+  in this corpus.
+
+  All four are served `goodLawStatus: "unknown"`, like every other jurisdiction here.
+
+  Coverage limits worth knowing before you query them:
+
+  - **Arkansas** lists 334 further opinions its own index carries a row for and whose
+    document it has never published. Those are recorded as a coverage limit, not
+    counted, so 10,295 is what we hold. They cluster in 1985-1998.
+  - **Indiana** reaches back to 1906 and publishes in two citation forms, both carried
+    as the state prints them: numbered opinions from 1944, and page cites into the
+    annual and biennial report volumes before that. In the scanned eras Indiana cut its
+    bound volumes into per-opinion PDFs **by page**, so an opinion running past its page
+    cut is severed in the state's own file. We serve everything Indiana publishes, but
+    for those the text is the opening pages. The 1960s, 1970s and 2000 onward are
+    unaffected. Every Indiana opinion also carries the statutes it construes, the
+    Attorney General who signed it, and the state's own summary.
+  - **Idaho** is opinions only. The Guidelines, Certificates of Review, Annual Reports
+    and Tables of Citations that share its feed are a different instrument and are not
+    here. Pre-1985 opinions exist only inside annual report volumes.
+  - **Oklahoma** is deliberately 2023 onward. Its older opinions are published on a
+    network that prohibits automated access, so we do not hold them.
+
+</Update>
+
+<Update label="2026-09-08" description="New corpusType STATE_AG_OPINION: state Attorney General opinions, starting with Delaware">
+  ## `STATE_AG_OPINION`: state Attorney General opinions
+
+  A new `corpusType`. A formal written opinion in which a state's chief legal officer
+  construes that state's own statutes, constitution and regulations for a state
+  officer, legislator or local government who asked.
+
+  It is frequently the **only interpretive authority that exists** for a provision no
+  court has reached, which is the reason to hold it.
+
+  <Warning>
+    **Persuasive authority, not binding law.** Every section in this corpus is served
+    with `goodLawStatus: "unknown"`, in every jurisdiction. That is by construction:
+    only three of the 52 jurisdictions publish any supersession signal at all, so we
+    will not certify that an opinion still stands. Read it as "we make no claim",
+    not as "probably still current".
+  </Warning>
+
+  **Delaware, 843 opinions, 1995-2026.** Two things about its
+  composition, because a buyer would otherwise be surprised by both:
+
+  - Delaware runs one numbered series and does not separate its opinion types. Only
+    about **17** of the numbered items are substantive Attorney General opinions; the
+    rest are **FOIA opinion letters** interleaved in the same numbering. Both are
+    formal opinions of the Attorney General under Delaware law, so both are here.
+  - **173 of the 843 are the state's letter recovered from a reporter print.**
+    Delaware publishes those posts in a commercial reporter's rendering. The opinion
+    underneath is a government work, so we remove that publisher's citation and page
+    marks and serve the letter itself. 150 of the 173 exist in no other form in
+    Delaware's archive and span 1995-2011.
+  - **50 further posts carry no opinion number and are excluded**: press releases,
+    job postings and notices sharing the same archive.
+
+  Where a jurisdiction runs more than one series, the new `series` field carries the
+  publisher's own label, so Washington's formal `AGO` and its `AGLO` letter opinions
+  are filterable apart. `series` is also part of the `actId`.
+
+  Rolling out jurisdiction by jurisdiction, like `STATE_AGENCY_GUIDANCE`.
+</Update>
+
+<Update label="2026-09-08" description="Two new FTC sources under AGENCY_GUIDANCE: HSR premerger interpretations (4,589) and advocacy filings (860)">
+  ## FTC: HSR premerger interpretations, and advocacy filings
+
+  Two new `source` codes under `corpusType=AGENCY_GUIDANCE`, both from ftc.gov.
+
+  **`ftc_hsr_interpretation` - 4,589 documents, 1978-2025.** The Hart-Scott-Rodino
+  premerger notification interpretations, both halves under one code. The 20
+  **formal** interpretations are the Commission's own authoritative construction of
+  a Premerger Notification Rule under 16 C.F.R. 803.30, a closed series issued 1978
+  to 2000. The 4,569 **informal** interpretations are the Premerger Notification
+  Office answering a practitioner's question about the same rules. Filter the two
+  apart with `documentSubtype`; join them on the new `construedRule` field, which
+  carries the rule number the interpretation is about on 99.0% of documents, with
+  `respondingStaff` naming who answered on 99.4%.
+
+  An informal interpretation is staff views, not Commission action, and is not
+  binding on the Commission.
+
+  **`ftc_advocacy_filing` - 860 documents, 1985-2026.** Comments and letters the
+  Commission and its staff address to state legislatures, state supreme courts,
+  governors and other federal agencies on the competition effects of a proposed
+  measure. **These bind nobody**: they decide no case, construe no FTC rule, and
+  the recipient is free to ignore them. They are a separate `source` with their own
+  `forum` (`ftc_advocacy`) so they can be scoped out in one parameter, and every
+  document says so in its own `coverageNote`.
+
+  ### Two gaps stated up front
+
+  The FTC serves **no HSR informal interpretation from 1997 at all** - none exists
+  at the publisher, against 141 in 1996 and 83 in 1998 - so roughly 100 to 140
+  interpretations from that year are missing from the source rather than from this
+  corpus.
+
+  And the Commission publishes no date field for the formal series, so
+  `effectiveDate` is absent on 13 of those 20 documents rather than guessed: they
+  print dates only inside their own argument, where the document's own date cannot
+  be told apart from the dates it cites.
+
+  ### Currency
+
+  Both ship `goodLawStatus: "unknown"`. The Commission does state a supersession in
+  one formal interpretation's identifier and publishes three dated versions of
+  another; those relations are served as `supersedes` / `supersededBy`, and no
+  document is marked dead on the strength of them.
+</Update>
+
 <Update label="2026-09-07" description="NLRB Board decisions widen from a 15-year window to the full 90-year archive: 66,597 decisions back to 1935">
   ## NLRB Board decisions: the complete archive
 

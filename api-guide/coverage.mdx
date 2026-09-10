@@ -39,7 +39,8 @@ OpenAPI document, with its own counts, its own filters and its own limits.
 | State regulations | 52 | 1,467,452 | `REGULATION` |
 | State court rules | 46 | 53,638 | `STATE_RULES` |
 | State constitutions | 51 | 12,762 | `STATE_CONSTITUTION` |
-| State agency guidance | 49 | 13,334 | `STATE_AGENCY_GUIDANCE` |
+| State agency guidance | 49 | 13,338 | `STATE_AGENCY_GUIDANCE` |
+| State AG opinions | 27 | 52,754 | `STATE_AG_OPINION` |
 | Federal, 14 corpora | Federal | 1,502,173 | See [Federal](/api-guide/coverage/federal) |
 
 Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats
@@ -57,13 +58,13 @@ Every section is indexed for hybrid semantic and keyword search, and mirrored in
 
 **1,502,173 sections across 14 corpus types.** The US Code and the Statutes at Large, the CFR both
 as a live compilation and as 31 published annual editions, Federal Register rules and a curated
-slice of its notices, Executive Orders, agency guidance from 51 named sources, seven bodies of
+slice of its notices, Executive Orders, agency guidance from 53 named sources, seven bodies of
 administrative adjudication, the Federal Rules, the Constitution, the Sentencing Guidelines, tax
 treaties and GovInfo statute compilations.
 
 **[Full federal table with per-corpus scope limits →](/api-guide/coverage/federal)**
 
-Agency guidance is the one corpus with a registry behind it: **51 named sources across 26
+Agency guidance is the one corpus with a registry behind it: **53 named sources across 26
 agencies** behind the single `corpusType=AGENCY_GUIDANCE` token, each narrowable with `source`.
 **[Source registry →](/api-guide/coverage/agency-guidance)**
 
@@ -85,6 +86,87 @@ and some states may never be built.
 
 **[Per-state sources and counts →](/api-guide/coverage/states#state-agency-guidance)**
 
+## State Attorney General opinions
+
+Formal written opinions of a state Attorney General, construing that state's own statutes,
+constitution and regulations for a state officer, legislator or local government who asked.
+Queryable with `corpusType=STATE_AG_OPINION` paired with `state`.
+
+<Warning>
+  **These are persuasive authority, not binding law.** Officials follow them in practice, and an
+  AG opinion is very often the only interpretive authority that exists for a provision no court
+  has reached. Every section in this corpus is served with `goodLawStatus: "unknown"` by
+  construction: only three of the 52 jurisdictions publish any supersession signal at all, so we
+  do not certify an opinion as current. See
+  [Status and currency](/api-guide/concepts/status-and-currency).
+</Warning>
+
+Like state agency guidance, this is **not** a comprehensive rollout: it lands jurisdiction by
+jurisdiction, and it is early. The 52-jurisdiction survey behind this corpus measured roughly
+**184,600 individually addressable opinions**, so what is live today is a low single-digit
+percentage of what exists. Use `GET /us/statutes/coverage` for the jurisdictions and counts that
+are actually live right now rather than relying on this page, which is written by hand and lags
+the rollout.
+
+Delaware is documented below because it is the reference build and because two things about its
+composition would otherwise surprise a buyer. It is not the only jurisdiction live.
+
+**Delaware, 843 opinions, 1995-2026.** Two things about its composition are worth
+stating plainly, because a buyer would otherwise be surprised by both:
+
+- Delaware runs **one numbered series** and does not separate its opinion types. Only about **17**
+  of the numbered items are substantive Attorney General opinions; the rest are **FOIA opinion
+  letters** interleaved in the same numbering. Both are formal opinions of the Attorney General
+  under Delaware law, so both are here, but if you are looking for statutory interpretation you
+  will mostly find open-records adjudication.
+- **173 of the 843 are served as the state's letter recovered from a reporter print.** Delaware
+  publishes those posts in a commercial reporter's rendering, wrapping the Attorney General's own
+  letter in that publisher's citation and page-break marks. The opinion underneath is a government
+  work, so we remove the wrapper and serve the letter; we do not reproduce the reporter's citation
+  or its pagination. 150 of the 173 exist in no other form in Delaware's archive and span
+  1995-2011, so the alternative was to publish no Delaware opinion older than 2011.
+- **50 further posts carry no opinion number and are excluded**: press releases, job postings and
+  notices that share the archive but are not opinions.
+
+**Arkansas, 10,295 opinions, 1984-2026.** The largest jurisdiction in this corpus. Two things to
+know:
+
+- **334 further opinions are listed by the Attorney General but not served by it.** Arkansas's own
+  index carries a row for each, and the document behind it has never been published. Those are
+  recorded as a coverage limit rather than counted, so the 10,295 is what we actually hold. They
+  cluster in 1985-1998.
+- Six opinions run to 100,000 characters or more. Those are ballot-title certifications, where
+  Arkansas requires the Attorney General to reproduce the entire proposed initiated act or
+  constitutional amendment inside the opinion, and they are served whole.
+
+**Indiana, 9,759 opinions, 1906-2026.** The deepest archive here, and the one with a limitation
+worth stating plainly:
+
+- Indiana publishes in **two citation forms**, and both are carried as the state prints them:
+  numbered opinions (`2026 Ind. Op. Att'y Gen. 02`) from 1944, and page cites into the annual and
+  biennial report volumes (`1909-1910 Ind. Op. Att'y Gen. p. 284`) before that.
+- 🔴 **In the scanned eras, the state cut its bound volumes into per-opinion PDFs by page, so an
+  opinion that runs past its page cut is severed in Indiana's own file.** We serve the full text of
+  every document the state publishes, but for those opinions that text is the opening pages rather
+  than the whole opinion. It affects roughly a quarter of the pre-1944 page cites and a third of
+  the 1940s numbered opinions; **the 1960s, 1970s and 2000 onward are unaffected.** The continuation
+  is usually present in the adjacent page cite, under its own citation.
+- Every opinion also carries the statutes it construes, the Attorney General who signed it, and
+  Indiana's own summary, all from the state's published catalogue rather than mined from the text.
+
+**Idaho, 151 opinions, 1985-2026.** Idaho publishes Guidelines, Certificates of Review, Annual
+Reports and Tables of Citations in the same feed as its opinions. Only the opinions are here; the
+other 602 documents are a different instrument and are excluded. Opinions from 1881-1984 exist only
+inside annual report volumes and are not yet extracted.
+
+**Oklahoma, 68 opinions, 2023-2026.** This is deliberately a 2023-onward corpus. Oklahoma's older
+opinions are published on the Oklahoma State Courts Network, which prohibits automated access, so we
+do not hold them and do not intend to without permission.
+
+Where a jurisdiction runs more than one series, the `series` field carries the publisher's own
+label so you can filter them apart -- Washington's formal `AGO` against its `AGLO` letter opinions,
+Georgia's Official against Unofficial.
+
 ## Refresh cadence
 
 How often each corpus is re-pulled from its official source. Counts grow between updates, so call
@@ -97,6 +179,7 @@ How often each corpus is re-pulled from its official source. Counts grow between
 | State regulations | Monthly where the publisher supports one. Treat cadence as per-state, not uniform. |
 | State court rules | Monthly, for the jurisdictions that carry them. |
 | State constitutions | Monthly. Constitutions change on the order of years, via ballot measure. |
+| State AG opinions | Monthly, per jurisdiction. An opinion is issued once and not revised, so a refresh looks for NEW opinions rather than changed ones. |
 
 For the age of any single source, call [`GET /boards`](/api-guide/alerts). It is free and carries
 `lastRetrievedAt`, `cadence` and `retrievalStatus` per source. `GET /us/statutes/coverage` reports

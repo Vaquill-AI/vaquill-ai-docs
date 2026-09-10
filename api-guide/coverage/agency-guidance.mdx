@@ -5,7 +5,7 @@ icon: "building-columns"
 ---
 
 Sub-regulatory federal guidance: what an agency says its own rules mean, short of a
-regulation. **51 named sources across 26 agencies, 81,451 documents.**
+regulation. **53 named sources across 26 agencies, 81,451 documents.**
 
 All 51 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one with
 `source`. A new source lands as a registry entry, not a new API token.
@@ -22,7 +22,8 @@ All 51 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one w
 
 ## The registry
 
-Grouped by agency. Documents are citable items (`act_id`), measured per source on 2026-09-07.
+Grouped by agency. Documents are citable items (`act_id`), measured per source on 2026-09-07,
+and on 2026-09-08 for the two FTC sources added that day.
 Sources marked **[note]** have a caveat in [Source notes](#source-notes) that changes how you
 should read their results.
 
@@ -30,7 +31,7 @@ should read their results.
   `GET /us/statutes/coverage` computes its `AGENCY_GUIDANCE` total out of band rather than per
   request, so for up to a day after a source is ingested it can report fewer documents than this
   page.
-  The column above sums to 81,451, which is exactly what `GET /us/statutes/coverage` reports for
+  The column above sums to 86,900, which is exactly what `GET /us/statutes/coverage` reports for
   `AGENCY_GUIDANCE`. Every row is a served count, not an ingested one. The distinction matters most
   on IRS written determinations, where 45,358 documents are ingested and 35,485 are reachable
   through the API, the difference being 9,873 OCR-read scans. The endpoint stays authoritative.
@@ -51,6 +52,8 @@ should read their results.
 | DOJ Justice Manual | `doj_justice_manual` | 1,548 | - |
 | FTC Advisory Opinions **[note]** | `ftc_advisory_opinion` | 430 | 1982-2024 |
 | FTC Policy Statements **[note]** | `ftc_policy_statement` | 59 | 1967-2026 |
+| FTC HSR Premerger Interpretations **[note]** | `ftc_hsr_interpretation` | 4,589 | 1978-2025 |
+| FTC Advocacy Filings **[note]** | `ftc_advocacy_filing` | 860 | 1985-2026 |
 | Copyright Office Circulars | `copyright_circular` | 58 | - |
 | Copyright Office Compendium (Third) **[note]** | `copyright_compendium` | 5,920 | 3 editions, 2014-2021 |
 | CMS Medicare Internet-Only Manuals **[note]** | `cms_iom` | 11,018 | 2000-2026 |
@@ -263,6 +266,54 @@ should read their results.
   mid-word) and two more (`informal-staff-advisory-opinion-97-2` and `-97-3`) are byte-identical
   there, so one of those pages carries the wrong letter. Both are the publisher's defects, and
   both are served as the Commission serves them rather than hidden.
+</Accordion>
+
+<Accordion title="ftc_hsr_interpretation - one series, two halves, and 1997 is missing at the source">
+  The Hart-Scott-Rodino premerger notification interpretations, both halves under one
+  `source`. A **formal** interpretation is the Commission's own authoritative construction of a
+  Premerger Notification Rule under 16 C.F.R. 803.30: a closed series of 20, issued 1978 to
+  2000, with none since. An **informal** interpretation is the Premerger Notification Office
+  answering a practitioner's question about the same rules: 4,569 of them, 1983 to 2025.
+  Filter the two apart with `documentSubtype`; join them on `construedRule`, which carries the
+  rule number the interpretation is about on 99.0% of documents.
+
+  🔴 **1997 is entirely absent, at the publisher.** The FTC serves no informal interpretation
+  numbered for that year at all, against 141 in 1996 and 83 in 1998, so roughly 100 to 140
+  interpretations from 1997 are missing from the source rather than from this corpus.
+
+  The FTC's own listing counts 4,759, which is a LINK count: 186 interpretations are served
+  twice under a duplicate page. Each is held once, under the interpretation number the
+  Commission assigns.
+
+  An informal interpretation is **staff views, not Commission action**, and is expressly not
+  binding on the Commission. Where the record also attaches an "Original Image" scan of the
+  same letter, it is listed in `relatedDocuments` and not mirrored: it is a redacted photocopy
+  of text the document already carries in full.
+
+  `goodLawStatus` is **UNKNOWN** for this source. The Commission states a supersession in the
+  slug of one interpretation and publishes three dated versions of another; those relations are
+  served as `supersedes` / `supersededBy`, and no document is marked dead on the strength of
+  them. `effectiveDate` is absent on 13 of the 20 formal interpretations, because the FTC
+  publishes no date field for that series and those 13 print dates only inside their own
+  argument, where the document's own date cannot be told apart from the dates it cites.
+</Accordion>
+
+<Accordion title="ftc_advocacy_filing - advisory only: these bind nobody">
+  Comments and letters the Commission and its staff address to **state legislatures, state
+  supreme courts, governors and other federal agencies** about the competition effects of a
+  proposed measure. 860 filings, 1985 to 2026.
+
+  🔴 **They bind nobody.** Unlike every other source under `AGENCY_GUIDANCE`, an advocacy
+  filing is not the agency telling the regulated public how it reads a law it administers: it
+  decides no case, construes no FTC rule, and the recipient is free to ignore it. It is held as
+  its own `source` with its own `forum` (`ftc_advocacy`) precisely so it can be scoped out in
+  one parameter, and every document says so in its own `coverageNote`.
+
+  The Matter Number is a **program-level** number the FTC reuses across many filings (one
+  covers 29 different documents), so it identifies a program, not a document, and is served as
+  `caseNumber` rather than as a citation.
+
+  `goodLawStatus` is **UNKNOWN** for this source.
 </Accordion>
 
 <Accordion title="ftc_policy_statement - what Section 5 means, as opposed to one requester's answer">

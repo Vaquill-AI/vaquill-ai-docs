@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vaquill AI",
-  "description": "Legal AI suite for in-house counsel, with a US statutes API. Look up the US Code, the CFR, and all 50 state statute codes, and integrate statute data into your product.",
+  "description": "US primary law as a developer API: 4.9M+ sections across 53 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
   "colors": {
     "primary": "#6E3730",
     "light": "#8C4A3F",
@@ -51,7 +51,7 @@
       "canonical": "https://www.vaquill.ai/docs",
       "og:site_name": "Vaquill AI Docs",
       "og:image": "/images/chat-sources.webp",
-      "og:description": "Legal AI suite for in-house counsel, with a US statutes API. Look up the US Code, the CFR, and all 50 state statute codes, and integrate statute data into your product.",
+      "og:description": "US primary law as a developer API: 4.9M+ sections across 53 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
       "og:locale": "en_US",
       "twitter:card": "summary_large_image",
       "twitter:site": "@vaquillai"
@@ -59,6 +59,101 @@
   },
   "navigation": {
     "tabs": [
+      {
+        "tab": "Data API Guide",
+        "icon": "code",
+        "groups": [
+          {
+            "group": "DATA COVERAGE",
+            "pages": [
+              "api-guide/coverage",
+              "api-guide/coverage/federal",
+              "api-guide/coverage/states",
+              "api-guide/coverage/agency-guidance",
+              "api-guide/coverage/india",
+              "api-guide/roadmap",
+              "api-guide/changelog"
+            ]
+          },
+          {
+            "group": "USE CASES",
+            "pages": [
+              "api-guide/use-cases"
+            ]
+          },
+          {
+            "group": "GET STARTED",
+            "pages": [
+              "api-guide/overview",
+              "api-guide/quickstart",
+              "api-guide/authentication",
+              "api-guide/data-privacy"
+            ]
+          },
+          {
+            "group": "BULK, SQL & RIGHTS",
+            "pages": [
+              "api-guide/bulk-and-sql",
+              "api-guide/rights-and-licensing"
+            ]
+          },
+          {
+            "group": "CORE CONCEPTS",
+            "pages": [
+              "api-guide/concepts/corpus-types",
+              "api-guide/concepts/jurisdictions",
+              "api-guide/concepts/citation-formats",
+              "api-guide/concepts/section-ids",
+              "api-guide/concepts/section-intelligence",
+              "api-guide/point-in-time",
+              "api-guide/concepts/status-and-currency",
+              "api-guide/concepts/amendment-history",
+              "api-guide/concepts/response-fields",
+              "api-guide/concepts/formats"
+            ]
+          },
+          {
+            "group": "LAW CHANGE ALERTS",
+            "pages": [
+              "api-guide/alerts"
+            ]
+          },
+          {
+            "group": "WORKING WITH THE API",
+            "pages": [
+              "api-guide/pagination",
+              "api-guide/rate-limits",
+              "api-guide/errors",
+              "api-guide/best-practices"
+            ]
+          },
+          {
+            "group": "GROUNDING AI",
+            "pages": [
+              "api-guide/grounding-llms"
+            ]
+          },
+          {
+            "group": "RECIPES",
+            "pages": [
+              "api-guide/recipes/rag-grounding",
+              "api-guide/recipes/statute-chatbot",
+              "api-guide/recipes/citation-lookup",
+              "api-guide/recipes/browse-hierarchy",
+              "api-guide/recipes/compliance-mapping",
+              "api-guide/recipes/multi-state-comparison",
+              "api-guide/recipes/coverage-monitoring",
+              "api-guide/recipes/citation-enrichment",
+              "api-guide/recipes/mcp-tool"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Data API Reference",
+        "icon": "database",
+        "openapi": "https://api.vaquill.ai/external/openapi.json"
+      },
       {
         "tab": "Introduction",
         "icon": "book",
@@ -370,94 +465,6 @@
         "tab": "Workspace Reference",
         "icon": "file-code",
         "openapi": "https://api.vaquill.ai/workspace/openapi/v1.json"
-      },
-      {
-        "tab": "Data API Guide",
-        "icon": "code",
-        "groups": [
-          {
-            "group": "DATA COVERAGE",
-            "pages": [
-              "api-guide/coverage",
-              "api-guide/coverage/federal",
-              "api-guide/coverage/states",
-              "api-guide/coverage/agency-guidance",
-              "api-guide/coverage/india",
-              "api-guide/roadmap",
-              "api-guide/changelog"
-            ]
-          },
-          {
-            "group": "USE CASES",
-            "pages": [
-              "api-guide/use-cases"
-            ]
-          },
-          {
-            "group": "GET STARTED",
-            "pages": [
-              "api-guide/overview",
-              "api-guide/quickstart",
-              "api-guide/authentication",
-              "api-guide/data-privacy"
-            ]
-          },
-          {
-            "group": "CORE CONCEPTS",
-            "pages": [
-              "api-guide/concepts/corpus-types",
-              "api-guide/concepts/jurisdictions",
-              "api-guide/concepts/citation-formats",
-              "api-guide/concepts/section-ids",
-              "api-guide/concepts/section-intelligence",
-              "api-guide/point-in-time",
-              "api-guide/concepts/status-and-currency",
-              "api-guide/concepts/amendment-history",
-              "api-guide/concepts/response-fields",
-              "api-guide/concepts/formats"
-            ]
-          },
-          {
-            "group": "LAW CHANGE ALERTS",
-            "pages": [
-              "api-guide/alerts"
-            ]
-          },
-          {
-            "group": "WORKING WITH THE API",
-            "pages": [
-              "api-guide/pagination",
-              "api-guide/rate-limits",
-              "api-guide/errors",
-              "api-guide/best-practices"
-            ]
-          },
-          {
-            "group": "GROUNDING AI",
-            "pages": [
-              "api-guide/grounding-llms"
-            ]
-          },
-          {
-            "group": "RECIPES",
-            "pages": [
-              "api-guide/recipes/rag-grounding",
-              "api-guide/recipes/statute-chatbot",
-              "api-guide/recipes/citation-lookup",
-              "api-guide/recipes/browse-hierarchy",
-              "api-guide/recipes/compliance-mapping",
-              "api-guide/recipes/multi-state-comparison",
-              "api-guide/recipes/coverage-monitoring",
-              "api-guide/recipes/citation-enrichment",
-              "api-guide/recipes/mcp-tool"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Data API Reference",
-        "icon": "database",
-        "openapi": "https://api.vaquill.ai/external/openapi.json"
       },
       {
         "tab": "India API Reference",

@@ -211,6 +211,19 @@ Same state, same `corpusType`, same `actStatus`, two different verdicts, because
 Read `unknown` here as "we make no claim", not as "probably still current".
 </Accordion>
 
+<Accordion title="State AG opinions: every one is `unknown`, and that is the finding">
+Every section under `corpusType=STATE_AG_OPINION` is served with `goodLawStatus: "unknown"`, in every jurisdiction, and it is a construction rather than a gap.
+
+**An AG opinion is not amended. It is withdrawn, overruled, modified, or left standing** -- and almost no publisher records which.
+Surveying all 52 jurisdictions, **exactly three** print a supersession signal of any kind: Georgia publishes an "Obsolete and Modified Opinions" ledger, Ohio publishes an Overruled Opinions list, and Wyoming annotates a withdrawn opinion in its own index with the case that overtook it.
+The other 49 publish nothing, so for them an opinion issued in 1985 and an opinion issued last month are indistinguishable on currency.
+
+None of the three has yet been measured against the criteria we require before certifying a publisher, so the allow-list is **empty** and nothing in this corpus is promoted.
+
+Read `unknown` here as "we make no claim about whether the Attorney General still stands behind this", not as "probably still current".
+And note the separate point that an AG opinion is **persuasive authority, not binding law** even when it is current: see [Corpus types](/api-guide/concepts/corpus-types).
+</Accordion>
+
 <Accordion title="Administrative adjudications: the text is served, the doctrine is not certified">
 Every corpus under `corpusType=AGENCY_ADJUDICATION` except one is served with `goodLawStatus: "unknown"`, and that is a construction rather than a gap.
 
@@ -252,6 +265,49 @@ Read the order's own terms.
 
 The Commission's Case Status facet does not close that gap either, and should not be read as if it did: it says a MATTER is closed, not that the order which closed it stopped binding.
 It is held with the document and is never mapped to a dead `actStatus`, and it is not exposed as a response field.
+</Accordion>
+
+<Accordion title="FTC HSR interpretations: a relation the publisher states, and a verdict it does not">
+`ftc_hsr_interpretation` is `unknown`, and it is worth saying what that does and does not mean here,
+because this source carries real supersession data.
+
+The Commission published Formal Interpretation No. 13 to **supersede** No. 5, and says so in the
+document's own identifier. It publishes the explanatory material for No. 15 in **three dated
+versions**, 1998, July 1999 and March 2001. Both relations are served, as `supersedes` and
+`supersededBy` carrying act ids, so you can walk from any version of an interpretation to the one
+that replaced it.
+
+What we do **not** do is convert that into a currency verdict. Every member of those chains is
+served with `actStatus: "in_force"`, including the interpretations that were superseded.
+
+The reason is the size of the series. There are 20 formal interpretations, so one wrong link is 5%
+of the corpus, and a dead `actStatus` removes a document from retrieval altogether. The earlier
+interpretation is also usually exactly what a reader of the later one needs to see. So we serve the
+sequence and let you judge it, rather than asserting a conclusion the Commission never printed.
+
+The informal half carries no supersession data at all, and is in any case **staff views rather than
+Commission action**: the Premerger Notification Office answering a practitioner's question, not
+binding on the Commission.
+
+⚠️ `effectiveDate` is absent on 13 of the 20 formal interpretations. The FTC publishes no date
+field for that series, and those 13 print dates only inside their own argument, where the
+document's own date cannot be distinguished from the dates of the rules and correspondence it
+discusses. We leave the field empty rather than guess it.
+</Accordion>
+
+<Accordion title="FTC advocacy filings: advisory, and never law to begin with">
+`ftc_advocacy_filing` is `unknown` for a reason that is different in kind from every other source
+on this page: currency is close to the wrong question.
+
+An advocacy filing is the Commission or its staff writing to a state legislature, a state supreme
+court, a governor or another federal agency about what a proposed measure would do to competition.
+**It binds nobody.** It decides no case, it construes no FTC rule, and the recipient is free to
+ignore it. There is no status it could lose, because it never had the force these other sources
+have.
+
+It is held as its own `source`, with its own `forum` value (`ftc_advocacy`), so you can scope it in
+or out of an `AGENCY_GUIDANCE` query in one parameter, and every document carries a `coverageNote`
+saying this in its own payload.
 </Accordion>
 
 <Accordion title="BIA and Attorney General decisions: reading a supersession link">

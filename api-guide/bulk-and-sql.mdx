@@ -1,0 +1,173 @@
+---
+title: "Bulk and SQL access"
+description: "Query the whole US primary-law corpus as a database. 229 Parquet files in an object store, readable in place over HTTPS with DuckDB or loaded into Postgres, plus direct access to the vector index"
+icon: "database"
+---
+
+The API answers one question at a time. When you need the corpus itself, take it.
+
+Every dated snapshot ships as Parquet in a public object store. You can query it
+where it sits, load it into your own warehouse, or pull the whole thing down and
+never call us again.
+
+```sql
+-- Runs as-is. No key, no download, no signup.
+INSTALL httpfs; LOAD httpfs;
+
+SELECT citation, section_title, word_count
+FROM read_parquet('https://oss-data-us.vaquill.ai/v2026.08/us_ak_constitutions.parquet')
+WHERE section_title ILIKE '%search%';
+```
+
+<Note>
+  That query reads a remote Parquet file over HTTPS and returns in well under a
+  second. The object store serves range requests, so DuckDB fetches only the
+  column chunks it needs rather than the file.
+</Note>
+
+## What ships
+
+<CardGroup cols={2}>
+  <Card title="229 Parquet files" icon="file-code">
+    One file per jurisdiction and corpus, so you can take only the slice you
+    need: `us_ak_constitutions.parquet`, `us_tx_statutes.parquet`, and so on.
+  </Card>
+  <Card title="One combined tarball" icon="box-archive">
+    `open-us-law-v2026.08-parquet.tar`, about 4.09 GB, when you would rather
+    fetch once and unpack locally.
+  </Card>
+  <Card title="A manifest with checksums" icon="fingerprint">
+    `index.json` lists every file with its byte size, SHA-256 and URL, so you
+    can verify an unattended sync.
+  </Card>
+  <Card title="Dated snapshots" icon="calendar">
+    Versions are immutable. Pin `v2026.08` and your results stay reproducible
+    when the next snapshot lands.
+  </Card>
+</CardGroup>
+
+| Resource | URL |
+|---|---|
+| Manifest | `https://oss-data-us.vaquill.ai/index.json` |
+| Browsable index | `https://oss-data-us.vaquill.ai/index.html` |
+| Combined tarball | `https://oss-data-us.vaquill.ai/v2026.08/open-us-law-v2026.08-parquet.tar` |
+| Canonical mirror | [Hugging Face](https://huggingface.co/datasets/vaquill/open-us-law) |
+| Ingestion source | [GitHub](https://github.com/Vaquill-AI/open-us-law) |
+
+## Schema
+
+Every Parquet file carries the same 24 columns.
+
+| Column | Type | What it holds |
+|---|---|---|
+| `act_id` | VARCHAR | Stable identifier for the provision. See [Section IDs](/api-guide/concepts/section-ids). |
+| `citation` | VARCHAR | Full citation |
+| `citation_short` | VARCHAR | Short form |
+| `state` | VARCHAR | Two-letter code, null for federal |
+| `jurisdiction` | VARCHAR | Jurisdiction name |
+| `document_type` | VARCHAR | Corpus type. See [Corpus types](/api-guide/concepts/corpus-types). |
+| `title_number` | VARCHAR | Title or code number |
+| `title_name` | VARCHAR | Title or code name |
+| `chapter` | VARCHAR | Chapter number |
+| `chapter_name` | VARCHAR | Chapter name |
+| `section_number` | VARCHAR | Section number |
+| `section_title` | VARCHAR | Section heading |
+| `breadcrumb` | VARCHAR | Full hierarchy path |
+| `display_path` | VARCHAR | Human-readable path |
+| `act_status` | VARCHAR | `in_force`, `repealed`, `reserved`, and related states |
+| `text` | VARCHAR | The provision text |
+| `word_count` | BIGINT | Words in `text` |
+| `source_url` | VARCHAR | The official publisher page this came from |
+| `last_amended_year` | BIGINT | Most recent amendment year |
+| `subsection_count` | BIGINT | Subsections parsed |
+| `cross_references_usc` | VARCHAR | US Code sections this provision cites |
+| `cross_references_cfr` | VARCHAR | CFR sections this provision cites |
+| `public_laws_referenced` | VARCHAR | Public laws this provision cites |
+| `year` | BIGINT | Snapshot year |
+
+<Note>
+  This is the bulk schema. The REST API returns a richer object with
+  amendment history, prior effective dates and format mirrors. See
+  [Response fields](/api-guide/concepts/response-fields).
+</Note>
+
+## Load it into your own database
+
+<CodeGroup>
+
+```sql DuckDB
+-- Whole corpus into a local database file. Globs are not supported over plain
+-- HTTPS, so read the file list out of the manifest and pass it as an array.
+INSTALL httpfs; LOAD httpfs; INSTALL json; LOAD json;
+
+CREATE TABLE law AS
+SELECT * FROM read_parquet(
+  (SELECT list(f.url)
+   FROM (SELECT unnest(files) AS f
+         FROM read_json_auto('https://oss-data-us.vaquill.ai/index.json'))
+   WHERE f.file LIKE '%.parquet')
+);
+```
+
+```sql Postgres
+-- After downloading the tarball and unpacking
+CREATE TABLE law (
+  act_id text PRIMARY KEY, citation text, citation_short text,
+  state text, jurisdiction text, document_type text,
+  title_number text, title_name text, chapter text, chapter_name text,
+  section_number text, section_title text, breadcrumb text, display_path text,
+  act_status text, text text, word_count bigint, source_url text,
+  last_amended_year bigint, subsection_count bigint,
+  cross_references_usc text, cross_references_cfr text,
+  public_laws_referenced text, year bigint
+);
+-- then COPY from a Parquet-aware loader, or convert with DuckDB first
+```
+
+```bash Verify a sync
+curl -s https://oss-data-us.vaquill.ai/index.json \
+  | jq -r '.files[] | select(.file|endswith(".parquet")) | "\(.sha256)  \(.file)"' \
+  > SHA256SUMS
+shasum -a 256 -c SHA256SUMS
+```
+
+</CodeGroup>
+
+## The vector index
+
+The corpus is also held as an embedded, chunked retrieval index. Direct access
+to that index is available under a data licence, which matters if you would
+rather not spend the compute re-embedding several million sections to get back
+to where we already are.
+
+Talk to us at [contact@vaquill.ai](mailto:contact@vaquill.ai) about scope.
+
+## What this is not
+
+<Warning>
+  This is not a hosted replica we operate for you. There is no connection string
+  to rent. You take a copy and run it on your own infrastructure, which is the
+  point: the copy is yours, and it keeps working if we do not.
+</Warning>
+
+## Licence
+
+The legal text is public domain under the government edicts doctrine
+(*Georgia v. Public.Resource.Org*, 590 U.S. 255 (2020)). Our compilation, the
+schema, citations, hierarchy and cross-references, is CC BY 4.0. The ingestion
+scrapers are Apache-2.0.
+
+Attribute as "Open US Law by Vaquill AI, CC BY 4.0". Attribution can be waived
+under a commercial licence.
+
+<Warning>
+  **The free snapshot and a paid bulk licence are not the same thing.** Anything
+  you take from the public object store is CC BY 4.0 and irrevocably yours,
+  on every version we have published.
+
+  A paid bulk delivery, where we ship you the corpus under a separate signed
+  agreement rather than answering calls, is different: on termination or expiry
+  you delete stored copies of our compilation within 30 days. There the corpus
+  is the deliverable, so open-ended retention would let one period buy it
+  outright. See [Rights and licensing](/api-guide/rights-and-licensing).
+</Warning>
