@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vaquill AI",
-  "description": "US primary law as a developer API: 4.9M+ sections across 53 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
+  "description": "US primary law as a developer API: 5M+ sections across 53 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
   "colors": {
     "primary": "#6E3730",
     "light": "#8C4A3F",
@@ -51,7 +51,7 @@
       "canonical": "https://www.vaquill.ai/docs",
       "og:site_name": "Vaquill AI Docs",
       "og:image": "/images/chat-sources.webp",
-      "og:description": "US primary law as a developer API: 4.9M+ sections across 53 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
+      "og:description": "US primary law as a developer API: 5M+ sections across 53 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
       "og:locale": "en_US",
       "twitter:card": "summary_large_image",
       "twitter:site": "@vaquillai"
