@@ -219,18 +219,31 @@ A derived `goodLawStatus` maps an unverified repeal claim to **`unknown`**, not 
 The Factories Act, 1948 is the worked example: its recorded repeal is by the Industrial Relations
 Code, 2020, which has never been brought into force.
 
-### `GET /acts/list` cannot see most of the corpus
+### `GET /acts/list` is a dated snapshot, not a live query
 
-`GET /acts/list` enumerates about **22,000 of the roughly 64,000 served acts**.
-It reads a separate act table that predates the current corpus, so about two thirds of what
-`POST /acts/search` will happily return is invisible to it.
-Every `/list` response now carries a `note` saying so.
+`GET /acts/list` enumerates **every served act**, 64,179 of them, and pages over a total order, so
+walking the offsets returns each act exactly once with a `total` that does not move underneath you.
 
-Use `POST /acts/search` for discovery, and `GET /acts/coverage` for what exists.
-An act id you cannot find through `/list` is very often held; a `notFound` from a lookup route is
-more often a discovery gap than a corpus gap.
+It answers from an act index rebuilt on the ingest cadence rather than from the live collection, so
+it is a snapshot with a date.
+An act ingested after that build is returned by `POST /acts/search` and by the act routes before it
+appears here.
+Every response states the build date in `note`.
 
-A properly paged act-level index is the fix and it is not built yet.
+Until 2026-09-08 this route read a legacy table that predated the corpus and saw about 22,000 acts,
+roughly a third.
+If you built against that limitation, you can drop the workaround.
+
+### The citation graph matches on titles, so it under-reports
+
+`GET /{actId}/cited-by` and `GET /{actId}/subordinate` find edges by matching the act's TITLE as the
+publisher wrote it, because that is what the corpus stores.
+Citing provisions are inconsistent about the leading article, so we try several spellings, but a
+citing document that names an act differently again is not found.
+
+`total` is the count of distinct provisions matched, not of passages, and `totalIsExact` tells you
+whether the scan reached its ceiling.
+Treat a count as a floor.
 
 ### 10.7% of acts carry no link to the publisher's document
 
@@ -271,18 +284,56 @@ are worth knowing about before you render it verbatim:
 
 Both are ingest repairs, not serving bugs, and neither affects which provision you get back.
 
-### The IPC to BNS mapping is a curated slice, not a complete table
+### The IPC to BNS mapping is official, and still not exhaustive
 
-`GET /acts/corresponding-provisions/{actCode}` holds **30 mapped pairs against the Indian Penal
-Code's 511 sections, about 6%**.
-The response states `mappedProvisions`, `isComplete: false`, and that the basis is curated rather
-than official.
+`GET /acts/corresponding-provisions/{actCode}` serves **534 IPC to BNS pairs** and **518 CrPC to
+BNSS pairs**, transcribed from the correspondence tables the Bureau of Police Research and
+Development publishes under the Ministry of Home Affairs.
+The response carries the publication and its URL in a `source` block, and `coverage.basis` reads
+`official-publication`.
+
+`numberedSectionsMapped` is derived, not asserted: 477 of the IPC's 511 numbered sections and 469 of
+the CrPC's 484.
+`isComplete` stays `false`, because the official tables themselves do not pair every section.
+
+A section absent from the mapping is not necessarily unchanged.
+Some offences were dropped rather than renumbered, and at least one has no counterpart the publisher
+is willing to name: BPRD lists BNS 152 as a new provision rather than as the successor to IPC 124A,
+so we do not serve it as one.
+
 Both codes remain live law simultaneously for the lifetime of pending trials, so a mapping is a
 research aid and not a substitution rule.
 
+Before 2026-09-08 this route served 30 curated IPC pairs and 18 CrPC pairs, and five of those CrPC
+pairs named the wrong BNSS section.
+If you cached any of it, re-fetch.
+
+### An unmatchable filter value is now refused, not charged
+
+A filter value outside the published vocabulary returns **422 and costs nothing**.
+
+Until 2026-09-08 it returned HTTP 200 with an empty result set and a full charge, so a request that
+could never match anything looked like a legitimate no-results answer and was billed as one.
+Worse, the parameter descriptions themselves listed values that do not exist in the corpus, so a
+caller following our own documentation paid for empty pages.
+
+The enforced vocabularies are `category`, `actStatus`, `provisionType`, `sectionType`,
+`legalSubject`, `state` and `sort`.
+An inverted year range (`yearFrom` greater than `yearTo`) is refused the same way.
+
+`department` and `ministry` are **not** enforced and never will be.
+`department` has 943 distinct values and `GET /acts/filters` truncates its own list at 256, so a
+closed list would reject values we actually hold.
+The enforced vocabularies are faceted from the corpus rather than read from a fixed list, so a value
+a future ingest introduces is served immediately rather than starting to 422.
+
+If your integration relied on an empty 200 for an invalid filter, it will now see a 422 naming the
+parameter and the values it accepts.
+
 ## Endpoints and what they cost
 
-Twelve routes, all under `https://api.vaquill.ai/api/v1/in/acts`.
+Eighteen routes, all under `https://api.vaquill.ai/api/v1/in/acts`, plus
+`GET /api/v1/in/api-credits/pricing` which is free and needs no key.
 Costs are in API credits, taken from the live pricing matrix; `GET /api-credits/pricing` is
 authoritative.
 
@@ -300,6 +351,12 @@ authoritative.
 | `GET /{actId}/text` | 3 | The source text URLs for one enactment, pointing at the publisher's own document. |
 | `GET /{actId}/sections/{n}/body` | 3 | The publisher's full text for one provision. Refunded when the text cannot be reproduced. |
 | `GET /{actId}/amendments` | 5 | The amendment history recorded for a whole enactment. |
+| `GET /resolve` | 2 | Resolve a citation string (`u/s 302 IPC`, `Art. 21 Constitution`) to the provisions it names. |
+| `POST /resolve` | 2 each | The same, in batch. Billed per citation; an unresolvable one is refunded. |
+| `GET /{actId}/sections/{n}/references` | 2 | The acts and sections one provision cites outward. |
+| `GET /{actId}/cited-by` | 2 | The inverse: provisions elsewhere in the corpus that cite this act. |
+| `GET /{actId}/subordinate` | 2 | Rules, regulations and notifications the publisher records under this act. |
+| `GET /{actId}/definitions` | 2 | Defined terms in the act, and the provisions that define them. |
 
 Full request and response shapes are in the [India API Reference](https://api.vaquill.ai/in/openapi.json).
 
