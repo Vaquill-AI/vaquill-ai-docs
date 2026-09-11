@@ -23,6 +23,8 @@ jurisdiction; markers [1] to [4] give the reason in
 [Why four jurisdictions show no court rules](#why-four-jurisdictions-show-no-court-rules). Marker [5]
 is not a gap but a sourcing caveat, in
 [Massachusetts regulations are an unofficial copy](#massachusetts-regulations-are-an-unofficial-copy-and-we-say-so-per-section).
+Marker [6] is also a sourcing caveat, in
+[Oklahoma regulations come from two sources](#oklahoma-regulations-come-from-two-sources-and-the-currencynote-says-which).
 
 <Note>
   These rows are counted on a slightly different rule from the corpus totals: they exclude
@@ -51,7 +53,7 @@ is not a gap but a sourcing caveat, in
 | Maryland | 39,552 | 12,739 | 312 | 1,220 |
 | Arkansas | 38,935 | 27,837 | 513 | 720 |
 | Colorado | 35,758 | 1,155 | 424 | - [2] |
-| Oklahoma | 35,330 | 56,847 | 545 | - [3] |
+| Oklahoma | 35,330 | 57,648 [6] | 545 | - [3] |
 | Tennessee | 34,756 | 11,608 | 152 | 626 |
 | Virginia | 33,860 | 22,396 | 134 | 358 |
 | Ohio | 33,158 | 19,354 | 266 | 1,167 |
@@ -139,6 +141,37 @@ were entirely absent. 155 rules across 8 documents are now served.
 **[4] Publisher policy** - Missouri.
 Missouri's published court policy does not permit automated access to its judicial websites, and
 we honor it. Coverage there needs a license from the state, not a workaround.
+
+### Oklahoma regulations come from two sources, and the `currencyNote` says which
+
+**[6] Mixed provenance** - Oklahoma regulations. Measured 2026-09-11.
+
+Oklahoma is the one jurisdiction where the Regulations column is not a single corpus, and the split
+is worth knowing before you cite from it.
+
+| | sections | titles |
+|---|---|---|
+| Promulgating agency's own copy on `oklahoma.gov` | 20,159 | 66 |
+| Third-party compilation, captured 2024 | 37,489 | 148 |
+| Total distinct | **57,648** | 155 of 204 assigned |
+
+The Secretary of State publishes the official Oklahoma Administrative Code on `rules.ok.gov`, and
+that host's `robots.txt` names nine crawlers `Disallow: /` under a `Content-Signal` header making the
+signal a condition of access. We are refused by name and we honor it, so the official host is not a
+route we use. The same office's `www.sos.ok.gov`, which carries the Oklahoma Register archive, is
+`Disallow: /` as well.
+
+What we serve instead, for the 66 titles where it exists, is the copy each promulgating agency
+publishes of its own rules on `oklahoma.gov`, whose `robots.txt` is `Allow: /`. Those copies are
+self-labeled unofficial, and **every section carries that in its `currencyNote` with
+`officialStatus: "unofficial"`**, so a section sourced from an agency PDF is distinguishable from one
+sourced from the compilation without having to ask us. The remaining 138 assigned titles publish no
+machine-readable copy of their rules on that host, so those sections continue to come from the 2024
+compilation rather than being dropped.
+
+The denominator above is the Oklahoma Register's own Agency/Title Index, 204 titles assigned as of
+6-30-26, re-derived on every refresh rather than hardcoded. 49 assigned titles are served by neither
+source. For anything where the controlling text matters, cite the official Code.
 
 ### Massachusetts regulations are an unofficial copy, and we say so per section
 
