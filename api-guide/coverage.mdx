@@ -4,8 +4,8 @@ description: "Exactly which US jurisdictions and corpus types the Vaquill statut
 icon: "map-location-dot"
 ---
 
-**5,089,670 distinct sections, indexed as 19,239,374 retrieval passages.**
-That splits 1,519,115 federal and 3,570,555 state and territory, measured **2026-09-11**.
+**5,095,028 distinct sections, indexed as 19,288,724 retrieval passages.**
+That splits 1,519,115 federal and 3,575,913 state and territory, measured **2026-09-11**.
 
 ```bash
 # The live, self-describing answer. Free, and authoritative over this page.
@@ -19,7 +19,7 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
     adjudications, and per-corpus scope limits.
   </Card>
   <Card title="States and territories" icon="map" href="/api-guide/coverage/states">
-    **3,481,528 sections** across 52 jurisdictions. Statutes, regulations, constitutions, court
+    **3,483,977 sections** across 52 jurisdictions. Statutes, regulations, constitutions, court
     rules, and state agency guidance.
   </Card>
   <Card title="Agency guidance" icon="building-columns" href="/api-guide/coverage/agency-guidance">
@@ -40,7 +40,7 @@ OpenAPI document, with its own counts, its own filters and its own limits.
 | State court rules | 49 | 56,087 | `STATE_RULES` |
 | State constitutions | 51 | 12,762 | `STATE_CONSTITUTION` |
 | State agency guidance | 49 | 13,350 | `STATE_AGENCY_GUIDANCE` |
-| State AG opinions | 34 | 68,874 | `STATE_AG_OPINION` |
+| State AG opinions | 36 | 73,514 | `STATE_AG_OPINION` |
 | Federal, 14 corpora | Federal | 1,519,120 | See [Federal](/api-guide/coverage/federal) |
 
 Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats
@@ -127,6 +127,21 @@ stating plainly, because a buyer would otherwise be surprised by both:
   1995-2011, so the alternative was to publish no Delaware opinion older than 2011.
 - **50 further posts carry no opinion number and are excluded**: press releases, job postings and
   notices that share the archive but are not opinions.
+
+**Montana, 3,527 opinions, volumes 15-44 (roughly 1933-1992).** Documented here because what is
+served is a deliberate subset and the reason is worth stating. The date range is DERIVED from the
+latest year appearing in each opinion's text: Montana publishes no structured issue date for these,
+so they carry no `year` and are not reachable by a year filter.
+
+- Montana's Judicial Branch publishes 8,516 opinion PDFs spanning 1899-2024. **Volumes 1 to 14 are
+  cited by PAGE, not by opinion number**, and the publisher prints two opinions on one page, so
+  there is no per-opinion identifier to key on. Those 3,969 are not served.
+- **The per-opinion PDFs are page extracts**, so an untrimmed document carries the opinion that
+  follows it. Each body is cut to its own `OPINION NO.` header; the 1,010 where that header cannot
+  be read, or where the opinion's own continuation is not in its PDF, are withheld rather than
+  served with a neighbour's text under the wrong citation.
+- Opinions from volume 45 onward (1991 to date) are published by a different Montana office and are
+  not included here.
 
 **Arkansas, 10,295 opinions, 1984-2026.** The largest jurisdiction in this corpus. Two things to
 know:

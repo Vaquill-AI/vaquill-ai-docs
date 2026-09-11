@@ -51,7 +51,7 @@ Marker [6] is also a sourcing caveat, in
 | New York | 40,146 | 52,312 | 204 | 1,088 |
 | South Dakota | 39,589 | 28,988 | 290 | 155 |
 | Maryland | 39,552 | 12,739 | 312 | 1,220 |
-| Arkansas | 38,935 | 27,837 | 513 | 720 |
+| Arkansas | 38,935 | 27,837 | 513 | 774 |
 | Colorado | 35,758 | 1,155 | 424 | - [2] |
 | Oklahoma | 35,330 | 57,648 [6] | 545 | - [3] |
 | Tennessee | 34,756 | 11,608 | 152 | 626 |
@@ -294,7 +294,7 @@ Formal written opinions in which a state's chief legal officer construes that st
 constitution and regulations for an officer, legislator or local government who asked. Queryable
 with `corpusType=STATE_AG_OPINION` paired with `state`.
 
-**68,874 opinions across 34 jurisdictions.** Like state agency guidance this is **not** a
+**73,514 opinions across 36 jurisdictions.** Like state agency guidance this is **not** a
 comprehensive rollout: it lands jurisdiction by jurisdiction, and it is early. The survey behind
 this corpus measured roughly 184,600 individually addressable opinions across 52 jurisdictions, so
 what is live is a fraction of what exists. Call `GET /us/statutes/coverage` for the live figure
@@ -307,29 +307,38 @@ rather than this page, which is written by hand.
   still stands. Read it as "we make no claim", not as "probably still current".
 </Warning>
 
+<Warning>
+  🔴 **Montana carries no issue date.** The state publishes by volume, cited as
+  `43 Mont. Op. Att'y Gen. No. 14`, and prints no date on an opinion. Every other jurisdiction
+  here answers an `asOf` query from its issue date; Montana's 3,527 cannot, and are reachable by
+  citation, volume and search instead.
+</Warning>
+
 | State | Opinions | Range | Scope limit worth knowing |
 |---|---|---|---|
 | Alabama | 11,928 | 1979-2026 | The state's own archive begins in 1979; earlier opinions are published only by an aggregator we do not source from, so pre-1979 is a stated limit rather than a gap |
-| Arkansas | 10,295 | 1984-2026 | 334 further opinions are listed by the AG but never published by it; recorded as a limit, not counted |
+| Arkansas | 10,298 | 1984-2026 | 334 further opinions are listed by the AG but never published by it; recorded as a limit, not counted |
 | Indiana | 9,759 | 1906-2026 | Scanned eras are cut by page in the state's own PDFs, so some opinions are served as their opening pages |
 | Missouri | 8,449 | 1962-2026 | 1933-1961 is refused on identity: the printed number is a requester-alphabetical folder, not a document id |
 | North Dakota | 5,550 | 1942-2026 | Three families: legal, advisory, and open-records |
 | Washington | 4,428 | 1949-2026 | Two series, formal `AGO` and letter `AGLO`, filterable on `series` |
+| Montana | 3,527 | vols. 15-44 | 🔴 Cited by volume and opinion number; the state publishes no issue date, so these do not answer an `asOf` query. Volumes 1-14 are excluded: their leading number is a page in the bound volume, not an opinion number |
 | Texas | 2,914 | 1983-2026 | The seven post-1983 series only. Roughly 14,800 earlier opinions sit behind paths the state's own robots.txt disallows, so they are not crawled |
 | Tennessee | 2,650 | 2000-2026 | The archive begins in 2000; the state answers pre-2000 requests by telephone only |
 | California | 1,961 | 1977-2026 | Four series (`OP`, `CV`, `CR`, `SO`), filterable on `series`; the state lists two opinions it does not serve, one withdrawn and one it cannot deliver |
 | South Dakota | 1,652 | 1968-2025 | The publisher prints no total; the archive is enumerated by walking its own document ids |
 | Illinois | 1,451 | 1971-2025 | Binding PAC opinions and FOIA/OMA determination letters are a different instrument and are excluded |
 | Nebraska | 1,191 | 1990-2026 |  |
+| North Carolina | 1,106 | 1976-2010 | The state prints no opinion number; opinions are keyed on issue date plus the official who asked |
 | Delaware | 843 | 1995-2026 | One series; ~17 are substantive opinions, the rest FOIA opinion letters |
 | Maine | 832 | 1978-2024 |  |
 | Pennsylvania | 653 | 1957-1992 | Split from bound volumes; the 1895-1930 volumes print no per-opinion number and are not served |
 | Connecticut | 626 | 1990-2025 |  |
 | New York | 536 | 1995-2023 |  |
 | Alaska | 532 | 1986-2026 |  |
-| Massachusetts | 529 | 1968-1993 | Split out of the Attorney General's annual reports. Only that era carries citable opinion numbers; the wider 1832-2025 report series does not |
+| Massachusetts | 529 | 1968-1993 | Split out of the Attorney General's annual reports. **The state stopped printing numbered opinions after FY1993, so this corpus ends there and is not going to grow.** Only that era carries citable opinion numbers; the wider 1832-2025 report series heads each opinion with a subject line and identifies it by page alone |
 | Georgia | 525 | 1992-2026 | Official and Unofficial series, filterable on `series` |
-| Mississippi | 520 | 2020-2026 | The state's pre-2020 opinion database is no longer published anywhere by the state |
+| Mississippi | 524 | 2020-2026 | The state's pre-2020 opinion database is no longer published anywhere by the state |
 | Idaho | 151 | 1985-2026 | Opinions only; guidelines and certificates of review are excluded |
 | West Virginia | 151 | 2007-2026 | The state prints no opinion number, so these are cited by issue date and requester surname |
 | Arizona | 147 | 1999-2026 | The state's own archive begins in 2011; six earlier opinions reach back to 1999, so the range is wider than the coverage |
@@ -339,17 +348,18 @@ rather than this page, which is written by hand.
 | Oklahoma | 68 | 2023-2026 | Older opinions are on a network that prohibits automated access |
 | Hawaii | 66 | 1993-2023 | Nothing issued since April 2023 |
 | Kansas | 56 | 2023-2026 | Pre-2023 is held by a university law library, not the state |
-| Nevada | 41 | 2017-2026 | The modern per-opinion era only. The bound annual compendia are not yet split into individual opinions |
+| Nevada | 41 | 2017-2026 | The modern per-opinion era only. The bound annual compendia that precede it are not yet split into individual opinions. **Nevada published no opinions at all in 2023, and 12 numbers are absent across 2018-2022**; its archive page does not say whether those were issued and not posted, so they are recorded as gaps rather than as declared absences |
 | District of Columbia | 37 | 1982-2026 | Formal opinions only. Advisory Neighborhood Commission letters are a different instrument and are excluded |
 | Wyoming | 17 | 2000-2018 | Dormant since 2018; carries the state's own `WITHDRAWN` annotations |
 | New Jersey | 16 | 1985-2017 | The state records most years as having issued none |
 
 <Note>
-  **Two jurisdictions are excluded from this corpus entirely** and will not appear: Montana and New
-  Mexico both publish a machine-readable signal declining this use of their content, and we honour
-  it. Iowa publishes its opinions only through a commercial service. Several further jurisdictions
-  identify opinions by subject or by date rather than by a citable number, and are not built,
-  because an identifier we invented would not survive the publisher renaming a document.
+  **New Mexico is not served.** Iowa publishes its opinions only through a commercial service. A few
+  further jurisdictions are not built because the publisher identifies opinions by subject alone, and
+  an identifier we invented would not survive the publisher renaming a document. Identification by
+  DATE is no longer a reason to refuse: where the publisher prints a structured issue date, that date
+  is the citable key, which is how the District of Columbia, Mississippi and West Virginia are
+  served.
 </Note>
 
 <CardGroup cols={2}>

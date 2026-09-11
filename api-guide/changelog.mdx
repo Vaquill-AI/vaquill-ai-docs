@@ -7,6 +7,31 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-09-12" description="STATE_AG_OPINION reaches 36 jurisdictions and 73,514 opinions: Montana and North Carolina">
+  ## `STATE_AG_OPINION`: Montana and North Carolina
+
+  **73,514 opinions across 36 jurisdictions.** The per-state table, with each jurisdiction's
+  scope limit, is on
+  [state coverage](/api-guide/coverage/states#state-attorney-general-opinions).
+
+  - **Montana, 3,527 opinions, volumes 15 to 44.** 🔴 **These carry no issue date.** Montana
+    publishes by volume and prints no date on an opinion, so unlike every other jurisdiction here
+    they do not answer an `asOf` query. They are reachable by citation, volume and search.
+    Volumes 1 to 14 are excluded: the leading number on those is a page in the bound volume, not
+    an opinion number, so there is nothing stable to cite them by.
+  - **North Carolina, 1,106 opinions, 1976-2010.** The state prints no opinion number, so these
+    are keyed on issue date plus the official who asked.
+
+  Montana was previously listed as excluded because its site returned a `Content-Signal` header
+  declining AI training use. On re-reading, that header was a platform default rather than
+  anything the state wrote: the two robots.txt files involved are byte-identical and contain no
+  publisher-authored line. The exclusion was lifted. The documents on the one host whose operator
+  did enable AI-crawler blocking remain excluded and are not held.
+
+  Corpus-wide this takes coverage to **5,095,028 sections** across 53 jurisdictions, indexed as
+  **19,288,724** retrieval passages.
+</Update>
+
 <Update label="2026-09-11" description="STATE_AG_OPINION reaches 34 jurisdictions and 68,874 opinions: seven more states, plus corrected agency-guidance and federal counts">
   ## `STATE_AG_OPINION`: seven more jurisdictions
 
