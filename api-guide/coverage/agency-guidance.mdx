@@ -1,13 +1,20 @@
 ---
 title: "Agency guidance sources"
-description: "The 51 named federal sources behind corpusType=AGENCY_GUIDANCE, each independently filterable with source"
+description: "The 53 named federal sources behind corpusType=AGENCY_GUIDANCE, each independently filterable with source"
 icon: "building-columns"
 ---
 
 Sub-regulatory federal guidance: what an agency says its own rules mean, short of a
-regulation. **53 named sources across 26 agencies, 81,451 documents.**
+regulation. **53 named sources across 26 agencies, 51,427 documents.**
 
-All 51 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one with
+<Note>
+  That total counts the **named sources on this page only**, and it is the number the table below
+  sums to. The `AGENCY_GUIDANCE` corpus type holds more than this: guidance that is not attributed
+  to one of the named sources carries the token without carrying a `source` you can filter on. See
+  the [federal coverage table](/api-guide/coverage/federal) for the token's own total.
+</Note>
+
+All 53 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one with
 `source`. A new source lands as a registry entry, not a new API token.
 
 ```json
@@ -77,7 +84,7 @@ should read their results.
 | FinCEN BOI Rulemaking Q&As **[note]** | `fincen_boi_rule_qa` | 22 | 2025-2026 |
 | FinCEN Small Entity Compliance Guide **[note]** | `fincen_boi_compliance_guide` | 1 | v1.4, March 2025 |
 | FinCEN AML Act 2020 material | `fincen_amla_material` | 13 | 2021-2026 |
-| OFAC Sanctions FAQs **[note]** | `ofac_faq` | 1,350 | Revisions since 2023-03-22 |
+| OFAC Sanctions FAQs **[note]** | `ofac_faq` | 1,362 | Revisions since 2023-03-22 |
 | CPSC OGC Advisory Opinions | `cpsc_advisory_opinion` | 305 | 1973-2012, archive |
 | CPSC Small Entity Compliance Guides | `cpsc_secg` | 34 | - |
 | BIS Advisory Opinions (EAR) | `bis_advisory_opinion` | 39 | 2003-2023 |

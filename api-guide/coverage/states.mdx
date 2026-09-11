@@ -4,7 +4,7 @@ description: "Per-jurisdiction section counts for statutes, regulations, constit
 icon: "map"
 ---
 
-**3,481,512 sections across 52 jurisdictions**, 50 states plus DC and Puerto Rico.
+**3,482,387 sections across 52 jurisdictions**, 50 states plus DC and Puerto Rico.
 
 Each column maps to a `corpusType` filter paired with `state`: statutes to `STATE`, regulations
 to `REGULATION`, constitutions to `STATE_CONSTITUTION`, court rules to `STATE_RULES`.
@@ -20,15 +20,15 @@ rather than one per jurisdiction.
 
 Measured 2026-09-08, sorted by statute volume. A dash means we do not serve that corpus for that
 jurisdiction; markers [1] to [4] give the reason in
-[Why six jurisdictions show no court rules](#why-six-jurisdictions-show-no-court-rules). Marker [5]
+[Why four jurisdictions show no court rules](#why-four-jurisdictions-show-no-court-rules). Marker [5]
 is not a gap but a sourcing caveat, in
 [Massachusetts regulations are an unofficial copy](#massachusetts-regulations-are-an-unofficial-copy-and-we-say-so-per-section).
 
 <Note>
   These rows are counted on a slightly different rule from the corpus totals: they exclude
   superseded records and do not collapse versioned duplicates, so summing a column lands a little
-  under the matching `corpusType` total. Court rules are the widest case, 51,395 summed here
-  against 53,638 for `STATE_RULES`. Take `GET /us/statutes/coverage` as authoritative for a total
+  under the matching `corpusType` total. Court rules are the widest case, 53,789 summed here
+  against 56,087 for `STATE_RULES`. Take `GET /us/statutes/coverage` as authoritative for a total
   and this table as the per-jurisdiction shape.
 </Note>
 
@@ -47,9 +47,9 @@ is not a gap but a sourcing caveat, in
 | North Carolina | 41,290 | 45,823 | 155 | 495 |
 | Michigan | 40,889 | 22,148 | 275 | 1,025 |
 | New York | 40,146 | 52,312 | 204 | 1,088 |
-| South Dakota | 39,589 | 28,988 | 290 | - [3] |
+| South Dakota | 39,589 | 28,988 | 290 | 155 |
 | Maryland | 39,552 | 12,739 | 312 | 1,220 |
-| Arkansas | 38,935 | 27,837 | 513 | - [1] |
+| Arkansas | 38,935 | 27,837 | 513 | 720 |
 | Colorado | 35,758 | 1,155 | 424 | - [2] |
 | Oklahoma | 35,330 | 56,847 | 545 | - [3] |
 | Tennessee | 34,756 | 11,608 | 152 | 626 |
@@ -87,26 +87,54 @@ is not a gap but a sourcing caveat, in
 | Connecticut | 16,082 | 18,012 | 174 | 1,723 |
 | Pennsylvania | 14,617 | 50,313 | 186 | 6,467 |
 
-### Why six jurisdictions show no court rules
+### Why four jurisdictions show no court rules
 
 Every gap is a source problem rather than a coverage decision, and each has a different cause.
 Statutes, regulations and constitutions for these jurisdictions are unaffected.
 
-**[1] No government-published consolidated text** - Arkansas, Vermont.
-Both publish their amendment stream (promulgation orders, rule changes, proposed amendments) on
+**[1] No government-published consolidated text** - Vermont.
+Vermont publishes its amendment stream (promulgation orders, rule changes, proposed amendments) on
 the judiciary's own site, but the consolidated current text is published only by a commercial
 licensee. The rule text itself is a government edict and in the public domain; what is missing is
 a government-published compilation.
 
-**[2] Only rule-change orders are published** - Colorado.
-The judiciary posts adopted and proposed rule changes, not consolidated text, and the most recent
-government compilation is from 2023. Ingesting it would serve superseded procedure as current
-law, so it is deliberately not ingested.
+Arkansas carried this marker until 2026-09-11 and it was wrong. The Arkansas Judiciary does publish
+consolidated current text, on its own `opinions.arcourts.gov`, and 720 rules across 23 rule sets and
+the Administrative Orders are now served.
 
-**[3] Already served under `corpusType=STATE`** - Oklahoma, South Dakota.
-Both codify their rules of court into the statute book (Okla. Stat. tit. 12; SDCL tits. 15, 19
-and 23A). Those rules are already in the corpus, cited the way the state cites them
-(`SDCL 15-6-12(b)`). Ingesting them again under `STATE_RULES` would be duplicate coverage.
+**[2] The government compilation was abandoned** - Colorado.
+Two different Colorado publishers are involved and only one of them fits the "rule-change orders
+only" description this note used to give. The **judiciary** (`coloradojudicial.gov`) does publish
+adopted and proposed rule changes and no consolidated text. But the **legislature's** Office of
+Legislative Legal Services does publish a genuine consolidated volume, *The Colorado Rules of Civil
+Procedure for Courts of Record in Colorado* (Rules 1-122, 10.8 MB), and it is stranded: re-measured
+2026-09-11, the 2023 edition is still served and no 2024, 2025 or 2026 edition has ever existed,
+including in the Internet Archive's own capture history. OLLS's current download page lists PDFs for
+all 46 numbered statute titles and no court-rules file at all, and its statutes page now routes
+current court-rules access to a paid LexisNexis product.
+
+Nothing blocks access - robots.txt permits the path. Colorado is withheld purely on **currency**:
+ingesting a three-year-old compilation with no successor would serve superseded procedure as
+current law.
+
+**[3] Litigation procedure is served under `corpusType=STATE`; the rest is blocked** - Oklahoma.
+Oklahoma codifies its rules of court into the statute book (Okla. Stat. tit. 12 and tit. 22, and the
+Oklahoma Evidence Code). Those are already in the corpus, verified 2026-09-11 against the
+publisher's own section counts (1,026/1,026 civil procedure, 999/999 criminal procedure, 103/103
+evidence), and re-ingesting them under `STATE_RULES` would be duplicate coverage.
+
+⚠️ That is not the whole state, and this note previously implied it was. Oklahoma's judiciary
+separately promulgates eight rule sets that are **not** in the statute book - the Rules for District
+Courts, Rules of the Supreme Court, Rules of Civil Appellate Procedure, Rules of the Court of
+Criminal Appeals, Rules of Professional Conduct, Rules Governing Disciplinary Proceedings, the Code
+of Judicial Conduct and the Rules for Admission to the Practice of Law. Those are absent, and the
+reason is the same as Missouri's rather than duplication: the publisher's `robots.txt`
+(`oscn.net`) sets `Disallow: /` for all user agents, re-verified 2026-09-11, and we honor it.
+
+South Dakota carried this marker until 2026-09-11 and it was incomplete for the same reason.
+SDCL titles 15, 19 and 23A really are already served, but South Dakota's professional-conduct,
+judicial-conduct and discipline rules are published as lettered **appendices to SDCL Title 16** and
+were entirely absent. 155 rules across 8 documents are now served.
 
 **[4] Publisher policy** - Missouri.
 Missouri's published court policy does not permit automated access to its judicial websites, and
@@ -146,7 +174,7 @@ Two consequences worth knowing:
 State-issued regulatory guidance that interprets state law, the state-scoped analog of federal
 agency guidance. Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
 
-**13,334 documents across 49 jurisdictions.** Unlike statutes, regulations, constitutions and
+**13,350 documents across 49 jurisdictions.** Unlike statutes, regulations, constitutions and
 court rules, this is **not** on a comprehensive 52-jurisdiction rollout: it lands state by state,
 and some states may never be built.
 
@@ -233,7 +261,7 @@ Formal written opinions in which a state's chief legal officer construes that st
 constitution and regulations for an officer, legislator or local government who asked. Queryable
 with `corpusType=STATE_AG_OPINION` paired with `state`.
 
-**52,754 opinions across 27 jurisdictions.** Like state agency guidance this is **not** a
+**68,874 opinions across 34 jurisdictions.** Like state agency guidance this is **not** a
 comprehensive rollout: it lands jurisdiction by jurisdiction, and it is early. The survey behind
 this corpus measured roughly 184,600 individually addressable opinions across 52 jurisdictions, so
 what is live is a fraction of what exists. Call `GET /us/statutes/coverage` for the live figure
@@ -241,18 +269,20 @@ rather than this page, which is written by hand.
 
 <Warning>
   **Persuasive authority, not binding law.** Every opinion here is served with
-  `goodLawStatus: "unknown"`, in every jurisdiction, by construction: only three of the 52
+  `goodLawStatus: "unknown"`, in every jurisdiction, by construction: only five of the 52
   jurisdictions publish any supersession signal at all, so we will not certify that an opinion
   still stands. Read it as "we make no claim", not as "probably still current".
 </Warning>
 
 | State | Opinions | Range | Scope limit worth knowing |
 |---|---|---|---|
+| Alabama | 11,928 | 1979-2026 | The state's own archive begins in 1979; earlier opinions are published only by an aggregator we do not source from, so pre-1979 is a stated limit rather than a gap |
 | Arkansas | 10,295 | 1984-2026 | 334 further opinions are listed by the AG but never published by it; recorded as a limit, not counted |
 | Indiana | 9,759 | 1906-2026 | Scanned eras are cut by page in the state's own PDFs, so some opinions are served as their opening pages |
 | Missouri | 8,449 | 1962-2026 | 1933-1961 is refused on identity: the printed number is a requester-alphabetical folder, not a document id |
 | North Dakota | 5,550 | 1942-2026 | Three families: legal, advisory, and open-records |
 | Washington | 4,428 | 1949-2026 | Two series, formal `AGO` and letter `AGLO`, filterable on `series` |
+| Texas | 2,914 | 1983-2026 | The seven post-1983 series only. Roughly 14,800 earlier opinions sit behind paths the state's own robots.txt disallows, so they are not crawled |
 | Tennessee | 2,650 | 2000-2026 | The archive begins in 2000; the state answers pre-2000 requests by telephone only |
 | California | 1,961 | 1977-2026 | Four series (`OP`, `CV`, `CR`, `SO`), filterable on `series`; the state lists two opinions it does not serve, one withdrawn and one it cannot deliver |
 | South Dakota | 1,652 | 1968-2025 | The publisher prints no total; the archive is enumerated by walking its own document ids |
@@ -264,8 +294,11 @@ rather than this page, which is written by hand.
 | Connecticut | 626 | 1990-2025 |  |
 | New York | 536 | 1995-2023 |  |
 | Alaska | 532 | 1986-2026 |  |
+| Massachusetts | 529 | 1968-1993 | Split out of the Attorney General's annual reports. Only that era carries citable opinion numbers; the wider 1832-2025 report series does not |
 | Georgia | 525 | 1992-2026 | Official and Unofficial series, filterable on `series` |
+| Mississippi | 520 | 2020-2026 | The state's pre-2020 opinion database is no longer published anywhere by the state |
 | Idaho | 151 | 1985-2026 | Opinions only; guidelines and certificates of review are excluded |
+| West Virginia | 151 | 2007-2026 | The state prints no opinion number, so these are cited by issue date and requester surname |
 | Arizona | 147 | 1999-2026 | The state's own archive begins in 2011; six earlier opinions reach back to 1999, so the range is wider than the coverage |
 | Oregon | 114 | 1997-2025 |  |
 | Colorado | 109 | 1994-2026 | The publisher declares its own list incomplete |
@@ -273,6 +306,8 @@ rather than this page, which is written by hand.
 | Oklahoma | 68 | 2023-2026 | Older opinions are on a network that prohibits automated access |
 | Hawaii | 66 | 1993-2023 | Nothing issued since April 2023 |
 | Kansas | 56 | 2023-2026 | Pre-2023 is held by a university law library, not the state |
+| Nevada | 41 | 2017-2026 | The modern per-opinion era only. The bound annual compendia are not yet split into individual opinions |
+| District of Columbia | 37 | 1982-2026 | Formal opinions only. Advisory Neighborhood Commission letters are a different instrument and are excluded |
 | Wyoming | 17 | 2000-2018 | Dormant since 2018; carries the state's own `WITHDRAWN` annotations |
 | New Jersey | 16 | 1985-2017 | The state records most years as having issued none |
 

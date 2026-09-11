@@ -7,6 +7,50 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-09-11" description="STATE_AG_OPINION reaches 34 jurisdictions and 68,874 opinions: seven more states, plus corrected agency-guidance and federal counts">
+  ## `STATE_AG_OPINION`: seven more jurisdictions
+
+  Seven jurisdictions land, taking the corpus to **68,874 opinions across 34 jurisdictions**.
+
+  - **Alabama, 11,928 opinions, 1979 to present.** The state's own archive begins in 1979.
+    Earlier opinions exist but Alabama does not publish them itself, so they are a stated
+    coverage limit rather than a gap we intend to close.
+  - **West Virginia, 151 opinions, 2007-2026.** The state prints no opinion number, so these are
+    cited by date and requester surname.
+  - **Texas, 2,914 opinions, 1983-2026.** The seven post-1983 series only. Roughly 14,800 earlier
+    opinions sit behind paths the state's own `robots.txt` disallows, so we do not crawl them and
+    do not hold them.
+  - **Massachusetts, 529 opinions, 1968-1993**, split out of the Attorney General's annual
+    reports. Only that era carries citable opinion numbers.
+  - **Mississippi, 520 opinions, 2020-2026.** The state's pre-2020 opinion database is no longer
+    published anywhere by the state.
+  - **Nevada, 41 opinions, 2017-2026**, the modern per-opinion era only. The bound annual
+    compendia are not yet split into individual opinions.
+  - **District of Columbia, 37 opinions, 1982-2026**, formal opinions only. Advisory Neighborhood
+    Commission letters are a different instrument and are excluded.
+
+  **Three of these publish no opinion number at all.** West Virginia, Mississippi and the District
+  of Columbia identify an opinion by its issue date, and where a date carries more than one, by the
+  official who asked. Those identifiers are ours, derived from what the publisher prints.
+
+  Both are served `goodLawStatus: "unknown"`, as the whole corpus is, and both are subscribable
+  as change-alert boards.
+
+  Corpus-wide this takes coverage to **5,089,670 sections** across 53 jurisdictions, indexed as
+  **19,239,374** retrieval passages, measured 2026-09-11.
+
+  ### Counts corrected on this page's coverage tables
+
+  Four published figures had gone stale against the live corpus and are now restated:
+  Statutes at Large **425,427**, CFR **222,333**, agency guidance **96,785** across
+  **53** named sources, and state agency guidance **13,350**.
+
+  The [agency guidance source page](/api-guide/coverage/agency-guidance) previously showed a
+  total that did not match its own table. It now states the **named-source** total, 51,427, with
+  the corpus-type total kept on the [federal page](/api-guide/coverage/federal), because the
+  token also covers guidance that carries no filterable `source`.
+</Update>
+
 <Update label="2026-09-10" description="STATE_AG_OPINION reaches 27 jurisdictions and 52,754 opinions: 22 more states, including California, Missouri, Washington and the Dakotas">
   ## `STATE_AG_OPINION`: 22 more jurisdictions
 
