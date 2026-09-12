@@ -14,7 +14,7 @@ Split your inputs that way and the job is a handful of calls instead of one per 
 **Endpoints used:** `POST /us/statutes/resolve` (2 credits per citation, up to 50 per call), `POST /us/statutes/search` (4 credits per call) for topic-only rows, and optionally `GET /us/statutes/section/{actId}/body` (6 credits) for full text.
 
 <Warning>
-  Vaquill API Pro allows 30 requests per minute and 1,000 per day per key.
+  Vaquill API Pro allows 60 requests per minute and 2,000 per day per key.
   Batching is what keeps you inside both: 500 citations is 10 resolve calls, not
   500 search calls. Honor the `Retry-After` header on a `429`. See
   [Rate limits](/api-guide/rate-limits).
