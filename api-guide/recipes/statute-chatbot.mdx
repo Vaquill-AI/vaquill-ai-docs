@@ -11,12 +11,12 @@ message runs one search, pulls the best matching section's text, and returns a
 grounded answer with a link to the official source. It is framework-agnostic: the
 same loop drops into Slack, Discord, a web widget, or a terminal.
 
-**Endpoints used:** `POST /us/statutes/search` (4 credits), `GET /us/statutes/section/{actId}/body` (6 credits).
+**Endpoints used:** `POST /us/statutes/search`, `GET /us/statutes/section/{actId}/body`.
 
 <Tip>
   A bot answers in the time its slowest call takes. Pass `"includeBody": true`
   with `"limit": 1` on the search and the top section's full text comes back
-  inline, so a reply is one round trip instead of two, at the same 4 + 6 credits.
+  inline, so a reply is one round trip instead of two, at the same price.
   The two-call version below is the one to keep if you rank three candidates and
   ground on one.
 </Tip>

@@ -11,13 +11,12 @@ Those do not need searching, they need resolving, and `POST /us/statutes/resolve
 The rows that carry only a topic are the ones that need `POST /us/statutes/search`.
 Split your inputs that way and the job is a handful of calls instead of one per row.
 
-**Endpoints used:** `POST /us/statutes/resolve` (2 credits per citation, up to 50 per call), `POST /us/statutes/search` (4 credits per call) for topic-only rows, and optionally `GET /us/statutes/section/{actId}/body` (6 credits) for full text.
+**Endpoints used:** `POST /us/statutes/resolve` (up to 50 citations per call), `POST /us/statutes/search` for topic-only rows, and optionally `GET /us/statutes/section/{actId}/body` for full text.
 
 <Warning>
-  Vaquill API Pro allows 60 requests per minute and 2,000 per day per key.
-  Batching is what keeps you inside both: 500 citations is 10 resolve calls, not
-  500 search calls. Honor the `Retry-After` header on a `429`. See
-  [Rate limits](/api-guide/rate-limits).
+  Batching is what keeps you inside your plan's rate limits: 500 citations is
+  10 resolve calls, not 500 search calls. Honor the `Retry-After` header on a
+  `429`. See [Errors](/api-guide/errors).
 </Warning>
 
 ## Start with the rows that carry a citation
@@ -174,7 +173,7 @@ def fetch_body(act_id: str) -> str | None:
 </CodeGroup>
 
 <Note>
-  At 6 credits a section this is the expensive half of the job, so fetch bodies
+  Bodies are the expensive half of the job, so fetch them
   only for the rows that need quotable text. If you are enriching a topic row and
   know up front you want the text, `"includeBody": true` on the search returns it
   inline for the same 4 + 6 per row, saving the round trip rather than the money.

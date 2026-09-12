@@ -122,7 +122,6 @@
             "group": "WORKING WITH THE API",
             "pages": [
               "api-guide/pagination",
-              "api-guide/rate-limits",
               "api-guide/errors",
               "api-guide/best-practices"
             ]
@@ -741,6 +740,10 @@
     {
       "source": "/changelog",
       "destination": "/introduction"
+    },
+    {
+      "source": "/api-guide/rate-limits",
+      "destination": "/api-guide/errors"
     },
     {
       "source": "/guides/subscriptions",

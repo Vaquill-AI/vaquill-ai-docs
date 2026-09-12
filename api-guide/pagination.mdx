@@ -176,7 +176,7 @@ def all_boards():
 print(len(all_boards()))
 ```
 
-`GET /boards` and `GET /watches` are free, so paging them costs nothing but a request against your [rate limit](/api-guide/rate-limits).
+`GET /boards` and `GET /watches` are free, so paging them costs nothing but a request against your rate limit.
 
 ## Cursor paging on change history
 
@@ -234,9 +234,6 @@ def backfill(act_id, headers):
 <CardGroup cols={2}>
   <Card title="Law Change Alerts" icon="bell" href="/api-guide/alerts">
     Subscribe to a board, then poll its changes with a cursor.
-  </Card>
-  <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
-    Stay under per-minute limits while paging in a loop.
   </Card>
   <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
     Scope queries for tighter, more predictable pages.

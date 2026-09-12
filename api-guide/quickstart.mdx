@@ -102,7 +102,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     </Note>
 
     <Note>
-      `creditsConsumed` is what this call actually cost. Read it rather than assuming the list price: failed and refunded work bills 0, and `includeBody: true` adds 6 credits for every row that returns text. See [Credit costs](/api-guide/overview#credit-costs).
+      `creditsConsumed` is what this call actually cost. Read it rather than assuming a list price: failed and refunded work bills 0, and `includeBody: true` bills each row that returns text on top of the search. `GET /api-credits/pricing` returns the live matrix.
     </Note>
   </Step>
 
@@ -211,9 +211,6 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
 <CardGroup cols={2}>
   <Card title="Pagination" icon="list-ol" href="/api-guide/pagination">
     Page through search results with `limit`, `offset`, and `hasMore`.
-  </Card>
-  <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
-    Per-plan limits and how to back off on a 429.
   </Card>
   <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
     Scope queries, cache coverage, and handle errors well.

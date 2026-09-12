@@ -40,7 +40,7 @@ OpenAPI document, with its own counts, its own filters and its own limits.
 | State court rules | 49 | 56,087 | `STATE_RULES` |
 | State constitutions | 51 | 12,762 | `STATE_CONSTITUTION` |
 | State agency guidance | 49 | 13,350 | `STATE_AGENCY_GUIDANCE` |
-| State AG opinions | 36 | 73,514 | `STATE_AG_OPINION` |
+| State AG opinions | 42 | 97,217 | `STATE_AG_OPINION` |
 | Federal, 14 corpora | Federal | 1,519,120 | See [Federal](/api-guide/coverage/federal) |
 
 Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats
@@ -175,8 +175,45 @@ other 602 documents are a different instrument and are excluded. Opinions from 1
 inside annual report volumes and are not yet extracted.
 
 **Oklahoma, 68 opinions, 2023-2026.** This is deliberately a 2023-onward corpus. Oklahoma's older
-opinions are published on the Oklahoma State Courts Network, which prohibits automated access, so we
-do not hold them and do not intend to without permission.
+opinions are published on a network whose publisher does not permit automated access, so we do not
+hold them and do not intend to without permission.
+
+**Florida, 20,923 opinions, 1913-2026, and the two halves are NOT the same product.**
+Florida is the deepest AG archive we carry and its publisher serves it in two forms:
+
+- **1971-2026, 4,166 opinions, full text.** The state publishes these as HTML with its own
+  number, issue date and subject, and they are indexed and retrievable like any other opinion.
+- **1913-1991, 16,757 opinions, citation and metadata only, with NO opinion text.** The state
+  publishes this era only as scanned pages of the bound *Biennial Report of the Attorney General*,
+  and those page images carry several opinions each: measured across the archive, 27% of them hold
+  two or more opinions and only 55% print their own opinion number, so no per-opinion text can be
+  extracted from them without splitting the volumes. Rather than serve one opinion's number over
+  another opinion's words, these records carry the citation, the publisher's own topic and a link to
+  the publisher's page. **Every one of them is marked `textAvailability: "metadata_only"`**, so you
+  can filter them out or in; the full-text records are marked `"full"`.
+
+Two further limits worth stating. **80 opinions are withheld**: 44 because Florida gave two
+genuinely different opinions the same citation and we will not guess which is which, 32 whose
+printed citation we cannot parse, and 4 whose citation prints no date. And the state's own archive
+**lists no opinions at all for 2024**, with four in 2023 and four in 2025; whether none were issued
+or none are listed is not something the archive answers.
+
+**Kentucky, 692 opinions, 1992-2026.** Every year from 1992 onward is represented.
+Kentucky's earlier opinions were never published online, and the Attorney General's office supplies
+them by phone or mail on request, so we do not hold them.
+
+**Maryland, 601 opinions, 1993-2025.** Two series, both carried as the state publishes them: 565
+published opinions, cited by volume as `110 Op. Att'y Gen. 3`, and 36 unpublished ones that the
+office numbers `00-123` and posts separately.
+Opinions from 1916 to 1992 exist only inside 77 bound-volume compendia, each a single file holding a
+whole volume rather than one opinion.
+Those volumes are not split into individual opinions and are not included.
+
+**Puerto Rico, 81 opinions, 2003-2010, in Spanish.** The text is Spanish as published, and
+`language_code` is `es`.
+The served range ends in 2010 because the opinions from that year onward are posted as page images
+with no text layer: 50 documents we can see are excluded until they are processed, rather than
+absent from the office's own archive.
 
 Where a jurisdiction runs more than one series, the `series` field carries the publisher's own
 label so you can filter them apart -- Washington's formal `AGO` against its `AGLO` letter opinions,
@@ -195,6 +232,7 @@ How often each corpus is re-pulled from its official source. Counts grow between
 | State court rules | Monthly, for the jurisdictions that carry them. |
 | State constitutions | Monthly. Constitutions change on the order of years, via ballot measure. |
 | State AG opinions | Monthly, per jurisdiction. An opinion is issued once and not revised, so a refresh looks for NEW opinions rather than changed ones. |
+| State agency guidance | Monthly, per state. Almost all of this is insurance-regulator bulletins, and the dispatcher walks about two states a day rather than every state every week. |
 
 For the age of any single source, call [`GET /boards`](/api-guide/alerts). It is free and carries
 `lastRetrievedAt`, `cadence` and `retrievalStatus` per source. `GET /us/statutes/coverage` reports
@@ -208,7 +246,7 @@ Illinois, Indiana, Iowa, Louisiana, Michigan, Mississippi, Missouri, Nevada, New
 Oregon, Pennsylvania, South Dakota, Virginia, Wisconsin and Wyoming
 publish their code in a form that can be pulled whole, an official bulk export, an API, or a
 complete per-section fetch. Every run re-pulls the entire code and reconciles it against what is
-stored rather than crawling for what looks new.
+stored rather than checking only what looks new.
 
 **Everywhere else**, statutes are re-pulled monthly or carry text as of their ingest date. That is
 a fact you can read rather than assume: `GET /boards` returns `lastRetrievedAt`, `cadence` and
@@ -230,8 +268,8 @@ Arkansas, Georgia, Mississippi and Tennessee are not on that list: their statute
 </Note>
 
 <Note>
-  Pennsylvania's Consolidated Statutes are complete; its older unconsolidated (Purdon's) statutes
-  are a separate later addition, prioritized for backfill.
+  Pennsylvania's Consolidated Statutes are complete; its older unconsolidated statutes are a
+  separate later addition, prioritized for backfill.
 </Note>
 
 ## Point-in-time and change history

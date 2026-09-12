@@ -61,7 +61,7 @@ rather than looking one up.
   API.
 </Warning>
 
-**Endpoints used:** `GET /us/statutes/resolve` for one citation (2 credits), `POST /us/statutes/resolve` for up to 50 at a time (2 credits each).
+**Endpoints used:** `GET /us/statutes/resolve` for one citation, `POST /us/statutes/resolve` for up to 50 at a time.
 
 ## Resolve in one call
 
@@ -221,9 +221,8 @@ Four things about the batch route are worth knowing before you build on it.
   An unresolved citation comes back with `resolved: false`, never as an omission, so you can tell WHICH of thirty citations failed.
   The `results` array lines up with your de-duplicated input, in order.
 - **Duplicates are collapsed** before pricing and before the response is built, so the same citation sent twice costs once and returns one entry.
-- **Cost is 2 credits per citation**, the same as resolving them one at a time.
+- **Cost is per citation**, the same as resolving them one at a time.
   Batching buys a round trip and latency, not a discount.
-  Thirty citations is 60 credits either way.
   Read `creditsConsumed` rather than multiplying: citations we failed to process because of a backend error are refunded.
 - **Scope the whole batch** with `state` or `corpusType` when every citation belongs to one jurisdiction or corpus.
   `22 CCR 76227` is California and `8 CCR 1206-2` is Colorado, and the acronym alone cannot say which.
@@ -250,9 +249,9 @@ your own rules, and call `GET /us/statutes/section/{actId}/body` when you are
 satisfied.
 
 Do the arithmetic before you commit to it.
-That path is 4 credits for the search plus 6 for the body, so 10 credits against
-2 for `/resolve`, and a substring comparison is a weaker matcher than the parser
-you just skipped.
+That path bills a search plus a body where `/resolve` bills one cheaper call,
+and a substring comparison is a weaker matcher than the parser you just
+skipped.
 It is the right call only when the tolerance itself is the point.
 
 ## Flagging what you cannot resolve

@@ -26,12 +26,12 @@ Two gaps remain inside corpora that are otherwise live.
 |---|---|---|
 | State court rules (`STATE_RULES`) | 6 jurisdictions | See below |
 | State agency guidance (`STATE_AGENCY_GUIDANCE`) | Pennsylvania, Colorado, Louisiana | Not currently planned |
-| State statutes (`STATE`) | Pennsylvania's unconsolidated (Purdon's) statutes | Prioritized for backfill |
+| State statutes (`STATE`) | Pennsylvania's unconsolidated statutes | Prioritized for backfill |
 
 The remaining court-rules jurisdictions either publish no consolidated rules text from a government source, codify their rules into the statute book (already served under `STATE`), or restrict automated access by published court policy.
 
 The three missing agency-guidance jurisdictions publish no cleanly scopable insurance-only archive.
-Pennsylvania's Consolidated Statutes are complete; only the older unconsolidated Purdon's material is outstanding.
+Pennsylvania's Consolidated Statutes are complete; only the older unconsolidated material is outstanding.
 
 ## Point-in-time and as-applied federal law
 
@@ -113,7 +113,7 @@ No documents from these agencies are in the corpus today.
 | Department of Housing and Urban Development (HUD) | Fair housing guidance |
 | Department of Justice (DOJ) Civil Rights Division | Americans with Disabilities Act guidance |
 
-Agencies that **are** covered, and were on an earlier version of this list, include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
+Agencies that **are** covered include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
 Their per-source detail is in [Agency guidance coverage](/api-guide/coverage/agency-guidance).
 
 ## Under evaluation
@@ -144,7 +144,7 @@ Deliberate exclusions, not gaps. If you need one of these, we are not your suppl
 GAO decisions of the Comptroller General on appropriations law and bid protests were previously planned and are now a deliberate no.
 
 The obstacle is policy, not transport.
-GAO disallows every listing in `robots.txt`, hard-403s them, publishes a `Crawl-delay` of 420 seconds, and offers no sitemap, RSS or API.
+GAO does not permit automated access to its decision listings and offers no sitemap, feed or API.
 The only bulk source is govinfo's `GAOREPORTS` collection, which runs from 1989 to 2008 and then stops.
 A bid-protest corpus that ends 18 years ago invites a customer to read absence as a finding, which is worse than not serving it.
 

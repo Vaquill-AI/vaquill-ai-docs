@@ -73,8 +73,8 @@ async function crossState(actId, limit = 10) {
 </CodeGroup>
 
 Take the `actId` from a `/us/statutes/search` result rather than assembling the string yourself.
-Do not have one? Spend one 4-credit search to find it, then one 6-credit `cross-state` call.
-That is 10 credits for a multi-state comparison against 208 for the 52-state loop.
+Do not have one? Spend one search to find it, then one `cross-state` call.
+That is two calls for a multi-state comparison against 52 for the per-jurisdiction loop.
 
 <Warning>
   `similarity` is a retrieval score between 0 and 1 describing how closely two
@@ -164,7 +164,7 @@ Raise `limit` (up to 50) and group by each result's `state`, and treat a missing
 ## Fallback: one search per state
 
 Loop only when you need a guaranteed slot for every named jurisdiction, including the ones with a weak match, and the visible gaps matter more than the spend.
-At 4 credits a call this is 208 credits for all 52 jurisdictions, against 6 for `cross-state`.
+This is one call per jurisdiction, 52 in all, against a single `cross-state` call.
 
 <Steps>
   <Step title="Drop the states that do not carry the corpus">

@@ -234,7 +234,7 @@ should read their results.
 
   **The enumeration is EEOC's own sitemap** filtered to `/laws/guidance/`, which yields all 179
   documents. EEOC's `/eeoc-guidance` hub renders only 56 of them with no pager, and those 56 are
-  a strict subset, so a hub crawl would ship a third of the corpus and report success.
+  a strict subset, so building from the hub would ship a third of the corpus and report success.
 
   **`act_id` is the URL slug, deliberately not EEOC's OLC control number**: 178 documents print a
   control number and they hold only 177 distinct values, because `EEOC-NVTA-2016-3` is printed on
@@ -252,8 +252,8 @@ should read their results.
   manual section ("Appears after Rescinded 604").
 
   Federal-sector appellate decisions are **not** here: they are decided cases, they belong under
-  `corpusType=AGENCY_ADJUDICATION`, and they are reachable only through a search path
-  `robots.txt` disallows.
+  `corpusType=AGENCY_ADJUDICATION`, and they are reachable only through a search path the agency
+  restricts automated access to.
 </Accordion>
 
 <Accordion title="ftc_advisory_opinion - 206 of 430 are staff letters indexed under several sections">

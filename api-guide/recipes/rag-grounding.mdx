@@ -13,15 +13,15 @@ claim, and link back to the official government source. This is the classic
 retrieve-then-ground (RAG) loop, and it is the single most reliable way to keep a
 legal assistant from making things up.
 
-**Endpoints used:** `POST /us/statutes/search` (retrieve, 4 credits), `GET /us/statutes/section/{actId}/body` (full text, 6 credits per section).
+**Endpoints used:** `POST /us/statutes/search` (retrieve), `GET /us/statutes/section/{actId}/body` (full text).
 
 <Tip>
   **You can collapse the two calls into one.** Pass `"includeBody": true` on the
   search and every hit comes back with its full text on `body`, so three grounded
-  sources take one round trip instead of four. It costs the same: the 4-credit
-  search plus the ordinary 6 credits for each row that actually returns text, so
-  3 sourced rows is 22 credits either way, and a row whose text cannot be
-  resolved comes back with `body: null` and is not charged. It buys latency, not
+  sources take one round trip instead of four. It costs the same: the search
+  plus the ordinary price for each row that actually returns text, and a row
+  whose text cannot be resolved comes back with `body: null` and is not
+  charged. It buys latency, not
   a discount, and it multiplies with `limit`, so page deliberately. The two-call
   version below is written out because it is the one to use when you rank more
   candidates than you ground on.

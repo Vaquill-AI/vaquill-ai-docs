@@ -41,13 +41,13 @@ Both can return nothing, and an empty result under them is a real answer: the co
 ```
 
 <Tip>
-  To pull up one specific section, pass its citation as the query (for example `42 U.S.C. § 1983`) and leave `matchType` at `any`. It resolves to that section at rank 1. `GET /us/statutes/resolve` does the same job for 2 credits instead of 4 when you already hold a well-formed citation.
+  To pull up one specific section, pass its citation as the query (for example `42 U.S.C. § 1983`) and leave `matchType` at `any`. It resolves to that section at rank 1. `GET /us/statutes/resolve` does the same job for less when you already hold a well-formed citation.
 </Tip>
 
 ## Control what a search returns
 
 - `excerptChars`: how much matching text each result carries (default 500, up to 4000). The excerpt is windowed around the match and can begin mid-section, dropping a leading subsection marker, so it is a ranking preview and not safe to quote.
-- `includeBody`: attaches each hit's full text on `body` in the same call. It bills 6 credits per row that returns text on top of the 4-credit search, so `limit: 50` with it set is 304 credits. Use it with a small `limit`, and read `creditsConsumed`.
+- `includeBody`: attaches each hit's full text on `body` in the same call. It bills each row that returns text on top of the search, so it multiplies with `limit`. Use it with a small `limit`, and read `creditsConsumed`.
 
 For text you intend to quote, use `body` or `GET /us/statutes/section/{actId}/body`, never a raised `excerptChars`.
 
@@ -62,7 +62,7 @@ Two endpoints answer everything about what is queryable.
 
 ## Cache coverage
 
-Coverage grows weekly, not hourly. Cache `/us/statutes/coverage` and `/us/statutes/divisions` for hours or a day rather than calling them on every request. They still count against your [rate limits](/api-guide/rate-limits).
+Coverage grows weekly, not hourly. Cache `/us/statutes/coverage` and `/us/statutes/divisions` for hours or a day rather than calling them on every request. They still count against your rate limits.
 
 ## Store the actId values you care about
 
@@ -70,7 +70,7 @@ The `actId` (for example `USC_T42_C21_S1983`) is the stable handle for a section
 
 ## Retry on 429, handle 402
 
-- On `429`, respect the `Retry-After` header and use exponential backoff. See [Rate limits](/api-guide/rate-limits).
+- On `429`, respect the `Retry-After` header and use exponential backoff. See [Errors](/api-guide/errors).
 - On `402`, stop, surface a clear message, resolve it in your account dashboard, then retry.
 - Both are expected in production. Build for them rather than treating them as fatal.
 

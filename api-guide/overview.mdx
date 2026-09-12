@@ -25,44 +25,19 @@ Every path is prefixed with `/api/v1`. Every result carries a citation, status a
 | Discover live **coverage**: which jurisdictions hold which corpora | `GET /us/statutes/coverage` |
 | **Subscribe** to a jurisdiction or corpus and get a webhook or email when it changes, section by section, with before/after text on amendments | `GET /boards`, `POST /watches`, `GET /watches/{id}/changes`, `.../diff` |
 
-### Credit costs
-
-| Endpoint | Credits |
-|---|---|
-| `GET /us/statutes/section/{actId}/body` | 6 |
-| `GET /us/statutes/section/{actId}/cross-state` | 6 |
-| `POST /us/statutes/search` | 4, plus 6 per body when `includeBody: true` |
-| `GET /us/statutes/section/{actId}/definitions` | 4 |
-| `GET /watches/{id}/changes/{changeId}/diff` | 4 |
-| `GET /us/statutes/section/{actId}` | 2 |
-| `GET /us/statutes/section/{actId}/related` | 2 |
-| `GET /us/statutes/section/{actId}/cited-by` | 2 |
-| `GET /us/statutes/resolve` | 2 |
-| `POST /us/statutes/sections` (batch) | 2 per section returned; misses in `notFound` are not charged |
-| `GET /us/statutes/divisions` | 1 |
-| `GET /us/statutes/section/{actId}/changes` | 1 |
-| `GET /us/statutes/coverage`, `GET /api-credits/pricing` | Free |
-| `/boards` and `/watches` (Law Change Alerts) | Free **except** the `/diff` call above |
-
-This table is a snapshot. `GET /api-credits/pricing` returns the live per-endpoint
-matrix, needs no authentication, and costs nothing, so prefer it over hardcoding
-these numbers.
-
-#### Search with `includeBody` is the one call that can get expensive
+### Search with `includeBody`
 
 `POST /us/statutes/search` accepts `includeBody: true`, which attaches each hit's full text on the result's `body` instead of making you call `/section/{actId}/body` once per hit.
-It is billed at the ordinary body price of **6 credits for every row that actually returns text**, on top of the 4-credit search.
-
-That multiplies with `limit`.
-Ten rows with text is `4 + 60 = 64` credits in one call, and `limit: 50` with `includeBody: true` is **304 credits**.
-A row whose text cannot be resolved comes back with `body: null` and is not charged, so the real cost is never computable from `limit`.
-This buys you round trips, not a discount: it is the same price as fetching each body yourself.
+A row whose text cannot be resolved comes back with `body: null` and is not charged.
+It buys you round trips, not a discount.
 
 <Note>
-  `creditsConsumed` on every response reports what was actually billed, which
-  can be less than the list price above on a partial or refunded result (for
-  example, a `404` on `/us/statutes/section/{actId}` is not charged). It is the
-  only correct way to know what an `includeBody` search cost.
+  `GET /api-credits/pricing` returns the live per-endpoint credit matrix, needs
+  no authentication and costs nothing. `creditsConsumed` on every response
+  reports what was actually billed, which can be less on a partial or refunded
+  result (for example, a `404` on `/us/statutes/section/{actId}` is not
+  charged). Between them they are the only correct way to know what a call
+  costs.
 </Note>
 
 ### Corpora

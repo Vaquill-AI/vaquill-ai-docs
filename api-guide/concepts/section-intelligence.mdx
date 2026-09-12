@@ -24,7 +24,7 @@ empty result with `note: null` is a genuine "nothing here".
 
 `GET /us/statutes/section/{actId}/changes` returns every change our refreshes
 have observed to one section: when it was added, each time its text was
-replaced, and whether it has since been removed. **1 credit.**
+replaced, and whether it has since been removed.
 
 | Parameter | Default | Notes |
 |---|---|---|
@@ -63,7 +63,7 @@ provision was repealed is the point.
 ## Cited-by: the reverse index
 
 `GET /us/statutes/section/{actId}/cited-by` returns the sections whose text
-cross-references the one you asked about. **2 credits.**
+cross-references the one you asked about.
 
 | Parameter | Default | Notes |
 |---|---|---|
@@ -98,7 +98,7 @@ refunded.
 
 `GET /us/statutes/section/{actId}/definitions` returns the defined terms that
 apply to a section, parsed from its chapter's definitions section.
-**4 credits.** No parameters.
+No parameters.
 
 Statutes do not use ordinary English.
 "Person" routinely includes corporations, "employee" routinely excludes
@@ -129,7 +129,6 @@ text from `/section/{actId}/body` and read it yourself.
 
 `GET /us/statutes/section/{actId}/cross-state` returns provisions in other
 states that address the same subject as a state statute section.
-**6 credits.**
 
 | Parameter | Default | Notes |
 |---|---|---|

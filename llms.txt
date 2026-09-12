@@ -25,7 +25,6 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 ## API: Working with the API
 
 - [Pagination](https://www.vaquill.ai/docs/api-guide/pagination): The limit and offset parameters and the hasMore flag on search.
-- [Rate Limits](https://www.vaquill.ai/docs/api-guide/rate-limits): Per-key, per-plan limits, 429 handling, and backoff.
 - [Errors](https://www.vaquill.ai/docs/api-guide/errors): Status codes and how to recover from each.
 - [Best Practices](https://www.vaquill.ai/docs/api-guide/best-practices): Scoping, caching coverage, retries, and using discovery before search.
 - [Point-in-time law](https://www.vaquill.ai/docs/api-guide/point-in-time): Read a section as it stood on a past date with asOf, and the provenance block (source, existed, isBounded, coverage) that says how far the answer can be trusted.

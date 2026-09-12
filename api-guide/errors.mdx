@@ -71,7 +71,68 @@ List your watches with `GET /watches` and reuse the existing one.
 
 ## Rate Limiting
 
-Limits are enforced per API key and scale with your plan. Every `429` response includes a `Retry-After` header. See [Rate limits](/api-guide/rate-limits) for the per-plan table and a full backoff implementation.
+Limits are enforced per API key and scale with your plan. When you exceed one the API returns `429` with a `Retry-After` header telling you how many seconds to wait. Respect it, and add exponential backoff so retries spread out under sustained pressure.
+
+<CodeGroup>
+```python Python
+import time
+import requests
+
+def search_with_retry(payload, max_retries=5):
+    url = "https://api.vaquill.ai/api/v1/us/statutes/search"
+    headers = {
+        "Authorization": "Bearer vq_key_...",
+        "Content-Type": "application/json",
+    }
+    for attempt in range(max_retries):
+        resp = requests.post(url, headers=headers, json=payload)
+        if resp.status_code == 429:
+            # Prefer the server hint, fall back to exponential backoff.
+            retry_after = resp.headers.get("Retry-After")
+            delay = int(retry_after) if retry_after else 2 ** attempt
+            time.sleep(delay)
+            continue
+        resp.raise_for_status()
+        return resp.json()
+    raise RuntimeError("Rate limit: max retries exceeded")
+
+data = search_with_retry({"query": "data breach notification"})
+```
+
+```javascript JavaScript
+async function searchWithRetry(payload, maxRetries = 5) {
+  const url = "https://api.vaquill.ai/api/v1/us/statutes/search";
+  const headers = {
+    Authorization: "Bearer vq_key_...",
+    "Content-Type": "application/json",
+  };
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (resp.status === 429) {
+      const retryAfter = resp.headers.get("Retry-After");
+      const delay = retryAfter ? Number(retryAfter) * 1000 : 2 ** attempt * 1000;
+      await new Promise((r) => setTimeout(r, delay));
+      continue;
+    }
+    if (!resp.ok) throw new Error(`Request failed: ${resp.status}`);
+    return resp.json();
+  }
+  throw new Error("Rate limit: max retries exceeded");
+}
+
+const data = await searchWithRetry({ query: "data breach notification" });
+```
+</CodeGroup>
+
+<Tip>
+  Smooth your request rate before you hit the ceiling. A small client-side delay between calls in a paging loop keeps you comfortably under the limit and avoids retries entirely.
+</Tip>
 
 ## Troubleshooting
 
@@ -88,10 +149,10 @@ Limits are enforced per API key and scale with your plan. Every `429` response i
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Rate limits" icon="gauge-high" href="/api-guide/rate-limits">
-    Per-plan request limits and a full backoff implementation.
-  </Card>
   <Card title="Authentication" icon="key" href="/api-guide/authentication">
     Create and manage your API key.
+  </Card>
+  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+    Scope queries, cache coverage, and retry well.
   </Card>
 </CardGroup>

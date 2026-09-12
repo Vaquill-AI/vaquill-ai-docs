@@ -100,43 +100,30 @@ the judiciary's own site, but the consolidated current text is published only by
 licensee. The rule text itself is a government edict and in the public domain; what is missing is
 a government-published compilation.
 
-Arkansas carried this marker until 2026-09-11 and it was wrong. The Arkansas Judiciary does publish
-consolidated current text, on its own `opinions.arcourts.gov`, and 720 rules across 23 rule sets and
-the Administrative Orders are now served.
-
 **[2] The government compilation was abandoned** - Colorado.
-Two different Colorado publishers are involved and only one of them fits the "rule-change orders
-only" description this note used to give. The **judiciary** (`coloradojudicial.gov`) does publish
-adopted and proposed rule changes and no consolidated text. But the **legislature's** Office of
-Legislative Legal Services does publish a genuine consolidated volume, *The Colorado Rules of Civil
-Procedure for Courts of Record in Colorado* (Rules 1-122, 10.8 MB), and it is stranded: re-measured
-2026-09-11, the 2023 edition is still served and no 2024, 2025 or 2026 edition has ever existed,
-including in the Internet Archive's own capture history. OLLS's current download page lists PDFs for
-all 46 numbered statute titles and no court-rules file at all, and its statutes page now routes
-current court-rules access to a paid LexisNexis product.
+Two Colorado publishers are involved. The **judiciary** publishes adopted and proposed rule changes
+and no consolidated text. The **legislature's** Office of Legislative Legal Services does publish a
+consolidated volume, *The Colorado Rules of Civil Procedure for Courts of Record in Colorado*
+(Rules 1-122), but it is stranded: the 2023 edition is still the current one and no later edition
+has ever been issued. The office's download page now lists the 46 numbered statute titles and no
+court-rules file at all, and routes current court-rules access to a paid commercial product.
 
-Nothing blocks access - robots.txt permits the path. Colorado is withheld purely on **currency**:
-ingesting a three-year-old compilation with no successor would serve superseded procedure as
-current law.
+Colorado is withheld on **currency**, not access: ingesting a three-year-old compilation with no
+successor would serve superseded procedure as current law.
 
-**[3] Litigation procedure is served under `corpusType=STATE`; the rest is blocked** - Oklahoma.
+**[3] Litigation procedure is served under `corpusType=STATE`; the rest is restricted** - Oklahoma.
 Oklahoma codifies its rules of court into the statute book (Okla. Stat. tit. 12 and tit. 22, and the
-Oklahoma Evidence Code). Those are already in the corpus, verified 2026-09-11 against the
-publisher's own section counts (1,026/1,026 civil procedure, 999/999 criminal procedure, 103/103
-evidence), and re-ingesting them under `STATE_RULES` would be duplicate coverage.
+Oklahoma Evidence Code). Those are already in the corpus, matched against the publisher's own
+section counts (1,026 civil procedure, 999 criminal procedure, 103 evidence), so re-ingesting them
+under `STATE_RULES` would be duplicate coverage.
 
-⚠️ That is not the whole state, and this note previously implied it was. Oklahoma's judiciary
-separately promulgates eight rule sets that are **not** in the statute book - the Rules for District
-Courts, Rules of the Supreme Court, Rules of Civil Appellate Procedure, Rules of the Court of
-Criminal Appeals, Rules of Professional Conduct, Rules Governing Disciplinary Proceedings, the Code
-of Judicial Conduct and the Rules for Admission to the Practice of Law. Those are absent, and the
-reason is the same as Missouri's rather than duplication: the publisher's `robots.txt`
-(`oscn.net`) sets `Disallow: /` for all user agents, re-verified 2026-09-11, and we honor it.
-
-South Dakota carried this marker until 2026-09-11 and it was incomplete for the same reason.
-SDCL titles 15, 19 and 23A really are already served, but South Dakota's professional-conduct,
-judicial-conduct and discipline rules are published as lettered **appendices to SDCL Title 16** and
-were entirely absent. 155 rules across 8 documents are now served.
+That is not the whole state. Oklahoma's judiciary separately promulgates eight rule sets that are
+**not** in the statute book - the Rules for District Courts, Rules of the Supreme Court, Rules of
+Civil Appellate Procedure, Rules of the Court of Criminal Appeals, Rules of Professional Conduct,
+Rules Governing Disciplinary Proceedings, the Code of Judicial Conduct and the Rules for Admission
+to the Practice of Law. Those are absent for the same reason as Missouri's: the publisher does not
+permit automated access, and we honor that. Coverage there needs the publisher's permission, not a
+workaround.
 
 **[4] Publisher policy** - Missouri.
 Missouri's published court policy does not permit automated access to its judicial websites, and
@@ -155,19 +142,16 @@ is worth knowing before you cite from it.
 | Third-party compilation, captured 2024 | 37,489 | 148 |
 | Total distinct | **57,648** | 155 of 204 assigned |
 
-The Secretary of State publishes the official Oklahoma Administrative Code on `rules.ok.gov`, and
-that host's `robots.txt` names nine crawlers `Disallow: /` under a `Content-Signal` header making the
-signal a condition of access. We are refused by name and we honor it, so the official host is not a
-route we use. The same office's `www.sos.ok.gov`, which carries the Oklahoma Register archive, is
-`Disallow: /` as well.
+The Secretary of State publishes the official Oklahoma Administrative Code, but that office does not
+permit automated access to either its Code site or its Oklahoma Register archive, and we honor that.
+The official host is not a route we use.
 
 What we serve instead, for the 66 titles where it exists, is the copy each promulgating agency
-publishes of its own rules on `oklahoma.gov`, whose `robots.txt` is `Allow: /`. Those copies are
-self-labeled unofficial, and **every section carries that in its `currencyNote` with
-`officialStatus: "unofficial"`**, so a section sourced from an agency PDF is distinguishable from one
-sourced from the compilation without having to ask us. The remaining 138 assigned titles publish no
-machine-readable copy of their rules on that host, so those sections continue to come from the 2024
-compilation rather than being dropped.
+publishes of its own rules. Those copies are self-labeled unofficial, and **every section carries
+that in its `currencyNote` with `officialStatus: "unofficial"`**, so a section sourced from an
+agency PDF is distinguishable from one sourced from the compilation without having to ask us. The
+remaining 138 assigned titles publish no machine-readable copy of their rules, so those sections
+continue to come from the 2024 compilation rather than being dropped.
 
 The denominator above is the Oklahoma Register's own Agency/Title Index, 204 titles assigned as of
 6-30-26, re-derived on every refresh rather than hardcoded. 49 assigned titles are served by neither
@@ -225,61 +209,67 @@ nothing to cite. It is not a claim to cover state banking law.
 anything we hold, so there is no measured signal to certify against. The insurance source keeps
 its own per-state verdict.
 
+Cadence here is per state, not per document.
+The bulletins dispatcher runs daily and walks about two states a day, so each state's series is
+re-pulled roughly once a month rather than on a fixed weekday.
+[`GET /boards`](/api-guide/alerts) carries `lastRetrievedAt` per state, which is the figure to read
+rather than this column.
+
 | State | Source | Documents | Refresh |
 |---|---|---|---|
-| California | Dept. of Insurance Bulletins | 176 | Weekly |
-| Illinois | Dept. of Insurance Company Bulletins | 156 | Weekly |
-| New York | DFS (Department of Financial Services) Insurance Circular Letters | 1,199 | Weekly |
-| Texas | Dept. of Insurance Commissioner's Bulletins | 1,254 | Weekly |
-| Florida | Office of Insurance Regulation Informational Memoranda | 43 | Weekly |
-| Georgia | Office of Commissioner of Insurance and Safety Fire Bulletins | 66 | Weekly |
-| Ohio | Dept. of Insurance Bulletins | 112 | Weekly |
-| Virginia | State Corporation Commission (SCC) Bureau of Insurance Administrative Letters | 89 | Weekly |
-| Washington | Office of the Insurance Commissioner (OIC) Technical Assistance Advisories and Emergency Orders | 24 | Weekly |
-| New Jersey | Dept. of Banking and Insurance Bulletins, insurance series | 441 | Weekly |
-| New Jersey | DOBI Banking Bulletins, same numbered series (`source=state_financial_bulletin`) | 81 | Weekly |
-| Michigan | Department of Insurance and Financial Services (DIFS) Insurance Bulletins | 145 | Weekly |
-| North Carolina | Dept. of Insurance Bulletins | 120 | Weekly |
-| Wisconsin | Office of the Commissioner of Insurance Bulletins | 232 | Weekly |
-| Connecticut | Insurance Department Bulletins | 369 | Weekly |
-| Maryland | Insurance Administration Bulletins | 675 | Weekly |
-| Minnesota | Dept. of Commerce Insurance Bulletins | 34 | Weekly |
-| Indiana | Dept. of Insurance Bulletins | 281 | Weekly |
-| Massachusetts | Division of Insurance Bulletins | 417 | Weekly |
-| Utah | Insurance Department Bulletins and Orders of the Commissioner | 168 | Weekly |
-| Delaware | Dept. of Insurance Bulletins (seven subject series, current and archived) | 303 | Weekly |
-| Vermont | Dept. of Financial Regulation Insurance and Health Bulletins | 187 | Weekly |
-| Vermont | DFR Banking and Securities Bulletins (`source=state_financial_bulletin`) | 29 | Weekly |
-| West Virginia | Offices of the Insurance Commissioner Bulletins + pre-2020 Informational Letters | 174 | Weekly |
-| Hawaii | Insurance Division Commissioner's Memoranda | 168 | Weekly |
-| Rhode Island | DBR Insurance Bulletins, Guidance Documents and Notices | 134 | Weekly |
-| District of Columbia | DISB Insurance Bulletins and Notices | 23 | Weekly |
-| Wyoming | Dept. of Insurance Memoranda and Bulletins | 62 | Weekly |
-| South Dakota | Division of Insurance Bulletins | 27 | Weekly |
-| Arizona | Dept. of Insurance and Financial Institutions Regulatory Bulletins and Circular Letters (insurance series) | 199 | Weekly |
-| Arizona | DIFI Financial-Institutions Regulatory Bulletins, Alerts and Substantive Policy Statements (`source=state_financial_bulletin`) | 35 | Weekly |
-| Nevada | Division of Insurance Bulletins | 199 | Weekly |
-| Oklahoma | Insurance Department Bulletins | 144 | Weekly |
-| Iowa | Insurance Division Commissioner's Bulletins | 83 | Weekly |
-| Kansas | Insurance Department Bulletins | 79 | Weekly |
-| Missouri | Dept. of Commerce and Insurance Bulletins (incl. Division of Workers' Compensation tax memoranda) | 106 | Weekly |
-| Oregon | Division of Financial Regulation Bulletins (insurance series) | 92 | Weekly |
-| Oregon | Division of Financial Regulation Bulletins, financial-services series (`source=state_financial_bulletin`) | 10 | Weekly |
-| Tennessee | Dept. of Commerce and Insurance Bulletins (1983-present, three archive eras) | 173 | Weekly |
-| Maine | Bureau of Insurance Bulletins | 228 | Weekly |
-| Puerto Rico | Oficina del Comisionado de Seguros Cartas Normativas and Cartas Circulares (Spanish, the enacted language) | 1,641 | Weekly |
-| Alaska | Division of Insurance Bulletins | 398 | Weekly |
-| Arkansas | Insurance Department Bulletins and Directives | 359 | Weekly |
-| South Carolina | Department of Insurance Bulletins | 319 | Weekly |
-| New Mexico | Office of Superintendent of Insurance Bulletins | 274 | Weekly |
-| Mississippi | Insurance Department Bulletins | 240 | Weekly |
-| North Dakota | Insurance Department Bulletins and Commissioner Directives | 235 | Weekly |
-| Kentucky | Department of Insurance Bulletins and Advisory Opinions | 232 | Weekly |
-| Alabama | Department of Insurance Bulletins | 207 | Weekly |
-| Montana | Commissioner of Securities and Insurance Advisory Memos (insurance series only) | 149 | Weekly |
-| New Hampshire | Insurance Department Bulletins | 177 | Weekly |
-| Nebraska | DOI Insurance Guidance Documents and Company Bulletins | 120 | Weekly |
-| Idaho | Dept. of Insurance Bulletins (July 2016 to present; earlier series rescinded by the Department) | 75 | Weekly |
+| California | Dept. of Insurance Bulletins | 176 | Monthly |
+| Illinois | Dept. of Insurance Company Bulletins | 156 | Monthly |
+| New York | DFS (Department of Financial Services) Insurance Circular Letters | 1,199 | Monthly |
+| Texas | Dept. of Insurance Commissioner's Bulletins | 1,254 | Monthly |
+| Florida | Office of Insurance Regulation Informational Memoranda | 43 | Monthly |
+| Georgia | Office of Commissioner of Insurance and Safety Fire Bulletins | 66 | Monthly |
+| Ohio | Dept. of Insurance Bulletins | 112 | Monthly |
+| Virginia | State Corporation Commission (SCC) Bureau of Insurance Administrative Letters | 89 | Monthly |
+| Washington | Office of the Insurance Commissioner (OIC) Technical Assistance Advisories and Emergency Orders | 24 | Monthly |
+| New Jersey | Dept. of Banking and Insurance Bulletins, insurance series | 441 | Monthly |
+| New Jersey | DOBI Banking Bulletins, same numbered series (`source=state_financial_bulletin`) | 81 | Monthly |
+| Michigan | Department of Insurance and Financial Services (DIFS) Insurance Bulletins | 145 | Monthly |
+| North Carolina | Dept. of Insurance Bulletins | 120 | Monthly |
+| Wisconsin | Office of the Commissioner of Insurance Bulletins | 232 | Monthly |
+| Connecticut | Insurance Department Bulletins | 369 | Monthly |
+| Maryland | Insurance Administration Bulletins | 675 | Monthly |
+| Minnesota | Dept. of Commerce Insurance Bulletins | 34 | Monthly |
+| Indiana | Dept. of Insurance Bulletins | 281 | Monthly |
+| Massachusetts | Division of Insurance Bulletins | 417 | Monthly |
+| Utah | Insurance Department Bulletins and Orders of the Commissioner | 168 | Monthly |
+| Delaware | Dept. of Insurance Bulletins (seven subject series, current and archived) | 303 | Monthly |
+| Vermont | Dept. of Financial Regulation Insurance and Health Bulletins | 187 | Monthly |
+| Vermont | DFR Banking and Securities Bulletins (`source=state_financial_bulletin`) | 29 | Monthly |
+| West Virginia | Offices of the Insurance Commissioner Bulletins + pre-2020 Informational Letters | 174 | Monthly |
+| Hawaii | Insurance Division Commissioner's Memoranda | 168 | Monthly |
+| Rhode Island | DBR Insurance Bulletins, Guidance Documents and Notices | 134 | Monthly |
+| District of Columbia | DISB Insurance Bulletins and Notices | 23 | Monthly |
+| Wyoming | Dept. of Insurance Memoranda and Bulletins | 62 | Monthly |
+| South Dakota | Division of Insurance Bulletins | 27 | Monthly |
+| Arizona | Dept. of Insurance and Financial Institutions Regulatory Bulletins and Circular Letters (insurance series) | 199 | Monthly |
+| Arizona | DIFI Financial-Institutions Regulatory Bulletins, Alerts and Substantive Policy Statements (`source=state_financial_bulletin`) | 35 | Monthly |
+| Nevada | Division of Insurance Bulletins | 199 | Monthly |
+| Oklahoma | Insurance Department Bulletins | 144 | Monthly |
+| Iowa | Insurance Division Commissioner's Bulletins | 83 | Monthly |
+| Kansas | Insurance Department Bulletins | 79 | Monthly |
+| Missouri | Dept. of Commerce and Insurance Bulletins (incl. Division of Workers' Compensation tax memoranda) | 106 | Monthly |
+| Oregon | Division of Financial Regulation Bulletins (insurance series) | 92 | Monthly |
+| Oregon | Division of Financial Regulation Bulletins, financial-services series (`source=state_financial_bulletin`) | 10 | Monthly |
+| Tennessee | Dept. of Commerce and Insurance Bulletins (1983-present, three archive eras) | 173 | Monthly |
+| Maine | Bureau of Insurance Bulletins | 228 | Monthly |
+| Puerto Rico | Oficina del Comisionado de Seguros Cartas Normativas and Cartas Circulares (Spanish, the enacted language) | 1,641 | Monthly |
+| Alaska | Division of Insurance Bulletins | 398 | Monthly |
+| Arkansas | Insurance Department Bulletins and Directives | 359 | Monthly |
+| South Carolina | Department of Insurance Bulletins | 319 | Monthly |
+| New Mexico | Office of Superintendent of Insurance Bulletins | 274 | Monthly |
+| Mississippi | Insurance Department Bulletins | 240 | Monthly |
+| North Dakota | Insurance Department Bulletins and Commissioner Directives | 235 | Monthly |
+| Kentucky | Department of Insurance Bulletins and Advisory Opinions | 232 | Monthly |
+| Alabama | Department of Insurance Bulletins | 207 | Monthly |
+| Montana | Commissioner of Securities and Insurance Advisory Memos (insurance series only) | 149 | Monthly |
+| New Hampshire | Insurance Department Bulletins | 177 | Monthly |
+| Nebraska | DOI Insurance Guidance Documents and Company Bulletins | 120 | Monthly |
+| Idaho | Dept. of Insurance Bulletins (July 2016 to present; earlier series rescinded by the Department) | 75 | Monthly |
 
 <Note>
   This corpus is a pilot. It does not include NAIC (National Association of Insurance
@@ -294,7 +284,7 @@ Formal written opinions in which a state's chief legal officer construes that st
 constitution and regulations for an officer, legislator or local government who asked. Queryable
 with `corpusType=STATE_AG_OPINION` paired with `state`.
 
-**73,514 opinions across 36 jurisdictions.** Like state agency guidance this is **not** a
+**76,310 opinions across 41 jurisdictions.** Like state agency guidance this is **not** a
 comprehensive rollout: it lands jurisdiction by jurisdiction, and it is early. The survey behind
 this corpus measured roughly 184,600 individually addressable opinions across 52 jurisdictions, so
 what is live is a fraction of what exists. Call `GET /us/statutes/coverage` for the live figure
@@ -323,14 +313,17 @@ rather than this page, which is written by hand.
 | North Dakota | 5,550 | 1942-2026 | Three families: legal, advisory, and open-records |
 | Washington | 4,428 | 1949-2026 | Two series, formal `AGO` and letter `AGLO`, filterable on `series` |
 | Montana | 3,527 | vols. 15-44 | 🔴 Cited by volume and opinion number; the state publishes no issue date, so these do not answer an `asOf` query. Volumes 1-14 are excluded: their leading number is a page in the bound volume, not an opinion number |
-| Texas | 2,914 | 1983-2026 | The seven post-1983 series only. Roughly 14,800 earlier opinions sit behind paths the state's own robots.txt disallows, so they are not crawled |
+| Texas | 2,914 | 1983-2026 | The seven post-1983 series only. Roughly 14,800 earlier opinions sit behind paths the state restricts automated access to, so they are not held |
 | Tennessee | 2,650 | 2000-2026 | The archive begins in 2000; the state answers pre-2000 requests by telephone only |
 | California | 1,961 | 1977-2026 | Four series (`OP`, `CV`, `CR`, `SO`), filterable on `series`; the state lists two opinions it does not serve, one withdrawn and one it cannot deliver |
 | South Dakota | 1,652 | 1968-2025 | The publisher prints no total; the archive is enumerated by walking its own document ids |
 | Illinois | 1,451 | 1971-2025 | Binding PAC opinions and FOIA/OMA determination letters are a different instrument and are excluded |
+| Ohio | 1,406 | 1993-2026 | The modern individually-addressed era only. Ohio's archive reaches back to 1846 and **the 33,659 opinions of 1920-1992 are book scans the state does publish**; they are not yet ingested because that is an OCR programme rather than an ingest, and they are a stated limit, not a gap we claim to have closed. The 1846-1919 era is 73 bound year-volumes whose opinions the state says were "either not numbered, or were not numbered sequentially", so no citable identifier exists for them. **Ohio publishes no per-opinion issue date**, so these carry a year and do not answer an `asOf` query |
 | Nebraska | 1,191 | 1990-2026 |  |
 | North Carolina | 1,106 | 1976-2010 | The state prints no opinion number; opinions are keyed on issue date plus the official who asked |
 | Delaware | 843 | 1995-2026 | One series; ~17 are substantive opinions, the rest FOIA opinion letters |
+| Kentucky | 692 | 1992-2026 |  |
+| Maryland | 601 | 1993-2025 |  |
 | Maine | 832 | 1978-2024 |  |
 | Pennsylvania | 653 | 1957-1992 | Split from bound volumes; the 1895-1930 volumes print no per-opinion number and are not served |
 | Connecticut | 626 | 1990-2025 |  |
@@ -341,25 +334,26 @@ rather than this page, which is written by hand.
 | Mississippi | 524 | 2020-2026 | The state's pre-2020 opinion database is no longer published anywhere by the state |
 | Idaho | 151 | 1985-2026 | Opinions only; guidelines and certificates of review are excluded |
 | West Virginia | 151 | 2007-2026 | The state prints no opinion number, so these are cited by issue date and requester surname |
+| Puerto Rico | 81 | 2003-2010 | Opinions are published in Spanish, the language they are issued in |
 | Arizona | 147 | 1999-2026 | The state's own archive begins in 2011; six earlier opinions reach back to 1999, so the range is wider than the coverage |
 | Oregon | 114 | 1997-2025 |  |
 | Colorado | 109 | 1994-2026 | The publisher declares its own list incomplete |
 | Minnesota | 77 | 1993-2025 |  |
-| Oklahoma | 68 | 2023-2026 | Older opinions are on a network that prohibits automated access |
+| Oklahoma | 68 | 2023-2026 | Older opinions are on a network whose publisher does not permit automated access |
 | Hawaii | 66 | 1993-2023 | Nothing issued since April 2023 |
 | Kansas | 56 | 2023-2026 | Pre-2023 is held by a university law library, not the state |
 | Nevada | 41 | 2017-2026 | The modern per-opinion era only. The bound annual compendia that precede it are not yet split into individual opinions. **Nevada published no opinions at all in 2023, and 12 numbers are absent across 2018-2022**; its archive page does not say whether those were issued and not posted, so they are recorded as gaps rather than as declared absences |
 | District of Columbia | 37 | 1982-2026 | Formal opinions only. Advisory Neighborhood Commission letters are a different instrument and are excluded |
 | Wyoming | 17 | 2000-2018 | Dormant since 2018; carries the state's own `WITHDRAWN` annotations |
 | New Jersey | 16 | 1985-2017 | The state records most years as having issued none |
+| Vermont | 16 | 2000-2025 |  |
 
 <Note>
-  **New Mexico is not served.** Iowa publishes its opinions only through a commercial service. A few
-  further jurisdictions are not built because the publisher identifies opinions by subject alone, and
-  an identifier we invented would not survive the publisher renaming a document. Identification by
-  DATE is no longer a reason to refuse: where the publisher prints a structured issue date, that date
-  is the citable key, which is how the District of Columbia, Mississippi and West Virginia are
-  served.
+  **Iowa is not served**: it publishes its opinions only through a commercial service. A few further
+  jurisdictions are not built because the publisher identifies opinions by subject alone, and an
+  identifier we invented would not survive the publisher renaming a document. Identification by date
+  is no longer a reason to refuse: where the publisher prints a structured issue date, that date is
+  the citable key, which is how the District of Columbia, Mississippi and West Virginia are served.
 </Note>
 
 <CardGroup cols={2}>

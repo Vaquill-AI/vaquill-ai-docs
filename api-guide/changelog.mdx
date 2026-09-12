@@ -22,11 +22,10 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - **North Carolina, 1,106 opinions, 1976-2010.** The state prints no opinion number, so these
     are keyed on issue date plus the official who asked.
 
-  Montana was previously listed as excluded because its site returned a `Content-Signal` header
-  declining AI training use. On re-reading, that header was a platform default rather than
-  anything the state wrote: the two robots.txt files involved are byte-identical and contain no
-  publisher-authored line. The exclusion was lifted. The documents on the one host whose operator
-  did enable AI-crawler blocking remain excluded and are not held.
+  Montana was previously listed as excluded on the basis of an access signal its site returned.
+  On re-reading, that signal was a hosting-platform default rather than anything the state wrote,
+  so the exclusion was lifted. Documents on the one host whose operator did set its own
+  restriction remain excluded and are not held.
 
   Corpus-wide this takes coverage to **5,095,028 sections** across 53 jurisdictions, indexed as
   **19,288,724** retrieval passages.
@@ -43,8 +42,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - **West Virginia, 151 opinions, 2007-2026.** The state prints no opinion number, so these are
     cited by date and requester surname.
   - **Texas, 2,914 opinions, 1983-2026.** The seven post-1983 series only. Roughly 14,800 earlier
-    opinions sit behind paths the state's own `robots.txt` disallows, so we do not crawl them and
-    do not hold them.
+    opinions sit behind paths the state restricts automated access to, so we do not hold them.
   - **Massachusetts, 529 opinions, 1968-1993**, split out of the Attorney General's annual
     reports. Only that era carries citable opinion numbers.
   - **Mississippi, 520 opinions, 2020-2026.** The state's pre-2020 opinion database is no longer
@@ -138,7 +136,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
     and Tables of Citations that share its feed are a different instrument and are not
     here. Pre-1985 opinions exist only inside annual report volumes.
   - **Oklahoma** is deliberately 2023 onward. Its older opinions are published on a
-    network that prohibits automated access, so we do not hold them.
+    network whose publisher does not permit automated access, so we do not hold them.
 
 </Update>
 
@@ -596,7 +594,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   **What is not held** is everything else, which is mostly Paperwork Reduction Act information collections, meeting notices, permits and applications, antidumping proceedings and Privacy Act system-of-records notices.
   None of those states or changes a legal obligation.
-  The 748,461 excluded documents are each recorded by Federal Register document number in our candidate ledger, so the scope can be widened later without re-crawling the series.
+  The 748,461 excluded documents are each recorded by Federal Register document number in our candidate ledger, so the scope can be widened later without re-ingesting the series.
 
   **A separate token from `FEDERAL_REGISTER` on purpose.**
   Rules and proposed rules are ingested whole.

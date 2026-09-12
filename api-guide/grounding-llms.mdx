@@ -32,7 +32,7 @@ Four steps turn a raw question into a grounded, verifiable answer.
   </Step>
 
   <Step title="Fetch the authoritative text">
-    The `excerpt` is a ranking preview, not quotable text. Get the real thing either by setting `includeBody: true` on the search, which attaches each hit's full text on `body` in the same call, or by calling `GET /us/statutes/section/{actId}/body` per section. Both bill 6 credits per body served, so this is a latency choice rather than a price one.
+    The `excerpt` is a ranking preview, not quotable text. Get the real thing either by setting `includeBody: true` on the search, which attaches each hit's full text on `body` in the same call, or by calling `GET /us/statutes/section/{actId}/body` per section. Both bill per body served, so this is a latency choice rather than a price one.
   </Step>
 
   <Step title="Construct a grounded prompt">
@@ -84,7 +84,7 @@ A few habits keep grounded answers accurate and cheap.
   </Accordion>
 
   <Accordion title="Watch what retrieval costs you" icon="coins">
-    A grounded turn is one search plus one body per section you cite. Four full bodies is 4 + 24 = 28 credits, and `includeBody: true` on a 50-result page is 304. Cache on `actId`, which is a stable handle for a section, and read `creditsConsumed` on every response rather than computing cost from your page size.
+    A grounded turn is one search plus one body per section you cite, so cost scales with how many sections you cite rather than how many you retrieve. Cache on `actId`, which is a stable handle for a section, and read `creditsConsumed` on every response rather than computing cost from your page size.
   </Accordion>
 </AccordionGroup>
 

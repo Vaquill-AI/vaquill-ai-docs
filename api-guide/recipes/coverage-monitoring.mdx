@@ -60,7 +60,7 @@ def changed_since(query: str, since: str, **scope) -> list[dict]:
 ```
 </CodeGroup>
 
-Then read each hit's history with `GET /us/statutes/section/{actId}/changes` (1 credit) when you need to know what actually moved.
+Then read each hit's history with `GET /us/statutes/section/{actId}/changes` when you need to know what actually moved.
 `changedSince` and that endpoint are the same event stream, so a hit here always has a history there.
 
 ### Four things that decide whether your job is correct

@@ -313,9 +313,7 @@ If you cached any of it, re-fetch.
 A filter value outside the published vocabulary returns **422 and costs nothing**.
 
 Until 2026-09-08 it returned HTTP 200 with an empty result set and a full charge, so a request that
-could never match anything looked like a legitimate no-results answer and was billed as one.
-Worse, the parameter descriptions themselves listed values that do not exist in the corpus, so a
-caller following our own documentation paid for empty pages.
+could never match anything was billed as a legitimate no-results answer.
 
 The enforced vocabularies are `category`, `actStatus`, `provisionType`, `sectionType`,
 `legalSubject`, `state` and `sort`.
