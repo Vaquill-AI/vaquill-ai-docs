@@ -7,6 +7,40 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-09-13" description="STATE_RULES reaches 50 jurisdictions: Colorado, built from a 2023 compilation plus every amending order since">
+  ## `STATE_RULES`: Colorado
+
+  **1,194 rules, 58,447 sections across 50 jurisdictions.** Colorado is the one jurisdiction here
+  whose court rules are not a single consolidated fetch, and the difference is worth reading before
+  you rely on it.
+
+  Colorado's Office of Legislative Legal Services stopped publishing after the **2023** edition and
+  now routes current court-rules access to a paid commercial product. The Supreme Court, separately,
+  publishes every adopted rule change as a free order carrying the amended text. So the 2023 volume
+  is the base and every adopted order issued after it is applied forward on top.
+
+  What that means per rule, all of it readable from the response rather than assumed:
+
+  - **180 rules** carry an amendment adopted in 2024 to 2026.
+  - **958 rules** have not been touched by any adopted order since the compilation, so their 2023
+    text is the current law. The order series is contiguous with no gaps, which is what makes that
+    statement checkable rather than a hope.
+  - **45 rules** could not be updated automatically. They serve their 2023 text and say so in
+    `sourceNote`, naming the order, its adoption date and its effective date. 🔴 **Read that field
+    before relying on one of these**; they are labelled, not silently stale.
+  - **11 rules are suspended, not in force.** The Colorado Rules of ICWA Procedure (Chapter 28.3)
+    were adopted effective 2024-01-01 and suspended by the Supreme Court on 2025-11-06. They carry
+    `actStatus=suspended` and are served for reference.
+
+  Coverage spans Chapters 1 to 38, so this is not only civil procedure: criminal, appellate,
+  juvenile, probate and county-court procedure, evidence, professional conduct, judicial conduct and
+  discipline, magistrates, water courts and public access to records. The statewide Practice
+  Standards under C.R.C.P. 121 are addressable individually, cited as `C.R.C.P. 121 § 1-15`.
+
+  Per-jurisdiction counts and the full note are on
+  [state coverage](/api-guide/coverage/states).
+</Update>
+
 <Update label="2026-09-12" description="STATE_AG_OPINION reaches 36 jurisdictions and 73,514 opinions: Montana and North Carolina">
   ## `STATE_AG_OPINION`: Montana and North Carolina
 

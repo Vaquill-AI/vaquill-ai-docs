@@ -19,7 +19,7 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
     adjudications, and per-corpus scope limits.
   </Card>
   <Card title="States and territories" icon="map" href="/api-guide/coverage/states">
-    **3,483,977 sections** across 52 jurisdictions. Statutes, regulations, constitutions, court
+    **3,488,851 sections** across 52 jurisdictions. Statutes, regulations, constitutions, court
     rules, and state agency guidance.
   </Card>
   <Card title="Agency guidance" icon="building-columns" href="/api-guide/coverage/agency-guidance">
@@ -27,20 +27,16 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
   </Card>
 </CardGroup>
 
-This page covers the **US** corpus only. Indian legislation is a separate corpus on a separate
-OpenAPI document, with its own counts, its own filters and its own limits.
-**[India legislation coverage →](/api-guide/coverage/india)**
-
 ## What's in the corpus
 
 | Corpus | Jurisdictions | Sections | `corpusType` |
 |---|---|---:|---|
 | State statutes | 52 | 1,934,326 | `STATE` |
 | State regulations | 52 | 1,467,452 | `REGULATION` |
-| State court rules | 49 | 56,087 | `STATE_RULES` |
+| State court rules | 50 | 58,447 | `STATE_RULES` |
 | State constitutions | 51 | 12,762 | `STATE_CONSTITUTION` |
-| State agency guidance | 49 | 13,350 | `STATE_AGENCY_GUIDANCE` |
-| State AG opinions | 42 | 97,217 | `STATE_AG_OPINION` |
+| State agency guidance | 49 | 13,353 | `STATE_AGENCY_GUIDANCE` |
+| State AG opinions | 42 | 97,260 | `STATE_AG_OPINION` |
 | Federal, 14 corpora | Federal | 1,519,120 | See [Federal](/api-guide/coverage/federal) |
 
 Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats
@@ -70,14 +66,14 @@ agencies** behind the single `corpusType=AGENCY_GUIDANCE` token, each narrowable
 
 ## State and territory matrix
 
-All **52 jurisdictions** carry statutes and regulations. 51 carry constitutions and 46 carry court
-rules; the six gaps are source problems, not coverage decisions, and each is explained.
+All **52 jurisdictions** carry statutes and regulations. 51 carry constitutions and 50 carry court
+rules; the two gaps are source problems, not coverage decisions, and each is explained.
 
 **[Per-jurisdiction counts for all 52 →](/api-guide/coverage/states)**
 
 ## State agency guidance
 
-State-issued regulatory guidance that interprets state law, **13,350 documents across 49
+State-issued regulatory guidance that interprets state law, **13,353 documents across 49
 jurisdictions**, almost all of it insurance-regulator bulletins. Queryable with
 `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
 

@@ -4,7 +4,7 @@ description: "Per-jurisdiction section counts for statutes, regulations, constit
 icon: "map"
 ---
 
-**3,482,387 sections across 52 jurisdictions**, 50 states plus DC and Puerto Rico.
+**3,488,851 sections across 52 jurisdictions**, 50 states plus DC and Puerto Rico.
 
 Each column maps to a `corpusType` filter paired with `state`: statutes to `STATE`, regulations
 to `REGULATION`, constitutions to `STATE_CONSTITUTION`, court rules to `STATE_RULES`.
@@ -18,9 +18,10 @@ rather than one per jurisdiction.
 
 ## Per-jurisdiction matrix
 
-Measured 2026-09-08, sorted by statute volume. A dash means we do not serve that corpus for that
-jurisdiction; markers [1] to [4] give the reason in
-[Why four jurisdictions show no court rules](#why-four-jurisdictions-show-no-court-rules). Marker [5]
+Measured 2026-09-13, sorted by statute volume. A dash means we do not serve that corpus for that
+jurisdiction; markers [1] and [4] give the reason in
+[Why two jurisdictions show no court rules](#why-two-jurisdictions-show-no-court-rules).
+Markers [2] and [3] are no longer gaps and are kept because the build behind each is worth reading. Marker [5]
 is not a gap but a sourcing caveat, in
 [Massachusetts regulations are an unofficial copy](#massachusetts-regulations-are-an-unofficial-copy-and-we-say-so-per-section).
 Marker [6] is also a sourcing caveat, in
@@ -29,8 +30,8 @@ Marker [6] is also a sourcing caveat, in
 <Note>
   These rows are counted on a slightly different rule from the corpus totals: they exclude
   superseded records and do not collapse versioned duplicates, so summing a column lands a little
-  under the matching `corpusType` total. Court rules are the widest case, 53,789 summed here
-  against 56,087 for `STATE_RULES`. Take `GET /us/statutes/coverage` as authoritative for a total
+  under the matching `corpusType` total. Court rules are the widest case, 58,319 summed here
+  against 58,447 for `STATE_RULES`. Take `GET /us/statutes/coverage` as authoritative for a total
   and this table as the per-jurisdiction shape.
 </Note>
 
@@ -40,7 +41,7 @@ Marker [6] is also a sourcing caveat, in
 | Texas | 122,535 | 43,489 | 401 | 1,007 |
 | Indiana | 83,148 | 37,449 | 196 | 879 |
 | Oregon | 72,664 | 40,789 | 415 | 632 |
-| Illinois | 72,251 | 55,944 | 170 | 839 |
+| Illinois | 72,251 | 55,944 | 170 | 426 |
 | New Jersey | 55,987 | 53,319 | 216 | 1,685 |
 | Washington | 51,488 | 51,026 | 282 | 1,182 |
 | Nevada | 49,747 | 30,785 | 234 | 1,338 |
@@ -52,8 +53,8 @@ Marker [6] is also a sourcing caveat, in
 | South Dakota | 39,589 | 28,988 | 290 | 155 |
 | Maryland | 39,552 | 12,739 | 312 | 1,220 |
 | Arkansas | 38,935 | 27,837 | 513 | 774 |
-| Colorado | 35,758 | 1,155 | 424 | - [2] |
-| Oklahoma | 35,330 | 57,648 [6] | 545 | - [3] |
+| Colorado | 35,758 | 1,155 | 424 | 1,194 [2] |
+| Oklahoma | 35,330 | 57,648 [6] | 545 | 2,116 [3] |
 | Tennessee | 34,756 | 11,608 | 152 | 626 |
 | Virginia | 33,860 | 22,396 | 134 | 358 |
 | Ohio | 33,158 | 19,354 | 266 | 1,167 |
@@ -89,7 +90,7 @@ Marker [6] is also a sourcing caveat, in
 | Connecticut | 16,082 | 18,012 | 174 | 1,723 |
 | Pennsylvania | 14,617 | 50,313 | 186 | 6,467 |
 
-### Why four jurisdictions show no court rules
+### Why two jurisdictions show no court rules
 
 Every gap is a source problem rather than a coverage decision, and each has a different cause.
 Statutes, regulations and constitutions for these jurisdictions are unaffected.
@@ -100,16 +101,30 @@ the judiciary's own site, but the consolidated current text is published only by
 licensee. The rule text itself is a government edict and in the public domain; what is missing is
 a government-published compilation.
 
-**[2] The government compilation was abandoned** - Colorado.
-Two Colorado publishers are involved. The **judiciary** publishes adopted and proposed rule changes
-and no consolidated text. The **legislature's** Office of Legislative Legal Services does publish a
-consolidated volume, *The Colorado Rules of Civil Procedure for Courts of Record in Colorado*
-(Rules 1-122), but it is stranded: the 2023 edition is still the current one and no later edition
-has ever been issued. The office's download page now lists the 46 numbered statute titles and no
-court-rules file at all, and routes current court-rules access to a paid commercial product.
+**[2] Built from a 2023 compilation plus the amending orders applied forward** - Colorado.
+Two Colorado publishers are involved. The **legislature's** Office of Legislative Legal Services
+publishes the consolidated volume, and the 2023 edition is still the current one: no later edition
+has ever been issued, and the office now routes current court-rules access to a paid commercial
+product. The **judiciary** publishes every adopted rule change as a free order on its own site, and
+each order carries the amended text.
 
-Colorado is withheld on **currency**, not access: ingesting a three-year-old compilation with no
-successor would serve superseded procedure as current law.
+Colorado is therefore the one jurisdiction here whose court rules are not a single consolidated
+fetch. The 2023 volume is the base, and every adopted order issued after it is applied forward on
+top, so a rule reflects the amendments made since the compilation stranded.
+
+Two limits worth knowing, because neither is visible from a section count:
+
+- **Not every order could be applied automatically.** Where an order changes a rule in a way our
+  pipeline cannot apply with confidence, that rule serves its 2023 text and says so in
+  `sourceNote`, naming the order, its adoption date and its effective date. Those rules are
+  labelled rather than silently stale, and the label is the thing to read before relying on one.
+- **Eleven rules are suspended, not in force.** The Colorado Rules of ICWA Procedure (Chapter 28.3)
+  were adopted effective 2024-01-01 and suspended by the Supreme Court on 2025-11-06. They carry
+  `actStatus=suspended` and are served for reference.
+
+The volume spans Chapters 1 to 38, so it is not only civil procedure: it carries the rules of
+criminal, appellate, juvenile, probate and county-court procedure, evidence, professional conduct,
+judicial conduct and discipline, magistrates, water courts and public access to records.
 
 **[3] Litigation procedure is served under `corpusType=STATE`; the rest is restricted** - Oklahoma.
 Oklahoma codifies its rules of court into the statute book (Okla. Stat. tit. 12 and tit. 22, and the
@@ -117,13 +132,16 @@ Oklahoma Evidence Code). Those are already in the corpus, matched against the pu
 section counts (1,026 civil procedure, 999 criminal procedure, 103 evidence), so re-ingesting them
 under `STATE_RULES` would be duplicate coverage.
 
-That is not the whole state. Oklahoma's judiciary separately promulgates eight rule sets that are
-**not** in the statute book - the Rules for District Courts, Rules of the Supreme Court, Rules of
-Civil Appellate Procedure, Rules of the Court of Criminal Appeals, Rules of Professional Conduct,
-Rules Governing Disciplinary Proceedings, the Code of Judicial Conduct and the Rules for Admission
-to the Practice of Law. Those are absent for the same reason as Missouri's: the publisher does not
-permit automated access, and we honor that. Coverage there needs the publisher's permission, not a
-workaround.
+That is not the whole state. Oklahoma's judiciary separately promulgates rule sets that are **not**
+in the statute book, and those are now served under `STATE_RULES`: the Rules for District Courts,
+Rules of the Supreme Court, Rules of Civil Appellate Procedure, Rules of the Court of Criminal
+Appeals, Rules of Professional Conduct, Rules Governing Disciplinary Proceedings, the Code of
+Judicial Conduct and the Rules for Admission to the Practice of Law, together with the individual
+district courts' local rules and the Title Examination Standards.
+
+So the 2,116 figure is **additional** coverage, not a re-ingest of the statute-book rules. Titles 12
+and 22 and the Evidence Code stay under `corpusType=STATE` and are not duplicated here, so a search
+for Oklahoma civil procedure should still be scoped to `STATE` rather than `STATE_RULES`.
 
 **[4] Publisher policy** - Missouri.
 Missouri's published court policy does not permit automated access to its judicial websites, and
@@ -191,7 +209,7 @@ Two consequences worth knowing:
 State-issued regulatory guidance that interprets state law, the state-scoped analog of federal
 agency guidance. Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
 
-**13,350 documents across 49 jurisdictions.** Unlike statutes, regulations, constitutions and
+**13,353 documents across 49 jurisdictions.** Unlike statutes, regulations, constitutions and
 court rules, this is **not** on a comprehensive 52-jurisdiction rollout: it lands state by state,
 and some states may never be built.
 
@@ -284,7 +302,7 @@ Formal written opinions in which a state's chief legal officer construes that st
 constitution and regulations for an officer, legislator or local government who asked. Queryable
 with `corpusType=STATE_AG_OPINION` paired with `state`.
 
-**76,310 opinions across 41 jurisdictions.** Like state agency guidance this is **not** a
+**97,260 opinions across 42 jurisdictions.** Like state agency guidance this is **not** a
 comprehensive rollout: it lands jurisdiction by jurisdiction, and it is early. The survey behind
 this corpus measured roughly 184,600 individually addressable opinions across 52 jurisdictions, so
 what is live is a fraction of what exists. Call `GET /us/statutes/coverage` for the live figure
