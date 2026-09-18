@@ -5,11 +5,15 @@ icon: "hashtag"
 ---
 
 Every section in the Vaquill AI corpus has one canonical identifier: its
-**`actId`**. It is stable, unique, and the key you use to fetch a section's
+**`actId`**. It is unique, and it is the key you use to fetch a section's
 metadata and full text.
 
 You never construct an `actId` by hand. You get it from search results and pass
 it back to the section endpoints.
+
+An `actId` encodes where a section sits in its publisher's hierarchy, which is
+what makes it stable through the changes that matter most and what moves it in
+the one case that it does not.
 
 ## What an actId looks like
 
@@ -24,6 +28,30 @@ it back to the section endpoints.
 State sections follow the same idea, encoding the state's code and section
 structure. Treat the whole string as an opaque key: read it from a result, store
 it, and pass it back unchanged.
+
+## Stability over time
+
+Because the id derives from the section's place in the hierarchy rather than
+from its text, it holds through the events that change what a section says.
+
+| Event | `actId` |
+|---|---|
+| The text is amended | Unchanged. The section keeps its id and its history is on `amendmentYears`. |
+| The section is repealed | Unchanged. It keeps the id and carries a dead `actStatus`, and a lookup still resolves. |
+| The section is renumbered, moved or recodified | **Changes**, because its place in the hierarchy changed. |
+
+Store the citation alongside the `actId` rather than the id on its own.
+
+When a stored `actId` stops resolving, that is usually a renumbering rather than
+a repeal, so re-resolve by citation through `GET /us/statutes/resolve` and update
+your record. Deleting on a failed lookup will quietly drop law that is still in
+force under a new number.
+
+<Tip>
+  A watch on the section's board emits a `removed` event carrying the old
+  `actId` when this happens, which is the earliest signal you can act on. See
+  [Law change alerts](/api-guide/alerts).
+</Tip>
 
 ## The workflow
 

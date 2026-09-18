@@ -34,7 +34,7 @@ You can scope tighter still. `code` (state, e.g. `tx_pe`) and `titleNumber` (USC
 That is what you want for "how long does a landlord have to return a deposit", and wrong for "material adverse effect", where a section that merely discusses the idea is noise.
 
 `all` and `phrase` trade recall for precision.
-Both can return nothing, and an empty result under them is a real answer: the corpus contains no section with those terms, so fall back to `any` rather than assuming a coverage gap.
+Both can return nothing. An empty result under them means no section *we ranked for your query* carried those terms, which is not the same as the corpus holding none, so fall back to `any` and scope the query more tightly rather than concluding there is a coverage gap.
 
 ```json
 { "query": "material adverse effect", "corpusType": "STATE", "state": "de", "matchType": "phrase" }
@@ -66,7 +66,9 @@ Coverage grows weekly, not hourly. Cache `/us/statutes/coverage` and `/us/statut
 
 ## Store the actId values you care about
 
-The `actId` (for example `USC_T42_C21_S1983`) is the stable handle for a section. Once a search surfaces a section your product depends on, store its `actId` and go straight to `GET /us/statutes/section/{actId}` or `.../body` on later runs. That skips the search entirely.
+The `actId` (for example `USC_T42_C21_S1983`) is the handle for a section. Once a search surfaces a section your product depends on, store its `actId` and go straight to `GET /us/statutes/section/{actId}` or `.../body` on later runs. That skips the search entirely.
+
+Store the citation next to it. An `actId` survives an amendment and a repeal, but it changes if the section is renumbered, so a lookup that stops resolving is a cue to re-resolve by citation through `GET /us/statutes/resolve` rather than to drop the record. See [Section identifiers](/api-guide/concepts/section-ids).
 
 ## Retry on 429, handle 402
 

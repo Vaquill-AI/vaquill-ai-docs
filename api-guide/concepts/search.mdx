@@ -1,0 +1,114 @@
+---
+title: "How Search Works"
+description: "The hybrid ranking model, what matchType does, what gets indexed, and why search ranks rather than enumerates"
+icon: "magnifying-glass"
+---
+
+`POST /us/statutes/search` ranks.
+It does not enumerate.
+That distinction drives most of what follows, and it is the thing to settle before you design a pipeline around it.
+
+## The ranking model
+
+Search is hybrid.
+Two retrieval legs run in parallel over the same corpus:
+
+- a **semantic leg**, which matches on meaning, so a section can rank for a question that shares none of its wording
+- a **keyword leg**, which matches on the terms themselves
+
+Their results are fused by reciprocal rank, then reranked by a cross-encoder that reads each candidate against your query.
+Sections carrying a dead `actStatus` are demoted rather than dropped, so a repealed provision can still appear, ranked below live law.
+See [Status & Currency](/api-guide/concepts/status-and-currency) for how to filter those out entirely.
+
+One shortcut is worth knowing: a query shaped like a citation resolves directly to that section at rank 1.
+Passing `42 U.S.C. § 1983` as your query is a lookup, not a search.
+
+<Tip>
+  If you already hold a well-formed citation, `GET /us/statutes/resolve` does the same job for fewer credits.
+</Tip>
+
+## There is no query syntax
+
+The query string is passed to both retrieval legs as written.
+It is not parsed as an expression, and the API supports none of the following:
+
+| Not supported | What happens instead |
+|---|---|
+| `AND`, `OR`, `NOT` | Treated as ordinary words in the query |
+| Quoted phrases | The quote characters become part of the string. Use `matchType` |
+| Proximity operators (`NEAR`, `~5`) | Treated as ordinary text |
+| Wildcards and truncation (`defib*`) | Treated as ordinary text |
+| Field-qualified syntax (`title:...`) | Treated as ordinary text. Use the filters |
+
+So a query like `defibrillator OR cardiac arrest` runs as one semantic query over that whole string, including the word `OR`.
+
+<Warning>
+  Searching several concepts in one string dilutes the query and costs you recall on each of them.
+  Issue one search per concept and union the returned `actId` values yourself.
+  Three separate searches also give you three independent result pools instead of one shared one.
+</Warning>
+
+## matchType
+
+`matchType` is the only exact-match control, and it narrows results that ranking has already retrieved.
+
+| Value | Behaviour | Reach for it when |
+|---|---|---|
+| `any` (default) | Hybrid semantic and keyword ranking | The query is a natural-language question |
+| `all` | Every whitespace-separated term must appear in the text | A multi-term lookup is returning loose matches |
+| `phrase` | The exact phrase must appear, case-insensitive | You want a defined term or a statutory phrase |
+
+Because `all` and `phrase` narrow rather than widen, an empty result under either means nothing we ranked for your query carried those terms.
+That is not the same as the corpus holding no such section, so fall back to `any`, or scope the query more tightly with the filters, before concluding the corpus is missing something.
+
+[Best practices](/api-guide/best-practices) works through when each one earns its place.
+
+## What is indexed
+
+Search reads the full canonical text of every section.
+Sections are split into overlapping passages, and each passage carries a header with its corpus, jurisdiction, status, hierarchy and section title.
+Headings and citations are therefore searchable, not just body text, and both retrieval legs see identical content.
+
+The `excerpt` on a result is one passage, sized by `excerptChars`.
+It is a ranking preview.
+For the authoritative text of a section, call `GET /us/statutes/section/{actId}/body`.
+
+## Filters are applied before retrieval
+
+Every scoping filter (`state`, `corpusType`, `code`, `titleNumber`, `chapter`, `part`, `actStatus`, `yearFrom` / `yearTo`, `changedSince`, and the Federal Register filters) is compiled into the query itself rather than applied to the results afterwards.
+
+Two consequences worth designing around:
+
+1. Narrowing does not cost you depth. A search scoped to one state and one corpus type gets a full-depth pool **within that slice**, so scoping is how you buy recall rather than spend it.
+2. Filters combine freely with paging, and every page of a query is cut from one ranking. See [Pagination](/api-guide/pagination).
+
+An unrecognised filter value, or an unrecognised filter name, returns `422` rather than silently widening your query.
+
+## When search is the wrong tool
+
+Search returns the best matches for a query, up to a bounded number of them.
+If your requirement is *every* section in a body of law rather than the most relevant ones, browse the hierarchy instead: `GET /us/statutes/divisions` walks codes to chapters to sections and returns every section in a container with its `actId`.
+
+<Card title="Browse the hierarchy" icon="sitemap" href="/api-guide/recipes/browse-hierarchy">
+  Enumerate a bounded body of law without relying on ranking.
+</Card>
+
+To size that body of law first, `POST /us/statutes/count` takes the same scoping filters, runs no ranking, and returns an exact section count.
+It accepts no `query` for the reason above: a count of "sections matching this query" would only ever be the size of the ranking window, not a fact about the corpus.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Pagination" icon="list-ol" href="/api-guide/pagination">
+    How deep a result set goes, and how to page it.
+  </Card>
+  <Card title="Best practices" icon="star" href="/api-guide/best-practices">
+    Scoping, matchType, and what to cache.
+  </Card>
+  <Card title="Status & currency" icon="circle-check" href="/api-guide/concepts/status-and-currency">
+    Filtering repealed and superseded law out of results.
+  </Card>
+  <Card title="Build a subject corpus" icon="layer-group" href="/api-guide/recipes/subject-corpus">
+    Enumerate, scope, hydrate, and keep it current.
+  </Card>
+</CardGroup>

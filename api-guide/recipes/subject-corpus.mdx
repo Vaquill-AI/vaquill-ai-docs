@@ -1,0 +1,168 @@
+---
+title: "Build a Subject Corpus"
+description: "Assemble every statute and regulation relevant to one subject across jurisdictions, then keep it current"
+icon: "layer-group"
+---
+
+Compliance and monitoring products need a different guarantee from a research product.
+A research question wants the best answer.
+A compliance database wants to be able to say it did not miss anything.
+
+Ranked search cannot give you the second one, because it returns the most relevant matches rather than all of them.
+This recipe builds the corpus by enumeration and uses search only to narrow it.
+
+<Steps>
+
+<Step title="Size the job">
+
+Before you walk anything, ask how big it is.
+
+```bash
+curl -X POST "https://api.vaquill.ai/api/v1/us/statutes/count" \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"state": "tx", "corpusType": "REGULATION"}'
+
+# { "count": 43638, "isExact": true, ... }
+```
+
+`POST /us/statutes/count` takes the same scoping filters as search, runs no ranking, and returns an exact section count for one credit.
+A scope that matches nothing is refunded.
+
+It takes no `query` on purpose: ranking runs over a bounded window, so "how many sections match this query" has no answer beyond the size of that window.
+Counting a scope is exact, and it is the number that tells you whether a jurisdiction is a thousand sections or a hundred thousand before you spend anything walking it.
+
+</Step>
+
+<Step title="Enumerate the spine">
+
+Walk `GET /us/statutes/divisions` for each jurisdiction and each corpus you care about.
+It browses one level at a time, and the leaf level returns every section in a container with its `actId`.
+
+```bash
+# 1. the codes a jurisdiction publishes
+curl -H "Authorization: Bearer $VAQUILL_API_KEY" \
+  "https://api.vaquill.ai/api/v1/us/statutes/divisions?state=tx&corpusType=REGULATION"
+
+# 2. the chapters in one code
+curl -H "Authorization: Bearer $VAQUILL_API_KEY" \
+  "https://api.vaquill.ai/api/v1/us/statutes/divisions?state=tx&corpusType=REGULATION&code=tx_26"
+
+# 3. every section in one chapter, each with an actId
+curl -H "Authorization: Bearer $VAQUILL_API_KEY" \
+  "https://api.vaquill.ai/api/v1/us/statutes/divisions?state=tx&corpusType=REGULATION&code=tx_26&chapter=554"
+```
+
+Store the `actId`, citation, title and hierarchy path for every leaf.
+This set is complete by construction, and no ranking decision touches it.
+
+<Warning>
+  Codes vary in depth.
+  Most run code to chapter to section, and some publish their sections directly under the code.
+  Read `level` on each response rather than assuming three levels, and treat any node carrying `isLeaf` and an `actId` as a section.
+</Warning>
+
+<Tip>
+  Pass `excludeRepealed=true` (or `actStatus=` for the inverse) to enumerate only operative law.
+  Without it you take every repealed section, pay to hydrate it later, and discard it.
+</Tip>
+
+<Tip>
+  Interior nodes carry a `sectionCount`.
+  Assert it against the number of leaves you actually received and log the mismatches.
+  That check is cheap and it is what lets you claim the spine is complete rather than assume it.
+</Tip>
+
+</Step>
+
+<Step title="Narrow to your subject">
+
+Now bring in search, scoped.
+Run one query per concept, filtered to one jurisdiction and one corpus type, at the largest page size.
+
+```json
+{
+  "query": "automated external defibrillator",
+  "state": "tx",
+  "corpusType": "REGULATION",
+  "limit": 50,
+  "offset": 0
+}
+```
+
+Page to the end of the reachable set, then repeat for the next concept and union the `actId` values.
+Intersect that union against the spine from step 2.
+
+Two reasons this beats one broad query:
+
+- Filters are applied before retrieval, so each scoped query gets a full-depth pool **within its slice**. Scoping buys recall rather than spending it.
+- One query per concept gives you independent pools. `defibrillator OR cardiac arrest` is read as a single string, including the word `OR`, and dilutes both concepts.
+
+See [How search works](/api-guide/concepts/search) for the ranking model and the absence of query operators.
+
+</Step>
+
+<Step title="Hydrate what survives">
+
+Fetch in batches of 50 with `POST /us/statutes/sections`.
+Add `includeBody` when you want the text in the same call, instead of one `/section/{actId}/body` request per section.
+
+```json
+{ "actIds": ["STATE_TX_TAC_T26_P1_C554_S554_1935", "..."], "includeBody": true }
+```
+
+Full text is the expensive half, so decide deliberately which sections get it: metadata first for the whole candidate set, then a second pass with `includeBody` for the ones that survive your filter.
+Rows whose text cannot be resolved come back with `body: null` and are not charged for it, so read `creditsConsumed` on each response rather than computing cost from row counts.
+
+</Step>
+
+<Step title="Subscribe, then re-hydrate">
+
+Create a board watch for each `(corpusType, state)` pair in scope, then poll `GET /watches/{id}/changes` with `sinceId` paging on your own cadence.
+Re-fetch only the `actId` values that appear.
+
+A watch returns the source's whole captured history rather than only what postdates your subscription, it is safe to poll, and watch management and polling cost no credits.
+
+Use `changedSince` on search as a second trigger inside the subject area itself, for the narrower question of what moved among the sections you already track.
+
+See [Law change alerts](/api-guide/alerts).
+
+</Step>
+
+</Steps>
+
+## Keeping the spine honest
+
+Re-run the enumeration in step 2 on a slower cadence than your change polling, quarterly rather than daily.
+It catches structural change that a per-section watch does not describe well: a chapter that gained sections, a code that was reorganised, a part that was recodified.
+
+Reconcile the new enumeration against the stored one and treat the three cases separately:
+
+| Case | Meaning |
+|---|---|
+| In the new spine, not the old | Newly published, or newly in scope |
+| In both | Compare `lastAmendedYear` to decide whether to re-hydrate |
+| In the old spine, not the new | Repealed, renumbered, or recodified. Resolve by citation before deleting anything |
+
+That last row is the one to handle carefully.
+An `actId` changes when a section is renumbered, so its absence is not evidence that the law is gone.
+Re-resolve by citation through `GET /us/statutes/resolve` before you retire a record.
+
+See [Section identifiers](/api-guide/concepts/section-ids).
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Browse the hierarchy" icon="sitemap" href="/api-guide/recipes/browse-hierarchy">
+    The divisions endpoint in detail.
+  </Card>
+  <Card title="How search works" icon="magnifying-glass" href="/api-guide/concepts/search">
+    Why search narrows rather than enumerates.
+  </Card>
+  <Card title="Compliance mapping" icon="clipboard-check" href="/api-guide/recipes/compliance-mapping">
+    Mapping obligations onto the corpus you have built.
+  </Card>
+  <Card title="Coverage monitoring" icon="binoculars" href="/api-guide/recipes/coverage-monitoring">
+    Watching a jurisdiction for change.
+  </Card>
+</CardGroup>

@@ -7,6 +7,62 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-09-14" description="Scope counting, batch full text, and enumeration that says when it is incomplete">
+  ## Size a scope before you walk it
+
+  `POST /us/statutes/count` takes the scoping filters and returns an exact section count. No
+  query, no ranking, 1 credit, and a scope that matches nothing is refunded.
+
+  It answers the question that has to come first when you are building a corpus rather than
+  looking one section up: how big is this job. Texas regulations are 43,638 sections; 26 TAC
+  chapter 554 is 279. Count the scope, enumerate it with `/divisions`, then rank within it
+  with `/search`.
+
+  It counts SECTIONS. Long sections are stored as several passages and are counted once.
+
+  ## Full text for many sections in one call
+
+  `POST /us/statutes/sections` now accepts `includeBody`. Each section comes back with its text
+  on `body` instead of metadata only.
+
+  Priced from the ordinary body rate per row that returns text, so it buys a round trip and not a
+  discount, and rows whose text cannot be resolved come back `null` and are not charged. Read
+  `creditsConsumed` rather than computing it.
+
+  ## `changedSince` now tells you how much it matched
+
+  A search with `changedSince` set returns `changedSectionCount`: how many sections changed in
+  that window, before ranking.
+
+  Compare it against `count`. `changedSince` filters a RANKED search, so a window holding more
+  sections than one query can return is normal, and what you get back is the most relevant slice
+  rather than the whole window. When the number is larger than you can page to, treat the filter
+  as a trigger and take the inventory from a board watch, which is complete and costs no credits.
+
+  ## Enumeration says when it is incomplete
+
+  `GET /us/statutes/divisions` now returns `truncated`, and `nextCursor` alongside it. The level
+  that lists sections walks a bounded number of points; a container past that bound used to return
+  a short list with nothing saying so, and no way to reach the rest.
+
+  Check `truncated` before treating a listing as complete. When it is true, pass `nextCursor` back
+  as `cursor` and keep going until it comes back null. California's 22 CCR walks to 11,602 sections
+  across two pages, which matches the parent's own `sectionCount`.
+
+  Rows are sorted into statutory order within a response and pages are walked in storage order, so
+  sort the union yourself once you hold every page.
+
+  The same endpoint now accepts `excludeRepealed` and `actStatus`, so you can enumerate only
+  operative law instead of filtering after you have paid to fetch it.
+
+  ## Successor pointers are readable
+
+  `renumberedTo` and `transferredTo` are raw publisher pointers (`self:4651`), not identifiers of
+  ours, and passing one to a section endpoint is a 404. They now come with `renumberedToLabel` and
+  `transferredToLabel`, the same pointer written out (`section 10105 of Title 34`), and their
+  descriptions say plainly that the raw form is not an `actId`.
+</Update>
+
 <Update label="2026-09-13" description="STATE_RULES reaches 50 jurisdictions: Colorado, built from a 2023 compilation plus every amending order since">
   ## `STATE_RULES`: Colorado
 

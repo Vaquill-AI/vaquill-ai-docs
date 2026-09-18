@@ -107,7 +107,7 @@ def walk_title(corpus_type: str, title_number: int) -> None:
             corpusType=corpus_type, titleNumber=title_number, chapter=ch["identifier"]
         )
         for sec in sections["divisions"]:
-            # sec["actId"] -> GET /us/statutes/section/{actId} or .../body
+            # sec["actId"] -> feed into POST /us/statutes/sections (see below)
             print(f'  § {sec["identifier"]}  {sec["name"] or ""}  [{sec["actId"]}]')
 
 
@@ -115,8 +115,53 @@ walk_title("USC", 42)
 ```
 
 <Warning>
-  A leaf listing is bounded to keep one call fast, so an unusually large chapter can be truncated. Chapters are small in practice; if you are enumerating a very large flat state code, scope a `POST /us/statutes/search` with the `code` filter instead of listing every section at once. The `code` values are the `actId`s this endpoint returns for `corpusType=STATE&state=XX`, so browse output feeds straight back in.
+  A leaf listing is bounded to keep one call fast, so a large container comes back in more than one page.
+  Check `truncated` on every section listing. When it is `true`, the response also carries `nextCursor`: pass it back as `cursor` and keep going until it is `null`.
+
+  ```python
+  def all_sections(**scope) -> list[dict]:
+      out, cursor = [], None
+      while True:
+          page = divisions(**scope, **({"cursor": cursor} if cursor else {}))
+          out += page["divisions"]
+          cursor = page.get("nextCursor")
+          if not cursor:
+              return out
+  ```
+
+  Do not reach for `POST /us/statutes/search` to finish an enumeration. Search is capped at 120 results for any one query, so it cannot complete a container that browse could not.
 </Warning>
+
+<Note>
+  Rows are sorted into statutory order **within** each response, and pages are walked in storage order, so concatenating pages does not give you one globally sorted list. The union of every page is the complete container. Sort it yourself once you hold it all.
+</Note>
+
+## Export a container with its text
+
+Enumeration gives you identifiers. To turn a chapter into text, batch those `actId` values through `POST /us/statutes/sections` with `includeBody`, 50 at a time.
+
+```python
+def export_container(**scope) -> list[dict]:
+    ids = [s["actId"] for s in all_sections(**scope) if s.get("actId")]
+    out = []
+    for i in range(0, len(ids), 50):
+        resp = requests.post(
+            f"{BASE}/statutes/sections",
+            headers=HEADERS,
+            json={"actIds": ids[i : i + 50], "includeBody": True},
+        )
+        resp.raise_for_status()
+        out += resp.json()["sections"]
+    return out
+```
+
+Two calls per 50 sections, and no per-section round trip. `includeBody` bills the ordinary body price for each row that returns text; rows whose text cannot be resolved come back with `body: null` and are not charged for it, so read `creditsConsumed` on each response instead of computing it.
+
+Text is the expensive half of any export. If you are filtering, run the filter on metadata first (omit `includeBody`) and fetch bodies only for what survives.
+
+<Tip>
+  Size the container before you walk it. `POST /us/statutes/count` takes the same scoping filters, runs no ranking, and returns an exact section count for one credit, which tells you what an export will cost before you start it.
+</Tip>
 
 ## Search within a container
 

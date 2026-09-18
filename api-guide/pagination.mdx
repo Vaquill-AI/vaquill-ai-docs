@@ -45,6 +45,7 @@ Each search response includes these top-level fields:
 - `total`: a **deprecated** alias for `count`. It is still returned for back-compatibility. Read `count` in new code.
 - `offset`: the offset that was applied.
 - `hasMore`: `true` when more results are reachable beyond this page.
+- `changedSectionCount`: only when `changedSince` is set. How many sections changed in that window, before ranking. Compare it against `count` to see whether the page is the whole window or a slice of it.
 - `creditsConsumed`: what this call actually cost. Read it rather than assuming the list price.
 
 <Warning>

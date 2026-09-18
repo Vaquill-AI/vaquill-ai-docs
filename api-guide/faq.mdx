@@ -1,0 +1,240 @@
+---
+title: "FAQ"
+description: "Short answers to the questions integrators ask most, with links to the page that covers each one properly"
+icon: "circle-question"
+---
+
+Short answers, each pointing at the page that covers it in full.
+
+## Search and retrieval
+
+<AccordionGroup>
+
+<Accordion title="How do I get every section matching a query, not just the top results?">
+You don't, through search.
+Search ranks, and a single query reaches a bounded number of results.
+
+For exhaustive coverage of a body of law, browse the hierarchy instead.
+`GET /us/statutes/divisions` walks codes to chapters to sections and returns every section in a container with its `actId`, with no ranking involved.
+
+See [Build a subject corpus](/api-guide/recipes/subject-corpus) for the full pipeline, and [How search works](/api-guide/concepts/search) for why the two tools answer different questions.
+</Accordion>
+
+<Accordion title="I set limit and I am still capped. How deep does paging go?">
+`limit` runs 1 to 50 and defaults to 10.
+`offset` runs 0 to 70.
+The deepest reachable result for one query is `offset + limit`, and the ranked pool behind it is sized to match.
+
+If you are seeing a number that is not 10 or 50, it is almost certainly a default in your own client rather than ours.
+
+See [Pagination](/api-guide/pagination).
+</Accordion>
+
+<Accordion title="hasMore is true but I only got a handful of results. Is something wrong?">
+No.
+`hasMore` describes the reachable pool for that query, and `count` is a per-page count.
+Neither is a corpus-wide total, and no field reports one.
+
+Long sections occupy several passages in the pool before collapsing to a single `actId`, so a query concentrated on a few long sections legitimately returns far fewer distinct sections than the pool size suggests.
+
+See [Pagination](/api-guide/pagination).
+</Accordion>
+
+<Accordion title="Does the API support AND, OR, NOT, quoted phrases or wildcards?">
+No.
+There is no boolean or query-operator grammar.
+The query string is passed to the retrieval engine as written, so `AND` and `OR` are read as ordinary words.
+
+Use `matchType` for exact matching (`all` requires every term, `phrase` requires the exact phrase), and the filters for scoping.
+For several concepts, run one search per concept and union the results.
+
+Note that `all` and `phrase` narrow results we already ranked for your query, so an empty result under them is not proof the corpus holds no such section.
+
+See [How search works](/api-guide/concepts/search).
+</Accordion>
+
+<Accordion title="Why did a section with none of my query words rank first?">
+The semantic leg of the hybrid ranking matches on meaning, so a section can rank for a question it shares no wording with.
+That is usually what you want for a natural-language question and wrong for a term of art.
+
+Set `matchType` to `phrase` or `all` when you need the words themselves.
+
+See [How search works](/api-guide/concepts/search).
+</Accordion>
+
+<Accordion title="Does search read the whole section, or just part of it?">
+The full canonical text, split into overlapping passages, each carrying its corpus, jurisdiction, status, hierarchy and section title.
+Headings and citations are searchable too.
+
+The `excerpt` on a result is one passage and is a preview, not the section.
+Call `GET /us/statutes/section/{actId}/body` for authoritative text.
+</Accordion>
+
+</AccordionGroup>
+
+## Identifiers and structure
+
+<AccordionGroup>
+
+<Accordion title="Can I store actId permanently as my primary key?">
+Store it, but store the citation next to it.
+
+An `actId` survives an amendment and survives a repeal.
+It changes when a section is renumbered or moved, because the id encodes where the section sits in the hierarchy.
+
+When a stored id stops resolving, re-resolve by citation through `GET /us/statutes/resolve` and update your record.
+
+See [Section identifiers](/api-guide/concepts/section-ids).
+</Accordion>
+
+<Accordion title="How many sections are in a jurisdiction, code or chapter?">
+`POST /us/statutes/count`.
+It takes the same scoping filters as search, runs no ranking, and returns an exact section count for one credit.
+A scope that matches nothing is refunded.
+
+It takes no `query`, deliberately: ranking runs over a bounded window, so "how many sections match this query" has no answer beyond the size of that window.
+Counting a scope is exact, which is what you want before deciding whether to walk one.
+
+See [Build a subject corpus](/api-guide/recipes/subject-corpus).
+</Accordion>
+
+<Accordion title="Can I enumerate every section in a state, code, title or chapter?">
+Yes, with `GET /us/statutes/divisions`.
+It browses `USC`, `CFR`, `STATE` and `REGULATION`, one level at a time, and the leaf level returns every section in the container with its `actId`.
+
+Codes vary in depth.
+Most run code to chapter to section; some publish sections directly under the code.
+Read `level` on the response rather than assuming a fixed depth, and treat any node with `isLeaf` and an `actId` as a section.
+
+See [Browse the hierarchy](/api-guide/recipes/browse-hierarchy).
+</Accordion>
+
+<Accordion title="How do I know an enumeration was complete?">
+Check `truncated` on every section listing from `GET /us/statutes/divisions`.
+
+A large container comes back in more than one page. When `truncated` is `true`, the response carries `nextCursor`: pass it back as `cursor` and repeat until it is `null`. Then compare your total against the parent node's `sectionCount` as an independent check.
+
+Do not finish an enumeration with `POST /us/statutes/search`. It caps at 120 results per query, so it cannot complete a container that browse could not.
+
+See [Browse the hierarchy](/api-guide/recipes/browse-hierarchy).
+</Accordion>
+
+<Accordion title="How do I export a whole chapter or title with its text?">
+Enumerate it with `GET /us/statutes/divisions`, then batch the `actId` values through `POST /us/statutes/sections` with `includeBody`, 50 per call.
+
+That is two calls per 50 sections with no per-section round trip. Size it first with `POST /us/statutes/count` so you know the cost before you start, and run any filter on metadata before fetching bodies, since text is the expensive half.
+
+See [Browse the hierarchy](/api-guide/recipes/browse-hierarchy).
+</Accordion>
+
+<Accordion title="Does the API expose cross-references between sections?">
+For the federal corpora, yes, as stored fields rather than something you parse out of the text: `crossReferencesUsc`, `crossReferencesCfr`, `publicLaws`, and `statutoryAuthority` with its reverse `implementingRegulations`.
+
+`GET /us/statutes/section/{actId}/cited-by` gives the reverse lookup across USC and CFR.
+`GET /us/statutes/section/{actId}/related` returns statutory neighbours in reading order, which is often what you want for scope and exception provisions, since those usually sit beside the operative section rather than cite it.
+
+See [Section intelligence](/api-guide/concepts/section-intelligence).
+</Accordion>
+
+<Accordion title="Is there metadata marking definition, applicability or enforcement sections?">
+There is no structured provision-type field.
+
+`GET /us/statutes/section/{actId}/definitions` locates the definitions section governing a provision and returns the defined terms parsed from it.
+For applicability, exception and enforcement provisions, classify from the heading and text on your side.
+</Accordion>
+
+</AccordionGroup>
+
+## Keeping data current
+
+<AccordionGroup>
+
+<Accordion title="How do I find what changed since my last sync?">
+Three mechanisms, for three different questions.
+
+| You want | Use |
+|---|---|
+| Changed sections inside a subject area | `changedSince` on `POST /us/statutes/search` |
+| Everything a source published, complete | A board watch, polled at `GET /watches/{id}/changes` |
+| The history of one section you already hold | `GET /us/statutes/section/{actId}/changes` |
+
+A board watch returns the source's whole captured history rather than only what happened after you subscribed, it is safe to poll, and watch management and polling cost no credits.
+
+See [Law change alerts](/api-guide/alerts).
+</Accordion>
+
+<Accordion title="How often does a given section actually change?">
+Read `amendmentYears`, `lastAmendedYear` and `amendmentsCount` on the section.
+Those come from the publisher's own record and go back decades, which is what you want for a question about how volatile a provision is.
+
+See [Amendment history](/api-guide/concepts/amendment-history).
+</Accordion>
+
+<Accordion title="What did this section say on a particular date?">
+Pass `asOf=YYYY-MM-DD` to `GET /us/statutes/section/{actId}/body`.
+
+Read the `asOf` block on the response before relying on the text.
+Its `isBounded` flag tells you how strong the reconstruction is, and surfacing that to your own users matters when the answer drives a compliance decision.
+
+See [Point in time](/api-guide/point-in-time).
+</Accordion>
+
+</AccordionGroup>
+
+## Volume and access
+
+<AccordionGroup>
+
+<Accordion title="What should I design my rate limiting around?">
+Every response carries `x-ratelimit-limit`, `x-ratelimit-remaining` and `x-ratelimit-reset`.
+Pace against those headers rather than a fixed sleep, and note that budgets are counted per API key.
+
+Retry `429` with backoff, and handle `402` as a distinct case: it means credits, not rate.
+
+See [Errors](/api-guide/errors).
+</Accordion>
+
+<Accordion title="Is there a bulk-search or bulk-export endpoint?">
+Not on the metered API.
+`POST /us/statutes/sections` takes up to 50 `actId` values and `POST /us/statutes/resolve` up to 50 citations, but both need identifiers you already hold.
+They save round trips and are priced per item, so batch for latency rather than for cost.
+
+`POST /us/statutes/sections` also accepts `includeBody`, which returns each section's full text inline instead of metadata only.
+That removes the one-call-per-section step when you are hydrating a set of ids you already have.
+
+For the corpus itself rather than answers about it, see [Bulk and SQL access](/api-guide/bulk-and-sql).
+</Accordion>
+
+<Accordion title="Can I get a bulk export of a corpus that is not in the public dataset?">
+Sometimes, as an agreed arrangement rather than a self-serve download, because the constraint is licensing rather than engineering.
+Delivery matches the public files: Parquet, one file per jurisdiction, with a manifest and checksums.
+
+A narrower scope, a subject area or a specific set of jurisdictions, is a much faster conversation than a full corpus.
+Email [contact@vaquill.ai](mailto:contact@vaquill.ai) with the scope you need.
+</Accordion>
+
+<Accordion title="Am I charged for a call that returns nothing?">
+Read `creditsConsumed` on the response rather than computing the cost yourself.
+Empty and failed lookups are refunded on the endpoints where an empty result is not the answer.
+
+See [Authentication and credits](/api-guide/authentication).
+</Accordion>
+
+</AccordionGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="How search works" icon="magnifying-glass" href="/api-guide/concepts/search">
+    Ranking, matchType, and what gets indexed.
+  </Card>
+  <Card title="Build a subject corpus" icon="layer-group" href="/api-guide/recipes/subject-corpus">
+    Enumerate, scope, hydrate, subscribe.
+  </Card>
+  <Card title="Best practices" icon="star" href="/api-guide/best-practices">
+    Scoping, caching, and retry behaviour.
+  </Card>
+  <Card title="Coverage" icon="map" href="/api-guide/coverage">
+    What is in the corpus, by jurisdiction.
+  </Card>
+</CardGroup>
