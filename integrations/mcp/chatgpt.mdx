@@ -1,0 +1,75 @@
+---
+title: "ChatGPT and Codex"
+sidebarTitle: "ChatGPT & Codex"
+description: "Connect US primary law to ChatGPT and Codex over MCP. The standard search and fetch pair, OAuth sign-in, and no API key to paste."
+icon: "message-bot"
+keywords: ["chatgpt mcp", "chatgpt connector legal", "codex mcp server", "openai apps sdk legal", "deep research connector", "us law chatgpt"]
+---
+
+The same MCP server that serves Claude serves ChatGPT and Codex. One endpoint, one credit balance, one corpus of United States primary law.
+
+<Note>
+  **Nothing here is Claude-specific.** `https://mcp.vaquill.ai/mcp` speaks the Model Context Protocol over Streamable HTTP, which is an open standard. Client-specific pages exist because the *setup steps* differ, not the server.
+</Note>
+
+## Connect
+
+```
+https://mcp.vaquill.ai/mcp
+```
+
+Add it as a remote MCP server. Leave any API key or header field empty: this endpoint authenticates with OAuth 2.1, so you sign in with your Vaquill AI account and there is nothing to copy.
+
+An unauthenticated request returns `401` with a `WWW-Authenticate` header pointing at the protected-resource metadata, which is how a compliant client knows to start the sign-in.
+
+For **Codex** and other terminal clients, register it the way that client documents for a remote MCP server over Streamable HTTP, then complete the browser sign-in it opens.
+
+## The search and fetch pair
+
+Research-style clients, including ChatGPT's deep research and company-knowledge connectors, look for two specific tools rather than a bespoke catalogue. This server publishes both:
+
+| Tool | Returns |
+| --- | --- |
+| `search` | `{id, title, url}` records across every US corpus, ready to cite |
+| `fetch` | `{id, title, text, url, metadata}` for one section, by `id`, source URL, or a Bluebook citation such as `42 U.S.C. 1983` |
+
+They are deliberately additive. If your client can call the typed tools instead, prefer them: `search_us_statutes` filters by jurisdiction, corpus, date and status, which the generic pair cannot.
+
+<Warning>
+  **`url` is always a non-empty string on a result.** Research clients render a citation only when it is present, so a result with an empty `url` is silently uncitable. Every legal-record result carries its official government source URL.
+</Warning>
+
+## Verify it works
+
+A green connection proves nothing. Make one real call, and the cheapest is free:
+
+> "List statutes coverage for California."
+
+`list_statutes_coverage` costs **0 credits**, so it confirms the connection carries an identity without spending anything.
+
+## What you get
+
+The US Code, the Code of Federal Regulations, all 50 state statutory codes plus DC and Puerto Rico, state administrative regulations, federal and state court rules, federal and state constitutions, agency guidance from 51 named sources, agency adjudications, the Statutes at Large and the Federal Register. Roughly 5.8 million sections, of which about 4.5 million are not marked repealed.
+
+Every legal-record result carries its official source URL and the publisher's own status for that section. Where currency cannot be vouched for, the derived good-law verdict reports `unknown` rather than over-claiming.
+
+## Costs
+
+Metered per call against your credit balance. Reads are 1 to 6 credits; `list_statutes_coverage`, `list_boards` and `get_pricing` are free. Every response reports its own `creditsConsumed`, and a backend failure returns `503` and is refunded automatically.
+
+New accounts include 500 free credits. See [pricing](https://www.vaquill.ai/legal-api).
+
+## Other clients
+
+<CardGroup cols={2}>
+  <Card title="Claude" icon="link" href="/integrations/mcp/claude-connector">
+    One-click connector, listed in the Claude directory.
+  </Card>
+  <Card title="Cursor, VS Code, Windsurf" icon="code" href="/integrations/mcp/vaquill">
+    API-key setup for editors that do not support OAuth.
+  </Card>
+</CardGroup>
+
+## Support
+
+Questions, a broken call, or a credit top-up: [vaquill.ai/support](https://www.vaquill.ai/support).

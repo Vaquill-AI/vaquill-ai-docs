@@ -205,6 +205,25 @@ Two consequences worth knowing:
   Insurance) and 220 CMR (Department of Public Utilities). Those titles are still served from the
   2024 compilation this jurisdiction was originally built on.
 
+### Uniform Commercial Code: served as each state enacted it
+
+There is no separate UCC corpus, because the UCC is not law until a legislature enacts it.
+Each state's enacted version is part of that state's statutes, so search it with `corpusType: "STATE"` and `state`, and cite it in the state's own numbering.
+The model's § 2-207 is `Cal. Com. Code § 2207`, `6 Del. C. § 2-207`, `Tex. Bus. & Com. Code § 2.207`, `Iowa Code § 554.2207` and `N.D. Cent. Code § 41-02-14`, and those are the forms the citation resolver expects.
+
+We do not serve the model text or the Official Comments.
+Both are copyrighted by the American Law Institute and the Uniform Law Commission, and this API serves only government-published law.
+Where two states' enacted text differs, the difference is the law, so read the enacted section rather than the model.
+
+Known differences and gaps, measured 2026-09-24 against Articles 2 and 9:
+
+- **Louisiana never enacted Article 2.** Its other articles are served under La. R.S. Title 10.
+- **Puerto Rico did not adopt Article 2**, and its commercial transactions law (Ley 208-1995) is not yet in the corpus.
+- **Not yet served, fix in progress:** Alabama, Kentucky, Massachusetts, Missouri, Nebraska, New Hampshire and Rhode Island.
+  In each case our ingest dropped the chapter; the publisher has it.
+- **Served, but the citation does not resolve yet:** Oklahoma (`Okla. Stat. tit. 12A`) and Washington (`RCW 62A`).
+  Search finds the sections; resolve a citation by the form search returns until the fix lands.
+
 ## State agency guidance
 
 State-issued regulatory guidance that interprets state law, the state-scoped analog of federal

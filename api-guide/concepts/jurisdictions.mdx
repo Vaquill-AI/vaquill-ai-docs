@@ -141,8 +141,9 @@ Drill one level further by passing it back to `/us/statutes/divisions`
 (`corpusType=STATE&state=tx&code=tx_pe` returns that code's chapters), and keep
 going until `isLeaf` is true, where each node carries an `actId`.
 
-Browse supports `USC`, `CFR`, `STATE` and `REGULATION`.
-The other corpora are flatter, so reach those with `/us/statutes/search`.
+Browse supports `USC`, `CFR`, `STATE`, `REGULATION`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
+Each corpus in the `/us/statutes/coverage` legend carries a `browsable` flag that says the same thing, so you never need to probe for it.
+The rest are dated series or share no tree, so reach those with `/us/statutes/search`.
 
 <Tip>
   The discovery pattern is: `/us/statutes/coverage` to see which corpora a

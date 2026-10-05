@@ -82,6 +82,28 @@ Store the citation next to it. An `actId` survives an amendment and a repeal, bu
 
 Do not compare scores across different queries and do not use a fixed threshold (for example "drop anything below 0.7") to decide what to keep. To narrow results, tighten `query`, `corpusType`, and `state` instead.
 
+To tell whether the corpus has anything on point at all, read `noGoodMatch` on the search response instead of thresholding scores yourself:
+
+- `true`: nothing in the corpus looks on point for this query (or no rows came back). Say so, rather than presenting the rows as an answer.
+- `false`: something on point was found, or the top row is an exact citation match.
+- `null`: the ranking was degraded (`rankingDegraded: true`), so its scores cannot be judged. Retry the query.
+
+To judge how likely the top result is to be the right section, read `matchQuality`:
+
+| Value | Meaning |
+| --- | --- |
+| `exact` | The top result is a citation or section-number match. |
+| `strong` | In our measurements the top result was correct about 94% of the time (about 91% when the answer is a statute or regulation). |
+| `moderate` | Correct about 67% of the time. Show the top few results, not just the first. |
+| `weak` | Correct about 35% of the time. Treat the results as leads to verify. |
+| `none` | Same as `noGoodMatch: true`. |
+| `null` | The ranking was degraded; retry. |
+
+The tiers are measured on our labelled evaluation set and may be re-cut as the index changes. Treat a value you do not recognise as `moderate`.
+
+`noGoodMatch` and `matchQuality` are properties of the query, so every page of one search carries the same values.
+It says nothing about whether the top result is the right section. A same-topic section from the wrong jurisdiction or the wrong layer (a state statute for a federal question, a regulation for a statute) can rank first, so check `citation` and `state` before you rely on it.
+
 Browse is ordered differently. `GET /us/statutes/divisions` returns divisions in statutory (natural) order, the way a person reads a code, not by relevance: `9` sorts before `10`, and `240.9` before `240.10`. Reach for search when you want the most on-point section, and for browse when you want the structure in order.
 
 ## Link users to official sources

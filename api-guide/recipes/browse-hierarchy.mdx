@@ -1,6 +1,6 @@
 ---
 title: "Browse the statute hierarchy"
-description: "Walk a code top to bottom with /us/statutes/divisions: titles, chapters, parts, and sections in statutory order"
+description: "Walk a code top to bottom with /us/statutes/divisions: titles, chapters, parts, articles, rule sets and sections in statutory order"
 icon: "sitemap"
 ---
 
@@ -11,7 +11,10 @@ Search finds the section that answers a question, but it cannot enumerate a code
 **Endpoint used:** `GET /us/statutes/divisions`.
 
 <Note>
-  Browse supports `USC`, `CFR`, `STATE`, and `REGULATION`, the corpora with a clean drill-down tree. Constitutions, court rules, executive actions, the Federal Register, and agency guidance are flatter or heterogeneous; reach those with `POST /us/statutes/search` (see the [Quickstart](/api-guide/quickstart)).
+  Browse supports `USC`, `CFR`, `STATE`, `REGULATION`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
+  Every legend entry on `GET /us/statutes/coverage` carries a `browsable` flag that says which, so read it instead of probing.
+  State court rules, executive actions, the Federal Register and agency guidance are dated series or share no common tree; reach those with `POST /us/statutes/search` (see the [Quickstart](/api-guide/quickstart)).
+  A request whose filters do not fit the corpus is rejected with `422` before anything is charged.
 </Note>
 
 ## How drilling works
@@ -27,8 +30,24 @@ Pass the deepest level you already know, and the response returns the level dire
 | `corpusType=CFR&titleNumber=17&part=240` | the `sections` in Part 240 (leaf) |
 | `corpusType=STATE&state=tx` | the state's `codes` |
 | `corpusType=STATE&state=tx&code=tx_pe` | the `chapters` in the Texas Penal Code |
+| `corpusType=STATE&state=ny&code=ny_jud` | the `articles` in the New York Judiciary Law (New York is divided by article, not chapter) |
+| `corpusType=STATE&state=ny&code=ny_jud&article=2` | the `sections` in Article 2 (leaf) |
+| `corpusType=CONSTITUTION` | the `articles` and amendments of the US Constitution |
+| `corpusType=CONSTITUTION&article=Amendment XIV` | the `sections` of the Fourteenth Amendment (leaf) |
+| `corpusType=STATE_CONSTITUTION&state=nm` | the `articles` of the New Mexico Constitution |
+| `corpusType=FEDERAL_RULES` | the rule sets (`codes`): FRCP, FRE, FRCrP, FRAP, FRBP, Supreme Court Rules |
+| `corpusType=FEDERAL_RULES&code=frcp` | the Federal Rules of Civil Procedure (leaf) |
 
-Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back as the matching filter (`chapter`, `part`, or `code`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
+Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back, verbatim, as the filter its `kind` names (`title` as `titleNumber`, `chapter`, `part`, `code`, or `article`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
+
+<Note>
+  Federal rules are published twice, by the Judicial Conference at uscourts.gov (`frcp`, `fre`, ...) and as an appendix to the U.S. Code (`uscapp_t28a_fre`, ...).
+  Each is its own rule set in the listing, so no rule appears twice under one heading.
+</Note>
+
+<Tip>
+  On `CFR` you can pass the chapter from a citation such as "17 CFR Chapter II, Part 240": with a `part`, `chapter` is accepted and ignored, because part numbers are unique within a title.
+</Tip>
 
 ## One level
 
@@ -165,7 +184,21 @@ Text is the expensive half of any export. If you are filtering, run the filter o
 
 ## Search within a container
 
-Browse and search meet at the `parent` object. Every search result carries a `parent`: the ready-made query that lists its siblings. Its keys (`titleNumber`, `chapter`, `part`, `code`) are also accepted by `POST /us/statutes/search`, so you can take any hit and run a keyword search confined to its chapter or part, without building the scope yourself.
+Browse and search meet at the `parent` object.
+A search result from any browsable corpus carries a `parent`: the ready-made query that lists its siblings.
+Every key it carries (`titleNumber`, `chapter`, `part`, `code`, `article`) is also a `POST /us/statutes/search` filter, so you can take any hit and run a search confined to its chapter, part, article or rule set, without building the scope yourself.
+
+| A hit from | carries a `parent` like |
+|---|---|
+| `USC` | `{"corpusType": "USC", "titleNumber": 42, "chapter": "21"}` |
+| `CFR` | `{"corpusType": "CFR", "titleNumber": 17, "part": "240"}` |
+| `STATE` / `REGULATION` | `{"corpusType": "STATE", "state": "tx", "code": "tx_pe", "chapter": "31"}` |
+| a New York code | `{"corpusType": "STATE", "state": "ny", "code": "ny_jud", "article": "2"}` |
+| `CONSTITUTION` | `{"corpusType": "CONSTITUTION", "article": "Amendment XIV"}` |
+| `STATE_CONSTITUTION` | `{"corpusType": "STATE_CONSTITUTION", "state": "nm", "article": "Article IV"}` |
+| `FEDERAL_RULES` | `{"corpusType": "FEDERAL_RULES", "code": "frcp"}` |
+
+The same object replays against `GET /us/statutes/divisions` unchanged, so one hit gives you both the listing of its container and a search within it.
 
 ```python Python
 import requests
@@ -190,6 +223,20 @@ for r in neighbors["results"]:
 ```
 
 `chapter` and `part` accept a single value or a list, and must be paired with `titleNumber` (USC/CFR) or `code` (state), which `parent` always includes. A chapter number alone repeats across every title, so an unpaired `chapter`/`part` is rejected with `422`.
+
+`article` follows the same logic, because article labels repeat too:
+
+- It needs a `corpusType` from one family: `CONSTITUTION` / `STATE_CONSTITUTION`, where it is the article label browse lists (`Amendment XIV`), or `STATE` / `REGULATION`, where it is the article of a code divided by article instead of chapter (New York's `2-A`).
+- `STATE_CONSTITUTION` also needs `state`, since most state constitutions have an `Article IV`.
+- On `STATE` / `REGULATION` it needs the `code` it belongs to, and it cannot be combined with `chapter`.
+
+Pass the `identifier` exactly as the listing returned it; a case slip such as `amendment xiv` also matches.
+
+A federal rule set is a `code` under `corpusType=FEDERAL_RULES`: `frcp`, `fre`, `frcpsuppadm`, or an appendix copy such as `uscapp_t28a_fre`.
+Without that `corpusType`, `frcp` cannot be told apart from a state code missing its state, so it is refused.
+`code=frcp` is the Federal Rules of Civil Procedure alone; `source=frcp` also covers the FRCP supplemental rules.
+
+Each of these shape errors is a `422` decided before anything is charged.
 
 ## Related
 

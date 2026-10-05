@@ -266,7 +266,8 @@
                   "integrations/mcp/index",
                   "integrations/mcp/vaquill",
                   "integrations/mcp/claude-connector",
-                  "integrations/mcp/claude-plugin"
+                  "integrations/mcp/claude-plugin",
+                  "integrations/mcp/chatgpt"
                 ]
               },
               {

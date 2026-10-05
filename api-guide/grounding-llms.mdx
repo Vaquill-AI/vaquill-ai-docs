@@ -75,6 +75,8 @@ A few habits keep grounded answers accurate and cheap.
     `relevanceScore` orders results within a single response. It is not a calibrated confidence score and is not comparable across queries.
 
     Do not drop results below a fixed cutoff like `0.5` or trust a high score as proof of relevance. Use it to order what you show, and let the grounded prompt decide whether the sections actually answer the question.
+
+    Before you build the context block, check `noGoodMatch` on the search response. When it is `true`, nothing in the corpus looks on point: tell the user that, rather than handing the model weak passages it will try to answer from. When it is `null` the ranking was degraded; retry the query.
   </Accordion>
 
   <Accordion title="Verify the model's citations before showing the answer" icon="circle-check">

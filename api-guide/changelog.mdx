@@ -7,6 +7,75 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-09-23" description="Browse and search inside constitutions, federal rules and New York articles; know what is browsable before you ask">
+  ## Three more corpora you can walk as a tree
+
+  `GET /us/statutes/divisions` now browses `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
+
+  - `corpusType=CONSTITUTION` lists the Preamble, the seven articles and the 27 amendments, in reading order.
+    Pass one back as `article` (`article=Amendment XIV`) for its sections.
+  - `corpusType=STATE_CONSTITUTION&state=nm` lists a state constitution's articles the same way.
+  - `corpusType=FEDERAL_RULES` lists the rule sets (FRCP, FRE, FRCrP, FRAP, FRBP, Supreme Court Rules and the FRCP supplemental rules), and `code=frcp` lists the rules in one.
+    The same rule sets are also published as an appendix to the U.S. Code, and those are listed as their own sets (`uscapp_t28a_fre`), so no rule appears twice under one heading.
+
+  ## New York articles can be entered
+
+  New York codes are divided by article, not chapter, and browse listed those articles without any way to open one.
+  Passing an article back as `chapter` returned nothing.
+  The new `article` parameter opens it: `corpusType=STATE&state=ny&code=ny_jud&article=2`.
+
+  ## `browsable` on the coverage legend
+
+  Every entry in the `corpusTypes` legend of `GET /us/statutes/coverage` now carries `browsable`, so you can tell which corpora `/divisions` accepts without sending a request to find out.
+
+  ## Malformed browse requests are no longer charged
+
+  A `/divisions` request whose filters do not fit the corpus (an unbrowsable `corpusType`, a missing `state`, a filter the corpus does not use) is now rejected with `422` before any credit is taken.
+  These used to be charged and refunded in the same call, which cost nothing but left a charge and a refund on your ledger for each one.
+  A filter naming a container that does not exist is still refunded, as before.
+
+  ## CFR accepts the chapter from a citation
+
+  `corpusType=CFR&titleNumber=17&chapter=II&part=240` used to be rejected because CFR browse is organized by part.
+  With a `part`, `chapter` is now accepted and ignored, since part numbers are unique within a title, and the response says so in `note`.
+  Without a `part`, it is still a `422`, because a chapter cannot narrow a title's part list.
+
+  ## Search within an article or a rule set
+
+  Everything you can browse, you can now search inside.
+  `POST /us/statutes/search` takes a new `article` filter, and `code` takes a federal rule set.
+
+  - `{"corpusType": "CONSTITUTION", "article": "Amendment XIV"}` searches the Fourteenth Amendment.
+  - `{"corpusType": "STATE_CONSTITUTION", "state": "nm", "article": "Article IV"}` searches one article of a state constitution.
+  - `{"corpusType": "STATE", "state": "ny", "code": "ny_jud", "article": "2"}` searches one article of a New York code.
+  - `{"corpusType": "FEDERAL_RULES", "code": "frcp"}` searches the Federal Rules of Civil Procedure, and `code=uscapp_t28a_fre` the Federal Rules of Evidence as the U.S. Code appendix prints them.
+    `source=frcp` still covers the FRCP together with its supplemental rules; `code` is the finer scope.
+
+  Search results from these corpora now carry a `parent` too, with `article` or the rule-set `code`, so a hit can be spread straight back into a search or a browse of its container.
+  `POST /us/statutes/count` takes the same `article` and rule-set `code`.
+  A shape that cannot be answered (an `article` without a matching `corpusType`, a state constitution without `state`, a New York article without its `code`) is a `422` before anything is charged.
+  See [Search within a container](/api-guide/recipes/browse-hierarchy#search-within-a-container).
+
+  ## State code searches match codes stored in capitals
+
+  `code` compared the lowercase id that `/divisions` hands out against the publisher's own casing, so a code the publisher stores in upper or mixed case matched nothing.
+  `code=ny_jud` returned no results because New York stores `JUD`, and `code=ca_pen` none because California stores `PEN`.
+  1,591 of the 8,929 state statute and regulation codes were affected on search and on `/count`, including every New York code and California's statute codes.
+  Codes now match however the publisher cases them; codes stored in lowercase, such as Texas's, return exactly what they did before.
+
+  ## `titleNumber` and `chapter` scoping errors are no longer charged
+
+  `POST /us/statutes/search` already refused a `titleNumber` without `corpusType` USC or CFR, and a `chapter` or `part` without its container, but only after charging and refunding.
+  Both are now `422` before any credit is taken.
+  `POST /us/statutes/count` now applies the same rules: `{"titleNumber": 28}` used to count title 28 of every corpus that numbers its titles, including the appendix court rules and state codes, and is now refused with the same message search gives.
+
+  ## `/coverage` publishes its response schema
+
+  `GET /us/statutes/coverage` used to publish its `200` response as an empty schema, so generated clients and MCP tools got no field types for it.
+  It now publishes the full shape of `data` and `meta`. The response itself is unchanged, byte for byte.
+  Its description no longer mentions `freshness` or `currency`, which the response stopped carrying on 2026-09-08; for the age of a source, read `GET /boards`, and for what a section is current through, read `currentThrough` on the section.
+</Update>
+
 <Update label="2026-09-14" description="Scope counting, batch full text, and enumeration that says when it is incomplete">
   ## Size a scope before you walk it
 

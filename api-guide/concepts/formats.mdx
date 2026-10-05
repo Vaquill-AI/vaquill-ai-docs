@@ -157,10 +157,14 @@ walk(data["subsections"] or [])
 
 Search results and the section metadata object carry a set of source URL fields.
 These point at the original files the publisher hosts. Any of them may be `null`
-depending on what that source offers:
+depending on what that source offers.
+
+Start with `sourceUrl`.
+It is the same official link the body endpoint returns, on every search result, section record and batch item, so one field name means one link everywhere.
 
 | Field | Points to |
 |---|---|
+| `sourceUrl` | Where the government published this text: the link to cite. The publisher's own page when there is one, otherwise govinfo.gov, the state's page, or our archived copy of the publisher's page |
 | `htmlUrl` | HTML version of the section |
 | `pdfUrl` | PDF version |
 | `xmlUrl` | XML version |
@@ -169,7 +173,17 @@ depending on what that source offers:
 | `stateHtmlUrl` | The state legislature's own HTML page |
 | `govInfoHtmlUrl` | The section on govinfo.gov (HTML) |
 | `govInfoPdfUrl` | The section on govinfo.gov (PDF) |
-| `externalUrl` | Another authoritative external link |
+| `externalUrl` | The publisher's own page for the section, exactly as recorded (uscode.house.gov, ecfr.gov, a state legislature or register) |
+
+`source` is not a link.
+It names a sub-source inside a multi-source corpus (a federal rules set, an agency) for use as a search filter, and is null on single-source corpora such as every state's statutes and regulations.
+
+Where a state publishes its official text only through a commercial platform, the link is withheld under our licence: `sourceUrl` and `externalUrl` are null, and `licenseNote` says a link exists and is withheld.
+
+Some official publishers serve their code only through a JavaScript application.
+The Texas Administrative Code is the main case: the Secretary of State publishes it only on its Appian portal (`texas-sos.appianportalsgov.com`), so the link opens in a browser but returns an empty page shell to `curl` or any other plain HTTP client.
+The link is still the correct citation.
+To confirm a section without a browser, use `adoptingCitations`, which lists the register instruments that adopted and amended it (for Texas, citations such as `50 TexReg 8285`), and read the text we captured at `textUrl`.
 
 <Info>
   The government links (`stateHtmlUrl`, `govInfoHtmlUrl`, `govInfoPdfUrl`) let
@@ -189,6 +203,7 @@ back through the other formats:
 ```python Python
 def best_source_url(result):
     for field in (
+        "sourceUrl",
         "govInfoHtmlUrl",
         "stateHtmlUrl",
         "htmlUrl",
@@ -208,6 +223,7 @@ def best_source_url(result):
 ```javascript JavaScript
 function bestSourceUrl(result) {
   const order = [
+    "sourceUrl",
     "govInfoHtmlUrl",
     "stateHtmlUrl",
     "htmlUrl",
@@ -229,8 +245,7 @@ function bestSourceUrl(result) {
 
 <Tip>
   For displaying the text itself, prefer `html` from the `/body` endpoint. For
-  citing where it came from, prefer an official government link
-  (`govInfoHtmlUrl` or `stateHtmlUrl`) so readers can verify against the
+  citing where it came from, use `sourceUrl` so readers can verify against the
   authoritative source.
 </Tip>
 
