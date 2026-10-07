@@ -4,8 +4,8 @@ description: "The jurisdictions the API accepts, how state codes and the federal
 icon: "map-location-dot"
 ---
 
-`state` accepts **52 US jurisdictions**: all 50 states, plus the District of
-Columbia and Puerto Rico.
+`state` accepts **54 US jurisdictions**: all 50 states, plus the District of
+Columbia, Puerto Rico, Guam (`gu`) and the Northern Mariana Islands (`mp`).
 Federal law lives under its own `federal` jurisdiction, separate from the states.
 
 Accepting a jurisdiction is not the same as holding every corpus for it, so read
@@ -58,6 +58,12 @@ Read those keys to know which searches you can scope.
 
 The same response carries `data.corpusTypes`, a legend naming every token and
 whether it is federal or state-scoped, so you never need a hardcoded list.
+
+A jurisdiction that holds [state session laws](/api-guide/session-laws) also carries a
+`sessionLaws` block: its sessions with `status` (`complete` or `partial`), the counts served,
+withheld and still open, the numbering `series` and `instrumentTypes` it holds (the values
+the list and search endpoints accept) and the span of approval dates. A jurisdiction with no
+session laws has no block. Session laws are not a `corpusType`.
 
 <CodeGroup>
 

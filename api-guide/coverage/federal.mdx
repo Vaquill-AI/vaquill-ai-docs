@@ -4,7 +4,7 @@ description: "Every federal corpus the Vaquill statutes API serves, with section
 icon: "landmark"
 ---
 
-**1,519,120 sections across 14 corpus types**, measured 2026-09-11.
+**1,525,354 sections across 15 corpus types**, measured 2026-09-11, except federal local court rules, measured 2026-10-07.
 
 | Corpus | Sections | Refresh |
 |---|---|---|
@@ -19,6 +19,7 @@ icon: "landmark"
 | Executive Orders, 2015-present | 3,649 | Daily |
 | Agency guidance, 53 named sources | 96,785 | Weekly |
 | Federal Rules of Procedure | 589 | Monthly |
+| Federal local court rules, 52 rule sets | 6,234 | Weekly |
 | US Constitution | 74 | On amendment |
 | US Sentencing Guidelines | 1,281 | Annual |
 | US Tax Treaties and the Senate treaty record | 1,649 | As treaties are signed |
@@ -161,6 +162,25 @@ not held.
   Two limits. **About 60% of the Senate record is metadata with no instrument text** from either
   publisher, which `source` states rather than hides. **Termination is not tracked**, because no
   source held states it, so `goodLawStatus` is `unknown` on every record.
+</Accordion>
+
+<Accordion title="Federal local court rules - each court's own rules, not the national Federal Rules">
+  The rules a federal court publishes for itself: the 13 courts of appeals, the habeas rules
+  (Sections 2254 and 2255), six national courts (Armed Forces, Federal Claims, Tax Court,
+  International Trade, Veterans Claims, and the Courts-Martial rules) and 32 of the 94 district
+  courts. 6,234 rules, of which 5,936 are in force; the rest are reserved or repealed numbers and
+  say so in `actStatus`.
+
+  Every court is taken from its own site and checked against that court's own contents list or
+  index, so a missing rule fails the load rather than passing silently.
+
+  Not held: the other 62 district courts, local bankruptcy rules, and the internal operating
+  procedures of the Fifth, Seventh, Eighth and Eleventh Circuits (the Fifth, Eighth and Eleventh
+  print them as unnumbered paragraphs, so nothing is citable). A few rules that only say "See
+  L.R. x" were refused as empty. A bare number such as `Cir. R. 36-3` names no court, and a
+  district that publishes separate civil and criminal sets needs the set in the citation.
+
+  Use `corpusType=FEDERAL_LOCAL_RULES`.
 </Accordion>
 
 <Accordion title="Statute Compilations - an act as amended through a stated public law">

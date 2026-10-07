@@ -7,6 +7,90 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-10-07" description="Federal local court rules, and more state law">
+  ## New: federal local court rules
+
+  `corpusType=FEDERAL_LOCAL_RULES` searches a federal court's **own** rules, as distinct from the national Federal Rules of Procedure (`FEDERAL_RULES`).
+  It holds 6,234 rules from 52 rule sets: the 13 courts of appeals, the habeas rules, six national courts (Armed Forces, Federal Claims, Tax Court, International Trade, Veterans Claims, Courts-Martial) and 32 district courts.
+  See [Federal coverage](/api-guide/coverage/federal) for what is held and what is not.
+
+  - Citations such as `3d Cir. L.A.R. 26.1`, `Fed. Cl. R. 59`, `Mil. R. Evid. 803` and `S.D.N.Y. Local Civ. R. 7.1` resolve through `/us/statutes/resolve`.
+  - A bare number that does not name a court, or a district with separate civil and criminal sets that the citation does not name, is refused rather than guessed.
+
+  ## New: Guam and the Northern Mariana Islands
+
+  `state` now accepts `gu` and `mp`, which brings the jurisdictions to 54.
+
+  | | Statutes | Regulations | Constitution | Court rules |
+  |---|---:|---:|---:|---:|
+  | Guam | 17,848 | 5,956 | - | 593 |
+  | Northern Mariana Islands | 6,993 | 11,904 | 147 | 514 |
+
+  - Citations such as `9 Guam Code Ann. § 16.10`, `2 N. Mar. I. Code § 7222` and `165 N. Mar. I. Admin. Code § 165-30.1-101` resolve.
+  - Several court-rule sets are held as one document per set, so a citation to one rule in those sets returns the whole set. See [State and territory coverage](/api-guide/coverage/states).
+
+  ## Added to existing corpora
+
+  - **Nebraska:** about 9,400 sections that were missing, among them the comma-numbered sections (the DUI statute `60-6,197`, the State Tort Claims Act `81-8,209`) and the Uniform Commercial Code.
+  - **Maryland court rules:** 277 rules that were missing, among them the judicial-conduct rules (Title 18) and the attorney professional-conduct rules (Title 19).
+  - **Rhode Island:** sections that were missing from 1,065 chapters, and 47 duplicate sections removed.
+  - **Texas:** the Revised Civil Statutes (Vernon's), 266 articles, and the missing Code of Criminal Procedure articles, among them art. 38.22.
+  - **Court rules:** Nevada, Ohio, Mississippi and Montana gained rules a parser had dropped; Pennsylvania gained its unconsolidated acts, and the Pennsylvania Constitution's Schedule is now separate from Article V.
+  - **Citation resolution:** about 250 more citation forms are read, including publisher abbreviations, parallel citations and each state's own court-rule style.
+
+  ## Changed
+
+  - The OpenAPI `corpusType` enum now carries 20 tokens, and `state` accepts 54 jurisdictions.
+</Update>
+
+<Update label="2026-10-06" description="Search the text of state session laws; list filters take several values">
+  ## New: search state session laws
+
+  `POST /us/session-laws/search` finds state session laws by what they say: a question in plain words, words from a title, a quoted phrase, a citation, a code section or a bill number.
+  It returns the laws best first, each with the passage that matched and a snippet around your words.
+  See [Searching the text](/api-guide/session-laws#searching-the-text).
+
+  | Endpoint | Credits |
+  |---|---:|
+  | `POST /us/session-laws/search` | 4 per page |
+
+  - It searches the enacted text. Language an act strikes out is never searched and never appears in a snippet.
+  - Ranking is keyword relevance, not meaning, so a question has to share vocabulary with the act. Each result says how it matched (`matchType`, `matchedBy`); there is no "no good match" flag.
+  - Filters: `jurisdiction`, `session`, `series`, `instrumentType`, `approvedFrom`, `approvedTo`. `limit` is 1 to 25 and `offset` plus `limit` reaches at most the 60 best matches.
+  - An empty result is charged. A request that fails validation is a `422` and is not charged.
+
+  ## Changed
+
+  - `series` and `instrumentType` on `GET /us/session-laws/list` now take several values (repeat the parameter; they combine with OR). A value outside the published list is a `422` and is not charged, where it used to return an empty, charged page. A cursor issued before this change still resumes.
+  - The OpenAPI document now publishes the allowed values of every field that takes one value or a list (`state`, `corpusType`, `source`, `fields`, `actStatus` and others) on each value rather than on the field as a whole. Generated clients and the playground offer them as pickers, and a list is no longer rejected by a strict client. `actStatus` is now published on `POST /us/statutes/count` and `GET /us/statutes/divisions` as well.
+</Update>
+
+<Update label="2026-10-05" description="State session laws: 20,604 acts across 50 jurisdictions">
+  ## New: state session laws
+
+  State session laws as enacted, from the 2025 sessions: 20,604 acts across 50 jurisdictions, 18,704 with text.
+  See [State Session Laws](/api-guide/session-laws).
+
+  | Endpoint | Credits |
+  |---|---:|
+  | `GET /us/session-laws/list` | 1 per page |
+  | `GET /us/session-laws/{sessionLawId}` | 2 |
+  | `GET /us/session-laws/{sessionLawId}/body` | 6 per page |
+  | `POST /us/session-laws/batch` | 2 per law served |
+  | `GET /us/session-laws/changes` | 1 per page |
+  | `GET /us/statutes/section/{actId}/enactments` | 1 |
+
+  - `GET /us/session-laws/{sessionLawId}` also takes a citation in place of the id, for 2 more credits.
+  - `GET /us/session-laws/list` requires `jurisdiction` and filters by session, series, instrument type, approval date and effective date.
+  - Each law carries its approval date, effective dates, veto outcome, sources and, in 11 jurisdictions, the code sections it changed.
+  - Laws with a known text defect are returned with `textStatus: "withheld"` and the reason; their text is not served.
+  - `POST /us/session-laws/batch` returns up to 50 laws by id or citation in one call; `includeBody: true` adds each law's first page of text at 6 credits per page.
+  - `GET /us/session-laws/changes` is a cursor feed of every law served, corrected, withdrawn or merged.
+  - `GET /us/statutes/section/{actId}/enactments` lists the session laws a publisher's tables print against a code section, in CA, DC, HI, KY, MO, MS, NE, UT and WA.
+  - `POST /us/statutes/resolve` recognises a state session law citation that names no code section: the response carries `matchedCorpus: "session_law"` and a `sessionLaw` block (`resolved` stays `false`, `section` stays `null`). No extra charge.
+  - `GET /us/statutes/coverage` gains a `sessionLaws` block per jurisdiction: sessions with `status`, counts, the `series` and `instrumentTypes` held and the span of approval dates.
+</Update>
+
 <Update label="2026-09-23" description="Browse and search inside constitutions, federal rules and New York articles; know what is browsable before you ask">
   ## Three more corpora you can walk as a tree
 

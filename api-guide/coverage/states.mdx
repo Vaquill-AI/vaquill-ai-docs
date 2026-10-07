@@ -1,10 +1,10 @@
 ---
 title: "State and territory coverage"
-description: "Per-jurisdiction section counts for statutes, regulations, constitutions and court rules across all 52 US jurisdictions"
+description: "Per-jurisdiction section counts for statutes, regulations, constitutions and court rules across all 54 US jurisdictions"
 icon: "map"
 ---
 
-**3.5M+ sections across 52 jurisdictions**, 50 states plus DC and Puerto Rico. The per-jurisdiction
+**3.5M+ sections across 54 jurisdictions**, 50 states, DC, Puerto Rico, Guam and the Northern Mariana Islands. The per-jurisdiction
 matrix below carries the measured counts, with the date they were taken.
 
 Each column maps to a `corpusType` filter paired with `state`: statutes to `STATE`, regulations
@@ -19,7 +19,7 @@ rather than one per jurisdiction.
 
 ## Per-jurisdiction matrix
 
-Measured 2026-09-13, sorted by statute volume. A dash means we do not serve that corpus for that
+Measured 2026-10-07, sorted by statute volume. A dash means we do not serve that corpus for that
 jurisdiction; markers [1] and [4] give the reason in
 [Why two jurisdictions show no court rules](#why-two-jurisdictions-show-no-court-rules).
 Markers [2] and [3] are no longer gaps and are kept because the build behind each is worth reading. Marker [5]
@@ -31,65 +31,73 @@ Marker [6] is also a sourcing caveat, in
 <Note>
   These rows are counted on a slightly different rule from the corpus totals: they exclude
   superseded records and do not collapse versioned duplicates, so summing a column lands a little
-  under the matching `corpusType` total. Court rules are the widest case, 58,319 summed here
-  against 58,447 for `STATE_RULES`. Take `GET /us/statutes/coverage` as authoritative for a total
+  under the matching `corpusType` total. Court rules are the widest case. Take `GET /us/statutes/coverage` as authoritative for a total
   and this table as the per-jurisdiction shape.
 </Note>
 
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
-| California | 161,366 | 74,764 | 362 | 1,521 |
-| Texas | 122,535 | 43,489 | 401 | 1,007 |
-| Indiana | 83,148 | 37,449 | 196 | 879 |
-| Oregon | 72,664 | 40,789 | 415 | 632 |
-| Illinois | 72,251 | 55,944 | 170 | 426 |
-| New Jersey | 55,987 | 53,319 | 216 | 1,685 |
-| Washington | 51,488 | 51,026 | 282 | 1,182 |
-| Nevada | 49,747 | 30,785 | 234 | 1,338 |
-| Alabama | 45,984 | 18,864 | 381 | 870 |
-| Louisiana | 43,512 | 26,716 | 328 | 480 |
+| California | 161,463 | 74,764 | 372 | 1,588 |
+| Texas | 122,705 | 43,514 | 503 | 1,050 |
+| Indiana | 83,148 | 37,522 | 196 | 879 |
+| Oregon | 72,664 | 40,869 | 388 | 632 |
+| Illinois | 72,251 | 55,076 | 145 | 426 |
+| New Jersey | 56,288 | 53,319 | 216 | 1,685 |
+| Washington | 52,002 | 51,026 | 273 | 1,232 |
+| Nevada | 49,745 | 30,978 | 234 | 1,753 |
+| Alabama | 46,617 | 18,864 | 381 | 870 |
+| Louisiana | 43,591 | 26,737 | 328 | 481 |
+| Michigan | 42,075 | 22,154 | 282 | 1,026 |
 | North Carolina | 41,290 | 45,823 | 155 | 495 |
-| Michigan | 40,889 | 22,148 | 275 | 1,025 |
-| New York | 40,146 | 52,312 | 204 | 1,088 |
-| South Dakota | 39,589 | 28,988 | 290 | 155 |
-| Maryland | 39,552 | 12,739 | 312 | 1,220 |
-| Arkansas | 38,935 | 27,837 | 513 | 774 |
-| Colorado | 35,758 | 1,155 | 424 | 1,194 [2] |
-| Oklahoma | 35,330 | 57,648 [6] | 545 | 2,116 [3] |
-| Tennessee | 34,756 | 11,608 | 152 | 626 |
-| Virginia | 33,860 | 22,396 | 134 | 358 |
-| Ohio | 33,158 | 19,354 | 266 | 1,167 |
-| New Mexico | 31,109 | 36,310 | 299 | 3,462 |
-| Montana | 30,514 | 28,217 | 196 | 238 |
-| South Carolina | 29,947 | 6,189 | 245 | 557 |
-| Mississippi | 29,772 | 56,800 | 318 | 794 |
-| Missouri | 29,325 | 13,116 | 445 | - [4] |
-| Georgia | 29,212 | 19,795 | 287 | 1,174 |
+| New York | 40,162 | 52,448 | 204 | 1,148 |
+| South Dakota | 39,589 | 29,000 | 271 | 155 |
+| Maryland | 39,552 | 12,773 | 311 | 1,510 |
+| Arkansas | 38,973 | 27,844 | 513 | 774 |
+| Nebraska | 37,919 | 13,624 | 251 | 734 |
+| Colorado | 35,758 | 1,155 | 412 | 1,194 [2] |
+| Oklahoma | 35,330 | 57,648 [6] | 478 | 2,116 [3] |
+| Tennessee | 34,756 | 11,622 | 152 | 629 |
+| Virginia | 33,861 | 22,396 | 133 | 358 |
+| Ohio | 33,158 | 19,407 | 265 | 1,168 |
+| Rhode Island | 31,713 | 1,186 | 118 | 1,033 |
+| New Mexico | 31,115 | 36,339 | 269 | 3,462 |
+| Montana | 30,515 | 28,217 | 170 | 435 |
+| South Carolina | 30,489 | 6,220 | 240 | 558 |
+| Missouri | 30,360 | 13,116 | 429 | - [4] |
+| Mississippi | 29,803 | 56,809 | 318 | 815 |
+| Georgia | 29,212 | 19,825 | 287 | 1,174 |
 | North Dakota | 29,042 | 14,343 | 203 | 2,261 |
 | Iowa | 28,223 | 27,587 | 190 | 1,294 |
-| Minnesota | 27,747 | 15,391 | 138 | 958 |
-| Utah | 27,556 | 19,381 | 189 | 906 |
-| Nebraska | 27,157 | 13,624 | 448 | 702 |
-| West Virginia | 25,664 | 25,930 | 209 | 1,116 |
-| New Hampshire | 25,375 | 38,491 | 157 | 970 |
-| Maine | 25,316 | 1,717 | 153 | 722 |
-| Florida | 25,019 | 28,890 | 217 | 936 |
-| Arizona | 24,956 | 23,099 | 332 | 1,719 |
-| Kansas | 24,361 | 18,806 | 229 | 432 |
-| Puerto Rico (territory) | 24,305 | 124,281 | 102 | 1,528 |
-| District of Columbia (territory) | 23,694 | 27,401 | - | 1,128 |
-| Vermont | 23,521 | 1,116 | 120 | - [1] |
-| Massachusetts | 23,152 | 42,486 [5] | 104 | 970 |
+| Minnesota | 27,747 | 15,401 | 138 | 958 |
+| Utah | 27,556 | 19,772 | 189 | 919 |
+| Puerto Rico (territory) | 26,672 | 111,484 | 102 | 1,528 |
+| New Hampshire | 26,196 | 39,413 | 157 | 972 |
+| Massachusetts | 26,175 | 26,839 [5] | 296 | 1,069 |
+| West Virginia | 26,019 | 26,056 | 209 | 1,116 |
+| Maine | 25,316 | 1,805 | 153 | 722 |
+| Kentucky | 25,182 | 4,780 | 274 | 1,427 |
+| Florida | 25,020 | 28,913 | 217 | 954 |
+| Arizona | 24,956 | 23,099 | 330 | 1,809 |
+| Kansas | 24,361 | 18,846 | 216 | 436 |
+| District of Columbia (territory) | 24,036 | 27,111 | - | 1,128 |
+| Vermont | 23,521 | 1,102 | 99 | - [1] |
 | Idaho | 22,754 | 8,672 | 240 | 766 |
-| Delaware | 22,669 | 1,164 | 225 | 1,385 |
-| Rhode Island | 21,107 | 1,185 | 118 | 1,033 |
-| Wyoming | 20,995 | 13,345 | 315 | 996 |
-| Kentucky | 20,894 | 4,780 | 274 | 1,427 |
-| Hawaii | 19,197 | 27,121 | 171 | 1,259 |
-| Wisconsin | 18,158 | 17,823 | 175 | 395 |
-| Alaska | 17,935 | 25,717 | 243 | 763 |
-| Connecticut | 16,082 | 18,012 | 174 | 1,723 |
-| Pennsylvania | 14,617 | 50,313 | 186 | 6,467 |
+| Delaware | 22,669 | 1,164 | 216 | 1,385 |
+| Wyoming | 20,995 | 13,348 | 316 | 1,020 |
+| Hawaii | 19,285 | 27,121 | 171 | 1,259 |
+| Wisconsin | 18,158 | 17,882 | 181 | 395 |
+| Alaska | 17,935 | 25,717 | 242 | 763 |
+| Guam (territory) | 17,848 | 5,956 | - | 593 |
+| Connecticut | 16,082 | 18,012 | 161 | 1,724 |
+| Pennsylvania | 14,671 | 50,326 | 204 | 6,467 |
+| Northern Mariana Islands (territory) | 6,993 | 11,904 | 147 | 514 |
+
+### Guam and the Northern Mariana Islands
+
+Both were added 2026-10-07 from their governments' own publications.
+Guam holds the Guam Code Annotated, the Administrative Rules and Regulations and the court rules; it has no constitution row because its organic law is the federal Organic Act of Guam.
+The Northern Mariana Islands hold the Commonwealth Code, the Administrative Code, the constitution and the court rules.
+Several of their court-rule sets are held as one document per set, so a citation to a single rule number in those sets returns the whole set.
 
 ### Why two jurisdictions show no court rules
 

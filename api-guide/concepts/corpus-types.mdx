@@ -1,6 +1,6 @@
 ---
 title: "Corpus types"
-description: "The 19 corpusType tokens, how they scope a search, and how source narrows one further"
+description: "The 20 corpusType tokens, how they scope a search, and how source narrows one further"
 icon: "filter"
 ---
 
@@ -46,7 +46,7 @@ scope it. For how much data sits behind each one and what is deliberately exclud
   token returns a `422`.
 </Note>
 
-## The 19 tokens
+## The 20 tokens
 
 Sizes are distinct sections, measured 2026-09-07. Call `GET /us/statutes/coverage` for a live
 figure and for which tokens have data in which jurisdiction.
@@ -68,6 +68,7 @@ figure and for which tokens have data in which jurisdiction.
 | `US_TAX_TREATY` | Bilateral income tax treaties, Treasury explanations, the Senate treaty record | 1,649 |
 | `SENTENCING_GUIDELINES` | US Sentencing Guidelines, current sections plus former text in Appendix B | 1,281 |
 | `FEDERAL_RULES` | Federal Rules of Civil, Criminal, Appellate and Bankruptcy Procedure, Evidence, and Supreme Court Rules | 589 |
+| `FEDERAL_LOCAL_RULES` | A federal court's **own** rules: the courts of appeals, habeas rules, national courts and 32 district courts | 6,234 |
 | `CONSTITUTION` | US Constitution, Articles and Amendments | 74 |
 
 ### State-scoped
@@ -76,12 +77,16 @@ Each of these requires `state`, or spans every jurisdiction holding that corpus.
 
 | Token | Contains | Sections | Jurisdictions |
 |---|---|---:|---|
-| `STATE` | State statutory codes | 1,934,326 | 52 |
-| `REGULATION` | State administrative codes | 1,467,452 | 52 |
+| `STATE` | State statutory codes | 1,934,326 | 54 |
+| `REGULATION` | State administrative codes | 1,467,452 | 54 |
 | `STATE_RULES` | State court rules: civil, criminal, appellate, evidence, professional conduct, local | 53,638 | 46 |
 | `STATE_AGENCY_GUIDANCE` | State regulator guidance, almost all insurance bulletins | 13,350 | 49 |
 | `STATE_AG_OPINION` | State Attorney General opinions. **Persuasive authority, not binding law** | 73,514 | 36 |
 | `STATE_CONSTITUTION` | State constitutions | 12,762 | 51 |
+
+State session laws have no `corpusType`.
+They are served by [`/us/session-laws`](/api-guide/session-laws), not `/us/statutes`.
+`SESSION_LAW` is the federal Statutes at Large only.
 
 ### `STATE_AG_OPINION` in particular
 
@@ -164,6 +169,6 @@ itself is the authoritative list.
     How much sits behind each token, and what each corpus deliberately excludes.
   </Card>
   <Card title="Jurisdictions and state codes" icon="map-location-dot" href="/api-guide/concepts/jurisdictions">
-    The 52 jurisdictions and how to discover live coverage.
+    The 54 jurisdictions and how to discover live coverage.
   </Card>
 </CardGroup>

@@ -264,6 +264,16 @@ Tools are generated from the OpenAPI document at startup, so the catalogue track
 
 Each of these refunds a call it cannot answer, and returns a `note` explaining why. An empty result **with** a note is an explanation; without one it is a real answer.
 
+### State session laws
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `list_session_laws` | One state's session laws (acts as enacted), filtered by session, approval date or effective date. `jurisdiction` is required. An empty page is charged. | 1 per page |
+| `get_session_law` | One law's record: citation, session, dates, code sections affected, official sources and `textStatus`. Takes a `sessionLawId` or a citation (a citation adds the resolve price). | 2 |
+| `get_session_law_body` | The law's text exactly as printed, about 30,000 characters per page. Check `amendatoryMarkup`: if `lost`, struck language may read as law. | 6 per page |
+
+Federal session laws are on the statute tools. The batch, change-feed, enactments and search routes are published as tools the same way once they are in the API's OpenAPI document, because tools are generated from it.
+
 ### Law change alerts
 
 Every tool here is free except the diff. See [Law Change Alerts](/api-guide/alerts).

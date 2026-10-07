@@ -246,6 +246,14 @@ before ranking. Two consequences worth knowing:
   considered, so scoped and unscoped searches legitimately return different
   result sets. That is filtering working, not a bug.
 
+## State session law citations
+
+`/us/statutes/resolve` resolves code sections first.
+When a citation names no code section but does name a state session law (`CHAPTER 2025-12`, `S.F.No. 1552`), the response carries `matchedCorpus: "session_law"` and a `sessionLaw` block with the law's title, dates, outcome and `href`, and `resolved` stays `false` because `section` is null.
+`sessionLaw.status` is `matched` or `ambiguous`; an ambiguous citation lists every candidate and chooses none.
+There is no extra charge.
+To read the law, send its `sessionLawId` or the citation itself to [`GET /us/session-laws/{sessionLawId}`](/api-guide/session-laws#finding-a-law).
+
 ## When something does not resolve
 
 <Steps>

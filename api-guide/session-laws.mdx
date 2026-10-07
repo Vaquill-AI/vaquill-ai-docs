@@ -1,0 +1,395 @@
+---
+title: "State Session Laws"
+description: "State session laws as enacted: 20,604 acts across 50 jurisdictions, with dates, veto outcome, sources, full text and search"
+icon: "scroll"
+---
+
+A session law is an act as the legislature enacted it, before it is folded into a code.
+It carries what a code section does not: the act's own date of approval, its effective dates, the code sections it changed, and the text as passed, including what it struck out.
+
+Seven endpoints serve them.
+
+| Endpoint | What it returns | Credits |
+|---|---|---:|
+| [`GET /us/session-laws/list`](/api-reference/us-session-laws/list-a-states-session-laws) | One state's session laws, filtered and paged | 1 per page |
+| [`POST /us/session-laws/search`](/api-reference/us-session-laws/search-the-text-of-state-session-laws) | Find laws by what they say: a question, a title, a quoted phrase, a citation or a bill number. See [Searching the text](#searching-the-text) | 4 per page |
+| [`GET /us/session-laws/{sessionLawId}`](/api-reference/us-session-laws/get-a-state-session-law-by-id-or-by-citation) | One law: identity, dates, outcome, sources, code sections affected | 2 |
+| [`GET /us/session-laws/{sessionLawId}/body`](/api-reference/us-session-laws/get-a-state-session-laws-text) | The law's text, paged | 6 per page |
+| [`POST /us/session-laws/batch`](/api-reference/us-session-laws/get-many-state-session-laws-at-once-by-id-or-citation) | Up to 50 laws by id or citation, optionally with each one's first page of text | 2 per law served, +6 per text page |
+| [`GET /us/session-laws/changes`](/api-reference/us-session-laws/feed-of-changes-to-the-session-law-registry) | What changed in the registry since your cursor | 1 per page |
+| [`GET /us/statutes/section/{actId}/enactments`](/api-reference/us-statutes/which-acts-a-state-publisher-lists-against-this-section) | The session laws a publisher lists against one code section | 1 |
+
+The federal Statutes at Large are not here.
+They are served by `/us/statutes` under `corpusType=SESSION_LAW`; see [Corpus Types](/api-guide/concepts/corpus-types).
+
+## What is held
+
+**20,604** state session laws across **50 jurisdictions**, from the 2025 sessions (Connecticut 2026, New Jersey 2024-2025, the DC Council's 25th period).
+**18,704** are served with text.
+Approval dates run from 2024-04-23 to 2026-09-24.
+
+| Jurisdiction | Sessions | Laws with text | Withheld | No text |
+|---|---|---:|---:|---:|
+| Alabama | 2025R | 454 | | |
+| Alaska | 2025R, 2025S1 | 47 | | |
+| Arizona | 2025R | 300 | | |
+| Arkansas | 2025R | 1,026 | | |
+| California | 2025R, 2025X1 | 1,654 | | |
+| Colorado | 2025R, 2025X | | 463 | |
+| Connecticut | 2026R | 185 | | |
+| Delaware | 2025R | 43 | | |
+| District of Columbia | 2023R | 680 | | |
+| Florida | 2025R, 2025SC | 255 | | |
+| Georgia | 2025R | 361 | | |
+| Hawaii | 2025R | 313 | | |
+| Idaho | 2025R | 371 | | |
+| Illinois | 2025R | 853 | | |
+| Iowa | 2025R | 170 | | |
+| Kansas | 2025R | 138 | | |
+| Kentucky | 2025R | 162 | | |
+| Louisiana | 2025R | | 516 | |
+| Maine | 2025R, 2025S1 | 628 | | |
+| Maryland | 2025R | | 849 | |
+| Massachusetts | 2025R | 321 | | |
+| Michigan | 2025R | 74 | | |
+| Minnesota | 2025R, 2025S1 | 54 | | |
+| Mississippi | 2025R | 325 | | |
+| Missouri | 2025R, 2025X1, 2025X2 | 75 | | |
+| Montana | 2025R | 778 | | |
+| Nebraska | 2025R | 202 | | |
+| Nevada | 2025R, 2025S36 | 532 | | |
+| New Hampshire | 2025R | 305 | | |
+| New Jersey | 2024R | 427 | | |
+| New Mexico | 2025R, 2025S1, 2025S2 | 161 | 6 | |
+| New York | 2025R | 714 | | |
+| North Carolina | 2025R | 175 | | |
+| North Dakota | 2025R | 649 | | |
+| Ohio | 2025R | 100 | | |
+| Oklahoma | 2025R | 82 | | 6 |
+| Oregon | 2025R | 695 | | |
+| Pennsylvania | 2025R | 134 | | |
+| Puerto Rico | 2025U | 125 | | 60 |
+| Rhode Island | 2025R | 503 | | |
+| South Carolina | 2025R | 93 | | |
+| South Dakota | 2025R | 228 | | |
+| Texas | 2025R | 1,329 | | |
+| Utah | 2025R, 2025S1, 2025S2 | 600 | | |
+| Vermont | 2025R | 566 | | |
+| Virginia | 2025R | 727 | | |
+| Washington | 2025R | 424 | | |
+| West Virginia | 2025R | 243 | | |
+| Wisconsin | 2025R | 247 | | |
+| Wyoming | 2025R | 176 | | |
+
+Indiana and Tennessee are not held.
+
+Delaware, Oklahoma and Colorado are partial: the publisher's index lists more acts than were collected (Delaware 43 of 296, Oklahoma 82 of 494, Colorado 452 of 477).
+Every law in this table is collected from the publishing government's own site.
+
+## Identifiers
+
+Every law has a `sessionLawId`, built from its jurisdiction, session, series and chapter (or bill, where the state numbers no chapters):
+
+| `sessionLawId` | Law |
+|---|---|
+| `SSL_MN_2025R_G_Y2025_C1` | Minnesota, 2025 regular session, chapter 1 |
+| `SSL_MN_2025S1_G_Y2025_C1` | Minnesota, 2025 1st special session, chapter 1 |
+| `SSL_CA_2025R_G_Y2026_C1` | California, Statutes of 2026, chapter 1 (the 2025-2026 session) |
+| `SSL_IL_2025R_G_C104-0001` | Illinois, Public Act 104-0001 |
+| `SSL_NE_2025R_G_Y2025_BLB241` | Nebraska, LB 241 |
+| `SSL_MO_2025R_G_Y2025_BHB145-59` | Missouri, House Bill 145 & 59 |
+
+The session code is the year plus `R` (regular), `S` (special), `X` (extraordinary) or `U` (not stated), and the session's number where it has one: `2025S1`, `2025X2`, Florida's `2025SC`.
+An id never changes once issued.
+
+## Finding a law
+
+**By id.** `GET /us/session-laws/SSL_MN_2025R_G_Y2025_C1`.
+
+**By citation.** Put the citation in place of the id, URL-encoded.
+It is matched against the citation the publisher prints and the law's bill number:
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/session-laws/S.F.No.%201552" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+A citation costs 2 credits on top of the route's 2, charged whether or not it resolves.
+The response says what matched in `resolvedFrom`.
+A citation naming more than one law is a `404` with `reason: ambiguous_citation`, every candidate in `didYouMean` and the conventional reading in `defaultSessionLawId`.
+
+**By state and date.** `GET /us/session-laws/list` takes a required `jurisdiction` and these filters:
+
+| Parameter | Example | Meaning |
+|---|---|---|
+| `jurisdiction` | `ca` | Required. Two-letter code, case-insensitive. |
+| `session` | `2025R` | Session code, exactly as `session.code` reports it |
+| `series` | `general` | One or more numbering series. Repeat the parameter for several (they combine with OR). One of `general`, `public`, `public_act`, `special_act`, `private_and_special`, `act`, `acts`, `law`, `local`, `municipal`, `appropriation`, `resolve`, `resolves`, `resolution`, `resolution_chapter`, `joint_resolution`, `concurrent_resolution`, `memorial`, `initiated_bill`, `constitutional_amendment`. Any other value is a `422` |
+| `instrumentType` | `act` | One or more kinds of measure, repeated for several (OR): `act`, `joint_resolution`, `concurrent_resolution`, `resolution`, `resolve`, `memorial`, `other`. Any other value is a `422` |
+| `approvedFrom`, `approvedTo` | `2025-01-01` | Approval date range |
+| `effectiveFrom`, `effectiveTo` | `2026-01-01` | Has an effective date in the range |
+| `hasText` | `true` | Only laws whose text is served |
+| `textStatus` | `held` | `held`, `withheld`, `not_held`, `pending` |
+| `isLaw` | `false` | `false` lists numbered measures that are not law (a vetoed bill, a pocket veto) |
+| `enactmentOutcome` | `vetoed` | One or more outcomes, repeated for several (OR) |
+| `updatedSince` | `2026-10-01` | Only laws whose record changed on or after this date |
+| `q` | `grain buyers` | Words in the title or the printed bill number, 3 to 100 characters. A plain substring match, not a search: for that, see [Searching the text](#searching-the-text) |
+| `limit` | `50` | Rows per page, at most 200 |
+| `cursor` | | `nextCursor` from the previous page |
+
+A malformed value is a `422` and is never charged.
+A value that is well formed but matches nothing returns an empty page, which is charged.
+`GET /us/statutes/coverage` lists, for each state, the `series` and `instrumentType` values it actually holds and the span of approval dates, so you can offer a real list before you filter.
+
+Everything taking effect in California on 1 January 2026:
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/session-laws/list?jurisdiction=ca&effectiveFrom=2026-01-01&effectiveTo=2026-01-01" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+A request without `jurisdiction` is a `422` and is not charged.
+
+**By citation, inside a document.** `POST /us/statutes/resolve` (and `GET /us/statutes/resolve`) recognises a state session law citation when it names no code section.
+The response then carries `matchedCorpus: "session_law"` and a `sessionLaw` block, and `resolved` stays `false` and `section` stays `null`, because both describe a code section.
+`sessionLaw.status` is `matched` (one law, with its title, bill number, approval and effective dates, outcome, official source URL and `href`) or `ambiguous` (every candidate listed, none chosen for you).
+There is no extra charge beyond the resolve price.
+A `state` scope applies; a `corpusType` scope skips the lookup.
+
+## Searching the text
+
+`POST /us/session-laws/search` finds laws by what they say.
+Send a question in plain words, words from a title, a quoted phrase, a citation, a code section or a bill number.
+You get the laws, best first, each with the passage of its text that matched and a snippet around your words.
+
+```bash
+curl -X POST "https://api.vaquill.ai/api/v1/us/session-laws/search" \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "can the sheriff pay with a debit card", "jurisdiction": "al", "limit": 5}'
+```
+
+```json
+{
+  "query": "can the sheriff pay with a debit card",
+  "parsed": {
+    "text": "can the sheriff pay with a debit card",
+    "phrases": [],
+    "citationTokens": [],
+    "billNumbers": []
+  },
+  "results": [
+    {
+      "sessionLawId": "SSL_AL_2025R_G_Y2025_C2025-127",
+      "jurisdiction": "al",
+      "session": "2025R",
+      "series": "general",
+      "instrumentType": "act",
+      "citation": "Act 2025-127",
+      "title": "Relating to Houston County; to authorize the sheriff to establish procedures for using a credit card or debit card to make purchases.",
+      "approvedDate": "2025-04-15",
+      "enactmentOutcome": "signed",
+      "matchType": "text",
+      "matchedBy": [
+        "title",
+        "text"
+      ],
+      "passage": {
+        "seq": 0,
+        "ownStart": 0,
+        "ownEnd": 1820,
+        "pageStart": null,
+        "heading": "Section 1.",
+        "snippet": "Section 1. The sheriff of Houston County may establish procedures for using a credit card…",
+        "highlights": [
+          [
+            15,
+            22
+          ],
+          [
+            85,
+            89
+          ]
+        ],
+        "bodyHref": "https://api.vaquill.ai/api/v1/us/session-laws/SSL_AL_2025R_G_Y2025_C2025-127/body?startChar=0"
+      },
+      "href": "https://api.vaquill.ai/api/v1/us/session-laws/SSL_AL_2025R_G_Y2025_C2025-127"
+    }
+  ],
+  "count": 1,
+  "offset": 0,
+  "limit": 5,
+  "hasMore": false,
+  "creditsConsumed": 4,
+  "processingTimeMs": 38.6
+}
+```
+
+It costs 4 credits per page, and each page is a new search.
+An empty result is an answer ("nothing matches") and is charged.
+A request that fails validation is a `422` and is not charged; a failure on our side is refunded.
+
+### What is searched
+
+The enacted text: the law as it reads once the act takes effect.
+Language an act strikes out is not searched and never appears in a snippet, so a repealed word cannot match as if it were law.
+Only laws we serve with text are searched; laws whose text we withhold are not returned.
+`GET /us/statutes/coverage` shows what each state holds.
+
+### What you can ask
+
+| You send | How it is matched |
+|---|---|
+| Plain words | On the words, stemmed (`licensing` finds `licensed`), against the title and the text |
+| `"a quoted phrase"` | Verbatim, in the text |
+| `63-3004` or `53F-2-208` | The citation exactly, wherever the text cites it, and the code sections an act's own table lists |
+| `S.F.No. 1552` or `HB 145` | The act's bill number, exactly |
+
+Parts combine: `hemp "licensed retailer" 63-3004` reads as the words, a phrase and a citation, and `parsed` in the response shows how the query was read.
+
+### How it ranks, and what that does not mean
+
+Ranking is keyword relevance, not meaning.
+A question has to share vocabulary with the act: `teeth cleaning professional` will not find an act that says `dental hygienist`, and `how often are property values reassessed` will not find one that says `reappraisal`.
+When a question finds nothing, try the words the legislature would use, or quote a phrase.
+
+A law matched by its title and its text, or by an exact part of your query, ranks above one matched a single way.
+Each result says how: `matchType` is `exact` when a quoted phrase, citation, code section or bill number matched, otherwise `text`, and `matchedBy` lists every way (`title`, `text`, `phrase`, `citation`, `codeSection`, `billNumber`).
+
+Neither says the law is the right one.
+A question with no true answer still returns its closest words, and there is no "no good match" flag, because keyword scores do not separate the two cases.
+Read the snippet.
+
+### The snippet
+
+`passage.snippet` is about 280 characters of the enacted text around your words, plain text, with `…` where it was cut.
+`passage.highlights` lists `[start, end]` character offsets inside the snippet (end exclusive) for each word that matched, so you draw the highlight yourself.
+The snippet carries no markup.
+`passage.bodyHref` reads the text from that passage: it is the law's `/body` with `startChar` set to `passage.ownStart`.
+
+### Filters and paging
+
+| Field | Meaning |
+|---|---|
+| `query` | Required, 2 to 300 characters |
+| `jurisdiction` | One state, `dc` or `pr`. Omit to search every jurisdiction we hold. `federal` is a `422` |
+| `session` | One session, by `session.code`. Narrows the title, citation and bill signals; the text of an act carries its session year and type but not the code |
+| `series`, `instrumentType` | One or more values each, as on the list endpoint |
+| `approvedFrom`, `approvedTo` | Approval date range, `YYYY-MM-DD` |
+| `limit` | Laws per page, 1 to 25 (default 10) |
+| `offset` | Laws to skip. `offset` plus `limit` reaches at most the 60 best matches |
+
+A page past the 60 best matches is a `422`.
+Narrow the search with a filter instead of paging deeper.
+Unknown fields in the body are a `422`, so a typo is never silently dropped.
+
+## What a law carries
+
+```json GET /us/session-laws/SSL_MN_2025R_G_Y2025_C1
+{
+  "sessionLawId": "SSL_MN_2025R_G_Y2025_C1",
+  "jurisdiction": "mn",
+  "citation": "CHAPTER 1--S.F.No. 1552",
+  "session": { "code": "2025R", "label": "2025 Regular Session", "type": "regular", "year": 2025 },
+  "series": "general",
+  "instrumentType": "act",
+  "number": "1",
+  "billNumber": "S.F.No. 1552",
+  "title": "An act relating to agriculture; modifying financial reporting requirements ...",
+  "approvedDate": "2025-03-17",
+  "enactmentOutcome": "signed",
+  "isLaw": true,
+  "textStatus": "held",
+  "vetoStatusAsPrinted": "Signed by the governor March 17, 2025, 10:54 a.m.",
+  "amendatoryMarkup": "preserved",
+  "markupConvention": "publisher_literal",
+  "charCount": 5470,
+  "effectiveDates": [],
+  "otherDates": [
+    { "kind": "approved", "date": "2025-03-17", "dateAsPrinted": "March 17, 2025, 10:54 a.m." }
+  ],
+  "codeSectionsAffected": [],
+  "sources": [
+    { "role": "text", "url": "https://www.revisor.mn.gov/laws/2025/0/Session+Law/Chapter/1/", "hostClass": "gov" }
+  ],
+  "creditsConsumed": 2
+}
+```
+
+- `effectiveDates` is always a list: one act can take effect on several dates, each with its scope as printed.
+- `codeSectionsAffected` lists the code sections the act changed, as the publisher's own table prints them, in the 11 jurisdictions that publish one (California, Maryland, Utah, the District of Columbia, Washington, Iowa, Kentucky, Nebraska, Missouri, Mississippi, Hawaii).
+- `enactmentOutcome` is `signed`, `became_law_without_signature`, `veto_overridden`, `line_item_veto`, `vetoed`, `pocket_veto`, `not_presented` or `unknown`; `vetoStatusAsPrinted` is the publisher's own words.
+- `sources` names every document the record was built from, with its fetch time and sha256.
+
+## `textStatus`
+
+| Value | Meaning | `/body` |
+|---|---|---|
+| `held` | Text is served | Text, 6 credits per page |
+| `withheld` | We hold the text and it has a known defect; `withheldReason` says which | `available: false`, not charged |
+| `not_held` | The law exists but no text was published (a scan with no text layer) | `available: false`, not charged |
+
+The 1,834 withheld laws are Colorado, Louisiana and Maryland, where the source documents show deleted language as plain text, and six New Mexico appropriation acts whose line-item vetoes are not marked.
+Their metadata is served; their text is not.
+
+## Reading the text
+
+`/body` returns the text as printed, in pages of about 30,000 characters, cut at a paragraph break where possible.
+Pass `nextCursor` back as `cursor` for the next page.
+A cursor is tied to the text it was issued for; if the text changes, the old cursor is a `409`.
+
+Session laws amend existing law, so their text carries amendment markup.
+`markupConvention` says how it is written:
+
+| `markupConvention` | Deleted text | Inserted text |
+|---|---|---|
+| `wdiff` | `[-...-]` | `{+...+}` |
+| `publisher_literal` | The publisher's own markers, as printed | |
+| `mixed` | Both | |
+
+`amendatoryMarkup: "lost"` means deleted language could not be recovered from the source and may read as law.
+
+## Many laws at once
+
+`POST /us/session-laws/batch` takes up to 50 ids or citations in `ids` and returns each law's record, the same one `GET /us/session-laws/{sessionLawId}` returns, in the order sent.
+
+```bash
+curl -X POST "https://api.vaquill.ai/api/v1/us/session-laws/batch" \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"ids": ["SSL_MN_2025R_G_Y2025_C1", "SSL_MN_2025R_G_Y2025_C2"]}'
+```
+
+- 2 credits per law served; a miss is not charged.
+- A citation in `ids` also pays 2 credits to resolve it, as on the single route.
+- `includeBody: true` adds each law's first page of text as `body`, at 6 credits per page served. 50 laws with text is 400 credits.
+- `jurisdiction` scopes how every citation in the batch is read.
+
+## Keeping a copy current
+
+`GET /us/session-laws/changes` is a feed of every law that began to be served, had its text added, was corrected, unserved, withdrawn or merged, oldest first.
+
+1. Call it with `sinceId=0`.
+2. While `hasMore` is `true`, call again with `sinceId` set to the `cursor` you were given.
+3. When `hasMore` is `false`, keep the cursor and call again later.
+
+Each entry has `kind`, `sessionLawId`, `jurisdiction` and `detectedAt`, which is when we recorded the change, not an approval or effective date.
+A `withdrawn` or `merged` entry means the law no longer answers at its id.
+1 credit per page of up to 200 entries; an empty page is charged.
+
+## From a code section to the acts that changed it
+
+`GET /us/statutes/section/{actId}/enactments` lists the session laws a state publisher's own "sections affected" tables print against one code section: which act added, amended or repealed it, and when the act took effect.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/{actId}/enactments" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+It covers California, the District of Columbia, Hawaii, Kentucky, Missouri, Mississippi, Nebraska, Utah and Washington.
+Any other section answers `supported: false` and is refunded.
+
+It is not a complete amendment history.
+It lists only acts we hold, in sessions we hold, whose table prints the section in a form we match; `coverage.note` says what is not matched in each jurisdiction.
+An empty list with `supported: true` means no held table lists the section.
+1 credit; a section that does not exist is not charged.
