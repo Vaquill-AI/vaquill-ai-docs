@@ -1,6 +1,6 @@
 # Vaquill
 
-> Vaquill is a legal AI suite for in-house counsel, plus a US statutes and regulations Developer API. The API lets you search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, federal agency guidance, federal session laws, 20,604 state session laws from the 2025 sessions, and 13,000+ state Department of Insurance bulletins and circular letters across 49 jurisdictions. Every result carries a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into products.
+> Vaquill is a legal AI suite for in-house counsel, plus a US statutes and regulations Developer API. The API lets you search and retrieve the US Code, the Code of Federal Regulations, nearly all 50 state statutory codes plus DC, Puerto Rico, Guam, the Northern Mariana Islands and American Samoa, state and US constitutions, court rules, executive orders, Federal Register agency rules, federal agency guidance, federal session laws, 20,604 state session laws from the 2025 sessions, and 13,000+ state Department of Insurance bulletins and circular letters across 49 jurisdictions. Every result carries a citation, full text in multiple formats, and a link to the official government source. It is built for grounding AI (RAG and agents), compliance and RegTech, and embedding authoritative legal text into products.
 
 Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authenticate every request with an API key: `Authorization: Bearer vq_key_...`. The API serves US statutes and regulations only (case law and India are not part of the Developer API).
 
@@ -12,14 +12,15 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 ## API: Core Concepts
 
-- [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 20 corpusType tokens (FEDERAL_LOCAL_RULES, USC, CFR, CFR_ANNUAL, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, FEDERAL_REGISTER_NOTICE, AGENCY_GUIDANCE, AGENCY_ADJUDICATION, STATE_AGENCY_GUIDANCE, SESSION_LAW, STATUTE_COMPILATION, SENTENCING_GUIDELINES, US_TAX_TREATY), federal vs state scope, and how to filter a search.
-- [Jurisdictions and State Codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The 54 jurisdictions, 2-letter state codes, and discovering what is queryable via /statutes/coverage.
+- [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 22 corpusType tokens (FEDERAL_LOCAL_RULES, USC, CFR, CFR_ANNUAL, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, FEDERAL_REGISTER_NOTICE, AGENCY_GUIDANCE, AGENCY_ADJUDICATION, STATE_AGENCY_GUIDANCE, STATE_AG_OPINION, STATE_REGISTER, SESSION_LAW, STATUTE_COMPILATION, SENTENCING_GUIDELINES, US_TAX_TREATY), federal vs state scope, and how to filter a search.
+- [Jurisdictions and State Codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The 56 jurisdictions, 2-letter state codes, and discovering what is queryable via /statutes/coverage.
 - [Section Identifiers](https://www.vaquill.ai/docs/api-guide/concepts/section-ids): The actId format and the search then section then body workflow.
 - [Response Formats](https://www.vaquill.ai/docs/api-guide/concepts/formats): HTML, PDF, XML, plain text, DOCX, and official government source links.
 - [Status and Currency](https://www.vaquill.ai/docs/api-guide/concepts/status-and-currency): The actStatus vocabulary, the derived goodLawStatus verdict (good_law, not_good_law, not_operative, unknown), how to filter on each, and the move pointers.
 - [Response Fields](https://www.vaquill.ai/docs/api-guide/concepts/response-fields): Which fields a section carries, which corpus each belongs to, and how to tell 'not applicable' from 'we do not hold it'.
 - [Amendment History](https://www.vaquill.ai/docs/api-guide/concepts/amendment-history): amendmentYears, lastAmendedYear, amendmentsCount and amendmentHistory, taken from the publisher's own credit line.
 - [Citation Formats](https://www.vaquill.ai/docs/api-guide/concepts/citation-formats): Which citation strings resolve, which are refused on purpose, and batch resolution.
+- [Citation resolution quality](https://www.vaquill.ai/docs/api-guide/concepts/citation-quality): Measured share of citations that resolve to the right section, the wrong-answer rate, and coverage by area and jurisdiction.
 - [Section Intelligence](https://www.vaquill.ai/docs/api-guide/concepts/section-intelligence): What cites a section, what its defined terms mean, how other states word it, and what has changed.
 
 ## API: Working with the API
@@ -35,7 +36,7 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 - [Coverage](https://www.vaquill.ai/docs/api-guide/coverage): The jurisdiction-by-jurisdiction matrix of what is ingested.
 - [Federal coverage](https://www.vaquill.ai/docs/api-guide/coverage/federal): Every federal corpus, with section counts, refresh cadence and per-corpus scope limits.
-- [State and territory coverage](https://www.vaquill.ai/docs/api-guide/coverage/states): Per-jurisdiction counts for statutes, regulations, constitutions and court rules across all 52 US jurisdictions.
+- [State and territory coverage](https://www.vaquill.ai/docs/api-guide/coverage/states): Per-jurisdiction counts for statutes, regulations, constitutions and court rules across all 56 US jurisdictions.
 - [State Session Laws](https://www.vaquill.ai/docs/api-guide/session-laws): 20,604 state session laws as enacted across 50 jurisdictions, served by GET /us/session-laws/list, POST /us/session-laws/search (full-text search of the enacted text, keyword relevance), /us/session-laws/{sessionLawId} (id or citation), /body, POST /us/session-laws/batch, the GET /us/session-laws/changes feed and GET /us/statutes/section/{actId}/enactments; identifiers, filters, textStatus and amendment markup.
 - [Agency guidance sources](https://www.vaquill.ai/docs/api-guide/coverage/agency-guidance): The 51 named federal sources behind corpusType=AGENCY_GUIDANCE, each independently filterable with source.
 

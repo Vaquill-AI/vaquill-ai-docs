@@ -1,6 +1,6 @@
 ---
 title: "Corpus types"
-description: "The 20 corpusType tokens, how they scope a search, and how source narrows one further"
+description: "The 22 corpusType tokens, how they scope a search, and how source narrows one further"
 icon: "filter"
 ---
 
@@ -46,16 +46,21 @@ scope it. For how much data sits behind each one and what is deliberately exclud
   token returns a `422`.
 </Note>
 
-## The 20 tokens
+## The 22 tokens
 
-Sizes are distinct sections, measured 2026-09-07. Call `GET /us/statutes/coverage` for a live
-figure and for which tokens have data in which jurisdiction.
+Sizes are distinct sections. Federal rows were measured 2026-09-07 (federal local court rules
+2026-10-08) and state rows 2026-10-08, except state agency guidance and AG opinions, which were
+measured 2026-09-11 and have grown since. Call `GET /us/statutes/coverage` for a live figure and
+for which tokens have data in which jurisdiction.
+
+The OpenAPI enum also accepts `USC_ANNUAL`, GPO's retired annual edition of the US Code, which is
+kept only so a past date can be answered from a printed edition. It is not a token to search.
 
 ### Federal-scoped
 
 | Token | Contains | Sections |
 |---|---|---:|
-| `USC` | United States Code, the codified federal statutes | 60,170 |
+| `USC` | United States Code, the codified federal statutes | 60,494 |
 | `SESSION_LAW` | Statutes at Large: public and private laws **as enacted**, 1789-2026 | 425,427 |
 | `STATUTE_COMPILATION` | An act's own text **as amended through** a stated later public law | 80,232 |
 | `CFR` | Code of Federal Regulations, the continuously refreshed current compilation | 222,365 |
@@ -68,7 +73,7 @@ figure and for which tokens have data in which jurisdiction.
 | `US_TAX_TREATY` | Bilateral income tax treaties, Treasury explanations, the Senate treaty record | 1,649 |
 | `SENTENCING_GUIDELINES` | US Sentencing Guidelines, current sections plus former text in Appendix B | 1,281 |
 | `FEDERAL_RULES` | Federal Rules of Civil, Criminal, Appellate and Bankruptcy Procedure, Evidence, and Supreme Court Rules | 589 |
-| `FEDERAL_LOCAL_RULES` | A federal court's **own** rules: the courts of appeals, habeas rules, national courts and 32 district courts | 6,234 |
+| `FEDERAL_LOCAL_RULES` | A federal court's **own** rules: the courts of appeals, habeas rules, national courts and 32 district-court rule sets | 6,234 |
 | `CONSTITUTION` | US Constitution, Articles and Amendments | 74 |
 
 ### State-scoped
@@ -77,16 +82,34 @@ Each of these requires `state`, or spans every jurisdiction holding that corpus.
 
 | Token | Contains | Sections | Jurisdictions |
 |---|---|---:|---|
-| `STATE` | State statutory codes | 1,934,326 | 54 |
-| `REGULATION` | State administrative codes | 1,467,452 | 54 |
-| `STATE_RULES` | State court rules: civil, criminal, appellate, evidence, professional conduct, local | 53,638 | 46 |
-| `STATE_AGENCY_GUIDANCE` | State regulator guidance, almost all insurance bulletins | 13,350 | 49 |
-| `STATE_AG_OPINION` | State Attorney General opinions. **Persuasive authority, not binding law** | 73,514 | 36 |
-| `STATE_CONSTITUTION` | State constitutions | 12,762 | 51 |
+| `STATE` | State statutory codes | 2,010,030 | 56 |
+| `REGULATION` | State administrative codes | 1,496,499 | 56 |
+| `STATE_RULES` | State court rules: civil, criminal, appellate, evidence, professional conduct, and the local rules of 38 trial courts | 71,880 | 56 |
+| `STATE_AGENCY_GUIDANCE` | State regulator guidance, almost all insurance bulletins | 13,359 | 49 |
+| `STATE_AG_OPINION` | State Attorney General opinions. **Persuasive authority, not binding law** | 104,572 | 43 |
+| `STATE_CONSTITUTION` | State constitutions | 13,016 | 53 |
+| `STATE_REGISTER` | State register **notices**: proposed, adopted and emergency rules as printed. **Not codified law** | 144,876 | 24 |
 
 State session laws have no `corpusType`.
 They are served by [`/us/session-laws`](/api-guide/session-laws), not `/us/statutes`.
 `SESSION_LAW` is the federal Statutes at Large only.
+
+### `STATE_REGISTER` in particular
+
+A state's official register prints each proposed, adopted or emergency rule as a notice on a date.
+`STATE_REGISTER` holds those notices, one document per printed item, cited by register volume and page (`36 Pa. Bull. 510`).
+
+<Warning>
+  **A register notice is not the law.** The codified rule under `REGULATION` is the operative
+  text, and a register page often prints a rule that was later withdrawn, amended or never adopted.
+  Every item is served with `goodLawStatus: "unknown"`, `year` is the year of the issue it was
+  printed in, and it is never given the priority that binding law gets in search ranking.
+  Name the token when you want register notices, and do not read one as the rule in force.
+</Warning>
+
+Cite a register item by its register citation; see
+[Register citations](/api-guide/concepts/citation-formats#register-citations).
+The states loaded are listed on [State and territory coverage](/api-guide/coverage/states#state-administrative-registers).
 
 ### `STATE_AG_OPINION` in particular
 
@@ -169,6 +192,6 @@ itself is the authoritative list.
     How much sits behind each token, and what each corpus deliberately excludes.
   </Card>
   <Card title="Jurisdictions and state codes" icon="map-location-dot" href="/api-guide/concepts/jurisdictions">
-    The 54 jurisdictions and how to discover live coverage.
+    The 56 jurisdictions and how to discover live coverage.
   </Card>
 </CardGroup>

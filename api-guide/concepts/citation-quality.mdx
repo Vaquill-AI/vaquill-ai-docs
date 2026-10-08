@@ -1,0 +1,179 @@
+---
+title: "Citation resolution quality"
+description: "How often a citation resolves to the right section, how often it resolves to the wrong one, and where coverage is thinner, measured on 26,687 researched citations"
+icon: "chart-simple"
+---
+
+This page reports how well `GET` and `POST /us/statutes/resolve` read real citations.
+It is measured, not estimated, and it lists the gaps as plainly as the strengths.
+Figures were taken on 2026-10-08 against the live corpus.
+
+## The headline
+
+We test two kinds of citation.
+**25,112 citations should resolve to one section.**
+**1,575 should not**: a whole chapter, a run of sections, a string that fits more than one law, or law we do not hold.
+
+| Citations that should resolve (25,112) | Share |
+|---|---:|
+| Resolved to the right section | **94.9%** (23,843) |
+| Resolved to the **wrong** section | **0** |
+| No answer | 5.1% (1,269) |
+
+| Citations that should not resolve (1,575) | Count |
+|---|---:|
+| Refused | 1,428 |
+| Answered, and marked so you can tell (`matchLevel`) | 144 |
+| Answered with a wrong section | 3 |
+
+**A wrong answer is the number that matters most.**
+A missed citation costs you a retry.
+A wrong section can end up in a brief.
+So the resolver is built to refuse when it is unsure, and every figure below shows wrong answers beside right ones.
+
+## By area
+
+| Area | Citations | Right section | Wrong section | No answer |
+|---|---:|---:|---:|---:|
+| Court rules | 10,653 | 89.0% | 0 | 1,171 |
+| State statutes, Nebraska to Wyoming | 4,518 | 99.2% | 0 | 36 |
+| US Code, CFR, Federal Rules, Statutes at Large | 3,520 | 98.9% | 0 | 39 |
+| State statutes, Alabama to Montana | 2,587 | 100.0% | 0 | 0 |
+| State regulations | 2,217 | 100.0% | 0 | 0 |
+| State constitutions | 1,617 | 98.6% | 0 | 23 |
+
+## By corpus
+
+| Corpus | Citations | Right section | Wrong section | No answer |
+|---|---:|---:|---:|---:|
+| State court rules | 10,128 | 88.7% | 0 | 1,148 |
+| State statutes | 7,099 | 99.3% | 0 | 53 |
+| US Code | 2,193 | 98.3% | 0 | 37 |
+| State constitutions | 1,583 | 98.5% | 0 | 24 |
+| State regulations | 1,267 | 99.8% | 0 | 2 |
+| Statutes at Large | 993 | 100.0% | 0 | 0 |
+| Code of Federal Regulations | 980 | 99.9% | 0 | 1 |
+| Federal Rules of Procedure | 524 | 99.2% | 0 | 4 |
+| Other federal sources | 329 | 100.0% | 0 | 0 |
+| Administrative register citations | 16 | 100.0% | 0 | 0 |
+
+## By jurisdiction
+
+56 jurisdictions.
+Territories added recently have small test sets, so read their percentages with that in mind.
+"Distinct citation forms read" counts the different ways a lawyer writes a citation in that jurisdiction that we resolved at least once in this test.
+
+| Jurisdiction | Citations tested | Right section | No answer | Distinct citation forms read |
+|---|---:|---:|---:|---:|
+| Alabama | 302 | 99.3% | 2 | 118 |
+| Alaska | 293 | 98.6% | 4 | 123 |
+| American Samoa | 3 | 100.0% | 0 | 3 |
+| Arizona | 372 | 94.1% | 22 | 157 |
+| Arkansas | 292 | 96.6% | 10 | 121 |
+| California | 280 | 90.4% | 27 | 85 |
+| Colorado | 379 | 96.6% | 13 | 145 |
+| Connecticut | 275 | 80.0% | 55 | 89 |
+| Delaware | 369 | 95.1% | 18 | 150 |
+| District of Columbia | 313 | 98.1% | 6 | 127 |
+| Florida | 416 | 100.0% | 0 | 153 |
+| Georgia | 331 | 95.5% | 15 | 131 |
+| Guam | 12 | 100.0% | 0 | 3 |
+| Hawaii | 321 | 96.0% | 13 | 135 |
+| Idaho | 304 | 100.0% | 0 | 115 |
+| Illinois | 200 | 66.0% | 68 | 53 |
+| Indiana | 354 | 97.5% | 9 | 138 |
+| Iowa | 294 | 97.3% | 8 | 115 |
+| Kansas | 177 | 97.7% | 4 | 69 |
+| Kentucky | 319 | 90.9% | 29 | 96 |
+| Louisiana | 316 | 91.1% | 28 | 123 |
+| Maine | 375 | 81.3% | 70 | 109 |
+| Maryland | 266 | 95.9% | 11 | 81 |
+| Massachusetts | 431 | 89.3% | 46 | 128 |
+| Michigan | 339 | 97.1% | 10 | 104 |
+| Minnesota | 371 | 97.0% | 11 | 132 |
+| Mississippi | 353 | 93.8% | 22 | 129 |
+| Missouri | 169 | 100.0% | 0 | 62 |
+| Montana | 271 | 98.2% | 5 | 93 |
+| Nebraska | 336 | 100.0% | 0 | 123 |
+| Nevada | 491 | 71.9% | 138 | 128 |
+| New Hampshire | 334 | 98.2% | 6 | 103 |
+| New Jersey | 349 | 94.8% | 18 | 91 |
+| New Mexico | 312 | 93.3% | 21 | 73 |
+| New York | 1,421 | 97.8% | 31 | 194 |
+| North Carolina | 364 | 94.5% | 20 | 98 |
+| North Dakota | 407 | 99.3% | 3 | 137 |
+| Northern Mariana Islands | 3 | 100.0% | 0 | 4 |
+| Ohio | 560 | 95.0% | 28 | 171 |
+| Oklahoma | 377 | 87.3% | 48 | 105 |
+| Oregon | 347 | 98.3% | 6 | 103 |
+| Pennsylvania | 621 | 92.4% | 47 | 190 |
+| Puerto Rico | 419 | 84.2% | 66 | 114 |
+| Rhode Island | 374 | 95.2% | 18 | 129 |
+| South Carolina | 388 | 93.0% | 27 | 113 |
+| South Dakota | 179 | 100.0% | 0 | 62 |
+| Tennessee | 429 | 99.8% | 1 | 140 |
+| Texas | 910 | 89.3% | 97 | 154 |
+| Utah | 372 | 95.2% | 18 | 112 |
+| Vermont | 213 | 100.0% | 0 | 56 |
+| Virgin Islands | 13 | 92.3% | 1 | 4 |
+| Virginia | 248 | 92.7% | 18 | 70 |
+| Washington | 803 | 91.3% | 70 | 182 |
+| West Virginia | 419 | 100.0% | 0 | 133 |
+| Wisconsin | 276 | 90.9% | 25 | 72 |
+| Wyoming | 354 | 99.2% | 3 | 111 |
+
+## What is refused on purpose
+
+Some citations have no single correct section.
+We refuse these, or answer and say what kind of answer it is, instead of guessing.
+
+| What the citation names | Citations | Refused | Answered with a flag | Wrong answer |
+|---|---:|---:|---:|---:|
+| A chapter, article or part, not one section | 597 | 562 | 35 | 0 |
+| Law we do not hold | 462 | 459 | 0 | 3 |
+| More than one law fits the string | 286 | 284 | 2 | 0 |
+| Several sections cited together | 149 | 79 | 70 | 0 |
+| Not a citation to US primary law | 81 | 44 | 37 | 0 |
+
+When we answer a chapter or a run of sections with its first section, the response carries `matchLevel` so you can tell.
+See [Citation Formats](/api-guide/concepts/citation-formats).
+
+A bare rule-set abbreviation that several states print (`CR 56`, `RAP 2.5`) is refused unless you pass `state`.
+
+## Pinpoints
+
+1,116 citations carried a pinpoint (`(a)(2)`, `at 12`).
+1,015 resolved to the right section, and 327 returned the pinpoint as `subsection`.
+
+## Where coverage is thinner
+
+**Court rules are the weakest area.**
+Most of the citations that get no answer are court rules, because the rule is held but in a shape the lookup cannot reach yet (for example one record that spans several rule numbers, or a state's own short form that we do not read).
+Outside court rules, no area misses more than 1.4% of its citations.
+
+- About 649 of the 1,171 court-rule misses resolve as soon as the caller passes `state`.
+  Several states print the same abbreviation (`DCR`, `SCR`, `CR`), so we refuse it without a state.
+  This test set sends many of them without one, and counts each as a miss.
+- When this set was measured, Vermont's court rules and the Virgin Islands Code were not held, so citations to them counted as misses. Both are held now. Most district and county local rules outside those we list on the [coverage page](/api-guide/coverage) are still not held.
+- State session laws are served by their own endpoints and are not part of this resolver.
+- State administrative registers resolve only where a held rule cites the register page.
+
+## How this is measured
+
+The test set was built by research passes that catalogued how citations are written for each jurisdiction and form, attested each against a court rule, a legislature page or an opinion where one could be fetched, and resolved the expected section from the live corpus.
+Every score compares the resolver's answer with that expected section.
+
+Read the figures with these limits in mind:
+
+- The set is our own research.
+  It is not an independent benchmark, and the forms we thought of are over-represented compared with forms we did not.
+- It measures the resolver in isolation.
+  Real traffic includes malformed and incomplete strings that a clean test set does not.
+- Some entries were corrected after the corpus grew, so that a citation that now resolves correctly is not scored as a miss.
+  Each correction is recorded with its evidence.
+- The set is rerun before any change to citation parsing ships, and this page is refreshed from the latest full run.
+
+## Found a citation that did not resolve?
+
+Send it to us with the jurisdiction.
+Each report becomes a new test entry, and a fix has to pass the full set before it ships.

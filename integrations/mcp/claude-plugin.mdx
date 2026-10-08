@@ -60,7 +60,7 @@ Never write the key into `.mcp.json`, a committed `.env`, or any file under vers
 ## Verify it works
 
 <Warning>
-  **A green connection proves nothing.** The server completes the handshake and lists all 25 tools with no `Authorization` header at all, with an unexpanded `${VAQUILL_API_KEY}` template, and with an invalid key. `claude mcp list` showing `Connected`, and a full tool list in `/mcp`, are both consistent with a completely broken credential.
+  **A green connection proves nothing.** The server completes the handshake and lists all of its tools with no `Authorization` header at all, with an unexpanded `${VAQUILL_API_KEY}` template, and with an invalid key. `claude mcp list` showing `Connected`, and a full tool list in `/mcp`, are both consistent with a completely broken credential.
 </Warning>
 
 The only real smoke test is one live call, and the cheapest is free:

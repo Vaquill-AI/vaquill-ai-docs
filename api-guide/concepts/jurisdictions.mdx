@@ -4,8 +4,9 @@ description: "The jurisdictions the API accepts, how state codes and the federal
 icon: "map-location-dot"
 ---
 
-`state` accepts **54 US jurisdictions**: all 50 states, plus the District of
-Columbia, Puerto Rico, Guam (`gu`) and the Northern Mariana Islands (`mp`).
+`state` accepts **56 US jurisdictions**: all 50 states, plus the District of
+Columbia, Puerto Rico, Guam (`gu`), the Northern Mariana Islands (`mp`), the US
+Virgin Islands (`vi`) and American Samoa (`as`).
 Federal law lives under its own `federal` jurisdiction, separate from the states.
 
 Accepting a jurisdiction is not the same as holding every corpus for it, so read
@@ -21,7 +22,8 @@ Accepting a jurisdiction is not the same as holding every corpus for it, so read
 - **`federal`** is the jurisdiction for the federal corpora. A federal search
   needs only a `corpusType`, no `state`.
 - Each jurisdiction row from `/us/statutes/coverage` carries a **`kind`**:
-  `federal`, `state`, or `territory`. DC and Puerto Rico are `territory`.
+  `federal`, `state`, or `territory`. DC, Puerto Rico, Guam, the Northern Mariana
+  Islands, the Virgin Islands and American Samoa are `territory`.
 
 <Warning>
   Not every corpus type exists for every jurisdiction. A state may have its

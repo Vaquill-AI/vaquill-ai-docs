@@ -1,10 +1,10 @@
 ---
 title: "State and territory coverage"
-description: "Per-jurisdiction section counts for statutes, regulations, constitutions and court rules across all 54 US jurisdictions"
+description: "Per-jurisdiction section counts for statutes, regulations, constitutions and court rules across all 56 US jurisdictions"
 icon: "map"
 ---
 
-**3.5M+ sections across 54 jurisdictions**, 50 states, DC, Puerto Rico, Guam and the Northern Mariana Islands. The per-jurisdiction
+**3.5M+ sections across 56 jurisdictions**, 50 states, DC, Puerto Rico, Guam, the Northern Mariana Islands, the US Virgin Islands and American Samoa. The per-jurisdiction
 matrix below carries the measured counts, with the date they were taken.
 
 Each column maps to a `corpusType` filter paired with `state`: statutes to `STATE`, regulations
@@ -19,10 +19,10 @@ rather than one per jurisdiction.
 
 ## Per-jurisdiction matrix
 
-Measured 2026-10-07, sorted by statute volume. A dash means we do not serve that corpus for that
-jurisdiction; markers [1] and [4] give the reason in
-[Why two jurisdictions show no court rules](#why-two-jurisdictions-show-no-court-rules).
-Markers [2] and [3] are no longer gaps and are kept because the build behind each is worth reading. Marker [5]
+Measured 2026-10-08, sorted by statute volume. A dash means we do not serve that corpus for that
+jurisdiction. The dashes (Guam, the District of Columbia and the Virgin Islands have no constitution row of their own) are explained in
+[The territories](#the-territories).
+Markers [1], [2] and [3] are no longer gaps and are kept because the build behind each is worth reading. Marker [4] was retired when Missouri's court rules were added, and the other numbers are unchanged so that existing links keep working. Marker [5]
 is not a gap but a sourcing caveat, in
 [Massachusetts regulations are an unofficial copy](#massachusetts-regulations-are-an-unofficial-copy-and-we-say-so-per-section).
 Marker [6] is also a sourcing caveat, in
@@ -37,35 +37,35 @@ Marker [6] is also a sourcing caveat, in
 
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
 |---|---|---|---|---|
-| California | 161,463 | 74,764 | 372 | 1,588 |
-| Texas | 122,705 | 43,514 | 503 | 1,050 |
+| California | 161,463 | 74,764 | 372 | 4,306 |
+| Texas | 122,705 | 43,514 | 503 | 1,437 |
 | Indiana | 83,148 | 37,522 | 196 | 879 |
-| Oregon | 72,664 | 40,869 | 388 | 632 |
-| Illinois | 72,251 | 55,076 | 145 | 426 |
+| Oregon | 72,664 | 40,869 | 388 | 694 |
+| Illinois | 72,251 | 55,076 | 145 | 1,058 |
 | New Jersey | 56,288 | 53,319 | 216 | 1,685 |
-| Washington | 52,002 | 51,026 | 273 | 1,232 |
-| Nevada | 49,745 | 30,978 | 234 | 1,753 |
+| Washington | 52,002 | 51,026 | 273 | 1,433 |
+| Nevada | 49,745 | 30,978 | 234 | 1,779 |
 | Alabama | 46,617 | 18,864 | 381 | 870 |
 | Louisiana | 43,591 | 26,737 | 328 | 481 |
-| Michigan | 42,075 | 22,154 | 282 | 1,026 |
+| Michigan | 42,075 | 22,154 | 282 | 1,040 |
 | North Carolina | 41,290 | 45,823 | 155 | 495 |
 | New York | 40,162 | 52,448 | 204 | 1,148 |
 | South Dakota | 39,589 | 29,000 | 271 | 155 |
-| Maryland | 39,552 | 12,773 | 311 | 1,510 |
+| Maryland | 39,552 | 29,433 | 311 | 1,510 |
 | Arkansas | 38,973 | 27,844 | 513 | 774 |
 | Nebraska | 37,919 | 13,624 | 251 | 734 |
 | Colorado | 35,758 | 1,155 | 412 | 1,194 [2] |
 | Oklahoma | 35,330 | 57,648 [6] | 478 | 2,116 [3] |
 | Tennessee | 34,756 | 11,622 | 152 | 629 |
-| Virginia | 33,861 | 22,396 | 133 | 358 |
-| Ohio | 33,158 | 19,407 | 265 | 1,168 |
+| Virginia | 33,861 | 22,396 | 133 | 422 |
+| Ohio | 33,158 | 19,407 | 265 | 1,453 |
 | Rhode Island | 31,713 | 1,186 | 118 | 1,033 |
 | New Mexico | 31,115 | 36,339 | 269 | 3,462 |
 | Montana | 30,515 | 28,217 | 170 | 435 |
 | South Carolina | 30,489 | 6,220 | 240 | 558 |
-| Missouri | 30,360 | 13,116 | 429 | - [4] |
-| Mississippi | 29,803 | 56,809 | 318 | 815 |
-| Georgia | 29,212 | 19,825 | 287 | 1,174 |
+| Missouri | 30,360 | 13,116 | 429 | 1,536 |
+| Mississippi | 29,803 | 57,049 | 318 | 815 |
+| Georgia | 29,212 | 19,825 | 287 | 1,312 |
 | North Dakota | 29,042 | 14,343 | 203 | 2,261 |
 | Iowa | 28,223 | 27,587 | 190 | 1,294 |
 | Minnesota | 27,747 | 15,401 | 138 | 958 |
@@ -73,42 +73,73 @@ Marker [6] is also a sourcing caveat, in
 | Puerto Rico (territory) | 26,672 | 111,484 | 102 | 1,528 |
 | New Hampshire | 26,196 | 39,413 | 157 | 972 |
 | Massachusetts | 26,175 | 26,839 [5] | 296 | 1,069 |
-| West Virginia | 26,019 | 26,056 | 209 | 1,116 |
+| West Virginia | 26,019 | 26,056 | 209 | 1,211 |
 | Maine | 25,316 | 1,805 | 153 | 722 |
 | Kentucky | 25,182 | 4,780 | 274 | 1,427 |
-| Florida | 25,020 | 28,913 | 217 | 954 |
-| Arizona | 24,956 | 23,099 | 330 | 1,809 |
+| Florida | 25,020 | 28,913 | 217 | 1,669 |
+| Arizona | 24,956 | 23,099 | 330 | 2,267 |
 | Kansas | 24,361 | 18,846 | 216 | 436 |
-| District of Columbia (territory) | 24,036 | 27,111 | - | 1,128 |
-| Vermont | 23,521 | 1,102 | 99 | - [1] |
-| Idaho | 22,754 | 8,672 | 240 | 766 |
+| District of Columbia (territory) | 24,037 | 27,111 | - | 1,408 |
+| Vermont | 23,521 | 1,102 | 99 | 833 [1] |
+| Idaho | 22,754 | 8,672 | 240 | 983 |
 | Delaware | 22,669 | 1,164 | 216 | 1,385 |
 | Wyoming | 20,995 | 13,348 | 316 | 1,020 |
 | Hawaii | 19,285 | 27,121 | 171 | 1,259 |
 | Wisconsin | 18,158 | 17,882 | 181 | 395 |
 | Alaska | 17,935 | 25,717 | 242 | 763 |
-| Guam (territory) | 17,848 | 5,956 | - | 593 |
+| Guam (territory) | 17,848 | 5,956 | - | 632 |
 | Connecticut | 16,082 | 18,012 | 161 | 1,724 |
-| Pennsylvania | 14,671 | 50,326 | 204 | 6,467 |
-| Northern Mariana Islands (territory) | 6,993 | 11,904 | 147 | 514 |
+| Pennsylvania | 14,671 | 50,326 | 204 | 7,294 |
+| Virgin Islands (territory) | 12,937 | 181 | - | 900 |
+| Northern Mariana Islands (territory) | 6,993 | 11,904 | 147 | 638 |
+| American Samoa (territory) | 3,576 | 2,490 | 71 | 470 |
 
-### Guam and the Northern Mariana Islands
+### The territories
 
-Both were added 2026-10-07 from their governments' own publications.
-Guam holds the Guam Code Annotated, the Administrative Rules and Regulations and the court rules; it has no constitution row because its organic law is the federal Organic Act of Guam.
-The Northern Mariana Islands hold the Commonwealth Code, the Administrative Code, the constitution and the court rules.
-Several of their court-rule sets are held as one document per set, so a citation to a single rule number in those sets returns the whole set.
+Guam, the Northern Mariana Islands, American Samoa and the US Virgin Islands joined Puerto Rico and DC in the matrix on 2026-10-07 and 2026-10-08.
+A dash in a territory row means the corpus does not exist there or is not held, and each case is stated here.
 
-### Why two jurisdictions show no court rules
+**Guam** (added 2026-10-07).
+It holds the Guam Code Annotated, the Administrative Rules and Regulations and the court rules, from the Guam government's own publications.
+It has no constitution row because its organic law is the federal Organic Act of Guam.
+Its court rules are 632 documents in 20 sets, held one rule per document except six sets held as one document per set: the Code of Judicial Conduct, the Interim Rules for Recording Grand Jury Proceedings, the Judiciary of Guam Electronic Filing Rules (Interim), the Local Rules of the Superior Court of Guam: Criminal Procedure Rules, the Rule re Mandatory Continuing Legal Education, and the Rules Governing Protection Order Cases.
+A citation to one rule number inside one of those six sets returns the whole set.
 
-Every gap is a source problem rather than a coverage decision, and each has a different cause.
-Statutes, regulations and constitutions for these jurisdictions are unaffected.
+**The Northern Mariana Islands** (added 2026-10-07).
+They hold the Commonwealth Code, the Administrative Code, the constitution and the court rules.
+The court rules are 638 documents in 38 sets, and 21 of those sets are held as one document per set, among them the Child Support Guidelines, the Judiciary Fee Schedule, the Juvenile Delinquency Procedure, the Tax Rules of Practice and Procedure and the Supreme Court Style Manual.
+A citation to one rule number inside a whole set returns the whole set.
+The other 17 sets, among them the Rules of Civil Procedure, the Rules of Evidence, the Supreme Court Rules and the Criminal Procedure rules, are held one rule per document.
 
-**[1] No government-published consolidated text** - Vermont.
+**American Samoa** (added 2026-10-08).
+It holds the American Samoa Code Annotated (3,576 sections), the Revised Constitution (71 sections), 470 court rules in 11 sets and the Administrative Code (2,490 sections).
+The Code, the Constitution and the court rules are taken from the American Samoa Bar Association's site (asbar.org), and the Administrative Code from the Office of the Secretary of American Samoa (osas.as).
+See [Where bar associations supply the text](#where-bar-associations-supply-the-text).
+Cite them as `Am. Samoa Code Ann. § 46.4810`, `Am. Samoa Const. art. IV, § 4`, `Am. Samoa Admin. Code § 4.2126` and `Am. Samoa High Ct. R. 139`.
+
+**The US Virgin Islands** (added 2026-10-08).
+It holds 900 court rules in 22 sets, from the Virgin Islands judiciary's sites (vicourts.org), and 181 sections of the Virgin Islands Rules and Regulations from the Department of Planning and Natural Resources (dpnr.vi.gov).
+It also holds the Virgin Islands Code, 12,937 sections, cited as `V.I. Code Ann. tit. 14, § 1`. The Code is an unofficial copy: each section's `currencyNote` carries the publisher's currency line (code changes through 2025-10-25 at this writing), and its source link is withheld under our licence, so `licenseNote` says so and `sourceUrl` is null.
+The Virgin Islands has no constitution row because its organic law is the federal Revised Organic Act.
+One of the court-rule sets, the Supreme Court Rules of Appellate Procedure as posted amended 11/2/2011, is a superseded edition and its 41 rules carry `actStatus=superseded`.
+Cite them as `12 V.I. R. & Regs. § 803-52`, `V.I. R. Civ. P. 6-3` and `V.I. S. Ct. R. 211.1.10`.
+
+**The District of Columbia** has no constitution of its own, so that cell is a dash for a different reason: its charter is the federal Home Rule Act.
+
+### Why one jurisdiction shows no court rules
+
+No jurisdiction does any more. The heading is kept so that existing links keep working.
+Missouri's court rules (1,536 sections) and Vermont's (833 rules) were the last two added.
+
+**[1] Served from the publisher the Judiciary points to** - Vermont.
 Vermont publishes its amendment stream (promulgation orders, rule changes, proposed amendments) on
-the judiciary's own site, but the consolidated current text is published only by a commercial
-licensee. The rule text itself is a government edict and in the public domain; what is missing is
-a government-published compilation.
+the judiciary's own site, and states that the consolidated current text is available through a
+commercial publisher. We serve that consolidated text: 833 rules across civil, criminal, appellate,
+evidence, probate, family, environmental and small-claims procedure, the Supreme Court's
+administrative orders, public access to court records, judicial conduct, bar admission and
+professional conduct. Each rule is cited as the Judiciary cites it (`Vt. R. Civ. P. 26`,
+`Vt. R. Evid. 803`), carries the publisher's currency line in `sourceNote`, and has its source link
+withheld under our licence. The rule text itself is a government edict and in the public domain.
 
 **[2] Built from a 2023 compilation plus the amending orders applied forward** - Colorado.
 Two Colorado publishers are involved. The **legislature's** Office of Legislative Legal Services
@@ -151,10 +182,6 @@ district courts' local rules and the Title Examination Standards.
 So the 2,116 figure is **additional** coverage, not a re-ingest of the statute-book rules. Titles 12
 and 22 and the Evidence Code stay under `corpusType=STATE` and are not duplicated here, so a search
 for Oklahoma civil procedure should still be scoped to `STATE` rather than `STATE_RULES`.
-
-**[4] Publisher policy** - Missouri.
-Missouri's published court policy does not permit automated access to its judicial websites, and
-we honor it. Coverage there needs a license from the state, not a workaround.
 
 ### Oklahoma regulations come from two sources, and the `currencyNote` says which
 
@@ -220,7 +247,7 @@ Each state's enacted version is part of that state's statutes, so search it with
 The model's § 2-207 is `Cal. Com. Code § 2207`, `6 Del. C. § 2-207`, `Tex. Bus. & Com. Code § 2.207`, `Iowa Code § 554.2207` and `N.D. Cent. Code § 41-02-14`, and those are the forms the citation resolver expects.
 
 We do not serve the model text or the Official Comments.
-Both are copyrighted by the American Law Institute and the Uniform Law Commission, and this API serves only government-published law.
+Both are copyrighted by the American Law Institute and the Uniform Law Commission, and this API serves neither.
 Where two states' enacted text differs, the difference is the law, so read the enacted section rather than the model.
 
 Known differences and gaps, measured 2026-09-24 against Articles 2 and 9:
@@ -231,6 +258,134 @@ Known differences and gaps, measured 2026-09-24 against Articles 2 and 9:
   In each case our ingest dropped the chapter; the publisher has it.
 - **Served, but the citation does not resolve yet:** Oklahoma (`Okla. Stat. tit. 12A`) and Washington (`RCW 62A`).
   Search finds the sections; resolve a citation by the form search returns until the fix lands.
+
+## Court rules from county and district trial courts
+
+Beside each state's statewide rules, 38 trial courts publish local rules of their own.
+They are served under `corpusType=STATE_RULES` with the county or district written into the `actId`, so one county's Rule 6.5 is never another county's Rule 6.5.
+Counted 2026-10-08: **5,363 rules, of which 4,868 are in force**.
+The rest are reserved or repealed numbers and say so in `actStatus`.
+
+| State | Courts |
+|---|---|
+| Arizona | the Superior Courts of Apache, Cochise, Coconino, Gila, Graham, Greenlee, La Paz, Maricopa, Mohave, Navajo, Pima, Pinal, Santa Cruz, Yavapai and Yuma Counties |
+| California | the Superior Courts of Los Angeles, San Diego, Orange, Santa Clara, San Francisco, Alameda, Sacramento and Riverside Counties |
+| Illinois | the Circuit Courts of Cook County, the 17th Circuit (Winnebago) and the 19th Circuit (Lake) |
+| Pennsylvania | the Courts of Common Pleas of Philadelphia, Allegheny, Lancaster and Bucks Counties |
+| Texas | the Harris County district courts and the Harris County courts at law, and the Travis County and Bexar County district courts |
+| Ohio | the Courts of Common Pleas of Cuyahoga and Franklin Counties |
+| Washington | the King County Superior Court |
+| Michigan | the Wayne County Circuit Court |
+
+Each court's rules are read from its own site and checked against a count taken from the court's own contents list or index, so a rule that is missing fails the load.
+A court whose rules could only be read as a scan or as a redline with strike-through text is left out rather than served with errors, so the list above is the courts we hold, not a claim to cover a state's trial courts.
+
+Cite a local rule the way the court does.
+These resolve through `/us/statutes/resolve`:
+
+| You send | Resolves to |
+|---|---|
+| `Cook Cnty. Cir. Ct. R. 2.1` | `SRULES_IL_COOK_R2_1` |
+| `LRSF 16.15` | `SRULES_CA_SANFRANCISCO_LR16_15` |
+| `Cal. Super. Ct. L.A. Cnty. Local R. 3.4` | `SRULES_CA_LASC_LR3_4` |
+| `Phila. R.J.A. 4008` | `SRULES_PA_PHILA_RJA_R4008` |
+| `KCLCMR 7` | `SRULES_WA_KING_LCMR_R7` |
+| `Travis Cnty. Dist. Ct. Loc. R. 2.11` | `SRULES_TX_TRAVIS_LR2_11` |
+| `Harris Cnty. Civ. Trial Div. R. 3.1` | `SRULES_TX_HARRIS_CIV_R3_1` |
+| `Cuyahoga C.P. Loc.R. 24.0` | `SRULES_OH_CUYAHOGA_R24_0` |
+| `Ariz. Local R. Prac. Super. Ct. (Maricopa) 2.8` | `SRULES_AZ_MARICOPA_R2_8` |
+
+Arizona's county rules were previously filed under one rule-set code, so several counties' Rule 1 shared an identifier.
+They are now keyed by county.
+
+## Where bar associations supply the text
+
+Most of this corpus is read from a government site.
+These sets are read from a bar association's own site instead, and we say so because it is a different kind of source.
+The rules are the same rules; the copy is the bar association's.
+Where the controlling text matters, check the court's or the bar's current publication.
+
+| Jurisdiction | Set | Read from | Documents |
+|---|---|---|---:|
+| California | Rules of Professional Conduct | State Bar of California (calbar.ca.gov) | 79 |
+| Oregon | Rules of Professional Conduct | Oregon State Bar (osbar.org) | 62 |
+| Virginia | Rules of Professional Conduct | Virginia State Bar (vsb.org) | 64 |
+| District of Columbia | Rules of Professional Conduct, Rules Governing the Bar, Rules of the Board on Professional Responsibility | District of Columbia Bar (dcbar.org) | 279 |
+| Georgia | Rules of Professional Conduct, in two compilations of the State Bar's rules | State Bar of Georgia (gabar.org) | 134 |
+| Idaho | Rules of Professional Conduct, Bar Commission Rules | Idaho State Bar (isb.idaho.gov) | 217 |
+| Florida | Rules Regulating The Florida Bar | The Florida Bar (floridabar.org) | 529 |
+| Texas | State Bar Rules | State Bar of Texas (texasbar.com) | 81 |
+| American Samoa | Code, Constitution and court rules | American Samoa Bar Association (asbar.org) | 4,117 |
+
+Counted 2026-10-08 as distinct documents by the host of each document's `sourceUrl`.
+Florida's rules of procedure are also read from PDFs hosted on The Florida Bar's media site (814 documents), and its admissions rules from the Florida Board of Bar Examiners (floridabarexam.org, 186 documents).
+Every section carries its `sourceUrl`, so the host that supplied a given section is always visible on the section itself.
+
+Cite them as `Cal. R. Prof. Conduct 1.1`, `Or. RPC 1.1`, `Va. R. Prof. Conduct 1.1`, `D.C. R. Prof. Conduct 1.1`, `Ga. R. Prof. Conduct 1.1`, `Idaho R. Prof. Conduct 1.1`, `Fla. R. Regulating Fla. Bar 4-1.1` and `Tex. Disciplinary R. Prof. Conduct 1.01`.
+
+## What the 2026-10-07 and 2026-10-08 loads changed
+
+Counts are from the matrix above.
+
+- **Maryland regulations** now cover all 36 titles of COMAR, 29,433 sections, where 23 titles were held before. Cite `COMAR 36.04.02.02`.
+- **Nebraska statutes** gained about 9,400 sections, among them the comma-numbered ones and the Uniform Commercial Code.
+- **Rhode Island statutes** gained sections missing from 1,065 chapters and lost 47 duplicates.
+- **Texas statutes** gained the Revised Civil Statutes (Vernon's), 266 articles, as `Tex. Vernon's Civil Statutes § 6243n`, and the missing Code of Criminal Procedure articles, among them `Tex. Code Crim. Proc. art. 38.22`.
+- **Missouri court rules** are served: 1,536 sections, cited `Mo. Sup. Ct. R. 55.03`.
+- **Nevada ADR rules** are split by instrument. `Nev. R. ADR n` now names only the General Provisions, and the arbitration and mediation rules are `Nev. Arb. R. n` and `Nev. Med. R. n`.
+- **West Virginia** carries the Rules of Lawyer Disciplinary Procedure (`W. Va. R. Law. Disc. P. 6.3`) and the Rules of Judicial Disciplinary Procedure (`W. Va. R. Jud. Disc. P. 7.1`).
+- **Florida** carries the admissions rules (`Fla. Bar Admis. R. 3-23.3`).
+- **Montana** carries the Code of Judicial Conduct (`Mont. Code Jud. Conduct R. 2.9`) and the Sentence Review Division Rules (`Mont. Sent. Rev. Div. R. 4`).
+- **Massachusetts** juvenile and probate court rules are cited under their own families, for example `Mass. Juv. Ct. Care & Prot. Rule 5`, `Mass. Prob. & Fam. Ct. Rule 4-09` and `Mass. Supp. Prob. & Fam. Ct. Rule 201`.
+- **Hawaii evidence rules** are served rule by rule, as sections of HRS chapter 626: `Haw. R. Evid. 404`.
+- **Pennsylvania** serves the Constitution's Schedule apart from Article V (`Pa. Const. sched. art. V, § 4`), and holds 54 sections of the unconsolidated statutes (35 P.S. ch. 780, for example `35 P.S. § 780-102`). The rest of the unconsolidated statutes are not held.
+- **Puerto Rico** carries Reorganization Plan No. 2-2011 (`Plan Reorg. Núm. 2-2011 P.R. art. 14`) and the 1930 Civil Code, 1,811 articles all marked repealed (`Cód. Civ. 1930 P.R. art. 481`), beside the 2020 Civil Code.
+- **Maine** carries the MaineCare manual (`10-144 C.M.R. ch. 101, ch. II, § 25`), and **New Hampshire** the Department of Environmental Services rules, among them `N.H. Admin. Rules, Env-Wq 403.17`.
+
+Not held: state session laws outside the [session laws](/api-guide/session-laws) corpus, which serves the 2025 sessions only.
+
+## State administrative registers
+
+`corpusType=STATE_REGISTER` holds the notices a state printed in its official register: proposed, adopted and emergency rule text, one document per printed item, cited by register volume and page (`36 Pa. Bull. 510`).
+**It is not codified law.**
+A register page often prints a rule that was later withdrawn, amended or never adopted, and the codified rule under `REGULATION` is the operative text.
+Register items are served with `goodLawStatus: "unknown"` by construction, `year` is the year of the issue the item was printed in, and they are never treated as primary law when search ranks results, so a register notice does not outrank the rule it concerns.
+Search them by naming the token: `{"corpusType": "STATE_REGISTER", "state": "pa"}`.
+
+Counted 2026-10-08: **144,876 items across 24 jurisdictions**.
+
+| Jurisdiction | Items |
+|---|---:|
+| Pennsylvania | 60,279 |
+| New York | 23,739 |
+| Iowa | 16,045 |
+| Florida | 15,682 |
+| South Dakota | 7,686 |
+| Washington | 6,033 |
+| California | 5,127 |
+| Northern Mariana Islands | 1,826 |
+| Alabama | 1,614 |
+| Virginia | 1,558 |
+| Minnesota | 1,397 |
+| Missouri | 1,161 |
+| Kentucky | 1,109 |
+| New Mexico | 768 |
+| Maryland | 536 |
+| Oklahoma | 129 |
+| New Jersey | 70 |
+| Utah | 39 |
+| Montana | 27 |
+| Kansas | 25 |
+| North Carolina | 11 |
+| Massachusetts | 7 |
+| Wisconsin | 5 |
+| Nevada | 3 |
+
+Every register is read from the jurisdiction's own government archive.
+The counts differ widely because the registers differ in size and in how much of each is loaded today, so a small count is not a claim about how many notices the state printed.
+
+A register citation also resolves when we hold the item, or when we do not and a codified rule's history note cites it.
+See [Register citations](/api-guide/concepts/citation-formats#register-citations).
 
 ## State agency guidance
 
@@ -330,7 +485,7 @@ Formal written opinions in which a state's chief legal officer construes that st
 constitution and regulations for an officer, legislator or local government who asked. Queryable
 with `corpusType=STATE_AG_OPINION` paired with `state`.
 
-**97,260 opinions across 42 jurisdictions.** Like state agency guidance this is **not** a
+**104,572 opinions across 43 jurisdictions.** Like state agency guidance this is **not** a
 comprehensive rollout: it lands jurisdiction by jurisdiction, and it is early. The survey behind
 this corpus measured roughly 184,600 individually addressable opinions across 52 jurisdictions, so
 what is live is a fraction of what exists. Call `GET /us/statutes/coverage` for the live figure
@@ -352,40 +507,42 @@ rather than this page, which is written by hand.
 
 | State | Opinions | Range | Scope limit worth knowing |
 |---|---|---|---|
+| Florida | 20,960 | 1913-2026 | Two archives: the modern list from 1971 and the historical database of 1913 to 1991 |
 | Alabama | 11,928 | 1979-2026 | The state's own archive begins in 1979; earlier opinions are published only by an aggregator we do not source from, so pre-1979 is a stated limit rather than a gap |
 | Arkansas | 10,298 | 1984-2026 | 334 further opinions are listed by the AG but never published by it; recorded as a limit, not counted |
-| Indiana | 9,759 | 1906-2026 | Scanned eras are cut by page in the state's own PDFs, so some opinions are served as their opening pages |
+| Indiana | 9,760 | 1906-2026 | Scanned eras are cut by page in the state's own PDFs, so some opinions are served as their opening pages |
 | Missouri | 8,449 | 1962-2026 | 1933-1961 is refused on identity: the printed number is a requester-alphabetical folder, not a document id |
 | North Dakota | 5,550 | 1942-2026 | Three families: legal, advisory, and open-records |
-| Washington | 4,428 | 1949-2026 | Two series, formal `AGO` and letter `AGLO`, filterable on `series` |
+| Washington | 4,430 | 1949-2026 | Two series, formal `AGO` and letter `AGLO`, filterable on `series` |
+| Louisiana | 3,720 |  |  |
 | Montana | 3,527 | vols. 15-44 | 🔴 Cited by volume and opinion number; the state publishes no issue date, so these do not answer an `asOf` query. Volumes 1-14 are excluded: their leading number is a page in the bound volume, not an opinion number |
-| Texas | 2,914 | 1983-2026 | The seven post-1983 series only. Roughly 14,800 earlier opinions sit behind paths the state restricts automated access to, so they are not held |
-| Tennessee | 2,650 | 2000-2026 | The archive begins in 2000; the state answers pre-2000 requests by telephone only |
-| California | 1,961 | 1977-2026 | Four series (`OP`, `CV`, `CR`, `SO`), filterable on `series`; the state lists two opinions it does not serve, one withdrawn and one it cannot deliver |
+| Texas | 3,502 | 1983-2026 | The seven post-1983 series only. Roughly 14,800 earlier opinions sit behind paths the state restricts automated access to, so they are not held |
+| Oklahoma | 3,052 | 1975-2026 |  |
+| Tennessee | 2,651 | 2000-2026 | The archive begins in 2000; the state answers pre-2000 requests by telephone only |
+| California | 1,962 | 1977-2026 | Four series (`OP`, `CV`, `CR`, `SO`), filterable on `series`; the state lists two opinions it does not serve, one withdrawn and one it cannot deliver |
 | South Dakota | 1,652 | 1968-2025 | The publisher prints no total; the archive is enumerated by walking its own document ids |
 | Illinois | 1,451 | 1971-2025 | Binding PAC opinions and FOIA/OMA determination letters are a different instrument and are excluded |
 | Ohio | 1,406 | 1993-2026 | The modern individually-addressed era only. Ohio's archive reaches back to 1846 and **the 33,659 opinions of 1920-1992 are book scans the state does publish**; they are not yet ingested because that is an OCR programme rather than an ingest, and they are a stated limit, not a gap we claim to have closed. The 1846-1919 era is 73 bound year-volumes whose opinions the state says were "either not numbered, or were not numbered sequentially", so no citable identifier exists for them. **Ohio publishes no per-opinion issue date**, so these carry a year and do not answer an `asOf` query |
 | Nebraska | 1,191 | 1990-2026 |  |
 | North Carolina | 1,106 | 1976-2010 | The state prints no opinion number; opinions are keyed on issue date plus the official who asked |
 | Delaware | 843 | 1995-2026 | One series; ~17 are substantive opinions, the rest FOIA opinion letters |
-| Kentucky | 692 | 1992-2026 |  |
-| Maryland | 601 | 1993-2025 |  |
 | Maine | 832 | 1978-2024 |  |
+| Kentucky | 692 | 1992-2026 |  |
 | Pennsylvania | 653 | 1957-1992 | Split from bound volumes; the 1895-1930 volumes print no per-opinion number and are not served |
 | Connecticut | 626 | 1990-2025 |  |
+| Maryland | 601 | 1993-2025 |  |
 | New York | 536 | 1995-2023 |  |
 | Alaska | 532 | 1986-2026 |  |
 | Massachusetts | 529 | 1968-1993 | Split out of the Attorney General's annual reports. **The state stopped printing numbered opinions after FY1993, so this corpus ends there and is not going to grow.** Only that era carries citable opinion numbers; the wider 1832-2025 report series heads each opinion with a subject line and identifies it by page alone |
+| Mississippi | 528 | 2020-2026 | The state's pre-2020 opinion database is no longer published anywhere by the state |
 | Georgia | 525 | 1992-2026 | Official and Unofficial series, filterable on `series` |
-| Mississippi | 524 | 2020-2026 | The state's pre-2020 opinion database is no longer published anywhere by the state |
+| West Virginia | 152 | 2007-2026 | The state prints no opinion number, so these are cited by issue date and requester surname |
 | Idaho | 151 | 1985-2026 | Opinions only; guidelines and certificates of review are excluded |
-| West Virginia | 151 | 2007-2026 | The state prints no opinion number, so these are cited by issue date and requester surname |
-| Puerto Rico | 81 | 2003-2010 | Opinions are published in Spanish, the language they are issued in |
 | Arizona | 147 | 1999-2026 | The state's own archive begins in 2011; six earlier opinions reach back to 1999, so the range is wider than the coverage |
 | Oregon | 114 | 1997-2025 |  |
 | Colorado | 109 | 1994-2026 | The publisher declares its own list incomplete |
+| Puerto Rico | 81 | 2003-2010 | Opinions are published in Spanish, the language they are issued in |
 | Minnesota | 77 | 1993-2025 |  |
-| Oklahoma | 68 | 2023-2026 | Older opinions are on a network whose publisher does not permit automated access |
 | Hawaii | 66 | 1993-2023 | Nothing issued since April 2023 |
 | Kansas | 56 | 2023-2026 | Pre-2023 is held by a university law library, not the state |
 | Nevada | 41 | 2017-2026 | The modern per-opinion era only. The bound annual compendia that precede it are not yet split into individual opinions. **Nevada published no opinions at all in 2023, and 12 numbers are absent across 2018-2022**; its archive page does not say whether those were issued and not posted, so they are recorded as gaps rather than as declared absences |
@@ -404,7 +561,7 @@ rather than this page, which is written by hand.
 
 <CardGroup cols={2}>
   <Card title="Federal coverage" icon="landmark" href="/api-guide/coverage/federal">
-    14 federal corpora, with per-corpus scope limits.
+    15 federal corpora, with per-corpus scope limits.
   </Card>
   <Card title="Refresh cadence" icon="clock-rotate-left" href="/api-guide/coverage#refresh-cadence">
     How often each jurisdiction is re-pulled, and which 24 refresh weekly.

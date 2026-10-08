@@ -7,11 +7,79 @@ icon: "clock-rotate-left"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-10-08" description="The Virgin Islands and American Samoa, state registers, and a flag on answers that are not the exact section you cited">
+  ## New: the US Virgin Islands and American Samoa
+
+  `state` now accepts `vi` and `as`, which brings the jurisdictions to 56.
+
+  | | Statutes | Regulations | Constitution | Court rules |
+  |---|---:|---:|---:|---:|
+  | American Samoa | 3,576 | 2,490 | 71 | 470 |
+  | Virgin Islands | 12,937 | 181 | - | 900 |
+
+  - The Virgin Islands holds the Virgin Islands Code (12,937 sections, cited `V.I. Code Ann. tit. 14, § 1`, an unofficial copy with its source link withheld), the Virgin Islands Rules and Regulations (181 sections, from the Department of Planning and Natural Resources) and 900 court rules in 22 sets.
+  - American Samoa's Code, Constitution and court rules are read from the American Samoa Bar Association's site, and its Administrative Code from the Office of the Secretary of American Samoa.
+  - Citations such as `Am. Samoa Code Ann. § 46.4810`, `A.S.C.A. § 46.4810`, `Am. Samoa Admin. Code § 4.2126`, `12 V.I. R. & Regs. § 803-52` and `V.I. R. Civ. P. 6-3` resolve.
+  - Both are `kind: "territory"` on `GET /us/statutes/coverage`.
+
+  ## New: state register notices
+
+  `corpusType=STATE_REGISTER` holds the proposed, adopted and emergency rule notices that a state printed in its official register: 144,876 items across 24 jurisdictions, mostly Pennsylvania (60,304) and New York (23,739).
+  **It is not codified law.**
+  Items carry `goodLawStatus: "unknown"`, `year` is the year of the issue, and they are never ranked as primary law.
+  See [State administrative registers](/api-guide/coverage/states#state-administrative-registers).
+
+  ## New: a flag on answers that are not the exact section you cited
+
+  `GET` and `POST /us/statutes/resolve` carry an optional `matchLevel` when `section` is not the exact unit you cited, with a companion field that says what happened.
+  An exact match carries none of them and is unchanged.
+  See [matchLevel](/api-guide/concepts/citation-formats#when-the-answer-is-not-the-exact-unit-you-cited-matchlevel).
+
+  | `matchLevel` | Meaning | Companion field |
+  |---|---|---|
+  | `container` | You cited a chapter, series, article, part or amendment; `section` is the first section inside it | `container` |
+  | `multiple` | You cited several sections; `section` is the first | `citedSections` |
+  | `repaired` | You wrote a recognised miscite of a code name; `section` is the section it names | `repair` |
+  | `register_reference` | You cited a state register page; `section` is the register item, or a rule whose history cites it | `registerReference` |
+
+  - A register citation resolves only on an exact volume and page, a range that contains the page, or an exact filing identifier.
+  - A citation that resolved to nothing before and resolves now only through one of these readings is not pinned to rank 1 by search.
+
+  ## New: county and district trial-court rules
+
+  38 trial courts' local rules, 5,363 rules (4,868 in force), under `corpusType=STATE_RULES` with the county or district in the `actId`: eight California superior courts, Cook, Winnebago and Lake in Illinois, Philadelphia, Allegheny, Lancaster and Bucks in Pennsylvania, Harris, Travis and Bexar in Texas, Cuyahoga and Franklin in Ohio, King in Washington, Wayne in Michigan and fifteen Arizona counties.
+  Citations such as `Cook Cnty. Cir. Ct. R. 2.1`, `LRSF 16.15`, `KCLCMR 7` and `Phila. R.J.A. 4008` resolve.
+  See [Court rules from county and district trial courts](/api-guide/coverage/states#court-rules-from-county-and-district-trial-courts).
+
+  ## Added to existing corpora
+
+  - **Maryland regulations:** all 36 titles of COMAR, 29,433 sections, where 23 titles were held before.
+  - **Missouri court rules:** 1,536 sections. Missouri is no longer listed as a gap.
+  - **Vermont court rules:** 833 rules, cited `Vt. R. Civ. P. 26` and `Vt. R. Evid. 803`, with their source link withheld. Every jurisdiction now carries court rules.
+  - **Federal local court rules:** recounted at 6,234 rules (5,936 in force) from 52 courts in 112 rule sets. The 32 district sets cover 33 districts, because the Southern and Eastern Districts of New York share one set.
+  - **Professional-conduct and bar rules** for California, Oregon, Virginia, the District of Columbia, Georgia, Idaho, Florida and Texas are read from the bar association's own site. See [Where bar associations supply the text](/api-guide/coverage/states#where-bar-associations-supply-the-text).
+  - **Court rules:** West Virginia's lawyer and judicial disciplinary rules, Florida's admissions rules, Montana's Code of Judicial Conduct and Sentence Review Division Rules, and the Massachusetts juvenile and probate families under their own names (`Mass. Juv. Ct. Care & Prot. Rule 5`).
+  - **Nevada ADR rules** are split by instrument: `Nev. R. ADR n` is now the General Provisions only, and arbitration and mediation are `Nev. Arb. R. n` and `Nev. Med. R. n`.
+  - **Guam and the Northern Mariana Islands:** court rules are held one rule per document, except six Guam sets and 21 Northern Mariana Islands sets that are held as one document per set.
+  - **Pennsylvania:** the Constitution's Schedule is served apart from Article V, and 54 sections of the unconsolidated statutes (35 P.S. ch. 780) are held.
+  - **Puerto Rico:** Reorganization Plan No. 2-2011 and the 1930 Civil Code (1,811 articles, all repealed).
+  - **Maine** carries the MaineCare manual and **New Hampshire** the Department of Environmental Services rules.
+
+  ## Not covered
+
+  - State session laws are served by their own endpoints and cover the 2025 sessions only. See [State Session Laws](/api-guide/session-laws).
+
+  ## Changed
+
+  - The OpenAPI `corpusType` enum now carries 23 tokens: the 22 on [Corpus types](/api-guide/concepts/corpus-types) and `USC_ANNUAL`, a retired GPO edition of the US Code that is not a token to search. `state` accepts 56 jurisdictions.
+  - The statutes, regulations, court rules and constitutions totals on [API Coverage](/api-guide/coverage) were re-measured: 2,010,030, 1,496,499, 71,880 and 13,016.
+</Update>
+
 <Update label="2026-10-07" description="Federal local court rules, and more state law">
   ## New: federal local court rules
 
   `corpusType=FEDERAL_LOCAL_RULES` searches a federal court's **own** rules, as distinct from the national Federal Rules of Procedure (`FEDERAL_RULES`).
-  It holds 6,234 rules from 52 rule sets: the 13 courts of appeals, the habeas rules, six national courts (Armed Forces, Federal Claims, Tax Court, International Trade, Veterans Claims, Courts-Martial) and 32 district courts.
+  It holds 6,234 rules from 52 courts: the 13 courts of appeals, the habeas rules, six national courts (Armed Forces, Federal Claims, Tax Court, International Trade, Veterans Claims, Courts-Martial) and 32 district courts.
   See [Federal coverage](/api-guide/coverage/federal) for what is held and what is not.
 
   - Citations such as `3d Cir. L.A.R. 26.1`, `Fed. Cl. R. 59`, `Mil. R. Evid. 803` and `S.D.N.Y. Local Civ. R. 7.1` resolve through `/us/statutes/resolve`.
@@ -40,7 +108,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   ## Changed
 
-  - The OpenAPI `corpusType` enum now carries 20 tokens, and `state` accepts 54 jurisdictions.
+  - The OpenAPI `corpusType` enum now carries 22 tokens, and `state` accepts 54 jurisdictions.
 </Update>
 
 <Update label="2026-10-06" description="Search the text of state session laws; list filters take several values">

@@ -20,18 +20,15 @@ Each lands behind the same `corpusType` filter, so there is nothing to integrate
 ## Completing existing coverage
 
 State regulations reached all 52 jurisdictions on 2026-08-27, and state agency guidance is effectively complete at 49.
-Two gaps remain inside corpora that are otherwise live.
+Gaps remain inside corpora that are otherwise live.
 
 | Corpus | Gap | Position |
 |---|---|---|
-| State court rules (`STATE_RULES`) | 5 jurisdictions | See below |
 | State agency guidance (`STATE_AGENCY_GUIDANCE`) | Pennsylvania, Colorado, Louisiana | Not currently planned |
-| State statutes (`STATE`) | Pennsylvania's unconsolidated statutes | Prioritized for backfill |
-
-The remaining court-rules jurisdictions either publish no consolidated rules text from a government source, codify their rules into the statute book (already served under `STATE`), or restrict automated access by published court policy.
+| State statutes (`STATE`) | Pennsylvania's unconsolidated statutes beyond 35 P.S. ch. 780 (54 sections held) | Prioritized for backfill |
 
 The three missing agency-guidance jurisdictions publish no cleanly scopable insurance-only archive.
-Pennsylvania's Consolidated Statutes are complete; only the older unconsolidated material is outstanding.
+Pennsylvania's Consolidated Statutes are complete; only the older unconsolidated material beyond 35 P.S. ch. 780 is outstanding.
 
 ## Point-in-time and as-applied federal law
 
@@ -57,13 +54,14 @@ FAR and DFARS are already served inside `CFR`; the deviations are what a contrac
 
 | Source | What it adds | Official source |
 |---|---|---|
-| Federal local rules | See below | uscourts.gov and each court's own site |
+| Federal local rules | The 61 district courts not yet held, and the bankruptcy courts | uscourts.gov and each court's own site |
 
-The local rules of the 94 district courts, the 13 circuits, and the bankruptcy courts, adopted under 28 U.S.C. 2071 and Federal Rule of Civil Procedure 83.
+Federal local rules are **live** under `corpusType=FEDERAL_LOCAL_RULES` for 52 courts: the 13 courts of appeals, the habeas rules, six national bodies and 32 district-court rule sets covering 33 of the 94 district courts.
+What is outstanding is the other 61 district courts and the local bankruptcy rules, adopted under 28 U.S.C. 2071 and Federal Rule of Civil Procedure 83.
 These modify the national Federal Rules in every district, so the national rules alone are an incomplete picture of what governs a filing.
 They are citable in their own form, for example `N.D. Cal. Civ. L.R. 7-2`.
 
-This is a large item: roughly 200 separate courts each publishing their own set, mostly as PDFs, with no common schema.
+This is a large item: each remaining court publishes its own set, mostly as PDFs, with no common schema.
 
 ## Tax
 

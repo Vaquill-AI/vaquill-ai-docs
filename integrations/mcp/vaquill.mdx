@@ -227,7 +227,7 @@ claude mcp add --scope user vaquill -e VAQUILL_API_KEY=vq_key_your_key_here \
 
 ## Tools
 
-Tools are generated from the OpenAPI document at startup, so the catalogue tracks the API rather than the package version. The US mount publishes **25 tools**; the India mount publishes 8.
+Tools are generated from the OpenAPI document at startup, so the catalogue tracks the API rather than the package version. The US mount publishes **34 tools**, one per API operation plus the `search` and `fetch` pair; the India mount publishes 8.
 
 <Warning>
   `act_id` is never assembled by hand. The title and section are derivable from a citation but the chapter is not, so a constructed id usually 404s and the failure reads like missing coverage. Take it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section Identifiers](/api-guide/concepts/section-ids).
@@ -271,8 +271,12 @@ Each of these refunds a call it cannot answer, and returns a `note` explaining w
 | `list_session_laws` | One state's session laws (acts as enacted), filtered by session, approval date or effective date. `jurisdiction` is required. An empty page is charged. | 1 per page |
 | `get_session_law` | One law's record: citation, session, dates, code sections affected, official sources and `textStatus`. Takes a `sessionLawId` or a citation (a citation adds the resolve price). | 2 |
 | `get_session_law_body` | The law's text exactly as printed, about 30,000 characters per page. Check `amendatoryMarkup`: if `lost`, struck language may read as law. | 6 per page |
+| `search_session_laws` | Find laws by what they say: plain words, a quoted phrase, a citation, a code section or a bill number. Keyword ranking, so a question has to share vocabulary with the act. Only enacted text is searched. An empty result is charged. | 4 per page |
+| `get_session_laws_batch` | Up to 50 laws by id or citation in one call; `includeBody` adds each law's first page of text. | 2 per law, plus 6 per page of text |
+| `get_session_law_changes` | A cursor feed of every law served, corrected, withdrawn or merged. | 1 per page |
+| `get_section_enactments` | The session laws a publisher's tables print against one code section, in CA, DC, HI, KY, MO, MS, NE, UT and WA. | 1 |
 
-Federal session laws are on the statute tools. The batch, change-feed, enactments and search routes are published as tools the same way once they are in the API's OpenAPI document, because tools are generated from it.
+Federal session laws are on the statute tools.
 
 ### Law change alerts
 

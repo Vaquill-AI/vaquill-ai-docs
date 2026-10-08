@@ -4,27 +4,27 @@ description: "Every federal corpus the Vaquill statutes API serves, with section
 icon: "landmark"
 ---
 
-**1,525,354 sections across 15 corpus types**, measured 2026-09-11, except federal local court rules, measured 2026-10-07.
+**1,527,012 sections across 15 corpus types**, measured 2026-10-08. The FAR and DFARS sub-rows were last measured 2026-09-11.
 
 | Corpus | Sections | Refresh |
 |---|---|---|
-| United States Code (USC) | 60,170 | Annual edition, checked weekly |
+| United States Code (USC) | 60,494 | OLRC release point, checked weekly |
 | Statutes at Large | 425,427 | Weekly |
-| Code of Federal Regulations (CFR) | 222,365 | Daily |
+| Code of Federal Regulations (CFR) | 222,315 | Daily |
 | ↳ Federal Acquisition Regulation (FAR), 48 C.F.R. ch. 1 | 3,118 | Daily |
 | ↳ Defense FAR Supplement (DFARS), 48 C.F.R. ch. 2 | 1,705 | Daily |
 | CFR annual editions, 1996-2026 | 312,132 | Weekly check, quarterly editions |
-| Federal Register agency rules, final and proposed | 196,237 | Weekly |
-| Federal Register **notices**, a curated slice | 17,616 | Weekly |
-| Executive Orders, 2015-present | 3,649 | Daily |
-| Agency guidance, 53 named sources | 96,785 | Weekly |
-| Federal Rules of Procedure | 589 | Monthly |
-| Federal local court rules, 52 rule sets | 6,234 | Weekly |
+| Federal Register agency rules, final and proposed | 196,655 | Weekly |
+| Federal Register **notices**, a curated slice | 17,639 | Weekly |
+| Executive Orders, 2015-present | 3,673 | Daily |
+| Agency guidance, 53 named sources | 96,966 | Weekly |
+| Federal Rules of Procedure, with the US Code appendix printing of each set listed as its own set | 1,130 | Monthly |
+| Federal local court rules, 52 courts | 6,234 | Weekly |
 | US Constitution | 74 | On amendment |
 | US Sentencing Guidelines | 1,281 | Annual |
-| US Tax Treaties and the Senate treaty record | 1,649 | As treaties are signed |
+| US Tax Treaties and the Senate treaty record | 1,665 | As treaties are signed |
 | Administrative Adjudications | 100,920 | Monthly |
-| Statute Compilations | 80,232 | Monthly |
+| Statute Compilations | 80,407 | Monthly |
 
 The `corpusType` token for each is in [Corpus types](/api-guide/concepts/corpus-types).
 The FAR and DFARS rows are inside the CFR row, not additional to it: they split existing Title 48
@@ -37,14 +37,17 @@ not held.
 
 <AccordionGroup>
 
-<Accordion title="United States Code - an annual publication, so weekly means a weekly check">
-  The source is the federal publisher's own annual `USCODE` package on GovInfo, issued once per
-  edition rather than amended in place. A weekly job asks GovInfo whether a newer edition exists
-  and re-ingests the whole Code when one appears. Between editions the text does not move.
+<Accordion title="United States Code - served at the current OLRC release point">
+  The source is the Office of the Law Revision Counsel's release points, which OLRC issues as
+  Congress enacts laws, rather than GPO's annual edition. A weekly job checks for a new release
+  point and re-ingests when one appears. Every section states what it is current through in
+  `currentThrough`: at release point Public Law 119-111, `42 U.S.C. § 1983` reads
+  `currentThrough: "2026-09-18"`.
 
-  The edition served is **2024, current through 2025-01-06**. For federal law enacted after that
-  date use `corpusType=SESSION_LAW`, which does refresh weekly, or `corpusType=FEDERAL_REGISTER`
-  for agency rulemaking.
+  For federal law enacted after a section's `currentThrough` date, use `corpusType=SESSION_LAW`,
+  which refreshes weekly, or `corpusType=FEDERAL_REGISTER` for agency rulemaking. GPO's last annual
+  edition is kept as `USC_ANNUAL` so that `asOf` can answer for earlier dates; it is not a token to
+  search.
 </Accordion>
 
 <Accordion title="Statutes at Large - as enacted, so deliberately not current law">
@@ -166,15 +169,20 @@ not held.
 
 <Accordion title="Federal local court rules - each court's own rules, not the national Federal Rules">
   The rules a federal court publishes for itself: the 13 courts of appeals, the habeas rules
-  (Sections 2254 and 2255), six national courts (Armed Forces, Federal Claims, Tax Court,
-  International Trade, Veterans Claims, and the Courts-Martial rules) and 32 of the 94 district
-  courts. 6,234 rules, of which 5,936 are in force; the rest are reserved or repealed numbers and
-  say so in `actStatus`.
+  (Sections 2254 and 2255), six national bodies (Armed Forces, Federal Claims, Tax Court,
+  International Trade, Veterans Claims, and the Manual for Courts-Martial) and 32 district-court
+  rule sets. That is 52 courts, published as 112 rule sets (a court's civil and criminal rules, or
+  a circuit's local rules and internal operating procedures, are separate sets).
+  6,234 rules, of which 5,936 are in force; 160 are reserved and 138 repealed numbers, and they
+  say so in `actStatus`. Counted 2026-10-08.
+
+  The 32 district sets cover 33 of the 94 district courts, because the Southern and Eastern
+  Districts of New York publish one joint set.
 
   Every court is taken from its own site and checked against that court's own contents list or
   index, so a missing rule fails the load rather than passing silently.
 
-  Not held: the other 62 district courts, local bankruptcy rules, and the internal operating
+  Not held: the other 61 district courts, local bankruptcy rules, and the internal operating
   procedures of the Fifth, Seventh, Eighth and Eleventh Circuits (the Fifth, Eighth and Eleventh
   print them as unnumbered paragraphs, so nothing is citable). A few rules that only say "See
   L.R. x" were refused as empty. A bare number such as `Cir. R. 36-3` names no court, and a
@@ -214,6 +222,6 @@ not held.
     The 53 named sources behind `AGENCY_GUIDANCE`, with per-source caveats.
   </Card>
   <Card title="State and territory coverage" icon="map" href="/api-guide/coverage/states">
-    Per-jurisdiction counts for all 52 jurisdictions.
+    Per-jurisdiction counts for all 56 jurisdictions.
   </Card>
 </CardGroup>

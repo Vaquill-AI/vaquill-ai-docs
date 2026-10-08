@@ -50,7 +50,7 @@ The Vaquill connector adds US primary law to Claude through a **Connect** button
 ## Verify it works
 
 <Warning>
-  **Never trust a green connection.** The server completes the MCP handshake and lists all 25 tools with **no credential at all**. Authentication is enforced at the API call behind each tool, not at the protocol layer, so "Connected" and a full tool list are both consistent with a completely broken credential.
+  **Never trust a green connection.** The server completes the MCP handshake and lists all of its tools with **no credential at all**. Authentication is enforced at the API call behind each tool, not at the protocol layer, so "Connected" and a full tool list are both consistent with a completely broken credential.
 </Warning>
 
 The only real test is one live call, and the cheapest one is free:
@@ -94,7 +94,7 @@ That separation is intentional in both directions: a US connection never exposes
 
 Use the **connector** for Claude with no setup, and as the only option in Cowork. Use the **plugin** in Claude Code when you want the ten slash commands and the research skill on top of the tools. Use an **API key** for any client that is not Claude.
 
-You can run the connector and the plugin together, but there is no reason to: both expose the same 25 tools, and two copies of the same catalogue sit in context for the whole conversation.
+You can run the connector and the plugin together, but there is no reason to: both expose the same tools, and two copies of the same catalogue sit in context for the whole conversation.
 
 ## Troubleshooting
 
