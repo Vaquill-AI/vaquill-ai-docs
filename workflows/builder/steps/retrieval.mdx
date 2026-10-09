@@ -11,8 +11,8 @@ Five steps, all deterministic: no model call, so they are cheap and idempotent. 
 ## Search Uploaded Documents
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="gauge">Medium</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Medium</Card>
 </CardGroup>
 
 Hybrid dense plus keyword search over a matter's uploaded documents. Returns the top relevant passages for downstream summary, drafting, or verification steps.
@@ -41,8 +41,8 @@ Hybrid dense plus keyword search over a matter's uploaded documents. Returns the
 ## Search US Case Law
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="gauge">Medium</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Medium</Card>
 </CardGroup>
 
 Searches US federal and state case opinions.
@@ -68,8 +68,8 @@ Searches US federal and state case opinions.
 ## Lookup US Statute
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="gauge">Medium</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Medium</Card>
 </CardGroup>
 
 Keyword search across US federal statutes, regulations, and state codes.
@@ -97,8 +97,8 @@ Keyword search across US federal statutes, regulations, and state codes.
 ## US Statute Cross-References
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="bolt">Fast</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Fast</Card>
 </CardGroup>
 
 Pulls cross-references, the authority chain, and amendment history for one section. No model call, sub-second.
@@ -134,8 +134,8 @@ Provide **one** of:
 ## Web Search
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="gauge">Medium</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Medium</Card>
 </CardGroup>
 
 Web search for legal news and regulatory updates, restricted to US sources by default and hardened against SSRF.
@@ -159,10 +159,10 @@ Web search for legal news and regulatory updates, restricted to US sources by de
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Extraction steps" icon="list-check" href="/workflows/builder/steps/extraction">
+  <Card title="Extraction steps" href="/workflows/builder/steps/extraction">
     Turning retrieved material into structured output.
   </Card>
-  <Card title="Verification steps" icon="circle-check" href="/workflows/builder/steps/verification">
+  <Card title="Verification steps" href="/workflows/builder/steps/verification">
     Checking that what an AI step wrote is actually supported.
   </Card>
 </CardGroup>

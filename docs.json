@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vaquill AI",
-  "description": "US primary law as a developer API: 5M+ sections across 53 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
+  "description": "US primary law as a developer API: 5.3M+ sections across 56 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
   "colors": {
     "primary": "#6E3730",
     "light": "#8C4A3F",
@@ -11,6 +11,12 @@
   "background": {
     "color": {
       "light": "#F4F1EC"
+    }
+  },
+  "thumbnails": {
+    "appearance": "light",
+    "fonts": {
+      "family": "Schibsted Grotesk"
     }
   },
   "fonts": {
@@ -50,8 +56,6 @@
     "metatags": {
       "canonical": "https://www.vaquill.ai/docs",
       "og:site_name": "Vaquill AI Docs",
-      "og:image": "/images/chat-sources.webp",
-      "og:description": "US primary law as a developer API: 5M+ sections across 53 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
       "og:locale": "en_US",
       "twitter:card": "summary_large_image",
       "twitter:site": "@vaquillai"
@@ -61,10 +65,10 @@
     "tabs": [
       {
         "tab": "Data API Guide",
-        "icon": "code",
         "groups": [
           {
             "group": "DATA COVERAGE",
+            "icon": "database",
             "pages": [
               "api-guide/coverage",
               "api-guide/coverage/federal",
@@ -78,12 +82,14 @@
           },
           {
             "group": "USE CASES",
+            "icon": "lightbulb",
             "pages": [
               "api-guide/use-cases"
             ]
           },
           {
             "group": "GET STARTED",
+            "icon": "rocket",
             "pages": [
               "api-guide/overview",
               "api-guide/quickstart",
@@ -93,6 +99,7 @@
           },
           {
             "group": "BULK, SQL & RIGHTS",
+            "icon": "server",
             "pages": [
               "api-guide/bulk-and-sql",
               "api-guide/rights-and-licensing"
@@ -100,6 +107,7 @@
           },
           {
             "group": "CORE CONCEPTS",
+            "icon": "book-open",
             "pages": [
               "api-guide/concepts/search",
               "api-guide/concepts/corpus-types",
@@ -117,12 +125,14 @@
           },
           {
             "group": "LAW CHANGE ALERTS",
+            "icon": "bell",
             "pages": [
               "api-guide/alerts"
             ]
           },
           {
             "group": "WORKING WITH THE API",
+            "icon": "code",
             "pages": [
               "api-guide/pagination",
               "api-guide/errors",
@@ -132,12 +142,14 @@
           },
           {
             "group": "GROUNDING AI",
+            "icon": "sparkles",
             "pages": [
               "api-guide/grounding-llms"
             ]
           },
           {
             "group": "RECIPES",
+            "icon": "flask",
             "pages": [
               "api-guide/recipes/rag-grounding",
               "api-guide/recipes/statute-chatbot",
@@ -155,15 +167,14 @@
       },
       {
         "tab": "Data API Reference",
-        "icon": "database",
         "openapi": "https://api.vaquill.ai/external/openapi.json"
       },
       {
         "tab": "Introduction",
-        "icon": "book",
         "groups": [
           {
             "group": "GET STARTED",
+            "icon": "rocket",
             "pages": [
               "introduction",
               "guides/chat"
@@ -171,6 +182,7 @@
           },
           {
             "group": "CONTRACTS & DRAFTING",
+            "icon": "file-contract",
             "pages": [
               "guides/contract-review",
               "guides/drafting",
@@ -197,6 +209,7 @@
           },
           {
             "group": "COMPLIANCE & LEGAL TOOLS",
+            "icon": "shield-check",
             "pages": [
               "guides/compliance-check",
               "guides/dpa-review",
@@ -214,6 +227,7 @@
           },
           {
             "group": "MATTERS & WORKSPACES",
+            "icon": "briefcase",
             "pages": [
               "guides/matters-workspaces",
               "guides/matter-summary",
@@ -226,6 +240,7 @@
           },
           {
             "group": "DOCUMENTS & INGESTION",
+            "icon": "file-import",
             "pages": [
               "guides/document-search",
               "guides/documents",
@@ -236,6 +251,7 @@
           },
           {
             "group": "PERSONALIZATION",
+            "icon": "sliders",
             "pages": [
               "guides/skills",
               "guides/prompt-library",
@@ -247,6 +263,7 @@
           },
           {
             "group": "RESEARCH",
+            "icon": "magnifying-glass",
             "pages": [
               "guides/case-law-research",
               "guides/statutes-regulations",
@@ -260,6 +277,7 @@
           },
           {
             "group": "INTEGRATIONS",
+            "icon": "plug",
             "pages": [
               "integrations/index",
               {
@@ -317,10 +335,10 @@
       },
       {
         "tab": "Workflows",
-        "icon": "diagram-project",
         "groups": [
           {
             "group": "OVERVIEW",
+            "icon": "compass",
             "pages": [
               "workflows/index",
               "workflows/quickstart",
@@ -330,6 +348,7 @@
           },
           {
             "group": "BUILT-IN WORKFLOWS",
+            "icon": "diagram-project",
             "pages": [
               "workflows/built-in/index",
               {
@@ -391,6 +410,7 @@
           },
           {
             "group": "WORKFLOW BUILDER",
+            "icon": "wrench",
             "pages": [
               "workflows/builder/index",
               "workflows/builder/generate-from-prompt",
@@ -418,10 +438,10 @@
       },
       {
         "tab": "Workspace API",
-        "icon": "briefcase",
         "groups": [
           {
             "group": "GET STARTED",
+            "icon": "rocket",
             "pages": [
               "workspace-api/overview",
               "workspace-api/quickstart",
@@ -430,6 +450,7 @@
           },
           {
             "group": "CORE CONCEPTS",
+            "icon": "book-open",
             "pages": [
               "workspace-api/concepts/operations",
               "workspace-api/concepts/idempotency",
@@ -440,6 +461,7 @@
           },
           {
             "group": "CAPABILITIES",
+            "icon": "bolt",
             "pages": [
               "workspace-api/clients-and-matters",
               "workspace-api/documents",
@@ -459,6 +481,7 @@
           },
           {
             "group": "AGENTS",
+            "icon": "robot",
             "pages": [
               "workspace-api/cleanup",
               "workspace-api/mcp"
@@ -468,12 +491,10 @@
       },
       {
         "tab": "Workspace Reference",
-        "icon": "file-code",
         "openapi": "https://api.vaquill.ai/workspace/openapi/v1.json"
       },
       {
         "tab": "India API Reference",
-        "icon": "scale-balanced",
         "openapi": "https://api.vaquill.ai/in/openapi.json"
       }
     ]

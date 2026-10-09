@@ -13,8 +13,8 @@ Neither step is optional in practice. Any chain with an AI drafting step should 
 ## Verify Citations
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="gauge">Medium</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Medium</Card>
 </CardGroup>
 
 Detects fabricated case citations in a body of text. **Run it after any AI drafting step that quotes case law, and before exporting or saving.**
@@ -42,8 +42,8 @@ Detects fabricated case citations in a body of text. **Run it after any AI draft
 ## Verify Synthesis
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="bolt">Fast</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Fast</Card>
 </CardGroup>
 
 Drops synthesis findings that reference documents outside the actual input set. This catches the common failure mode where a synthesizer, working from summaries rather than raw documents, invents a document reference.
@@ -97,10 +97,10 @@ Search US Case Law
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Answer verification" icon="circle-check" href="/guides/answer-verification">
+  <Card title="Answer verification" href="/guides/answer-verification">
     The wider verification story across Vaquill AI, beyond workflows.
   </Card>
-  <Card title="Branching and loops" icon="code-branch" href="/workflows/builder/branching-and-loops">
+  <Card title="Branching and loops" href="/workflows/builder/branching-and-loops">
     Routing on a verification result instead of ignoring it.
   </Card>
 </CardGroup>

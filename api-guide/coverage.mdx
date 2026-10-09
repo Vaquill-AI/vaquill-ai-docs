@@ -1,7 +1,6 @@
 ---
 title: "API Coverage"
 description: "Exactly which US jurisdictions and corpus types the Vaquill statutes API has ingested, with live section counts"
-icon: "map-location-dot"
 ---
 
 **5.3M+ distinct sections, indexed as 20M+ retrieval passages**, across federal law and all 56
@@ -18,18 +17,18 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
 ```
 
 <CardGroup cols={3}>
-  <Card title="Federal" icon="landmark" href="/api-guide/coverage/federal">
+  <Card title="Federal" href="/api-guide/coverage/federal">
     **1.5M+ sections**, 15 corpora. US Code, CFR, Statutes at Large, Federal Register,
     adjudications, federal local court rules, and per-corpus scope limits.
   </Card>
-  <Card title="States and territories" icon="map" href="/api-guide/coverage/states">
+  <Card title="States and territories" href="/api-guide/coverage/states">
     **3.8M+ sections** across 56 jurisdictions. Statutes, regulations, constitutions, court
     rules, state registers, state agency guidance and AG opinions.
   </Card>
-  <Card title="Agency guidance" icon="building-columns" href="/api-guide/coverage/agency-guidance">
+  <Card title="Agency guidance" href="/api-guide/coverage/agency-guidance">
     **50K+ documents** from 53 named federal sources, each filterable with `source`.
   </Card>
-  <Card title="State session laws" icon="scroll" href="/api-guide/session-laws">
+  <Card title="State session laws" href="/api-guide/session-laws">
     **20,604 acts** across 50 jurisdictions from the 2025 sessions, as enacted, with dates,
     veto outcome and text.
   </Card>
@@ -337,10 +336,10 @@ Corpora that are planned but not yet served, and what is deliberately out of sco
 [Roadmap](/api-guide/roadmap).
 
 <CardGroup cols={2}>
-  <Card title="Corpus types" icon="filter" href="/api-guide/concepts/corpus-types">
+  <Card title="Corpus types" href="/api-guide/concepts/corpus-types">
     Every `corpusType` token, and how `source` and `state` combine with it.
   </Card>
-  <Card title="Open source: Vaquill-AI/open-us-law" icon="github" href="https://github.com/Vaquill-AI/open-us-law">
+  <Card title="Open source: Vaquill-AI/open-us-law" href="https://github.com/Vaquill-AI/open-us-law">
     The ingestion pipeline behind this corpus is open source under a permissive license. Build your
     own copy, or contribute a source.
   </Card>

@@ -1,7 +1,6 @@
 ---
 title: "Grounding LLMs with Vaquill AI"
 description: "Why and how to ground model answers in retrieved, authoritative US statutory text"
-icon: "shield-halved"
 ---
 
 Generic language models are fluent about the law but not reliable about it. Ask one for a statute and it will often invent a plausible citation, misquote the text, or blend two unrelated sections into one confident paragraph. For legal work that is not a rough edge, it is a liability.
@@ -53,25 +52,25 @@ Four steps turn a raw question into a grounded, verifiable answer.
 A few habits keep grounded answers accurate and cheap.
 
 <AccordionGroup>
-  <Accordion title="Scope retrieval to the right corpusType" icon="filter">
+  <Accordion title="Scope retrieval to the right corpusType">
     Searching the entire corpus for a question that only a state penal code can answer pulls in noise that competes for the model's attention. Pass the narrowest `corpusType` that fits (for example `USC` for federal statutes, or `STATE` with `state: "ca"` for California codes).
 
     If you are unsure which corpora a jurisdiction has, call `GET /us/statutes/coverage` and read the `corpora` keys before you search. See [Coverage](/api-guide/coverage).
   </Accordion>
 
-  <Accordion title="Never quote the excerpt" icon="scissors">
+  <Accordion title="Never quote the excerpt">
     `excerpt` is windowed around whatever matched, so it can begin mid-section and drop a leading subsection marker. A passage that lost its opening `(a)` reads as the whole section and is not. Quote from `body`, which is the document as the publisher printed it, and treat `excerpt` as a ranking signal only.
   </Accordion>
 
-  <Accordion title="Keep the retrieved text verbatim" icon="quote-left">
+  <Accordion title="Keep the retrieved text verbatim">
     Do not summarize, clean up, or paraphrase a section before it reaches the model. Paraphrasing is where meaning quietly shifts, and it defeats the point of grounding. Pass the `plain` text through untouched, and let the model quote from it directly.
   </Accordion>
 
-  <Accordion title="Carry the citation and source URL with every passage" icon="link">
+  <Accordion title="Carry the citation and source URL with every passage">
     When you assemble the context block, keep each passage next to its `citation` and its source URL (for example `htmlUrl`, `stateHtmlUrl`, or `govInfoHtmlUrl`). That lets the model attribute claims correctly and lets you render clickable, verifiable citations in your UI.
   </Accordion>
 
-  <Accordion title="Treat relevanceScore as a relative rank, not a threshold" icon="ranking-star">
+  <Accordion title="Treat relevanceScore as a relative rank, not a threshold">
     `relevanceScore` orders results within a single response. It is not a calibrated confidence score and is not comparable across queries.
 
     Do not drop results below a fixed cutoff like `0.5` or trust a high score as proof of relevance. Use it to order what you show, and let the grounded prompt decide whether the sections actually answer the question.
@@ -79,13 +78,13 @@ A few habits keep grounded answers accurate and cheap.
     Before you build the context block, check `noGoodMatch` on the search response. When it is `true`, nothing in the corpus looks on point: tell the user that, rather than handing the model weak passages it will try to answer from. When it is `null` the ranking was degraded; retry the query.
   </Accordion>
 
-  <Accordion title="Verify the model's citations before showing the answer" icon="circle-check">
+  <Accordion title="Verify the model's citations before showing the answer">
     A grounded model should only cite sections you retrieved, but verify it anyway. Before rendering, check that every `actId` or citation the model used appears in the set you passed in.
 
     Drop or flag anything that does not match. This catches the rare case where the model reaches back into its own memory instead of the provided context.
   </Accordion>
 
-  <Accordion title="Watch what retrieval costs you" icon="coins">
+  <Accordion title="Watch what retrieval costs you">
     A grounded turn is one search plus one body per section you cite, so cost scales with how many sections you cite rather than how many you retrieve. Cache on `actId`, which is a stable handle for a section, and read `creditsConsumed` on every response rather than computing cost from your page size.
   </Accordion>
 </AccordionGroup>
@@ -95,16 +94,16 @@ The two properties that make this trustworthy: the model never sees text you did
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="RAG grounding recipe" icon="magnifying-glass" href="/api-guide/recipes/rag-grounding">
+  <Card title="RAG grounding recipe" href="/api-guide/recipes/rag-grounding">
     The runnable version: retrieval loop, prompt, citation check, and the tool-calling agent variant.
   </Card>
-  <Card title="Statute chatbot recipe" icon="comments" href="/api-guide/recipes/statute-chatbot">
+  <Card title="Statute chatbot recipe" href="/api-guide/recipes/statute-chatbot">
     Build a multi-turn chatbot that stays grounded across a conversation.
   </Card>
-  <Card title="MCP tool" icon="plug" href="/api-guide/recipes/mcp-tool">
+  <Card title="MCP tool" href="/api-guide/recipes/mcp-tool">
     Expose Vaquill AI statute lookups as tools inside an agent framework.
   </Card>
-  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+  <Card title="Best practices" href="/api-guide/best-practices">
     Scope queries, choose a `matchType`, cache coverage, and handle errors well.
   </Card>
 </CardGroup>

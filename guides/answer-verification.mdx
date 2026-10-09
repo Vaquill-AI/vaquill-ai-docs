@@ -1,7 +1,6 @@
 ---
 title: "Answer Verification"
 description: "Every AI response is fact-checked against the source documents before you see it"
-icon: "circle-check"
 ---
 
 Every answer the AI produces is automatically checked against the actual documents and cases it cited, claim by claim, before you see it. This is not web fact-checking - it verifies that what the model said is actually supported by the sources it pulled.
@@ -122,8 +121,6 @@ Treat verification as a strong filter against fabrication and misquotation, not 
 
 <Prompt
   description="**Cite-Check** - re-verify an existing answer claim by claim against the actual cited sources."
-  icon="circle-check"
-  iconType="solid"
   actions={["copy"]}
 >
 Re-verify the answer above. For each material claim:
@@ -141,13 +138,13 @@ Return a table: **Claim - Source - Status - Action**. End with a one-paragraph r
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Deep Research Mode" icon="magnifying-glass-plus" href="/guides/deep-research">
+  <Card title="Deep Research Mode" href="/guides/deep-research">
     Multi-hop research with built-in verification at each round.
   </Card>
-  <Card title="Citation Graph" icon="diagram-project" href="/guides/citation-graph">
+  <Card title="Citation Graph" href="/guides/citation-graph">
     Check whether cited cases are still good law.
   </Card>
-  <Card title="Document Search" icon="file-magnifying-glass" href="/guides/document-search">
+  <Card title="Document Search" href="/guides/document-search">
     How retrieval feeds verification.
   </Card>
 </CardGroup>

@@ -1,7 +1,6 @@
 ---
 title: "Vendor and Sub-processor Registry"
 description: "Track third-party vendors, their DPA status, data categories, and renewal dates, with automatic DPA review"
-icon: "building"
 ---
 
 The Vendor Registry is the inventory privacy and procurement teams are expected to keep: who your vendors are, which of them are sub-processors, what data each touches, whether a DPA is signed, and when the contract renews.
@@ -38,15 +37,15 @@ It is the record you produce when a customer's security questionnaire or a regul
 ## Getting vendors in
 
 <AccordionGroup>
-  <Accordion title="Import from CSV or Excel" icon="file-arrow-up">
+  <Accordion title="Import from CSV or Excel">
     Bulk import from a spreadsheet, which is how most teams start, since the list usually already exists somewhere. Download the import template first so the columns line up.
   </Accordion>
-  <Accordion title="Extract from a DPA" icon="wand-magic-sparkles">
+  <Accordion title="Extract from a DPA">
     Point Vaquill AI at an uploaded DPA and it extracts the vendor details from the agreement itself: parties, data categories, processing purpose, region, dates.
 
     Extraction is **fill-if-empty**: it never overwrites a value you set by hand. Your corrections survive re-extraction.
   </Accordion>
-  <Accordion title="Add manually" icon="plus">
+  <Accordion title="Add manually">
     Create the record directly and attach documents to it later.
   </Accordion>
 </AccordionGroup>
@@ -79,16 +78,16 @@ Export the registry at any time. This is the artifact you hand to a customer's s
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="DPA Review" icon="lock" href="/guides/dpa-review">
+  <Card title="DPA Review" href="/guides/dpa-review">
     Reviewing a single data processing agreement.
   </Card>
-  <Card title="DPA Reviewer workflow" icon="lock" href="/workflows/built-in/dpa-reviewer">
+  <Card title="DPA Reviewer workflow" href="/workflows/built-in/dpa-reviewer">
     Batch review across every vendor DPA at once.
   </Card>
-  <Card title="Obligations Tracker" icon="calendar" href="/workflows/built-in/obligations-renewal-tracker">
+  <Card title="Obligations Tracker" href="/workflows/built-in/obligations-renewal-tracker">
     Renewal and notice deadlines across a whole contract portfolio.
   </Card>
-  <Card title="Privacy Audit workflow" icon="user-shield" href="/workflows/built-in/privacy-data-protection-audit">
+  <Card title="Privacy Audit workflow" href="/workflows/built-in/privacy-data-protection-audit">
     Your privacy posture across policies and DPAs together.
   </Card>
 </CardGroup>

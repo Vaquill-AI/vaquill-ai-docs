@@ -1,7 +1,6 @@
 ---
 title: "Point-in-time law"
 description: "Retrieve US statutes, regulations and agency guidance as they read on a past date, with provenance saying whether the text is a published edition, a reconstruction, or unavailable"
-icon: "clock-rotate-left"
 ---
 
 Ask what a provision said on a date, not just what it says now.
@@ -72,12 +71,12 @@ event the answer rests on.
 weight the answer carries.
 
 <CardGroup cols={2}>
-  <Card title="A published edition" icon="book">
+  <Card title="A published edition">
     For corpora where the publisher issues dated editions, `asOf` resolves to **the edition that
     was in force on your date**, served as published. This is the publisher's own artifact, not our
     estimate.
   </Card>
-  <Card title="A reconstruction" icon="wrench">
+  <Card title="A reconstruction">
     Everywhere else, the corpus holds one current text per citation and the earlier one is rebuilt
     from observed change history. Accurate to what we captured, bounded by when capture began.
   </Card>
@@ -148,10 +147,10 @@ and a product built on it should say so to its reader.
 | Which sections moved since my last sync? | `changedSince` on `/statutes/search` |
 
 <CardGroup cols={2}>
-  <Card title="Status and currency" icon="scale-balanced" href="/api-guide/concepts/status-and-currency">
+  <Card title="Status and currency" href="/api-guide/concepts/status-and-currency">
     `actStatus`, `goodLawStatus`, and whether a section is still operative.
   </Card>
-  <Card title="Federal coverage" icon="landmark" href="/api-guide/coverage/federal">
+  <Card title="Federal coverage" href="/api-guide/coverage/federal">
     Which corpora hold editions, and how far back each one reaches.
   </Card>
 </CardGroup>

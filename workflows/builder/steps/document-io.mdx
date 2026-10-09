@@ -11,8 +11,8 @@ Three steps. These are the bookends of most workflows: getting documents in at t
 ## Pick Documents
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="bolt">Fast</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Fast</Card>
 </CardGroup>
 
 Select the documents to feed downstream steps. This is the first step in most workflows.
@@ -38,8 +38,8 @@ Select the documents to feed downstream steps. This is the first step in most wo
 ## Wait For Document Ingestion
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="calculator">Deterministic</Card>
-  <Card title="Latency" icon="hourglass">Slow</Card>
+  <Card title="Kind">Deterministic</Card>
+  <Card title="Latency">Slow</Card>
 </CardGroup>
 
 Blocks until the supplied documents finish ingestion: chunked, embedded, and indexed. **Required before any retrieval step that runs immediately after a fresh upload**, otherwise the retrieval step searches an index that does not have the documents yet.
@@ -69,8 +69,8 @@ Blocks until the supplied documents finish ingestion: chunked, embedded, and ind
 ## Smart Auto-Fill Inputs
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="robot">AI</Card>
-  <Card title="Latency" icon="gauge">Medium</Card>
+  <Card title="Kind">AI</Card>
+  <Card title="Latency">Medium</Card>
 </CardGroup>
 
 Extracts structured input hints (party names, claim summaries, dates) from a document or a matter, shaped to fill a specific built-in workflow's input fields. Pair it with a downstream drafting step so you are not retyping facts that are already in a file.
@@ -96,8 +96,8 @@ Extracts structured input hints (party names, claim summaries, dates) from a doc
 ## Save to Matter
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="floppy-disk">Output</Card>
-  <Card title="Latency" icon="bolt">Fast</Card>
+  <Card title="Kind">Output</Card>
+  <Card title="Latency">Fast</Card>
 </CardGroup>
 
 Attaches a document to a matter so it appears in that matter's document list. Usually the final step after a Generate Legal Draft.
@@ -124,10 +124,10 @@ Attaches a document to a matter so it appears in that matter's document list. Us
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Retrieval steps" icon="magnifying-glass" href="/workflows/builder/steps/retrieval">
+  <Card title="Retrieval steps" href="/workflows/builder/steps/retrieval">
     What usually comes next after Pick Documents.
   </Card>
-  <Card title="Output steps" icon="file-export" href="/workflows/builder/steps/output">
+  <Card title="Output steps" href="/workflows/builder/steps/output">
     Exporting rather than filing into a matter.
   </Card>
 </CardGroup>

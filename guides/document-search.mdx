@@ -1,7 +1,6 @@
 ---
 title: "Document Search"
 description: "Upload documents and ask questions with cited answers"
-icon: "magnifying-glass"
 ---
 
 Upload legal documents and ask questions in plain language. Answers include source citations with exact page references. For autonomous multi-step research across documents, web, and legal databases, try [Agent Mode](/guides/agent-mode).
@@ -13,22 +12,22 @@ Upload legal documents and ask questions in plain language. Answers include sour
 ## Supported Formats
 
 <CardGroup cols={3}>
-  <Card title="Documents" icon="file-lines">
+  <Card title="Documents">
     PDF, DOCX, DOC, TXT, RTF, ODT
   </Card>
-  <Card title="Spreadsheets" icon="table">
+  <Card title="Spreadsheets">
     XLSX, XLS, CSV
   </Card>
-  <Card title="Presentations" icon="file-powerpoint">
+  <Card title="Presentations">
     PPTX, PPT
   </Card>
-  <Card title="Images (OCR)" icon="image">
+  <Card title="Images (OCR)">
     PNG, JPG, TIFF processed with OCR automatically
   </Card>
-  <Card title="Email" icon="envelope">
+  <Card title="Email">
     EML, MSG with attachments
   </Card>
-  <Card title="Archives" icon="file-zipper">
+  <Card title="Archives">
     ZIP files unpacked and indexed
   </Card>
 </CardGroup>
@@ -86,8 +85,6 @@ Import documents directly from Google Drive. Connect your Google account from da
 
 <Prompt
   description="**Contract Q&A** - ask any question about an uploaded agreement and get sourced answers with page citations."
-  icon="file-contract"
-  iconType="solid"
   actions={["copy"]}
 >
 I have uploaded a services agreement. Answer these questions, citing the exact section and page for every claim:
@@ -117,16 +114,16 @@ Bookmarks are per user, not shared, so your pins are your own working set rather
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Case Law Research" icon="scale-balanced" href="/guides/case-law-research">
+  <Card title="Case Law Research" href="/guides/case-law-research">
     Search US federal and state court cases by keyword or citation.
   </Card>
-  <Card title="Agent Mode" icon="robot" href="/guides/agent-mode">
+  <Card title="Agent Mode" href="/guides/agent-mode">
     Autonomous multi-step research across documents and the web.
   </Card>
-  <Card title="Chat" icon="comments" href="/guides/chat">
+  <Card title="Chat" href="/guides/chat">
     Ask targeted questions of a single document with it pinned in the conversation.
   </Card>
-  <Card title="File formats" icon="file" href="/guides/file-formats">
+  <Card title="File formats" href="/guides/file-formats">
     Full list of supported formats and OCR behavior.
   </Card>
 </CardGroup>

@@ -1,7 +1,6 @@
 ---
 title: "Map a compliance requirement to the governing law"
 description: "Take a plain-language obligation, search the relevant regulatory corpora, and return the governing sections grouped by jurisdiction with citations and official source links"
-icon: "clipboard-check"
 ---
 
 **What this gets you:** turn a plain-English obligation into every governing statute, regulation, and agency rule that actually applies to it, across federal and state law, each one sourced and citable - the core building block of a compliance or RegTech product.
@@ -301,19 +300,19 @@ Governing law for: data breach notification timeline
 ## Notes for a production compliance map
 
 <AccordionGroup>
-  <Accordion title="Feed the grouped sections into an LLM for a summary" icon="brain">
+  <Accordion title="Feed the grouped sections into an LLM for a summary">
     Once you have the grouped, cited text, you can pass it to an LLM in your stack
     to produce a plain-language summary of each obligation, one that cites each
     section and links its official source. Use the strict grounding pattern in
     [Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding) so the
     summary quotes only the retrieved regulatory text.
   </Accordion>
-  <Accordion title="Scope state regulations deliberately" icon="location-dot">
+  <Accordion title="Scope state regulations deliberately">
     `REGULATION` is state-scoped: always pair it with a two-letter `state` code.
     Coverage spans a subset of states and expands weekly, so drive the state list
     from `GET /us/statutes/coverage` rather than assuming every state is present.
   </Accordion>
-  <Accordion title="Keep the official link on every row" icon="link">
+  <Accordion title="Keep the official link on every row">
     Each result carries several optional source URL fields and any may be null.
     Use the canonical preference order in
     [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
@@ -326,16 +325,16 @@ Governing law for: data breach notification timeline
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Ground an LLM answer (RAG)" icon="brain" href="/api-guide/recipes/rag-grounding">
+  <Card title="Ground an LLM answer (RAG)" href="/api-guide/recipes/rag-grounding">
     Summarize the mapped obligations with strict, cited grounding.
   </Card>
-  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+  <Card title="Resolve a citation" href="/api-guide/recipes/citation-lookup">
     Verify a specific regulation citation and pull its text.
   </Card>
-  <Card title="Grounding LLMs" icon="shield-check" href="/api-guide/grounding-llms">
+  <Card title="Grounding LLMs" href="/api-guide/grounding-llms">
     The principles behind grounding legal AI on primary sources.
   </Card>
-  <Card title="API Coverage" icon="map-location-dot" href="/api-guide/coverage">
+  <Card title="API Coverage" href="/api-guide/coverage">
     Which corpora and jurisdictions are ingested, with live counts.
   </Card>
 </CardGroup>

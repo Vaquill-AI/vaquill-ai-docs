@@ -2,7 +2,6 @@
 title: "Slack Bot"
 sidebarTitle: "Slack"
 description: "Drop the Vaquill legal AI into Slack with @mentions, slash commands, DMs, and in-thread context."
-icon: "slack"
 keywords: ["vaquill slack bot", "slack legal ai", "slack rag bot", "slack socket mode", "slack ask bot"]
 ---
 
@@ -179,18 +178,18 @@ docker run -d --name vaquill-slack-bot \
 ### Cloud hosts
 
 <CardGroup cols={2}>
-  <Card title="Railway" icon="train">
+  <Card title="Railway">
     Push the repo, set env vars in the Railway dashboard. Railway provisions an HTTPS domain you can paste into Slack's Request URLs.
   </Card>
-  <Card title="Render" icon="cloud">
+  <Card title="Render">
     Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
 
     Free tier sleeps after 15 minutes - slash commands may time out on cold starts.
   </Card>
-  <Card title="Fly.io" icon="plane">
+  <Card title="Fly.io">
     `fly launch`, then `fly secrets set ...` for each env var, then `fly deploy`.
   </Card>
-  <Card title="VPS + nginx" icon="server">
+  <Card title="VPS + nginx">
     Reverse-proxy port 3000 behind TLS (Let's Encrypt or Cloudflare). Use Socket Mode to skip the proxy entirely.
   </Card>
 </CardGroup>
@@ -214,16 +213,16 @@ For production, run in HTTP mode (drop `SLACK_APP_TOKEN`) behind HTTPS and updat
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Discord" icon="discord" href="/integrations/chatbots/discord">
+  <Card title="Discord" href="/integrations/chatbots/discord">
     Same engine, prefix-command UX.
   </Card>
-  <Card title="Microsoft Teams" icon="microsoft" href="/integrations/chatbots/microsoft-teams">
+  <Card title="Microsoft Teams" href="/integrations/chatbots/microsoft-teams">
     Adaptive Cards on Azure Bot Framework.
   </Card>
-  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+  <Card title="Chatbots overview" href="/integrations/chatbots">
     Compare all six platforms.
   </Card>
-  <Card title="Authentication" icon="key" href="/api-guide/authentication">
+  <Card title="Authentication" href="/api-guide/authentication">
     How Vaquill API keys work.
   </Card>
 </CardGroup>

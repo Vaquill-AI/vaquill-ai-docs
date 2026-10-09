@@ -15,12 +15,12 @@ A workflow is not limited to a straight line. Three mechanisms handle real-world
 There are two ways to add conditional routing, with identical semantics.
 
 <AccordionGroup>
-  <Accordion title="Inline branch on any step" icon="arrows-split-up-and-left">
+  <Accordion title="Inline branch on any step">
     Expand the **Branching** section in any step's config pane. Read a field from an upstream step's output, pick an operator, and choose which sibling steps run on TRUE versus FALSE.
 
     Use this when the decision naturally belongs to the step that produced the data.
   </Accordion>
-  <Accordion title="Conditional Branch step" icon="code-branch">
+  <Accordion title="Conditional Branch step">
     The same shape, but the decision becomes its own row in the chain. Use this when the decision logic does not belong to the step that produced the data, or when you want the decision visible in the run timeline as its own event.
   </Accordion>
 </AccordionGroup>
@@ -91,10 +91,10 @@ This is a bounded tool loop, not an open-ended agent: it can only call the tools
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Routing step reference" icon="code-branch" href="/workflows/builder/steps/routing">
+  <Card title="Routing step reference" href="/workflows/builder/steps/routing">
     Full field-level detail on all three routing steps.
   </Card>
-  <Card title="Troubleshooting" icon="circle-question" href="/workflows/builder/troubleshooting">
+  <Card title="Troubleshooting" href="/workflows/builder/troubleshooting">
     Branch and loop validation errors and how to clear them.
   </Card>
 </CardGroup>

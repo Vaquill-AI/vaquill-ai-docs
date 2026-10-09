@@ -2,7 +2,6 @@
 title: "WhatsApp Bot"
 sidebarTitle: "WhatsApp"
 description: "Vaquill legal AI on WhatsApp via Twilio - FastAPI server, slash commands, sandbox-to-production path."
-icon: "whatsapp"
 keywords: ["vaquill whatsapp bot", "whatsapp legal ai", "twilio whatsapp bot", "whatsapp rag bot", "whatsapp business api"]
 ---
 
@@ -222,18 +221,18 @@ volumes:
 ### Cloud hosts
 
 <CardGroup cols={2}>
-  <Card title="Render" icon="cloud">
+  <Card title="Render">
     New Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
 
     Free tier cold-starts in 30-60s - keep warm with an uptime monitor.
   </Card>
-  <Card title="Railway" icon="train">
+  <Card title="Railway">
     Auto-detects Python. Add env vars under Variables, get a `.up.railway.app` URL.
   </Card>
-  <Card title="Fly.io" icon="plane">
+  <Card title="Fly.io">
     `fly launch`, `fly secrets set ...`, `fly deploy`. Global low-latency regions.
   </Card>
-  <Card title="VPS" icon="server">
+  <Card title="VPS">
     Run uvicorn behind nginx + Let's Encrypt for TLS.
   </Card>
 </CardGroup>
@@ -266,16 +265,16 @@ curl -X POST http://localhost:8000/webhook/whatsapp \
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Telegram" icon="telegram" href="/integrations/chatbots/telegram">
+  <Card title="Telegram" href="/integrations/chatbots/telegram">
     No business-verification overhead.
   </Card>
-  <Card title="Signal" icon="signal-messenger" href="/integrations/chatbots/signal">
+  <Card title="Signal" href="/integrations/chatbots/signal">
     Privacy-first messenger alternative.
   </Card>
-  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+  <Card title="Chatbots overview" href="/integrations/chatbots">
     Compare all six platforms.
   </Card>
-  <Card title="Authentication" icon="key" href="/api-guide/authentication">
+  <Card title="Authentication" href="/api-guide/authentication">
     How Vaquill API keys work.
   </Card>
 </CardGroup>

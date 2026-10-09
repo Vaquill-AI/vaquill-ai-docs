@@ -103,12 +103,12 @@ Every page follows the same shape:
 Most workflows are one of two patterns, which is worth knowing because it tells you how they scale.
 
 <CardGroup cols={2}>
-  <Card title="Matrix review" icon="table">
+  <Card title="Matrix review">
     `prepare → extract → wait for extraction → normalize and score → synthesize → render`
 
     Builds an extraction matrix over the document set, answers every cell, scores each document, then synthesizes across the portfolio and verifies that synthesis. Scales to hundreds of documents.
   </Card>
-  <Card title="Drafting" icon="pen-nib">
+  <Card title="Drafting">
     `prepare → generate → export`
 
     Gathers context from the reference documents and your form answers, generates the instrument, and exports DOCX. Fast, single-output, jurisdiction-aware.

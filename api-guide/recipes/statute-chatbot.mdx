@@ -1,7 +1,6 @@
 ---
 title: "Build a statute lookup chatbot"
 description: "A minimal question-and-answer loop that searches US statutes, pulls the governing section, and replies with a grounded, cited answer"
-icon: "comments"
 ---
 
 **What this gets you:** a support or research chatbot you can ship in an afternoon that answers "what does the law say" questions with real statute text and a source link, instead of a generic model guessing.
@@ -173,13 +172,13 @@ if __name__ == "__main__":
 ## Making it feel good
 
 <AccordionGroup>
-  <Accordion title="Set the jurisdiction once" icon="location-dot">
+  <Accordion title="Set the jurisdiction once">
     If your bot serves one state, pass `state` on every search so results stay
     scoped. If users can switch jurisdictions, capture the two-letter state code
     from the conversation and pass it through. Omit `corpusType` and `state` to
     search the entire US corpus when the jurisdiction is unknown.
   </Accordion>
-  <Accordion title="Always show the source link" icon="link">
+  <Accordion title="Always show the source link">
     Every reply ends with the citation and the official government URL. Pick that
     URL with the canonical preference order in
     [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
@@ -188,7 +187,7 @@ if __name__ == "__main__":
     through and read the law themselves. Vaquill AI complements existing research
     tools, it does not replace a lawyer.
   </Accordion>
-  <Accordion title="Handle the empty case honestly" icon="circle-question">
+  <Accordion title="Handle the empty case honestly">
     When search returns no results or the body is unavailable, say so plainly
     instead of guessing. A statute bot that admits it did not find something is
     more useful than one that invents an answer.
@@ -198,16 +197,16 @@ if __name__ == "__main__":
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Ground an LLM answer (RAG)" icon="brain" href="/api-guide/recipes/rag-grounding">
+  <Card title="Ground an LLM answer (RAG)" href="/api-guide/recipes/rag-grounding">
     The deeper version: multiple sources, strict citation rules, prompt design.
   </Card>
-  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+  <Card title="Resolve a citation" href="/api-guide/recipes/citation-lookup">
     Turn a citation string into verified, authoritative text.
   </Card>
-  <Card title="Grounding LLMs" icon="shield-check" href="/api-guide/grounding-llms">
+  <Card title="Grounding LLMs" href="/api-guide/grounding-llms">
     Why grounding on retrieved text prevents hallucinated law.
   </Card>
-  <Card title="Vaquill MCP server" icon="plug" href="/integrations/mcp/vaquill">
+  <Card title="Vaquill MCP server" href="/integrations/mcp/vaquill">
     Expose these same tools to an AI agent over MCP.
   </Card>
 </CardGroup>

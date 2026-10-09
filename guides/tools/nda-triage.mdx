@@ -1,7 +1,6 @@
 ---
 title: "NDA Triage"
 description: "Fast pass/warn/fail screening of NDAs against a standard checklist"
-icon: "file-shield"
 ---
 
 NDA Triage is built for the high-volume reality of in-house and transactional practice: stacks of incoming NDAs that all need a first-pass review before they get to a lawyer. Drop one in and get a pass/warn/fail rating against a ten-point checklist, plus a recommendation for routing.
@@ -13,16 +12,16 @@ NDA Triage is built for the high-volume reality of in-house and transactional pr
 ## When To Use It
 
 <CardGroup cols={2}>
-  <Card title="In-house intake" icon="inbox">
+  <Card title="In-house intake">
     Teams receiving NDAs from vendors, customers, and partners on a daily basis.
   </Card>
-  <Card title="Deal screening" icon="handshake">
+  <Card title="Deal screening">
     Deal lawyers running a first pass on NDAs at the start of a transaction.
   </Card>
-  <Card title="Procurement routing" icon="route">
+  <Card title="Procurement routing">
     Procurement teams that route legal review based on contract risk.
   </Card>
-  <Card title="Partner triage" icon="user-tie">
+  <Card title="Partner triage">
     Pre-screen before a partner or senior associate decides whether to negotiate.
   </Card>
 </CardGroup>
@@ -49,13 +48,13 @@ Each item is rated Pass / Warn / Fail with a short rationale.
 The tool first classifies the NDA by type, since the right review depends on which side you are on:
 
 <CardGroup cols={3}>
-  <Card title="Mutual" icon="arrows-left-right">
+  <Card title="Mutual">
     Both parties exchange confidential information. Review weights all clauses symmetrically.
   </Card>
-  <Card title="Unilateral - Disclosing" icon="arrow-up-from-bracket">
+  <Card title="Unilateral - Disclosing">
     You are sharing your confidential information. Review weights protective clauses (definition scope, term, remedies) heavily.
   </Card>
-  <Card title="Unilateral - Receiving" icon="arrow-down-to-bracket">
+  <Card title="Unilateral - Receiving">
     You are receiving the counterparty's confidential information. Review weights residual-knowledge, return-or-destroy, and non-compete reach.
   </Card>
 </CardGroup>
@@ -86,8 +85,6 @@ Copy the markups into your draft or use them as the basis for a redline.
 
 <Prompt
   description="**NDA Triage** - 10-point screen with routing recommendation and copy-paste rationale."
-  icon="shield-check"
-  iconType="solid"
   actions={["copy"]}
 >
 Run **NDA Triage** on the attached NDA.
@@ -127,16 +124,16 @@ The triage is for triage. High-stakes NDAs - M&A, strategic deals, anything tied
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+  <Card title="Contract Review" href="/guides/contract-review">
     Deep clause-by-clause review with redlines for the NDAs that need more than a triage.
   </Card>
-  <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
+  <Card title="Compare Documents" href="/guides/document-comparison">
     Diff two versions of an NDA to confirm only agreed-upon changes were made.
   </Card>
-  <Card title="Skills" icon="wand-magic-sparkles" href="/guides/skills">
+  <Card title="Skills" href="/guides/skills">
     Run NDA Triage as part of a saved playbook tuned to your firm's house style.
   </Card>
-  <Card title="Document Comparison" icon="code-compare" href="/guides/document-comparison">
+  <Card title="Document Comparison" href="/guides/document-comparison">
     Compare two versions and export a Word file with native Track Changes.
   </Card>
 </CardGroup>

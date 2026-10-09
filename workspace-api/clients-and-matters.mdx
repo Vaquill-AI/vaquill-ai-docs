@@ -1,7 +1,6 @@
 ---
 title: "Clients and matters"
 description: "The structure everything else in the Workspace API hangs off"
-icon: "folder-tree"
 ---
 
 Three resources sit underneath the whole API: a **client** is who the work is for, a **matter** is the piece of work, and a **folder** is how the customer arranges things. Only the matter is load-bearing. Get one created early, keep its id, and the rest of the API becomes addressable.
@@ -217,16 +216,16 @@ The practical version: if you are porting code from our web app, strip the organ
 </Steps>
 
 <CardGroup cols={2}>
-  <Card title="Documents" icon="file" href="/workspace-api/documents">
+  <Card title="Documents" href="/workspace-api/documents">
     Upload into a matter, read extracted text, download originals.
   </Card>
-  <Card title="Operations" icon="clock" href="/workspace-api/concepts/operations">
+  <Card title="Operations" href="/workspace-api/concepts/operations">
     The job envelope everything longer than a few seconds returns.
   </Card>
-  <Card title="Authentication" icon="key" href="/workspace-api/authentication">
+  <Card title="Authentication" href="/workspace-api/authentication">
     Scopes, including which ones these routes need.
   </Card>
-  <Card title="Errors" icon="triangle-exclamation" href="/workspace-api/concepts/errors">
+  <Card title="Errors" href="/workspace-api/concepts/errors">
     The problem+json shape behind every 422 and 404 above.
   </Card>
 </CardGroup>

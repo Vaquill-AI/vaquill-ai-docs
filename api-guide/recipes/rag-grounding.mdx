@@ -1,7 +1,6 @@
 ---
 title: "Ground an LLM answer in statutes (RAG)"
 description: "Retrieve authoritative US statutes and regulations, then make an LLM answer only from that text with citations that link back to the official government source"
-icon: "brain"
 ---
 
 **What this gets you:** an AI assistant that answers legal questions from real statute text instead of its own memory, with a citation and a link to the official source on every claim, so users can verify it instead of taking the model's word for it.
@@ -239,13 +238,13 @@ if __name__ == "__main__":
 ## Why this holds up
 
 <AccordionGroup>
-  <Accordion title="The model cannot cite what it was not given" icon="lock">
+  <Accordion title="The model cannot cite what it was not given">
     Because the prompt forbids outside knowledge and every source carries a
     citation plus a link, the model's claims are traceable. A reader can click the
     official government URL and confirm the text. If retrieval returns nothing
     relevant, the model returns the refusal string instead of inventing law.
   </Accordion>
-  <Accordion title="Scope narrows retrieval, and narrow retrieval grounds better" icon="crosshairs">
+  <Accordion title="Scope narrows retrieval, and narrow retrieval grounds better">
     When you know the question is federal, pass `corpusType: "USC"` or `"CFR"`.
     When it is about one state, pass `corpusType: "STATE"` with the two-letter
     `state` code.
@@ -254,7 +253,7 @@ if __name__ == "__main__":
     sections, which makes the grounded answer more precise. Omit both to search
     the whole corpus.
   </Accordion>
-  <Accordion title="Always link back to the official source" icon="link">
+  <Accordion title="Always link back to the official source">
     Every result carries several optional source URL fields and any may be null.
     Use the canonical preference order in
     [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
@@ -267,16 +266,16 @@ if __name__ == "__main__":
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Grounding LLMs" icon="shield-check" href="/api-guide/grounding-llms">
+  <Card title="Grounding LLMs" href="/api-guide/grounding-llms">
     The concepts behind grounding and why it prevents hallucinated law.
   </Card>
-  <Card title="Statute lookup chatbot" icon="comments" href="/api-guide/recipes/statute-chatbot">
+  <Card title="Statute lookup chatbot" href="/api-guide/recipes/statute-chatbot">
     A simpler Q&A loop built on the same retrieve-then-ground pattern.
   </Card>
-  <Card title="Resolve a citation" icon="quote-right" href="/api-guide/recipes/citation-lookup">
+  <Card title="Resolve a citation" href="/api-guide/recipes/citation-lookup">
     Turn a citation string into authoritative, verified text.
   </Card>
-  <Card title="Vaquill MCP server" icon="plug" href="/integrations/mcp/vaquill">
+  <Card title="Vaquill MCP server" href="/integrations/mcp/vaquill">
     Give an AI agent these same tools over MCP.
   </Card>
 </CardGroup>

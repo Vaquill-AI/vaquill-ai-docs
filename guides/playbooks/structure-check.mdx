@@ -1,7 +1,6 @@
 ---
 title: "Structure Check"
 description: "A deterministic linter that scores whether a playbook is well-formed before it ever sees a deal"
-icon: "clipboard-check"
 ---
 
 Playbook health tells you how a playbook is performing against real deals.
@@ -30,7 +29,7 @@ A clean playbook gets a short confirmation instead: no structural gaps, deal-cri
 ## What it checks
 
 <AccordionGroup>
-  <Accordion title="Errors" icon="shield-exclamation">
+  <Accordion title="Errors">
     Something in the playbook is broken rather than merely thin.
 
     **A clause with no preferred position.**
@@ -42,7 +41,7 @@ A clean playbook gets a short confirmation instead: no structural gaps, deal-cri
     **A conditional rule that can never raise sign-off.**
     The rule escalates to a level at or below the clause's base approval, so firing it would change nothing. Escalate higher or remove the rule.
   </Accordion>
-  <Accordion title="Warnings" icon="triangle-exclamation">
+  <Accordion title="Warnings">
     The playbook works but leaves a negotiator without instructions at the moment they need them.
 
     **A deal-critical clause with no fallback ladder.**
@@ -54,7 +53,7 @@ A clean playbook gets a short confirmation instead: no structural gaps, deal-cri
     **A walk-away line with no fallback ladder.**
     The clause has a floor but no intermediate positions, which makes it all or nothing.
   </Accordion>
-  <Accordion title="Notes" icon="circle-info">
+  <Accordion title="Notes">
     **No clause is marked deal-critical.**
     Nothing in the playbook is tagged must-have, so review has no basis for putting your non-negotiables first.
   </Accordion>
@@ -78,16 +77,16 @@ Every finding names the clause and carries a one-line suggested fix, so the pane
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Clause Rules" icon="list-check" href="/guides/playbooks/clause-rules">
+  <Card title="Clause Rules" href="/guides/playbooks/clause-rules">
     The fields the check is looking for.
   </Card>
-  <Card title="Playbook Health" icon="chart-line" href="/guides/playbooks/playbook-health">
+  <Card title="Playbook Health" href="/guides/playbooks/playbook-health">
     The other half of Insights: how the playbook performs against real deals.
   </Card>
-  <Card title="Sign-Off Gates" icon="shield-check" href="/guides/playbooks/sign-off-gates">
+  <Card title="Sign-Off Gates" href="/guides/playbooks/sign-off-gates">
     Why a deal-critical clause without an approval level matters.
   </Card>
-  <Card title="Import From Contracts" icon="file-import" href="/guides/playbooks/import-from-contracts">
+  <Card title="Import From Contracts" href="/guides/playbooks/import-from-contracts">
     Where low structure scores usually come from.
   </Card>
 </CardGroup>

@@ -2,7 +2,6 @@
 title: "Telegram Bot"
 sidebarTitle: "Telegram"
 description: "Vaquill legal AI for Telegram with BotFather setup, markdown-table PNG rendering, and inline source buttons."
-icon: "telegram"
 keywords: ["vaquill telegram bot", "telegram legal ai", "botfather", "telegram rag bot", "telegram ask bot"]
 ---
 
@@ -171,16 +170,16 @@ services:
 ### Cloud hosts
 
 <CardGroup cols={2}>
-  <Card title="Render" icon="cloud">
+  <Card title="Render">
     Deploy as a **Background Worker** (not Web Service) - polling does not need an HTTP port. `render.yaml` is included in the repo.
   </Card>
-  <Card title="Railway" icon="train">
+  <Card title="Railway">
     `railway init && railway up`. Add `TELEGRAM_BOT_TOKEN` and `VAQUILL_API_KEY` in the Variables tab.
   </Card>
-  <Card title="VPS + systemd" icon="server">
+  <Card title="VPS + systemd">
     Plain systemd unit with `Restart=always`. No reverse proxy needed.
   </Card>
-  <Card title="Fly.io" icon="plane">
+  <Card title="Fly.io">
     `fly launch`, `fly secrets set ...`, `fly deploy`.
   </Card>
 </CardGroup>
@@ -218,16 +217,16 @@ services:
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="WhatsApp" icon="whatsapp" href="/integrations/chatbots/whatsapp">
+  <Card title="WhatsApp" href="/integrations/chatbots/whatsapp">
     Twilio-based, comparable consumer-messenger surface.
   </Card>
-  <Card title="Signal" icon="signal-messenger" href="/integrations/chatbots/signal">
+  <Card title="Signal" href="/integrations/chatbots/signal">
     Privacy-focused alternative.
   </Card>
-  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+  <Card title="Chatbots overview" href="/integrations/chatbots">
     Compare all six platforms.
   </Card>
-  <Card title="Authentication" icon="key" href="/api-guide/authentication">
+  <Card title="Authentication" href="/api-guide/authentication">
     How Vaquill API keys work.
   </Card>
 </CardGroup>

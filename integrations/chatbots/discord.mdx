@@ -2,7 +2,6 @@
 title: "Discord Bot"
 sidebarTitle: "Discord"
 description: "Vaquill legal AI for Discord servers with prefix commands, per-channel memory, and source citations."
-icon: "discord"
 keywords: ["vaquill discord bot", "discord legal ai", "discord rag bot", "discord ask bot", "discord legal research"]
 ---
 
@@ -152,16 +151,16 @@ Then `docker compose up -d`.
 ### Cloud hosts
 
 <CardGroup cols={2}>
-  <Card title="Railway" icon="train">
+  <Card title="Railway">
     `railway init && railway up`. Set `DISCORD_BOT_TOKEN` and `VAQUILL_API_KEY` in the Variables tab.
   </Card>
-  <Card title="Render" icon="cloud">
+  <Card title="Render">
     New Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
   </Card>
-  <Card title="VPS + systemd" icon="server">
+  <Card title="VPS + systemd">
     Run under a systemd unit with `Restart=always`. The bot does not need an open port.
   </Card>
-  <Card title="Fly.io" icon="plane">
+  <Card title="Fly.io">
     `fly launch`, set secrets, `fly deploy`. Discord uses long-poll so no public URL is required.
   </Card>
 </CardGroup>
@@ -200,16 +199,16 @@ WantedBy=multi-user.target
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Slack" icon="slack" href="/integrations/chatbots/slack">
+  <Card title="Slack" href="/integrations/chatbots/slack">
     Slash commands and Socket Mode equivalent.
   </Card>
-  <Card title="Telegram" icon="telegram" href="/integrations/chatbots/telegram">
+  <Card title="Telegram" href="/integrations/chatbots/telegram">
     Lightest setup - BotFather only.
   </Card>
-  <Card title="Chatbots overview" icon="comments" href="/integrations/chatbots">
+  <Card title="Chatbots overview" href="/integrations/chatbots">
     Compare all six platforms.
   </Card>
-  <Card title="Authentication" icon="key" href="/api-guide/authentication">
+  <Card title="Authentication" href="/api-guide/authentication">
     How Vaquill API keys work.
   </Card>
 </CardGroup>

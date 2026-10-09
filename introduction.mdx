@@ -1,7 +1,6 @@
 ---
 title: "Introduction"
 description: "Legal AI suite for in-house counsel, with a US statutes API - review contracts, run compliance research, draft, and manage matters in the app, search the US Code, CFR, and all 50 state codes, and build legal tech products"
-icon: "rocket"
 ---
 
 <Frame caption="A cited answer with a right-hand sources panel and per-source controls">
@@ -17,47 +16,47 @@ icon: "rocket"
 Vaquill AI is a legal AI suite for in-house counsel: contract review, compliance research, drafting, document comparison, and matter management, with citation-verified answers. It also offers a US statutes API to search the US Code, the CFR, and all 50 state statute codes, or integrate that statute data into your own product.
 
 <CardGroup cols={2}>
-  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+  <Card title="Contract Review" href="/guides/contract-review">
     Clause-by-clause analysis with severity ratings, redline suggestions, and Word Track Changes export.
   </Card>
 
-  <Card title="Drafting" icon="pen-nib" href="/guides/drafting">
+  <Card title="Drafting" href="/guides/drafting">
     Draft NDAs, MSAs, employment agreements, and notices from your templates or plain-language instructions, with jurisdiction-aware clauses and DOCX export.
   </Card>
 
-  <Card title="Playbooks" icon="book-open" href="/guides/playbooks">
+  <Card title="Playbooks" href="/guides/playbooks">
     Encode your team's standard clauses, fallback positions, and house style so every draft and review follows your playbook.
   </Card>
 
-  <Card title="Document Matrix" icon="table" href="/guides/document-matrix">
+  <Card title="Document Matrix" href="/guides/document-matrix">
     Spreadsheet-style review across hundreds of contracts: define columns once, get a sortable, citation-grounded grid.
   </Card>
 
-  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+  <Card title="Compliance Check" href="/guides/compliance-check">
     Check contracts and policies against CCPA, GDPR, HIPAA, SOX, and more, with clause-level gap analysis.
   </Card>
 
-  <Card title="Document Comparison" icon="code-compare" href="/guides/document-comparison">
+  <Card title="Document Comparison" href="/guides/document-comparison">
     Redline two documents and export a real Word file with native Microsoft Track Changes.
   </Card>
 
-  <Card title="Legal Tools" icon="toolbox" href="/guides/legal-tools">
+  <Card title="Legal Tools" href="/guides/legal-tools">
     NDA triage, risk assessment, document compare, and more, with expert playbooks that guide structured analysis.
   </Card>
 
-  <Card title="Case Law & Statute Research" icon="scale-balanced" href="/guides/case-law-research">
+  <Card title="Case Law & Statute Research" href="/guides/case-law-research">
     When a regulator or counterparty cites authority, look up case law and statutes in seconds, with verified citations.
   </Card>
 
-  <Card title="Workflows" icon="diagram-project" href="/workflows">
+  <Card title="Workflows" href="/workflows">
     Multi-step pipelines that take documents in and return finished DOCX and XLSX work product. 25 built in, or build your own.
   </Card>
 
-  <Card title="Vendor Registry" icon="building" href="/guides/vendor-registry">
+  <Card title="Vendor Registry" href="/guides/vendor-registry">
     Track sub-processors, DPA status, data categories, and renewals, with automatic DPA review.
   </Card>
 
-  <Card title="Legal Intelligence Feed" icon="rss" href="/guides/feed">
+  <Card title="Legal Intelligence Feed" href="/guides/feed">
     Track regulators, counterparties, and practice areas, and get fresh developments surfaced from authoritative sources.
   </Card>
 </CardGroup>
@@ -65,19 +64,19 @@ Vaquill AI is a legal AI suite for in-house counsel: contract review, compliance
 ## Coverage
 
 <CardGroup cols={2}>
-  <Card title="US Federal Law" icon="landmark">
+  <Card title="US Federal Law">
     United States Code, Code of Federal Regulations, the US Constitution, and federal case law from the Supreme Court through District Courts.
   </Card>
 
-  <Card title="State Law" icon="building-columns">
+  <Card title="State Law">
     Statutory codes for all 50 states plus DC and Puerto Rico, constitutions for all 50 states plus Puerto Rico, and state appellate and supreme court opinions.
   </Card>
 
-  <Card title="Court Coverage Breadth" icon="gavel">
+  <Card title="Court Coverage Breadth">
     Supreme Court, all 13 federal Circuits, every federal District Court, and appellate and supreme courts across all 50 states.
   </Card>
 
-  <Card title="50+ File Formats" icon="file">
+  <Card title="50+ File Formats">
     PDF, DOCX, scanned and image-only documents (OCR), spreadsheets, presentations, emails, archives.
   </Card>
 </CardGroup>
@@ -91,19 +90,19 @@ Vaquill AI is a legal AI suite for in-house counsel: contract review, compliance
 The Developer API is designed for teams that need legal data as infrastructure. Search and retrieve the US Code, the Statutes at Large (federal law as enacted, 1789-2026, every bound volume GPO publishes), the CFR, all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance, all programmatically: 5M+ sections across all corpus types, with the measured per-corpus split on [API Coverage](/api-guide/coverage).
 
 <CardGroup cols={2}>
-  <Card title="Legal Tech Platforms" icon="laptop-code">
+  <Card title="Legal Tech Platforms">
     Embed statute search into contract drafting, CLM, or practice management tools.
   </Card>
 
-  <Card title="Enterprise Legal Teams" icon="building">
+  <Card title="Enterprise Legal Teams">
     Build internal legal research tools for in-house counsel and compliance workflows.
   </Card>
 
-  <Card title="Compliance & RegTech" icon="clipboard-check">
+  <Card title="Compliance & RegTech">
     Power automated compliance checks with US Code, CFR, Federal Register, and state regulation data.
   </Card>
 
-  <Card title="Legal Education" icon="graduation-cap">
+  <Card title="Legal Education">
     Build searchable statute databases for law schools, bar prep, and training platforms.
   </Card>
 </CardGroup>
@@ -160,25 +159,25 @@ See [Authentication](/api-guide/authentication) for API keys and the [API Refere
 ## Frequently Asked
 
 <AccordionGroup>
-  <Accordion title="Is my data private?" icon="shield-halved">
+  <Accordion title="Is my data private?">
     Yes. Your matters, documents, and conversations are isolated to your organization at the database and search-index level. Documents are encrypted at rest and in transit.
 
     See [Team Workspaces](/guides/team-workspaces) for organization-level access controls.
   </Accordion>
 
-  <Accordion title="How does Vaquill AI prevent hallucinations?" icon="circle-check">
+  <Accordion title="How does Vaquill AI prevent hallucinations?">
     Every AI response runs through claim-level verification against the actual cited sources before it reaches you. See [Answer Verification](/guides/answer-verification) for the details.
   </Accordion>
 
-  <Accordion title="Can I use Vaquill AI for filings?" icon="gavel">
+  <Accordion title="Can I use Vaquill AI for filings?">
     Vaquill AI is a research and drafting tool, not a substitute for legal judgment. Always verify cited authorities and run a precedent freshness check (see [Citation Graph](/guides/citation-graph)) before filing.
   </Accordion>
 
-  <Accordion title="What's the difference between the platform and the API?" icon="code">
+  <Accordion title="What's the difference between the platform and the API?">
     The platform is the full Vaquill AI app at [app.vaquill.ai](https://app.vaquill.ai): chat, case law research, matters, legal tools, and document management. The Developer API covers US statutes and regulations: it exposes search, section lookup, and full text across the US Code, the CFR, state statutory codes, constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance, for product builders and enterprise teams to embed in their own tools. See the [API Overview](/api-guide/overview).
   </Accordion>
 
-  <Accordion title="How do I get help?" icon="life-ring">
+  <Accordion title="How do I get help?">
     Email [contact@vaquill.ai](mailto:contact@vaquill.ai) or join the [community Slack](https://join.slack.com/t/vaquillaicommunity/shared_invite/zt-3qxv4mtxg-64mtkVe2PxodDMwKGPfvMQ).
   </Accordion>
 </AccordionGroup>

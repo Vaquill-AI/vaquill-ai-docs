@@ -1,7 +1,6 @@
 ---
 title: "Add the corpus as an AI agent tool (MCP)"
 description: "Give an AI agent authoritative statute search, either through the hosted Vaquill MCP server or by wrapping the REST API as your own tool"
-icon: "plug"
 ---
 
 **What this gets you:** any AI agent - Claude, Cursor, or one you built - gains the ability to look up real US law on its own, mid-conversation, with citations, instead of guessing from training data.
@@ -14,7 +13,7 @@ Grounding an AI agent in authoritative legal text is one of the most common uses
 
 The fastest route is the hosted Vaquill MCP server. Any MCP-compatible client can connect to it and query US statutes and regulations directly, without you writing glue code. The server exposes statute search and retrieval as tools the agent can call, and every result comes back with a citation and a link to the official source.
 
-<Card title="Vaquill MCP server" icon="plug" href="/integrations/mcp/vaquill">
+<Card title="Vaquill MCP server" href="/integrations/mcp/vaquill">
   Connection details, available tools, and setup steps for the hosted MCP server.
 </Card>
 
@@ -165,16 +164,16 @@ When you are building your own tool-calling agent, define a `search_statutes` fu
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Vaquill MCP server" icon="plug" href="/integrations/mcp/vaquill">
+  <Card title="Vaquill MCP server" href="/integrations/mcp/vaquill">
     Connect an MCP-compatible client to the hosted server.
   </Card>
-  <Card title="Enrich a citation database" icon="database" href="/api-guide/recipes/citation-enrichment">
+  <Card title="Enrich a citation database" href="/api-guide/recipes/citation-enrichment">
     Batch-resolve topics into cited, sourced records.
   </Card>
-  <Card title="Compare a rule across states" icon="scale-balanced" href="/api-guide/recipes/multi-state-comparison">
+  <Card title="Compare a rule across states" href="/api-guide/recipes/multi-state-comparison">
     Run one query across several states.
   </Card>
-  <Card title="Best practices" icon="circle-check" href="/api-guide/best-practices">
+  <Card title="Best practices" href="/api-guide/best-practices">
     Scope queries, cache coverage, and handle errors well.
   </Card>
 </CardGroup>

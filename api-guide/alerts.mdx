@@ -1,7 +1,6 @@
 ---
 title: "Law Change Alerts"
 description: "Subscribe to a jurisdiction or corpus and get a webhook or email the moment it changes, down to the exact section"
-icon: "bell"
 ---
 
 Corpus data updates on its own refresh cadence (daily for the Federal Register and the eCFR, weekly for the US Code and agency guidance, every 7 days or monthly for state codes depending on how the state publishes, monthly for state regulations and court rules). Law Change Alerts let you subscribe to a **board** (a tracked source, identified by `corpusType` + `state`) and get notified automatically whenever it refreshes with real changes, instead of polling on your own schedule.
@@ -491,13 +490,13 @@ if diff["hasBefore"] and diff["hasAfter"]:
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Monitor corpus coverage" icon="chart-line" href="/api-guide/recipes/coverage-monitoring">
+  <Card title="Monitor corpus coverage" href="/api-guide/recipes/coverage-monitoring">
     A DIY alternative for detecting when a jurisdiction gains an entirely new corpus, rather than a section-level change within one you already watch.
   </Card>
-  <Card title="Errors" icon="triangle-exclamation" href="/api-guide/errors">
+  <Card title="Errors" href="/api-guide/errors">
     How error responses are shaped, and what each status code means.
   </Card>
-  <Card title="Coverage" icon="table" href="/api-guide/coverage">
+  <Card title="Coverage" href="/api-guide/coverage">
     The jurisdiction and corpus matrix you're choosing a board from.
   </Card>
 </CardGroup>

@@ -1,7 +1,6 @@
 ---
 title: "Skills"
 description: "Curated legal playbooks that guide the AI through structured frameworks for contract review, risk assessment, and more"
-icon: "wand-magic-sparkles"
 ---
 
 Skills are expert legal playbooks that give the AI structured methodologies for specific tasks - contract review, NDA screening, risk assessment, compliance checks, and more. Instead of freeform answers, the AI follows a proven framework with checklists, severity ratings, and domain-specific guidance.
@@ -27,28 +26,28 @@ In [Agent Mode](/guides/agent-mode), the AI can autonomously activate a skill wh
 ## Built-in Skills
 
 <CardGroup cols={2}>
-  <Card title="Contract Review" icon="file-contract">
+  <Card title="Contract Review">
     Clause-by-clause analysis against standard positions. GREEN/YELLOW/RED severity flags with redline suggestions. Covers contract law, regulatory compliance, and arbitration considerations.
   </Card>
-  <Card title="NDA Triage" icon="shield-check">
+  <Card title="NDA Triage">
     10-point NDA screening checklist. Classifies as GREEN (approve), YELLOW (negotiate), or RED (escalate) with routing recommendations. Non-compete and restrictive covenant analysis.
   </Card>
-  <Card title="Risk Assessment" icon="triangle-exclamation">
+  <Card title="Risk Assessment">
     5x5 severity-by-likelihood matrix (scores 1-25). Color-coded risk levels with escalation criteria and mitigation recommendations. Regulatory considerations across jurisdictions.
   </Card>
-  <Card title="Privacy Compliance" icon="lock">
+  <Card title="Privacy Compliance">
     Multi-framework privacy checklist covering CCPA, GDPR, HIPAA, and more. Data subject rights, cross-border transfer assessment, and penalty exposure analysis.
   </Card>
-  <Card title="Statute Analysis" icon="book">
+  <Card title="Statute Analysis">
     Systematic interpretation using established rules: literal, mischief (Heydon's Rule), purposive, harmonious construction, ejusdem generis, and operator word analysis.
   </Card>
-  <Card title="Case Brief" icon="gavel">
+  <Card title="Case Brief">
     IRAC format (Issue, Rule, Application, Conclusion). Supports Bluebook and standard US reporter citations. Headnote extraction, ratio decidendi analysis, and panel composition notes.
   </Card>
-  <Card title="Legal Notice" icon="envelope">
+  <Card title="Legal Notice">
     Templates for demand letters, cease and desist notices, breach of contract notices, and consumer complaint notices. Strict timeline guidance.
   </Card>
-  <Card title="Contract Redlining" icon="pen">
+  <Card title="Contract Redlining">
     Pure redline mode with exact replacement language. Must-Have/Should-Have/Nice-to-Have priority classification with fallback positions and summary table output.
   </Card>
 </CardGroup>
@@ -82,8 +81,6 @@ Copy any of these into your Vaquill AI chat. They activate the matching Skill au
 
 <Prompt
   description="**Contract Review** - clause-by-clause severity flags + redlines, exportable to Word."
-  icon="file-contract"
-  iconType="solid"
   actions={["copy"]}
 >
 Run **Contract Review** on the attached agreement.
@@ -100,8 +97,6 @@ End with a one-page executive summary: top three risks, recommended changes befo
 
 <Prompt
   description="**NDA Triage** - 10-point screen + routing recommendation. Use for inbound NDAs at scale."
-  icon="shield-check"
-  iconType="solid"
   actions={["copy"]}
 >
 Run **NDA Triage** on the attached NDA.
@@ -124,8 +119,6 @@ Output a single rating - GREEN (approve as-is), YELLOW (negotiate listed clauses
 
 <Prompt
   description="**Case Brief (IRAC)** - structured judgment summary with citation network and treatment signals."
-  icon="gavel"
-  iconType="solid"
   actions={["copy"]}
 >
 Run **Case Brief** on this judgment. Pull the full opinion using Vaquill AI, then produce:

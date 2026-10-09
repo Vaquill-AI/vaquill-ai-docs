@@ -7,13 +7,13 @@ description: "The three verbs, what the validator checks at each, how versioning
 Three distinct actions, often confused.
 
 <CardGroup cols={3}>
-  <Card title="Test Run" icon="flask">
+  <Card title="Test Run">
     Executes the workflow end to end **without writing anything**. Side-effect steps short-circuit to no-ops.
   </Card>
-  <Card title="Publish" icon="box-archive">
+  <Card title="Publish">
     Ships a versioned, content-hashed snapshot that the gallery can launch.
   </Card>
-  <Card title="Run" icon="play">
+  <Card title="Run">
     Launches the published version against a matter you pick.
   </Card>
 </CardGroup>
@@ -70,10 +70,10 @@ Cancel is cooperative. Long-running step handlers check for a cancel signal peri
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Troubleshooting" icon="circle-question" href="/workflows/builder/troubleshooting">
+  <Card title="Troubleshooting" href="/workflows/builder/troubleshooting">
     Every validation error and how to clear it.
   </Card>
-  <Card title="Templates" icon="copy" href="/workflows/builder/templates">
+  <Card title="Templates" href="/workflows/builder/templates">
     Fork a published starter instead of building from scratch.
   </Card>
 </CardGroup>

@@ -1,7 +1,6 @@
 ---
 title: "Resolve and verify a statute citation"
 description: "Take a statute or regulation citation string, resolve it to the governing section, and check a whole document's citations in one batch call"
-icon: "quote-right"
 ---
 
 **What this gets you:** a way to catch a fabricated or wrong citation before it ships, whether it came from an LLM, a user, or your own database - one call tells you if a citation is real, and hands you the verified text if it is.
@@ -257,13 +256,13 @@ It is the right call only when the tolerance itself is the point.
 ## Flagging what you cannot resolve
 
 <AccordionGroup>
-  <Accordion title="Return an unresolved flag, not a guess" icon="triangle-exclamation">
+  <Accordion title="Return an unresolved flag, not a guess">
     `resolved: false` means **unverified**, not "not current". Do not fall
     through to a loosely related section, and do not present a near match as the
     answer. If you are checking a citation an LLM produced, an unresolved flag is
     exactly the signal that the model may have fabricated it.
   </Accordion>
-  <Accordion title="Scope by corpus to cut false matches" icon="filter">
+  <Accordion title="Scope by corpus to cut false matches">
     The corpus token is usually right there in the citation. `... CFR ...` means
     `corpusType: "CFR"`; `... U.S.C. ...` means `"USC"`; a state code section
     means `"STATE"` with the two-letter `state`. Scope is a **constraint, not a
@@ -273,13 +272,13 @@ It is the right call only when the tolerance itself is the point.
     `corpusType: "CFR"`; add `source: "far"` or `source: "dfars"` to exclude
     every other CFR title from the ranking.
   </Accordion>
-  <Accordion title="Text unavailable on a resolved citation" icon="rotate-left">
+  <Accordion title="Text unavailable on a resolved citation">
     A citation can resolve while its full text is not yet ingested. In that case
     `GET /us/statutes/section/{actId}/body` responds with `available: false` and
     `creditsConsumed: 0`. Treat it as resolved-without-text: you have a confirmed
     `actId`, citation and source link, but nothing you can quote yet.
   </Accordion>
-  <Accordion title="Picking the official source link" icon="link">
+  <Accordion title="Picking the official source link">
     A resolved section carries several optional source URL fields and any of them
     may be null. Use the canonical preference order in
     [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
@@ -291,16 +290,16 @@ It is the right call only when the tolerance itself is the point.
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Ground an LLM answer (RAG)" icon="brain" href="/api-guide/recipes/rag-grounding">
+  <Card title="Ground an LLM answer (RAG)" href="/api-guide/recipes/rag-grounding">
     Use verified citations as grounding sources for an LLM answer.
   </Card>
-  <Card title="Map a requirement to the law" icon="clipboard-check" href="/api-guide/recipes/compliance-mapping">
+  <Card title="Map a requirement to the law" href="/api-guide/recipes/compliance-mapping">
     Go from a plain-language obligation to the governing sections.
   </Card>
-  <Card title="Grounding LLMs" icon="shield-check" href="/api-guide/grounding-llms">
+  <Card title="Grounding LLMs" href="/api-guide/grounding-llms">
     Why citation verification belongs in every legal AI pipeline.
   </Card>
-  <Card title="Statute lookup chatbot" icon="comments" href="/api-guide/recipes/statute-chatbot">
+  <Card title="Statute lookup chatbot" href="/api-guide/recipes/statute-chatbot">
     A conversational front end over the same lookups.
   </Card>
 </CardGroup>

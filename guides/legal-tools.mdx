@@ -1,7 +1,6 @@
 ---
 title: "Legal Tools"
 description: "The structured analysis surface: contract review, NDA triage, risk assessment, compliance checks, and OCR, with shared inputs, exports, and history"
-icon: "toolbox"
 ---
 
 Chat is open-ended. Legal Tools is the opposite: a small set of structured analyses where you fill in a short form, run it once, and get a consistently shaped result you can export, save, and hand to someone else.
@@ -16,22 +15,22 @@ You reach the hub from **Review** in the sidebar. Every tool lives there as a ta
 ## The Tools
 
 <CardGroup cols={2}>
-  <Card title="Contract Review" icon="scale" href="/guides/contract-review">
+  <Card title="Contract Review" href="/guides/contract-review">
     Clause-by-clause analysis against your negotiation playbook. Green, yellow, and red grades per clause, drafted redlines with a Must-Have / Should-Have / Nice-to-Have priority, and a Word export with real tracked changes.
   </Card>
-  <Card title="NDA Triage" icon="file-shield" href="/guides/tools/nda-triage">
+  <Card title="NDA Triage" href="/guides/tools/nda-triage">
     A ten-point screen on a single NDA. Returns Approve, Counsel Review, or Reject / Counter with a pass, warning, or fail on each criterion.
   </Card>
-  <Card title="Risk Assessment" icon="triangle-exclamation" href="/guides/tools/risk-assessment">
+  <Card title="Risk Assessment" href="/guides/tools/risk-assessment">
     Scores a described scenario on a five-by-five severity and likelihood grid, then lists mitigations and the residual score once they are applied.
   </Card>
-  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+  <Card title="Compliance Check" href="/guides/compliance-check">
     Requirement-by-requirement gap analysis against a named framework, with drafted remediation language and a priority per gap.
   </Card>
-  <Card title="OCR" icon="scan-line" href="/guides/file-formats">
+  <Card title="OCR" href="/guides/file-formats">
     Pulls readable text out of scanned filings, photographed documents, and image-only PDFs. Handwriting has its own mode.
   </Card>
-  <Card title="Feed" icon="rss" href="/guides/feed">
+  <Card title="Feed" href="/guides/feed">
     Tracked-keyword legal alerts. It shares the hub for convenience rather than being an analysis tool.
   </Card>
 </CardGroup>
@@ -66,39 +65,39 @@ You reach the hub from **Review** in the sidebar. Every tool lives there as a ta
 ## What Every Tool Shares
 
 <AccordionGroup>
-  <Accordion title="Input handling and file formats" icon="file-arrow-up">
+  <Accordion title="Input handling and file formats">
     Upload, paste, or import from Google Drive. PDF, Word, plain text, HTML, spreadsheets, presentations, and images are all accepted, and the extraction path is the same one the main document pipeline uses, so a scanned contract is run through the OCR ladder rather than rejected.
 
     Uploads are accepted up to 250 MB; the OCR tool caps at 100 MB and 1,000 pages. Analysis reads up to roughly 200,000 characters of document text, with a lower cap on the free tier.
   </Accordion>
 
-  <Accordion title="The Improve button" icon="wand-magic-sparkles">
+  <Accordion title="The Improve button">
     The context boxes are guidance notes, not questions and not documents, so they get their own rewriter. It expands scope, naming the clause types, carve-outs, and risk angles a competent lawyer would want covered, and it is explicitly barred from inventing facts.
 
     Party names, amounts, dates, citations, and jurisdictions you did not write come back as bracketed placeholders. Everything you did write, including which side you are on and any threshold you set, is preserved verbatim. If the rewrite fails, your original text is left untouched.
   </Accordion>
 
-  <Accordion title="How long documents are handled" icon="layer-group">
+  <Accordion title="How long documents are handled">
     Past roughly 12,000 characters, about four pages, a tool stops trying to read the whole document in one pass. It splits the document into sections, evaluates each one in parallel, then synthesizes a single report with a shared glossary of defined terms.
 
     This is why a hundred-page agreement completes instead of timing out, and it is also why a long document costs more and takes longer than a short one. Contract Review additionally picks its model by document length, so a three-page NDA does not run on the heavyweight model.
   </Accordion>
 
-  <Accordion title="Grading vocabulary" icon="traffic-light">
+  <Accordion title="Grading vocabulary">
     The tools deliberately share a color grammar. Green means acceptable with no action, yellow means negotiate, and red means escalate.
 
     Risk Assessment adds orange between yellow and red for its high band. Compliance uses Compliant, Partially Compliant, Non-Compliant, and Not Applicable instead, since a requirement is not a negotiating position.
   </Accordion>
 
-  <Accordion title="Saved analyses and history" icon="clock-rotate-left">
+  <Accordion title="Saved analyses and history">
     Every run is saved automatically and listed in the history panel next to the tool, newest first, with its grade. You can rename a run to something you will recognize later, delete it, or reopen it. Each saved run has its own link, so you can paste a specific review into an email or a matter note and it will open on that result.
   </Accordion>
 
-  <Accordion title="Export" icon="file-export">
+  <Accordion title="Export">
     Any result exports to PDF, Word, or Markdown, styled as a legal document rather than a raw dump. Contract Review has an extra export: the original contract with your accepted redlines applied as native Word tracked changes, which opens in Word with working Accept and Reject buttons.
   </Accordion>
 
-  <Accordion title="Sending findings into a draft" icon="comments">
+  <Accordion title="Sending findings into a draft">
     Findings from a review can be pushed into a draft in the editor, where each one lands as a comment thread anchored to the clause it refers to. Findings whose language cannot be located in the draft are still attached rather than dropped, so nothing is silently lost.
   </Accordion>
 </AccordionGroup>
@@ -137,16 +136,16 @@ The tools draw on the same taxonomies, which is what lets a playbook written for
 Detailed pages for the individual analyses, including what each one checks, what it returns, and how to read the output.
 
 <CardGroup cols={2}>
-  <Card title="NDA Triage" icon="file-shield" href="/guides/tools/nda-triage">
+  <Card title="NDA Triage" href="/guides/tools/nda-triage">
     The ten criteria, the three verdicts, and when to override one.
   </Card>
-  <Card title="Risk Assessment" icon="triangle-exclamation" href="/guides/tools/risk-assessment">
+  <Card title="Risk Assessment" href="/guides/tools/risk-assessment">
     How the severity and likelihood grid is scored and what residual risk means.
   </Card>
-  <Card title="OCR" icon="file-magnifying-glass" href="/guides/tools/ocr">
+  <Card title="OCR" href="/guides/tools/ocr">
     Extracting clean text from scanned PDFs, images, and handwriting.
   </Card>
-  <Card title="Legal Intelligence Feed" icon="rss" href="/guides/feed">
+  <Card title="Legal Intelligence Feed" href="/guides/feed">
     Tracked topics and fresh legal developments, surfaced in the hub.
   </Card>
 </CardGroup>
@@ -193,28 +192,28 @@ See [Plans and Limits](/guides/plans-and-limits) for the full picture, or your b
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Contract Review" icon="scale" href="/guides/contract-review">
+  <Card title="Contract Review" href="/guides/contract-review">
     The deepest tool in the suite, and the one playbooks were built for.
   </Card>
-  <Card title="Playbooks" icon="book" href="/guides/playbooks">
+  <Card title="Playbooks" href="/guides/playbooks">
     Encode your negotiation positions once so reviews grade against your standards.
   </Card>
-  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+  <Card title="Compliance Check" href="/guides/compliance-check">
     Framework-by-framework gap analysis with drafted remediation.
   </Card>
-  <Card title="Compare Documents" icon="code-compare" href="/guides/document-comparison">
+  <Card title="Compare Documents" href="/guides/document-comparison">
     Redline two versions with native Word tracked-changes export.
   </Card>
-  <Card title="Document Matrix" icon="table" href="/guides/document-matrix">
+  <Card title="Document Matrix" href="/guides/document-matrix">
     The same questions across up to hundreds of documents.
   </Card>
-  <Card title="Skills" icon="sparkles" href="/guides/skills">
+  <Card title="Skills" href="/guides/skills">
     Saved playbooks that combine tools with your firm's standards.
   </Card>
-  <Card title="File Formats" icon="file-lines" href="/guides/file-formats">
+  <Card title="File Formats" href="/guides/file-formats">
     What Vaquill AI accepts, and how scanned documents are handled.
   </Card>
-  <Card title="Plans and Limits" icon="gauge" href="/guides/plans-and-limits">
+  <Card title="Plans and Limits" href="/guides/plans-and-limits">
     Per-tool caps, credit costs, and document size ceilings.
   </Card>
 </CardGroup>

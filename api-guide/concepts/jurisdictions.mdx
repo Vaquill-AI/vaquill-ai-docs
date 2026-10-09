@@ -1,7 +1,6 @@
 ---
 title: "Jurisdictions & State Codes"
 description: "The jurisdictions the API accepts, how state codes and the federal jurisdiction work, and the two endpoints that tell you what is actually there"
-icon: "map-location-dot"
 ---
 
 `state` accepts **56 US jurisdictions**: all 50 states, plus the District of
@@ -36,11 +35,11 @@ Accepting a jurisdiction is not the same as holding every corpus for it, so read
 ## The two discovery endpoints
 
 <CardGroup cols={2}>
-  <Card title="GET /us/statutes/coverage" icon="table-cells">
+  <Card title="GET /us/statutes/coverage">
     Which corpora exist in which jurisdiction, with document counts, freshness
     notices and retrieval status. Free, no credits.
   </Card>
-  <Card title="GET /us/statutes/divisions" icon="folder-tree">
+  <Card title="GET /us/statutes/divisions">
     Walk the hierarchy one level at a time: a state's codes, then its chapters,
     then its sections. Refunded on an empty level.
   </Card>
@@ -163,10 +162,10 @@ The rest are dated series or share no tree, so reach those with `/us/statutes/se
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Corpus Types" icon="layer-group" href="/api-guide/concepts/corpus-types">
+  <Card title="Corpus Types" href="/api-guide/concepts/corpus-types">
     The corpusType tokens and how to pair them with a state.
   </Card>
-  <Card title="API Coverage" icon="map-location-dot" href="/api-guide/coverage">
+  <Card title="API Coverage" href="/api-guide/coverage">
     The full jurisdiction matrix with current section counts.
   </Card>
 </CardGroup>

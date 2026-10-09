@@ -1,7 +1,6 @@
 ---
 title: "How Search Works"
 description: "The hybrid ranking model, what matchType does, what gets indexed, and why search ranks rather than enumerates"
-icon: "magnifying-glass"
 ---
 
 `POST /us/statutes/search` ranks.
@@ -89,7 +88,7 @@ An unrecognised filter value, or an unrecognised filter name, returns `422` rath
 Search returns the best matches for a query, up to a bounded number of them.
 If your requirement is *every* section in a body of law rather than the most relevant ones, browse the hierarchy instead: `GET /us/statutes/divisions` walks codes to chapters to sections and returns every section in a container with its `actId`.
 
-<Card title="Browse the hierarchy" icon="sitemap" href="/api-guide/recipes/browse-hierarchy">
+<Card title="Browse the hierarchy" href="/api-guide/recipes/browse-hierarchy">
   Enumerate a bounded body of law without relying on ranking.
 </Card>
 
@@ -99,16 +98,16 @@ It accepts no `query` for the reason above: a count of "sections matching this q
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Pagination" icon="list-ol" href="/api-guide/pagination">
+  <Card title="Pagination" href="/api-guide/pagination">
     How deep a result set goes, and how to page it.
   </Card>
-  <Card title="Best practices" icon="star" href="/api-guide/best-practices">
+  <Card title="Best practices" href="/api-guide/best-practices">
     Scoping, matchType, and what to cache.
   </Card>
-  <Card title="Status & currency" icon="circle-check" href="/api-guide/concepts/status-and-currency">
+  <Card title="Status & currency" href="/api-guide/concepts/status-and-currency">
     Filtering repealed and superseded law out of results.
   </Card>
-  <Card title="Build a subject corpus" icon="layer-group" href="/api-guide/recipes/subject-corpus">
+  <Card title="Build a subject corpus" href="/api-guide/recipes/subject-corpus">
     Enumerate, scope, hydrate, and keep it current.
   </Card>
 </CardGroup>

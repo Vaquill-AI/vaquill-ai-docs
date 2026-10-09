@@ -1,7 +1,6 @@
 ---
 title: "DPA Review & Vendor Inventory"
 description: "Read one vendor's Data Processing Addendum in place: roles, transfer mechanism, sub-processors, breach and audit and deletion terms, and an assessed risk tier written onto the vendor record"
-icon: "shield-check"
 ---
 
 DPA Review is the interactive, one document at a time pass over a Data Processing Addendum. You attach the vendor's DPA to their record, run the analysis, and Vaquill AI reads the agreement and fills in the things you would otherwise be highlighting by hand: who is the controller and who is the processor, what transfer mechanism the agreement relies on, every sub-processor it names, the breach notice window, the audit terms, the deletion period, and an assessed risk tier with a one line reason.
@@ -116,13 +115,13 @@ See the [Vendor and Sub-processor Registry](/guides/vendor-registry) guide for t
 ## Going deeper on one agreement
 
 <AccordionGroup>
-  <Accordion title="Negotiate it clause by clause" icon="file-contract">
+  <Accordion title="Negotiate it clause by clause">
     [Contract Review](/guides/contract-review) with a [playbook](/guides/playbooks) gives you positions, fallbacks, and redlines instead of extracted facts. Vaquill AI ships controller-side and processor-side DPA playbooks with standard positions on breach windows, sub-processor approval and objection rights, audit, deletion, and transfer mechanisms, plus escalation triggers for the terms that should not pass quietly.
   </Accordion>
-  <Accordion title="Check it against a regulation" icon="clipboard-check">
+  <Accordion title="Check it against a regulation">
     [Compliance Check](/guides/compliance-check) scores a document against a named regulation with per-requirement status and article-level references. Use it when the question is "does this satisfy Article 28" rather than "what does this say".
   </Accordion>
-  <Accordion title="Review a whole stack of DPAs" icon="layer-group">
+  <Accordion title="Review a whole stack of DPAs">
     The [DPA Reviewer workflow](/workflows/built-in/dpa-reviewer) scores up to 500 agreements against Article 28(3), the 2021 SCCs, a Schrems II transfer impact assessment, and the HIPAA BAA elements, and returns an executive memo plus per-DPA detail with proposed redlines.
   </Accordion>
 </AccordionGroup>
@@ -142,22 +141,22 @@ See the [Vendor and Sub-processor Registry](/guides/vendor-registry) guide for t
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Vendor and Sub-processor Registry" icon="building" href="/guides/vendor-registry">
+  <Card title="Vendor and Sub-processor Registry" href="/guides/vendor-registry">
     The record these reviews write to, plus filters, exports, and renewal tracking.
   </Card>
-  <Card title="DPA Reviewer workflow" icon="layer-group" href="/workflows/built-in/dpa-reviewer">
+  <Card title="DPA Reviewer workflow" href="/workflows/built-in/dpa-reviewer">
     Batch scoring against Article 28(3), the SCCs, a Schrems II TIA, and BAA elements.
   </Card>
-  <Card title="Compliance Check" icon="clipboard-check" href="/guides/compliance-check">
+  <Card title="Compliance Check" href="/guides/compliance-check">
     Per-requirement scoring against GDPR, CCPA, HIPAA, and more.
   </Card>
-  <Card title="Contract Review" icon="file-contract" href="/guides/contract-review">
+  <Card title="Contract Review" href="/guides/contract-review">
     Clause-by-clause review with playbook positions, severity flags, and redlines.
   </Card>
-  <Card title="Playbooks" icon="book" href="/guides/playbooks">
+  <Card title="Playbooks" href="/guides/playbooks">
     The controller-side and processor-side DPA negotiation positions.
   </Card>
-  <Card title="Privacy and Data Protection Audit" icon="user-shield" href="/workflows/built-in/privacy-data-protection-audit">
+  <Card title="Privacy and Data Protection Audit" href="/workflows/built-in/privacy-data-protection-audit">
     Privacy posture across policies and agreements together.
   </Card>
 </CardGroup>

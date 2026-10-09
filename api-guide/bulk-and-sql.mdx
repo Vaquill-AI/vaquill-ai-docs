@@ -1,7 +1,6 @@
 ---
 title: "Bulk and SQL access"
 description: "Query the whole US primary-law corpus as a database. 229 Parquet files in an object store, readable in place over HTTPS with DuckDB or loaded into Postgres, plus direct access to the vector index"
-icon: "database"
 ---
 
 The API answers one question at a time. When you need the corpus itself, take it.
@@ -28,19 +27,19 @@ WHERE section_title ILIKE '%search%';
 ## What ships
 
 <CardGroup cols={2}>
-  <Card title="229 Parquet files" icon="file-code">
+  <Card title="229 Parquet files">
     One file per jurisdiction and corpus, so you can take only the slice you
     need: `us_ak_constitutions.parquet`, `us_tx_statutes.parquet`, and so on.
   </Card>
-  <Card title="One combined tarball" icon="box-archive">
+  <Card title="One combined tarball">
     `open-us-law-v2026.08-parquet.tar`, about 4.09 GB, when you would rather
     fetch once and unpack locally.
   </Card>
-  <Card title="A manifest with checksums" icon="fingerprint">
+  <Card title="A manifest with checksums">
     `index.json` lists every file with its byte size, SHA-256 and URL, so you
     can verify an unattended sync.
   </Card>
-  <Card title="Dated snapshots" icon="calendar">
+  <Card title="Dated snapshots">
     Versions are immutable. Pin `v2026.08` and your results stay reproducible
     when the next snapshot lands.
   </Card>

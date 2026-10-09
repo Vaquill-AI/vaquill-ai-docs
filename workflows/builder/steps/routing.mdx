@@ -11,8 +11,8 @@ Three steps. These are what make a workflow a program rather than a list.
 ## Conditional Branch
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="code-branch">Routing</Card>
-  <Card title="Latency" icon="bolt">Fast</Card>
+  <Card title="Kind">Routing</Card>
+  <Card title="Latency">Fast</Card>
 </CardGroup>
 
 An explicit decision point. Reads a field from an upstream step, evaluates a condition, and emits TRUE or FALSE. Downstream steps branch on that result through their own Branching panel.
@@ -44,8 +44,8 @@ An explicit decision point. Reads a field from an upstream step, evaluates a con
 ## Loop Over Documents
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="code-branch">Routing</Card>
-  <Card title="Latency" icon="hourglass">Slow</Card>
+  <Card title="Kind">Routing</Card>
+  <Card title="Latency">Slow</Card>
 </CardGroup>
 
 Runs another step once per document, with bounded concurrency. The fan-out primitive: summarize each, score each, extract from each.
@@ -85,8 +85,8 @@ Runs another step once per document, with bounded concurrency. The fan-out primi
 ## Agentic Step
 
 <CardGroup cols={2}>
-  <Card title="Kind" icon="robot">AI</Card>
-  <Card title="Latency" icon="hourglass">Slow</Card>
+  <Card title="Kind">AI</Card>
+  <Card title="Latency">Slow</Card>
 </CardGroup>
 
 Lets the model pick tools from a constrained set and iterate. Use it for open-ended research where the right tool order depends on what the previous call returned.
@@ -114,10 +114,10 @@ This is a bounded tool loop, not an open-ended agent. It can only call the tools
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Branching and loops" icon="code-branch" href="/workflows/builder/branching-and-loops">
+  <Card title="Branching and loops" href="/workflows/builder/branching-and-loops">
     The conceptual guide, including graph-view routing.
   </Card>
-  <Card title="Agent mode" icon="robot" href="/guides/agent-mode">
+  <Card title="Agent mode" href="/guides/agent-mode">
     The interactive, chat-based version of agentic research.
   </Card>
 </CardGroup>
