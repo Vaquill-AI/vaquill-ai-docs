@@ -75,7 +75,6 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 ## Optional
 
-- [Introduction](https://www.vaquill.ai/docs/introduction): The full Vaquill product, including the in-app legal AI suite.
 - [Changelog](https://www.vaquill.ai/docs/api-guide/changelog): API updates and additions.
 - [Roadmap](https://www.vaquill.ai/docs/api-guide/roadmap): Corpora being built next, and what is deliberately out of scope.
 - [Vaquill MCP](https://www.vaquill.ai/docs/integrations/mcp/vaquill): The hosted MCP server for AI agents.

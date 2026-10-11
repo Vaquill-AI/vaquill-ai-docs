@@ -170,111 +170,8 @@
         "openapi": "https://api.vaquill.ai/external/openapi.json"
       },
       {
-        "tab": "Introduction",
+        "tab": "Integrations",
         "groups": [
-          {
-            "group": "GET STARTED",
-            "icon": "rocket",
-            "pages": [
-              "introduction",
-              "guides/chat"
-            ]
-          },
-          {
-            "group": "CONTRACTS & DRAFTING",
-            "icon": "file-contract",
-            "pages": [
-              "guides/contract-review",
-              "guides/drafting",
-              "guides/templates",
-              "guides/clause-library",
-              "guides/playbooks",
-              {
-                "group": "PLAYBOOK REFERENCE",
-                "pages": [
-                  "guides/playbooks/templates",
-                  "guides/playbooks/building-a-playbook",
-                  "guides/playbooks/clause-rules",
-                  "guides/playbooks/import-from-contracts",
-                  "guides/playbooks/structure-check",
-                  "guides/playbooks/sign-off-gates",
-                  "guides/playbooks/playbook-health",
-                  "guides/playbooks/drift-suggestions",
-                  "guides/playbooks/versions-and-sharing"
-                ]
-              },
-              "guides/document-comparison",
-              "guides/document-matrix"
-            ]
-          },
-          {
-            "group": "COMPLIANCE & LEGAL TOOLS",
-            "icon": "shield-check",
-            "pages": [
-              "guides/compliance-check",
-              "guides/dpa-review",
-              "guides/vendor-registry",
-              "guides/legal-tools",
-              {
-                "group": "TOOL REFERENCE",
-                "pages": [
-                  "guides/tools/nda-triage",
-                  "guides/tools/risk-assessment",
-                  "guides/tools/ocr"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "MATTERS & WORKSPACES",
-            "icon": "briefcase",
-            "pages": [
-              "guides/matters-workspaces",
-              "guides/matter-summary",
-              "guides/matter-facts",
-              "guides/chronology-builder",
-              "guides/client-management",
-              "guides/team-workspaces",
-              "guides/plans-and-limits"
-            ]
-          },
-          {
-            "group": "DOCUMENTS & INGESTION",
-            "icon": "file-import",
-            "pages": [
-              "guides/document-search",
-              "guides/documents",
-              "guides/file-formats",
-              "guides/email-to-rag",
-              "guides/google-drive-import"
-            ]
-          },
-          {
-            "group": "PERSONALIZATION",
-            "icon": "sliders",
-            "pages": [
-              "guides/skills",
-              "guides/prompt-library",
-              "guides/memories",
-              "guides/mcp-client",
-              "guides/inline-threading",
-              "guides/conversation-sharing"
-            ]
-          },
-          {
-            "group": "RESEARCH",
-            "icon": "magnifying-glass",
-            "pages": [
-              "guides/case-law-research",
-              "guides/statutes-regulations",
-              "guides/feed",
-              "guides/citations",
-              "guides/citation-graph",
-              "guides/agent-mode",
-              "guides/deep-research",
-              "guides/answer-verification"
-            ]
-          },
           {
             "group": "INTEGRATIONS",
             "icon": "plug",
@@ -318,12 +215,6 @@
                 ]
               },
               {
-                "group": "DOCUMENT MANAGEMENT",
-                "pages": [
-                  "integrations/dms/imanage"
-                ]
-              },
-              {
                 "group": "AUTOMATION",
                 "pages": [
                   "integrations/automation/n8n"
@@ -332,166 +223,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "Workflows",
-        "groups": [
-          {
-            "group": "OVERVIEW",
-            "icon": "compass",
-            "pages": [
-              "workflows/index",
-              "workflows/quickstart",
-              "workflows/running-a-workflow",
-              "workflows/results-and-artifacts"
-            ]
-          },
-          {
-            "group": "BUILT-IN WORKFLOWS",
-            "icon": "diagram-project",
-            "pages": [
-              "workflows/built-in/index",
-              {
-                "group": "1. CONTRACTS & COMMERCIAL",
-                "pages": [
-                  "workflows/built-in/nda-bulk-review",
-                  "workflows/built-in/msa-vendor-review",
-                  "workflows/built-in/contract-playbook-review",
-                  "workflows/built-in/dpa-reviewer",
-                  "workflows/built-in/obligations-renewal-tracker",
-                  "workflows/built-in/ma-due-diligence"
-                ]
-              },
-              {
-                "group": "2. COMPLIANCE & PRIVACY",
-                "pages": [
-                  "workflows/built-in/privacy-data-protection-audit",
-                  "workflows/built-in/compliance-scan-agent",
-                  "workflows/built-in/employment-pack-review"
-                ]
-              },
-              {
-                "group": "3. RESEARCH & ANALYSIS",
-                "pages": [
-                  "workflows/built-in/cited-qa-document-set",
-                  "workflows/built-in/jurisdiction-comparison-memo",
-                  "workflows/built-in/matter-triage-agent"
-                ]
-              },
-              {
-                "group": "4. LITIGATION: DISCOVERY & EVIDENCE",
-                "pages": [
-                  "workflows/built-in/discovery-response-pack",
-                  "workflows/built-in/privilege-log-builder",
-                  "workflows/built-in/deposition-transcript-analyzer",
-                  "workflows/built-in/cross-exam-prep"
-                ]
-              },
-              {
-                "group": "5. LITIGATION: DRAFTING & MOTIONS",
-                "pages": [
-                  "workflows/built-in/us-motion-drafter",
-                  "workflows/built-in/complaint-drafter",
-                  "workflows/built-in/answer-to-complaint-drafter",
-                  "workflows/built-in/demand-letter-drafter",
-                  "workflows/built-in/cease-and-desist",
-                  "workflows/built-in/settlement-negotiation-memo"
-                ]
-              },
-              {
-                "group": "6. LANDLORD & TENANT",
-                "pages": [
-                  "workflows/built-in/evict-correctly",
-                  "workflows/built-in/respond-to-eviction",
-                  "workflows/built-in/security-deposit-demand"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "WORKFLOW BUILDER",
-            "icon": "wrench",
-            "pages": [
-              "workflows/builder/index",
-              "workflows/builder/generate-from-prompt",
-              "workflows/builder/steps",
-              {
-                "group": "4. STEP REFERENCE",
-                "pages": [
-                  "workflows/builder/steps/document-io",
-                  "workflows/builder/steps/retrieval",
-                  "workflows/builder/steps/extraction",
-                  "workflows/builder/steps/analysis",
-                  "workflows/builder/steps/verification",
-                  "workflows/builder/steps/drafting",
-                  "workflows/builder/steps/routing",
-                  "workflows/builder/steps/output"
-                ]
-              },
-              "workflows/builder/branching-and-loops",
-              "workflows/builder/test-publish-run",
-              "workflows/builder/templates",
-              "workflows/builder/troubleshooting"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Workspace API",
-        "groups": [
-          {
-            "group": "GET STARTED",
-            "icon": "rocket",
-            "pages": [
-              "workspace-api/overview",
-              "workspace-api/quickstart",
-              "workspace-api/authentication"
-            ]
-          },
-          {
-            "group": "CORE CONCEPTS",
-            "icon": "book-open",
-            "pages": [
-              "workspace-api/concepts/operations",
-              "workspace-api/concepts/idempotency",
-              "workspace-api/concepts/pagination",
-              "workspace-api/concepts/rate-limits",
-              "workspace-api/concepts/errors"
-            ]
-          },
-          {
-            "group": "CAPABILITIES",
-            "icon": "bolt",
-            "pages": [
-              "workspace-api/clients-and-matters",
-              "workspace-api/documents",
-              "workspace-api/drafting",
-              "workspace-api/draft-lifecycle",
-              "workspace-api/template-authoring",
-              "workspace-api/review-and-playbooks",
-              "workspace-api/playbook-extraction",
-              "workspace-api/nda-triage",
-              "workspace-api/compliance",
-              "workspace-api/compare",
-              "workspace-api/matrices",
-              "workspace-api/matter-analysis",
-              "workspace-api/research",
-              "workspace-api/workflows"
-            ]
-          },
-          {
-            "group": "AGENTS",
-            "icon": "robot",
-            "pages": [
-              "workspace-api/cleanup",
-              "workspace-api/mcp"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Workspace Reference",
-        "openapi": "https://api.vaquill.ai/workspace/openapi/v1.json"
       },
       {
         "tab": "India API Reference",
@@ -624,19 +355,6 @@
         ]
       },
       {
-        "header": "Founders",
-        "items": [
-          {
-            "label": "Arshita Anand",
-            "href": "https://www.linkedin.com/in/arshita-anand"
-          },
-          {
-            "label": "Priyansh Khodiyar",
-            "href": "https://www.linkedin.com/in/zriyansh"
-          }
-        ]
-      },
-      {
         "header": "Legal",
         "items": [
           {
@@ -682,19 +400,19 @@
   "redirects": [
     {
       "source": "/guides/tools/canned-responses",
-      "destination": "/guides/prompt-library"
+      "destination": "/api-guide/overview"
     },
     {
       "source": "/guides/tools/contract-debugger",
-      "destination": "/guides/contract-review"
+      "destination": "/api-guide/overview"
     },
     {
       "source": "/guides/tools/redline-analysis",
-      "destination": "/guides/document-comparison"
+      "destination": "/api-guide/overview"
     },
     {
       "source": "/guides/tools/document-analyst",
-      "destination": "/guides/chat"
+      "destination": "/api-guide/overview"
     },
     {
       "source": "/integrations/mcp",
@@ -766,7 +484,7 @@
     },
     {
       "source": "/changelog",
-      "destination": "/introduction"
+      "destination": "/api-guide/changelog"
     },
     {
       "source": "/api-guide/rate-limits",
@@ -774,31 +492,31 @@
     },
     {
       "source": "/guides/subscriptions",
-      "destination": "/guides/plans-and-limits"
+      "destination": "/api-reference/pricing/get-api-credit-pricing"
     },
     {
       "source": "/pricing",
-      "destination": "/guides/plans-and-limits"
+      "destination": "/api-reference/pricing/get-api-credit-pricing"
     },
     {
       "source": "/guides/limits",
-      "destination": "/guides/plans-and-limits"
+      "destination": "/api-reference/pricing/get-api-credit-pricing"
     },
     {
       "source": "/guides/workflows",
-      "destination": "/workflows"
+      "destination": "/api-guide/overview"
     },
     {
       "source": "/guides/retrieval-strategies",
-      "destination": "/guides/case-law-research"
+      "destination": "/api-guide/overview"
     },
     {
       "source": "/guides/tools/translation",
-      "destination": "/guides/legal-tools"
+      "destination": "/api-guide/overview"
     },
     {
       "source": "/guides/tools/company-lookup",
-      "destination": "/guides/legal-tools"
+      "destination": "/api-guide/overview"
     },
     {
       "source": "/authentication",
@@ -811,6 +529,110 @@
     {
       "source": "/coverage",
       "destination": "/api-guide/coverage"
+    },
+    {
+      "source": "/introduction",
+      "destination": "/api-guide/overview"
+    },
+    {
+      "source": "/guides",
+      "destination": "/api-guide/overview"
+    },
+    {
+      "source": "/workflows",
+      "destination": "/api-guide/overview"
+    },
+    {
+      "source": "/workspace-api",
+      "destination": "/api-guide/overview"
+    },
+    {
+      "source": "/integrations/dms/imanage",
+      "destination": "/integrations"
+    },
+    {
+      "source": "/guides/:slug*",
+      "destination": "/api-guide/overview"
+    },
+    {
+      "source": "/workflows/:slug*",
+      "destination": "/api-guide/overview"
+    },
+    {
+      "source": "/workspace-api/:slug*",
+      "destination": "/api-guide/overview"
+    },
+    {
+      "source": "/integrations/dms/:slug*",
+      "destination": "/integrations"
+    },
+    {
+      "source": "/api-reference/chronology/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/clients/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/comparisons/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/compliance/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/documents/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/drafting/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/facts/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/folders/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/matrices/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/matter-summary/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/matters/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/nda-triage/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/operations/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/playbooks/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/reviews/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/uploads/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+    },
+    {
+      "source": "/api-reference/workflows/:slug*",
+      "destination": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
     }
   ],
   "appearance": {

@@ -30,6 +30,6 @@ This serves the site at `http://localhost:3000` with hot reload.
 ## Architecture Notes
 
 - The API Reference tab is auto-generated from the OpenAPI spec at `https://api.vaquill.ai/external/openapi.json` — endpoint docs are not hand-written MDX.
-- The "Documentation" tab expects MDX pages (`introduction.mdx`, `authentication.mdx`, `credits.mdx`, `errors.mdx`) in the project root. These pages are referenced in docs.json navigation but may not yet exist.
+- The workspace app docs (`guides/`, `workflows/`, `workspace-api/`, `integrations/dms/`, `introduction.mdx`) are kept in the repo but unpublished: they are listed in `.mintignore` and removed from `docs.json` navigation. The Workspace API reference tab is gone too. Old URLs are covered by the wildcard `redirects` in `docs.json`. To bring them back, remove the `.mintignore` lines, restore the tabs, and drop the matching redirects.
 - Auth method is Bearer token via the `Authorization` header (configured in `docs.json > api > mdx > auth`).
 - Appearance is locked to light mode (`appearance.strict: true`).

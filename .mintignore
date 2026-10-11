@@ -1,3 +1,8 @@
 CLAUDE.md
 .cursor
 .github
+introduction.mdx
+guides/
+workflows/
+workspace-api/
+integrations/dms/
