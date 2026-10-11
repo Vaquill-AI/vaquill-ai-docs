@@ -48,8 +48,7 @@ scope it. For how much data sits behind each one and what is deliberately exclud
 ## The 22 tokens
 
 Sizes are distinct sections. Federal rows were measured 2026-09-07 (federal local court rules
-2026-10-08) and state rows 2026-10-08, except state agency guidance and AG opinions, which were
-measured 2026-09-11 and have grown since. Call `GET /us/statutes/coverage` for a live figure and
+2026-10-08) and state rows 2026-10-09. Call `GET /us/statutes/coverage` for a live figure and
 for which tokens have data in which jurisdiction.
 
 The OpenAPI enum also accepts `USC_ANNUAL`, GPO's retired annual edition of the US Code, which is
@@ -81,13 +80,13 @@ Each of these requires `state`, or spans every jurisdiction holding that corpus.
 
 | Token | Contains | Sections | Jurisdictions |
 |---|---|---:|---|
-| `STATE` | State statutory codes | 2,010,030 | 56 |
-| `REGULATION` | State administrative codes | 1,496,499 | 56 |
-| `STATE_RULES` | State court rules: civil, criminal, appellate, evidence, professional conduct, and the local rules of 38 trial courts | 71,880 | 56 |
-| `STATE_AGENCY_GUIDANCE` | State regulator guidance, almost all insurance bulletins | 13,359 | 49 |
+| `STATE` | State statutory codes | 2,017,497 | 56 |
+| `REGULATION` | State administrative codes | 1,496,990 | 56 |
+| `STATE_RULES` | State court rules: civil, criminal, appellate, evidence, professional conduct, and the local rules of 38 trial courts | 71,967 | 56 |
+| `STATE_AGENCY_GUIDANCE` | State regulator guidance, almost all insurance bulletins | 13,360 | 49 |
 | `STATE_AG_OPINION` | State Attorney General opinions. **Persuasive authority, not binding law** | 104,572 | 43 |
 | `STATE_CONSTITUTION` | State constitutions | 13,016 | 53 |
-| `STATE_REGISTER` | State register **notices**: proposed, adopted and emergency rules as printed. **Not codified law** | 144,876 | 24 |
+| `STATE_REGISTER` | State register **notices**: proposed, adopted and emergency rules as printed. **Not codified law** | 144,903 | 24 |
 
 State session laws have no `corpusType`.
 They are served by [`/us/session-laws`](/api-guide/session-laws), not `/us/statutes`.
