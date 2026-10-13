@@ -68,7 +68,7 @@ Then read each hit's history with `GET /us/statutes/section/{actId}/changes` whe
   A refresh compared the publisher against the copy we held and found it different.
   The date is when we SAW it, which is an upper bound on when it took effect.
 - **Coverage is bounded by capture, not by the age of the law.**
-  Change capture began long after the corpus did, it is per-source, and events are swept at 24 months.
+  Change capture began long after the corpus did, it is per-source, and events are swept at 5 years.
   An empty result means no captured change in the window, never that nothing was amended.
 - **A window that is too broad is refused, not truncated.**
   Match too many sections and the call returns `422` telling you to use a later date or a `state` filter.

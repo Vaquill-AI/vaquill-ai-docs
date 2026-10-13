@@ -4,7 +4,7 @@ description: "The 53 named federal sources behind corpusType=AGENCY_GUIDANCE, ea
 ---
 
 Sub-regulatory federal guidance: what an agency says its own rules mean, short of a
-regulation. **53 named sources across 26 agencies, 51,597 documents.**
+regulation. **53 named sources across 26 agencies.** The table below sums to 86,900 documents.
 
 <Note>
   That total counts the **named sources on this page only**, and it is the number the table below
@@ -37,8 +37,10 @@ should read their results.
   `GET /us/statutes/coverage` computes its `AGENCY_GUIDANCE` total out of band rather than per
   request, so for up to a day after a source is ingested it can report fewer documents than this
   page.
-  The column above sums to 86,900, which is exactly what `GET /us/statutes/coverage` reports for
-  `AGENCY_GUIDANCE`. Every row is a served count, not an ingested one. The distinction matters most
+  The column below sums to 86,900, measured per source on 2026-09-07 and 2026-09-08. On
+  2026-10-13 `GET /us/statutes/coverage` reported 96,966 for the whole `AGENCY_GUIDANCE` token.
+  This page does not break that difference down by source. Every row is a served count, not an
+  ingested one. The distinction matters most
   on IRS written determinations, where 45,358 documents are ingested and 35,485 are reachable
   through the API, the difference being 9,873 OCR-read scans. The endpoint stays authoritative.
 </Note>
