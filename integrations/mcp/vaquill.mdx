@@ -1,7 +1,7 @@
 ---
 title: "Vaquill MCP Server"
 sidebarTitle: "Vaquill MCP"
-description: "US primary law MCP for Claude, Cursor, VS Code, and Windsurf. Statutes, regulations, court rules, constitutions and agency guidance, plus law-change alerts."
+description: "US primary law MCP for Claude, Cursor, VS Code, and Windsurf. Statutes, regulations, court rules, constitutions, agency guidance and state session laws, read-only."
 keywords: ["vaquill mcp", "legal mcp server", "claude legal mcp", "us law mcp", "usc mcp", "cfr mcp", "cursor legal research", "vs code legal mcp"]
 ---
 
@@ -224,7 +224,7 @@ claude mcp add --scope user vaquill -e VAQUILL_API_KEY=vq_key_your_key_here \
 
 ## Tools
 
-Tools are generated from the OpenAPI document at startup, so the catalogue tracks the API rather than the package version. The US mount publishes **34 tools**, one per API operation plus the `search` and `fetch` pair; the India mount publishes 8.
+Tools are generated from the OpenAPI document at startup, so the catalogue tracks the API rather than the package version. The US mount publishes **26 tools**, one per API operation plus the `search` and `fetch` pair; the India mount publishes 22. Every tool is read-only: none creates, changes or deletes anything.
 
 <Warning>
   `act_id` is never assembled by hand. The title and section are derivable from a citation but the chapter is not, so a constructed id usually 404s and the failure reads like missing coverage. Take it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section Identifiers](/api-guide/concepts/section-ids).
@@ -248,6 +248,8 @@ Tools are generated from the OpenAPI document at startup, so the catalogue track
 | `get_sections_batch` | Metadata for up to 50 `act_id`s in one call, with a diagnosis for each miss. | 2 per section returned |
 | `resolve_statute_citation` | Turn one citation string into the exact section, confirmed against the corpus. | 2 |
 | `resolve_statute_citations_batch` | The same verdict for up to 50 citations at once. | 2 per citation |
+| `extract_statute_citations` | Paste a brief, memo or model answer and get every statute, regulation, court rule and constitution citation in it, each resolved. Case citations are not extracted. `resolve=false` lists them for free. | 2 per distinct citation |
+| `count_statute_sections` | How many sections a filter scope holds, before you page through it. | 1 |
 
 ### Section intelligence
 
@@ -275,26 +277,20 @@ Each of these refunds a call it cannot answer, and returns a `note` explaining w
 
 Federal session laws are on the statute tools.
 
-### Law change alerts
-
-Every tool here is free except the diff. See [Law Change Alerts](/api-guide/alerts).
+### Account
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `list_boards` | Every watchable board with its cadence, `lastRetrievedAt` and `retrievalStatus`. | Free |
-| `create_watch` / `update_watch` / `delete_watch` | Subscribe, repoint or pause, and remove. | Free |
-| `list_watches` | Your watches with last-notified state. | Free |
-| `test_watch` | Fire a one-off `board.test` delivery. One per watch per 30 seconds. | Free |
-| `list_watch_changes` | What the board added, amended or removed. Metadata only. | Free |
-| `list_watch_deliveries` | Recent webhook delivery attempts. | Free |
-| `get_watch_change_diff` | The before and after text for one change. | 4 |
+| `get_credit_balance` | The credits your key can spend now, by source, the next expiry and your rate limits. | Free |
+
+Law change alerts are not MCP tools. Manage them in the console or over the REST API: see [Law Change Alerts](/api-guide/alerts).
 
 ### Generic aliases
 
 | Tool | Description | Credits |
 |------|-------------|---------|
 | `search` | Single-string search, for clients that require this exact interface. | 4 |
-| `fetch` | Single-string fetch by id or URL, same constraint. | Varies |
+| `fetch` | Single-string fetch by id, URL or citation, same constraint. | 8, plus 2 for a citation |
 
 These exist for clients whose retrieval interface is matched by name and shape. Prefer the typed tools above: they take filters these two cannot express.
 
@@ -316,7 +312,7 @@ Beyond tools, the server publishes MCP resources and prompts. Clients that suppo
 
 ## India mount
 
-`https://mcp.vaquill.ai/in/s/_` publishes the Indian legislation surface. It shares nothing with the US tools but the credential.
+`https://mcp.vaquill.ai/in/s/_` publishes the Indian legislation surface. It shares nothing with the US tools but the credential. The main tools:
 
 | Tool | Description | Credits |
 |------|-------------|---------|
@@ -331,7 +327,9 @@ Plus the `search` and `fetch` aliases.
 
 ## Authentication
 
-The Vaquill MCP server authenticates with your Vaquill API key. Three options, in priority order:
+On the US endpoint `https://mcp.vaquill.ai/mcp`, the default is **OAuth 2.1**: the client opens a browser, you sign in with your Vaquill AI account and approve access, and there is no key to paste. It is the authorization code flow with PKCE (S256), discovered from `/.well-known/oauth-protected-resource/mcp`, with dynamic client registration and client ID metadata documents both supported. The access token lasts about an hour and is refreshed automatically.
+
+Clients that cannot run OAuth authenticate with your Vaquill API key instead. Three options, in priority order:
 
 1. **Bearer header** (remote): `Authorization: Bearer vq_key_...`
 2. **Path token** (remote): `https://mcp.vaquill.ai/s/vq_key_...` - convenient when your client cannot send custom headers.
@@ -397,11 +395,11 @@ Type these directly to Claude, Cursor, or any connected assistant.
 
 > *"What did 15 USC 1681c say on 2019-03-01, and how confident are we in that reconstruction?"*
 
-**Watch for changes**
+**Find what changed**
 
 > *"What has changed in the CFR since last Tuesday?"*
 >
-> *"Set up an alert on Title 21 Part 314 and send it to my webhook."*
+> *"Which Texas acts take effect on September 1, 2025?"*
 
 ### Ready-to-run research prompt
 
