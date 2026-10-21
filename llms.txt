@@ -12,6 +12,8 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 ## API: Core Concepts
 
+- [How Search Works](https://www.vaquill.ai/docs/api-guide/concepts/search): The hybrid ranking model, the matchType values (any, all, phrase, boolean), what gets indexed, and why search ranks rather than enumerates.
+- [Boolean Search](https://www.vaquill.ai/docs/api-guide/concepts/boolean-search): Terms-and-connectors search on POST /us/statutes/search with matchType "boolean": AND, OR, NOT, /s, /p, /N, +N, atleastN(), phrases, wildcards, field restrictions, precedence, the parsedQuery echo, limits, 422 error messages, and rules for AI agents writing expressions.
 - [Corpus Types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): The 22 corpusType tokens (FEDERAL_LOCAL_RULES, USC, CFR, CFR_ANNUAL, STATE, CONSTITUTION, FEDERAL_RULES, STATE_CONSTITUTION, STATE_RULES, EXECUTIVE_ACTION, REGULATION, FEDERAL_REGISTER, FEDERAL_REGISTER_NOTICE, AGENCY_GUIDANCE, AGENCY_ADJUDICATION, STATE_AGENCY_GUIDANCE, STATE_AG_OPINION, STATE_REGISTER, SESSION_LAW, STATUTE_COMPILATION, SENTENCING_GUIDELINES, US_TAX_TREATY), federal vs state scope, and how to filter a search.
 - [Jurisdictions and State Codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The 56 jurisdictions, 2-letter state codes, and discovering what is queryable via /statutes/coverage.
 - [Section Identifiers](https://www.vaquill.ai/docs/api-guide/concepts/section-ids): The actId format and the search then section then body workflow.

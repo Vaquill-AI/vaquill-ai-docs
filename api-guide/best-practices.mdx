@@ -21,13 +21,14 @@ You can scope tighter still. `code` (state, e.g. `tx_pe`) and `titleNumber` (USC
 
 ## Choose the right matchType
 
-`matchType` is the only exact-match control in the API, and it is what you reach for when hybrid ranking is too loose.
+`matchType` is the exact-match control in the API, and it is what you reach for when hybrid ranking is too loose.
 
 | Value | Behaviour | Use it for |
 |---|---|---|
 | `any` (default) | Hybrid semantic plus keyword ranking | Natural-language questions |
 | `all` | Every query term must appear in the text | Multi-term lookups where recall is hurting you |
 | `phrase` | The exact phrase must appear | Defined terms and statutory phrases |
+| `boolean` | A terms-and-connectors expression that every result satisfies | Alternatives, exclusions, proximity and wildcards: `"trust fund" AND penalty NOT 6672`. See [Boolean search](/api-guide/concepts/boolean-search) |
 
 `any` ranks on intent, so a query can rank a section that shares no wording with it.
 That is what you want for "how long does a landlord have to return a deposit", and wrong for "material adverse effect", where a section that merely discusses the idea is noise.
@@ -37,6 +38,15 @@ Both can return nothing. An empty result under them means no section *we ranked 
 
 ```json
 { "query": "material adverse effect", "corpusType": "STATE", "state": "de", "matchType": "phrase" }
+```
+
+`boolean` is the one to use when the logic matters: one term or another, a term excluded, two terms in the same sentence.
+Write operators in uppercase and always write `AND` out, because a space between words makes a phrase.
+Read `parsedQuery` on the response to see how the expression was grouped.
+A malformed expression is a `422` that names the problem and is not charged.
+
+```json
+{ "query": "(employer OR employee) /s (retaliat* OR discharg*)", "corpusType": "STATE", "state": "ca", "matchType": "boolean" }
 ```
 
 <Tip>

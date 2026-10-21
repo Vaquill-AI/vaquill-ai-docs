@@ -38,9 +38,10 @@ Validation errors (422) include field-level details:
 | `403` | Forbidden | Your key lacks the required scope, or your plan does not include the feature. Webhook delivery is Business-only |
 | `404` | Not Found | Resource does not exist |
 | `409` | Conflict | You already hold this watch. See [409 on watches](#409-on-watches) |
-| `422` | Validation Error | Check request body for missing or invalid fields |
+| `422` | Validation Error | Check request body for missing or invalid fields. A malformed [Boolean expression](/api-guide/concepts/boolean-search#errors) is also a `422`, and is not charged |
 | `429` | Rate Limited | Back off and retry with exponential backoff. Also returned when you exceed your plan's watch cap |
 | `500` | Internal Error | Retry after a brief delay. [Contact support](mailto:contact@vaquill.ai) if it persists |
+| `503` | Service Unavailable | A backend is temporarily unavailable. Not charged. Retry with backoff |
 
 On `403`, webhook delivery on a watch requires the Business plan: use `channel: "email"` or upgrade.
 On `429`, the watch cap is 3 outside Business and 100 on Business.

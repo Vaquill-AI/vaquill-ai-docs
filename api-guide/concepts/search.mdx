@@ -26,39 +26,47 @@ Passing `42 U.S.C. § 1983` as your query is a lookup, not a search.
   If you already hold a well-formed citation, `GET /us/statutes/resolve` does the same job for fewer credits.
 </Tip>
 
-## There is no query syntax
+## Query syntax needs matchType boolean
 
-The query string is passed to both retrieval legs as written.
-It is not parsed as an expression, and the API supports none of the following:
+In the default mode (`any`), and in `all` and `phrase`, the query string is passed to retrieval as written.
+It is not parsed as an expression:
 
-| Not supported | What happens instead |
+| In `any`, `all` and `phrase` | What happens |
 |---|---|
 | `AND`, `OR`, `NOT` | Treated as ordinary words in the query |
-| Quoted phrases | The quote characters become part of the string. Use `matchType` |
-| Proximity operators (`NEAR`, `~5`) | Treated as ordinary text |
+| Quoted phrases | The quote characters become part of the string. Use `matchType: "phrase"` |
+| Proximity operators (`/s`, `/5`, `w/5`) | Treated as ordinary text |
 | Wildcards and truncation (`defib*`) | Treated as ordinary text |
 | Field-qualified syntax (`title:...`) | Treated as ordinary text. Use the filters |
 
-So a query like `defibrillator OR cardiac arrest` runs as one semantic query over that whole string, including the word `OR`.
+So in `any` mode a query like `defibrillator OR cardiac arrest` runs as one semantic query over that whole string, including the word `OR`.
+When such a query looks like a Boolean expression, the response carries a `queryHint` saying so.
+
+To use operators, send `matchType: "boolean"`.
+The query is then read as a terms-and-connectors expression (`AND`, `OR`, `NOT`, `/s`, `/p`, `/N`, wildcards, phrases and grouping), and every result satisfies it.
+See [Boolean search](/api-guide/concepts/boolean-search).
 
 <Warning>
-  Searching several concepts in one string dilutes the query and costs you recall on each of them.
-  Issue one search per concept and union the returned `actId` values yourself.
-  Three separate searches also give you three independent result pools instead of one shared one.
+  In `any` mode, searching several concepts in one string dilutes the query and costs you recall on each of them.
+  Issue one search per concept and union the returned `actId` values yourself, or write the concepts as one Boolean expression.
 </Warning>
 
 ## matchType
 
-`matchType` is the only exact-match control, and it narrows results that ranking has already retrieved.
+`matchType` is the exact-match control.
 
 | Value | Behaviour | Reach for it when |
 |---|---|---|
 | `any` (default) | Hybrid semantic and keyword ranking | The query is a natural-language question |
 | `all` | Every whitespace-separated term must appear in the text | A multi-term lookup is returning loose matches |
 | `phrase` | The exact phrase must appear, case-insensitive | You want a defined term or a statutory phrase |
+| `boolean` | The query is a terms-and-connectors expression, and every result satisfies it over the section's full text | You need alternatives, exclusions, proximity, wildcards or counts. See [Boolean search](/api-guide/concepts/boolean-search) |
 
-Because `all` and `phrase` narrow rather than widen, an empty result under either means nothing we ranked for your query carried those terms.
+`all` and `phrase` narrow results that ranking has already retrieved.
+Because they narrow rather than widen, an empty result under either means nothing we ranked for your query carried those terms.
 That is not the same as the corpus holding no such section, so fall back to `any`, or scope the query more tightly with the filters, before concluding the corpus is missing something.
+
+`boolean` is different: the expression is applied while the corpus is searched, not to a ranked pool afterwards, so a matching section is found wherever relevance would have ranked it, up to the 120 results every search returns.
 
 [Best practices](/api-guide/best-practices) works through when each one earns its place.
 
@@ -98,6 +106,9 @@ It accepts no `query` for the reason above: a count of "sections matching this q
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="Boolean search" href="/api-guide/concepts/boolean-search">
+    Terms and connectors with matchType boolean.
+  </Card>
   <Card title="Pagination" href="/api-guide/pagination">
     How deep a result set goes, and how to page it.
   </Card>

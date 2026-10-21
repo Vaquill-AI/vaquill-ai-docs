@@ -40,23 +40,21 @@ See [Pagination](/api-guide/pagination).
 </Accordion>
 
 <Accordion title="Does the API support AND, OR, NOT, quoted phrases or wildcards?">
-No.
-There is no boolean or query-operator grammar.
-The query string is passed to the retrieval engine as written, so `AND` and `OR` are read as ordinary words.
+Yes, with `matchType: "boolean"` on `POST /us/statutes/search`.
+The query is then read as a terms-and-connectors expression: `AND`, `OR`, `NOT`, `/s` (same sentence), `/p` (same paragraph), `/N` (within N words), quoted phrases, `*` and `?` wildcards and parentheses, plus the spellings used by the major legal research services.
+Every result satisfies the expression, and `parsedQuery` on the response shows how it was read.
 
-Use `matchType` for exact matching (`all` requires every term, `phrase` requires the exact phrase), and the filters for scoping.
-For several concepts, run one search per concept and union the results.
+Operators must be uppercase, and a space between words makes a phrase, so write `AND` out.
+In the default mode (`any`), and in `all` and `phrase`, the query is not parsed and `AND` and `OR` are ordinary words.
 
-Note that `all` and `phrase` narrow results we already ranked for your query, so an empty result under them is not proof the corpus holds no such section.
-
-See [How search works](/api-guide/concepts/search).
+See [Boolean search](/api-guide/concepts/boolean-search) for the full syntax.
 </Accordion>
 
 <Accordion title="Why did a section with none of my query words rank first?">
 The semantic leg of the hybrid ranking matches on meaning, so a section can rank for a question it shares no wording with.
 That is usually what you want for a natural-language question and wrong for a term of art.
 
-Set `matchType` to `phrase` or `all` when you need the words themselves.
+Set `matchType` to `phrase` or `all` when you need the words themselves, or to `boolean` when you need logic such as exclusions or proximity.
 
 See [How search works](/api-guide/concepts/search).
 </Accordion>

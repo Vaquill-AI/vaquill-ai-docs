@@ -110,6 +110,7 @@
             "icon": "book-open",
             "pages": [
               "api-guide/concepts/search",
+              "api-guide/concepts/boolean-search",
               "api-guide/concepts/corpus-types",
               "api-guide/concepts/jurisdictions",
               "api-guide/concepts/citation-formats",
