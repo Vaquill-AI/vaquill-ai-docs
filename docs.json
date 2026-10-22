@@ -10,21 +10,23 @@
   },
   "background": {
     "color": {
-      "light": "#F4F1EC"
+      "light": "#FAFAF9"
     }
   },
   "thumbnails": {
     "appearance": "light",
     "fonts": {
-      "family": "Schibsted Grotesk"
+      "family": "Source Serif 4"
     }
   },
   "fonts": {
     "heading": {
-      "family": "Schibsted Grotesk"
+      "family": "Source Serif 4",
+      "weight": 400
     },
     "body": {
-      "family": "Schibsted Grotesk"
+      "family": "Schibsted Grotesk",
+      "weight": 400
     }
   },
   "logo": {
@@ -290,7 +292,7 @@
   "styling": {
     "eyebrows": "breadcrumbs",
     "codeblocks": {
-      "theme": "github-dark"
+      "theme": "github-light"
     }
   },
   "feedback": {

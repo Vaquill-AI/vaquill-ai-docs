@@ -1,3 +1,17 @@
+/* Vaquill docs: match the vaquill.ai redesign (commit 97f8fc2 in vaquill-ai-site).
+   Ivory ground, maroon accent, hairline rules, 6px panels, serif display at 400.
+   Fonts for headings and body come from docs.json (fonts.*). Source Code Pro is
+   not configurable there, so it is imported here. */
+@import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&display=swap");
+
+:root {
+  --vq-ink: #1c1a17;
+  --vq-muted: #5f5a52;
+  --vq-hairline: #e4e3e0;
+  --vq-raised: #f2f1ef;
+  --vq-radius: 6px;
+}
+
 #navbar img {
   height: 3rem;
   width: auto;
@@ -6,4 +20,71 @@
 footer img {
   height: 3rem;
   width: auto;
+}
+
+/* Headings: serif at 400, nothing heavier. Mintlify sets font-semibold as a
+   utility class on these, so the id selectors are needed to win. */
+#page-title,
+#content h2,
+#content h3 {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--vq-ink);
+}
+#content h4,
+#content h5 {
+  font-weight: 500;
+}
+
+/* Panels: 6px corners, hairline borders, no shadows. Tailwind rounded-2xl is
+   a utility class, so !important is required. */
+.card,
+.callout,
+.accordion,
+.accordion-group,
+[data-component-part="code-block-root"] {
+  border-radius: var(--vq-radius) !important;
+  box-shadow: none !important;
+}
+.card,
+.accordion,
+.accordion-group {
+  border: 1px solid var(--vq-hairline);
+}
+/* Grouped accordions: one outer hairline, single dividers between items. */
+.accordion-group .accordion {
+  border: 0 !important;
+  border-radius: 0 !important;
+  margin-bottom: 0;
+}
+.accordion-group .accordion + .accordion {
+  border-top: 1px solid var(--vq-hairline) !important;
+}
+.card:hover {
+  border-color: #6e3730 !important;
+}
+
+/* Callouts: one neutral surface for every type; the icon carries the type.
+   Warning and danger keep a colour edge so they stay distinguishable. */
+.callout {
+  background-color: var(--vq-raised);
+  border: 1px solid var(--vq-hairline);
+}
+.callout[data-callout-type="warning"] {
+  border-color: #7d5310;
+}
+.callout[data-callout-type="danger"] {
+  border-color: #a4123c;
+}
+
+/* Code: Source Code Pro, white panel with a hairline, matching the marketing
+   site's code panel. github-light (docs.json) supplies the token colours. */
+code,
+pre,
+.shiki {
+  font-family: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+[data-component-part="code-block-root"] {
+  border: 1px solid var(--vq-hairline);
 }
