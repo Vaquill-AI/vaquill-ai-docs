@@ -1,6 +1,6 @@
 ---
 title: "Bulk and SQL access"
-description: "Query the whole US primary-law corpus as a database. 229 Parquet files in an object store, readable in place over HTTPS with DuckDB or loaded into Postgres, plus direct access to the vector index"
+description: "Query the whole US primary-law corpus as a database. 308 Parquet files in an object store, readable in place over HTTPS with DuckDB or loaded into Postgres, plus direct access to the vector index"
 ---
 
 The API answers one question at a time. When you need the corpus itself, take it.
@@ -13,9 +13,9 @@ never call us again.
 -- Runs as-is. No key, no download, no signup.
 INSTALL httpfs; LOAD httpfs;
 
-SELECT citation, section_title, word_count
-FROM read_parquet('https://oss-data-us.vaquill.ai/v2026.08/us_ak_constitutions.parquet')
-WHERE section_title ILIKE '%search%';
+SELECT citation, word_count, text
+FROM read_parquet('https://oss-data-us.vaquill.ai/v2026.09.1/us_ak_constitutions.parquet')
+WHERE text ILIKE '%unreasonable searches%';
 ```
 
 <Note>
@@ -27,12 +27,12 @@ WHERE section_title ILIKE '%search%';
 ## What ships
 
 <CardGroup cols={2}>
-  <Card title="229 Parquet files">
+  <Card title="308 Parquet files">
     One file per jurisdiction and corpus, so you can take only the slice you
     need: `us_ak_constitutions.parquet`, `us_tx_statutes.parquet`, and so on.
   </Card>
   <Card title="One combined tarball">
-    `open-us-law-v2026.08-parquet.tar`, about 4.09 GB, when you would rather
+    `open-us-law-v2026.09.1-parquet.tar`, about 6.9 GB, when you would rather
     fetch once and unpack locally.
   </Card>
   <Card title="A manifest with checksums">
@@ -40,7 +40,7 @@ WHERE section_title ILIKE '%search%';
     can verify an unattended sync.
   </Card>
   <Card title="Dated snapshots">
-    Versions are immutable. Pin `v2026.08` and your results stay reproducible
+    Versions are immutable. Pin `v2026.09.1` and your results stay reproducible
     when the next snapshot lands.
   </Card>
 </CardGroup>
@@ -49,13 +49,13 @@ WHERE section_title ILIKE '%search%';
 |---|---|
 | Manifest | `https://oss-data-us.vaquill.ai/index.json` |
 | Browsable index | `https://oss-data-us.vaquill.ai/index.html` |
-| Combined tarball | `https://oss-data-us.vaquill.ai/v2026.08/open-us-law-v2026.08-parquet.tar` |
+| Combined tarball | `https://oss-data-us.vaquill.ai/v2026.09.1/open-us-law-v2026.09.1-parquet.tar` |
 | Canonical mirror | [Hugging Face](https://huggingface.co/datasets/vaquill/open-us-law) |
 | Ingestion source | [GitHub](https://github.com/Vaquill-AI/open-us-law) |
 
 ## Schema
 
-Every Parquet file carries the same 24 columns.
+Every Parquet file carries the same 27 columns. The 24 below are the long-standing ones; `official_status`, `currency_note` (both VARCHAR) and `adopting_citations` (VARCHAR[]) are newer and are null for most rows.
 
 | Column | Type | What it holds |
 |---|---|---|
