@@ -6,6 +6,29 @@ description: "Updates and additions to the Vaquill Developer API"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-10-22" description="Boolean terms-and-connectors search on POST /us/statutes/search">
+  ## New: Boolean search (`matchType: "boolean"`)
+
+  `POST /us/statutes/search` accepts a terms-and-connectors expression when you send `matchType: "boolean"`, in the syntax of the major legal research services.
+
+  ```json
+  { "query": "\"security deposit\" /s (return OR refund) NOT commercial", "matchType": "boolean", "state": "ca" }
+  ```
+
+  - **Every result satisfies the expression**, judged over the section's full text, and results are ranked by relevance among the matches.
+  - **Operators:** `AND`, `OR`, `NOT`, same sentence `/s`, same paragraph `/p`, within N words `/N` (1 to 255), the ordered forms `+s`, `+p` and `+N`, `atleastN(term)`, `atmN(term)`, exact phrases (`"..."` or words side by side), the wildcards `*`, `!` and `?`, and grouping with `( )`. Word operators are UPPERCASE; lowercase `and`, `or` and `not` are ordinary words.
+  - **Other services' spellings are accepted** and read as the operator they mean, for example `w/5`, `NEAR/5`, `ADJ`, `AND NOT` and `BUT NOT`. See [Also accepted](/api-guide/concepts/boolean-search#also-accepted).
+  - **Field restrictions** search one part of a section, for example `title( )` and `cite( )`.
+  - **New response fields**, present only in Boolean mode:
+    - `parsedQuery` shows exactly how your expression was read, with every grouping that could be in doubt parenthesized. Send it back as the query to run the same search.
+    - `queryWarnings` lists plain-English warnings about a valid expression that may not mean what you intended, such as `AND` and `OR` mixed without parentheses.
+  - **In `any` mode,** `queryHint` tells you when a query looks like a Boolean expression, so you can switch to `matchType: "boolean"`.
+  - **Nothing is silently loosened.** A malformed expression, an unsupported operator or a value out of bounds is a `422` naming the problem and its character position, and it is not charged.
+  - **Pricing:** the same as any search, 4 credits per call. A `503` from a temporary backend outage is refunded.
+
+  See [Boolean Search](/api-guide/concepts/boolean-search) for precedence, limits, recall and errors.
+</Update>
+
 <Update label="2026-10-08" description="The Virgin Islands and American Samoa, state registers, and a flag on answers that are not the exact section you cited">
   ## New: the US Virgin Islands and American Samoa
 
