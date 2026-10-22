@@ -1,11 +1,11 @@
 ---
 title: "Data & Privacy"
-description: "What the Vaquill API stores about your requests, and for how long"
+description: "What the Vaquill API stores about your requests, who processes them, and how to use it with sensitive client matters"
 ---
 
-This page covers the developer API (`api.vaquill.ai`) only, not the Vaquill AI chat product. The two are separate systems with separate data handling: chat is built to retain conversation history by design, since that's the product. The API is not. It exists to serve you statute and regulation text, and it is built to keep as little of your traffic as possible.
+This page covers the developer API (`api.vaquill.ai`) and the MCP server, not the Vaquill AI chat product. The two are separate systems with separate data handling: chat is built to retain conversation history by design, since that's the product. The API is not. It is a data service. It returns US primary law (statutes, regulations, court rules and related government sources) and it is built to keep as little of your traffic as possible.
 
-The short version: your query text (the `query` on `/statutes/search`, or any other request body or parameter) is never written to a database or a log. It exists in memory for the length of the request, and then it's gone.
+The short version: your query text (the `query` on `/us/statutes/search`, or any other request body or parameter) is never written to a database or a log. It exists in memory for the length of the request, and then it's gone. We don't run language models on your requests, we don't generate summaries, and we don't train on anything you send.
 
 ## What's stored
 
@@ -13,6 +13,7 @@ The short version: your query text (the `query` on `/statutes/search`, or any ot
 |---|---|---|---|
 | API key | A SHA-256 hash (used to authenticate you), a separately encrypted copy (so the dashboard can show it to you again), and a short display prefix like `vq_key_ab12...` | Primary database, encrypted at rest | Until you revoke the key |
 | Search and request content | Nothing. Query text, request bodies, and parameters are not persisted. | - | Exists only for the duration of the request |
+| API call log | One row per call: endpoint, HTTP status, response time, credits charged, which API key made the call, and the client's user agent. No query text, request bodies, or headers. | Primary database | Operational record, used to report usage per key |
 | Usage counters | Aggregate call counts per key, per day, per endpoint. No query content. | Ephemeral cache | 48 hours |
 | Billing ledger | User ID, credit amount, a short endpoint label (for example `statutes.search`), timestamp. No query content. | Primary database | Kept as your permanent billing record |
 | Law Change Alerts watch | Webhook URL, an encrypted webhook secret, email address, the board you're watching | Primary database, secret encrypted at rest | Until you delete the watch |
@@ -23,9 +24,68 @@ The short version: your query text (the `query` on `/statutes/search`, or any ot
   Error monitoring for this API runs with personally identifiable information (PII) collection disabled, so error reports don't carry request bodies, headers, or query strings.
 </Note>
 
+There is no query-content logging to switch off, because there is none. Nothing in the table above can be used to reconstruct what you asked.
+
+## Training and secondary use
+
+Query content is never used to train models, improve the service, or build aggregated or de-identified datasets. We don't keep it, so we couldn't. The [Data Processing Agreement](https://vaquill.ai/dpa) commits Vaquill AI and its sub-processors to the same. The only things we use to run and improve the service are the usage records in the table: call counts, response times and error rates.
+
+## Who processes your requests
+
+Only one sub-processor receives query text: **Voyage AI**. It turns the query into an embedding (a list of numbers used for search) and re-ranks the candidate results. No LLM provider receives requests made to the API or the MCP server.
+
+Cloudflare sits in front of the API and handles traffic at the edge location nearest the caller. Our other sub-processors (hosting, database, payments, email, error monitoring) don't receive query text. The full register, with regions and the data each one handles, is available to customers and their counsel on request at [contact@vaquill.ai](mailto:contact@vaquill.ai). We give at least 30 days' notice before adding a sub-processor.
+
+## Where data is processed
+
+- **Query text** is processed in memory on our application servers in the United States.
+- **Edge traffic** is routed through Cloudflare, which serves each request from whichever location is nearest the caller. So not every hop is in the US, though the query is only ever held in memory on our US servers.
+
+## Citation extraction
+
+`POST /us/statutes/extract-citations` takes a block of text (up to 200,000 characters), finds the statute citations in it, and looks each one up. It is the one endpoint where you send a larger body of your own text. That text is processed in memory, discarded once the response is sent, never stored, and never sent to a third party.
+
+There is no document upload or document storage in the API. Nothing you send is kept as a document.
+
+## Sensitive and regulated matters (HIPAA, client confidences)
+
+We don't sign Business Associate Agreements today. The API doesn't need protected health information or client facts to work. A request is a legal research question, such as "Florida statute of limitations for medical malpractice", not facts about a patient or a client.
+
+If you serve customers who need HIPAA protection, design the integration so the sensitive part never leaves your environment:
+
+<Steps>
+  <Step title="Your user asks a question">
+    The question may contain patient or client details. That stays inside your platform.
+  </Step>
+  <Step title="Your system decomposes it">
+    Your application or agent works out the legal question and strips identifiers.
+  </Step>
+  <Step title="Only the legal question reaches Vaquill AI">
+    You call the API or MCP server to search for the relevant section or resolve a citation.
+  </Step>
+  <Step title="We return the law">
+    No client data touches our systems.
+  </Step>
+</Steps>
+
+If that isn't workable, a [bulk data licence](/api-guide/bulk-and-sql) takes Vaquill AI out of the query path altogether. We deliver the corpus under contract, with a copy of the database, and you run search in your own environment. Every query and document stays in your systems under your own BAAs and controls, and you don't depend on us when a request runs.
+
+## Security and contracts
+
+- **Certifications.** We don't hold a SOC 2 Type II, HITRUST or ISO 27001 report today. We'll complete your security questionnaire and walk your engineers through the architecture.
+- **Breach notification.** We notify you within 72 hours of becoming aware of a breach that affects your data. The notice goes to the account administrator on file. See section 2.9 of the [DPA](https://vaquill.ai/dpa) and section 7 of [vaquill.ai/security](https://vaquill.ai/security).
+- **DPA.** Available at [vaquill.ai/dpa](https://vaquill.ai/dpa).
+- **Encryption.** AES-256 at rest for the database, TLS in transit.
+
+## Multiple clients on one account
+
+You can create several API keys per account, and every request is recorded against the key that made it, so usage can be reported per key. One key per client is an easy way to keep each client's usage separate. If you'd rather have full separation, each client can have its own organization, with its own keys and billing.
+
+If you build your own product on the API and serve your own end users, [Section 24 of the Terms](https://vaquill.ai/terms) covers that. You hold the relationship with each end customer, and they don't need Vaquill AI accounts. Reselling or white-labelling our data as a standalone dataset or API is different and needs a separate written agreement (Section 21.7). See [Rights and licensing](/api-guide/rights-and-licensing).
+
 ## Why webhook secrets and delivery status are the exception
 
-Two things in that table look like they hold onto more than "nothing": your webhook secret, and the status of each delivery attempt. Both are necessary to the feature itself, not incidental collection.
+Two things in the storage table look like they hold onto more than "nothing": your webhook secret, and the status of each delivery attempt. Both are necessary to the feature itself, not incidental collection.
 
 The webhook secret is what lets Vaquill AI sign each delivery with `X-Vaquill-Signature` so you can verify it came from us. It's stored encrypted and is never returned by any endpoint once you set it. See [Law Change Alerts](/api-guide/alerts) for how the signature works.
 
@@ -43,5 +103,11 @@ There's no self-serve control today to set a custom retention window or request 
   </Card>
   <Card title="Law Change Alerts" href="/api-guide/alerts">
     Webhook signing, delivery history, and what a subscription stores.
+  </Card>
+  <Card title="Bulk data and SQL" href="/api-guide/bulk-and-sql">
+    Run search in your own environment, outside the query path.
+  </Card>
+  <Card title="Rights and licensing" href="/api-guide/rights-and-licensing">
+    What you may build and redistribute with the data.
   </Card>
 </CardGroup>
