@@ -104,7 +104,7 @@ Error responses:
 | Status | Meaning | What to do |
 |---|---|---|
 | 401 | Invalid API key | Check the key starts with `vq_key_` and the `Bearer ` prefix is present |
-| 402 | Insufficient credits | Top up at [app.vaquill.ai/billing](https://app.vaquill.ai/billing) |
+| 402 | Insufficient credits | Top up at [app.vaquill.ai/settings/billing](https://app.vaquill.ai/settings/billing) |
 | 429 | Rate limit exceeded | Wait and retry (the templates handle this automatically) |
 
 See the [Errors reference](/api-guide/errors) for the full list.
@@ -277,7 +277,7 @@ Make.com counts each HTTP module call and each sheet row read / written, so a si
 | Problem | Cause | Fix |
 |---|---|---|
 | 401 Unauthorized | Invalid or missing API key | Verify the key starts with `vq_key_` and the `Bearer ` prefix is included |
-| 402 Payment Required | No credits remaining | Top up at [app.vaquill.ai/billing](https://app.vaquill.ai/billing) |
+| 402 Payment Required | No credits remaining | Top up at [app.vaquill.ai/settings/billing](https://app.vaquill.ai/settings/billing) |
 | 429 Too Many Requests | Rate limit hit | Add delays between requests; the n8n template retries automatically |
 | Empty results | Query too vague or out of scope | Rephrase; check that `jurisdiction` is set correctly |
 | Google Sheets auth error | OAuth token expired | Re-authenticate the Google Sheets connection |

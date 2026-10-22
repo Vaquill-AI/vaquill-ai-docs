@@ -62,34 +62,43 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
     </CodeGroup>
 
-    A trimmed response looks like this. The top-level fields describe the page, and each `results` entry carries a citation, an excerpt, and links to the official source.
+    A trimmed response looks like this (captured 2026-10-22; null fields are omitted, and only the first of five results is shown). The top-level fields describe the page, and each `results` entry carries a citation, an excerpt, and links to the official source.
 
     ```json
     {
       "results": [
         {
           "actId": "USC_T42_C21_S1983",
-          "citation": "42 U.S.C. § 1983",
-          "citationShort": "42 USC 1983",
+          "citation": "42 U.S.C. § 1983 (2026)",
+          "citationShort": "42 U.S.C. § 1983",
           "title": "Civil action for deprivation of rights",
           "corpusType": "USC",
-          "state": null,
-          "year": 1996,
-          "relevanceScore": 0.91,
-          "excerpt": "Every person who, under color of any statute, ordinance, regulation, custom, or usage...",
-          "titleNumber": 42,
-          "titleName": "The Public Health and Welfare",
+          "state": "federal",
+          "year": 2026,
+          "relevanceScore": 0.863,
+          "excerpt": "Every person who, under color of any statute, ordinance, regulation, custom, or usage, of any State or Territory or the District of Columbia, subjects, or causes to be subjected, any citizen of the United States or other person within the jurisdiction thereof to the deprivation of any rights...",
+          "titleNumber": "42",
+          "titleName": "THE PUBLIC HEALTH AND WELFARE",
           "sectionNumber": "1983",
-          "breadcrumb": ["Title 42", "Chapter 21", "Section 1983"],
-          "htmlUrl": "https://...",
-          "govInfoPdfUrl": "https://..."
+          "breadcrumb": [
+            { "type": "title", "num": "42", "label": "Title 42", "name": "THE PUBLIC HEALTH AND WELFARE" },
+            { "type": "chapter", "num": "21", "label": "Chapter 21", "name": "CIVIL RIGHTS" },
+            { "type": "subchapter", "num": "I", "label": "Subchapter I", "name": "GENERALLY" },
+            { "type": "section", "num": "1983", "label": "Section 1983", "name": "Civil action for deprivation of rights" }
+          ],
+          "actStatus": "in_force",
+          "currentThrough": "2026-09-18",
+          "textUrl": "https://statutes-us.vaquill.ai/usc/olrc/119-111/sections/USC_T42_C21_S1983.txt",
+          "externalUrl": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title42-section1983&num=0&edition=prelim",
+          "sourceUrl": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title42-section1983&num=0&edition=prelim"
         }
       ],
       "count": 5,
+      "total": 5,
       "offset": 0,
       "hasMore": true,
       "query": "civil rights deprivation under color of law",
-      "processingTimeMs": 412.6,
+      "processingTimeMs": 2339.7,
       "creditsConsumed": 4
     }
     ```

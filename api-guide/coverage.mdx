@@ -3,7 +3,7 @@ title: "API Coverage"
 description: "Exactly which US jurisdictions and corpus types the Vaquill statutes API has ingested, with live section counts"
 ---
 
-**5.3M+ distinct sections, indexed as 20M+ retrieval passages**, across federal law and all 56
+**5.4M+ distinct sections, indexed as 20M+ retrieval passages**, across federal law and all 56
 states and territories.
 
 The corpus grows continuously, so this page gives magnitudes and the table below gives the
@@ -26,7 +26,7 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
     rules, state registers, state agency guidance and AG opinions.
   </Card>
   <Card title="Agency guidance" href="/api-guide/coverage/agency-guidance">
-    **50K+ documents** from 53 named federal sources, each filterable with `source`.
+    **98K+ documents** from 53 named federal sources, each filterable with `source`.
   </Card>
   <Card title="State session laws" href="/api-guide/session-laws">
     **20,604 acts** across 50 jurisdictions from the 2025 sessions, as enacted, with dates,
@@ -266,7 +266,7 @@ How often each corpus is re-pulled from its official source. Counts grow between
 | State agency guidance | Monthly, per state. Almost all of this is insurance-regulator bulletins, and the dispatcher walks about two states a day rather than every state every week. |
 
 For the age of any single source, call [`GET /boards`](/api-guide/alerts). It is free and carries
-`lastRetrievedAt`, `cadence` and `retrievalStatus` per source. `GET /us/statutes/coverage` reports
+`lastRetrievedAt` and `cadence` per source. `GET /us/statutes/coverage` reports
 what each corpus is *current through* in the publisher's own words, which is a different question
 and is not available for every state.
 
@@ -284,15 +284,12 @@ way, on a quarterly slot rather than a weekly one, tracking legislatures that si
 year. They report `cadence: "quarterly"` on `GET /boards`.
 
 **Everywhere else**, statutes are re-pulled monthly or carry text as of their ingest date. That is
-a fact you can read rather than assume: `GET /boards` returns `lastRetrievedAt`, `cadence` and
-`retrievalStatus` per source, and anything we have deliberately stopped re-pulling
-is declared `paused` in `freshness` with its reason.
+a fact you can read rather than assume: `GET /boards` returns `lastRetrievedAt` and `cadence` per
+source.
 
-**A cadence is a schedule, not a promise that the last run worked.** Some boards are `failing` or
-have never completed a run at any given moment, which is why every statement above is worth reading
-off `GET /boards` rather than off this page. A `failing` board does not mean the corpus is gone: the
-sections stay queryable at the `currentThrough` the coverage response reports, they are simply not
-being re-pulled on schedule until it clears.
+**A cadence is a schedule.** Read `lastRetrievedAt` against `cadence` on `GET /boards` to see how
+recently a source was pulled. The sections stay queryable at the `currentThrough` the coverage
+response reports.
 
 **Seven jurisdictions are covered but not watchable**: Delaware, the District of Columbia, Hawaii,
 Mississippi, New Mexico, North Carolina and Utah. Their statutes are live, complete and queryable.
