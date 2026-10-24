@@ -5,13 +5,13 @@ description: "Vaquill legal AI for Discord servers with prefix commands, per-cha
 keywords: ["vaquill discord bot", "discord legal ai", "discord rag bot", "discord ask bot", "discord legal research"]
 ---
 
-This bot runs Vaquill AI inside a Discord server. Members ask legal questions with `!ask` and the bot replies with cited cases and statutes. Per-channel history lets members ask follow-up questions. Source code at [github.com/Vaquill-AI/integrations/discord-bot](https://github.com/Vaquill-AI/integrations/tree/main/discord-bot).
+This bot runs Vaquill AI inside a Discord server. Members ask legal questions with `!ask` and the bot replies with answers cited to US primary law: statutes, regulations, court rules and agency guidance. Per-channel history lets members ask follow-up questions. Source code at [github.com/Vaquill-AI/integrations/discord-bot](https://github.com/Vaquill-AI/integrations/tree/main/discord-bot).
 
 ## Features
 
 - `!ask`, `!starters`, `!reset`, `!help` prefix commands (prefix is configurable)
 - Per-channel conversation history (cap configurable, default 20 exchanges)
-- A "Show Sources" button on every response reveals the cited case law and statutes
+- A "Show Sources" button on every response reveals the cited primary-law sources
 - Long answers paginated with Previous / Next buttons
 - Starter-question buttons via `!starters`
 - Per-user and per-channel rate limits with optional Redis backend
@@ -161,7 +161,7 @@ Then `docker compose up -d`.
     Run under a systemd unit with `Restart=always`. The bot does not need an open port.
   </Card>
   <Card title="Fly.io">
-    `fly launch`, set secrets, `fly deploy`. Discord uses long-poll so no public URL is required.
+    `fly launch`, set secrets, `fly deploy`. The bot connects outbound to the Discord gateway over a WebSocket, so no public URL is required.
   </Card>
 </CardGroup>
 

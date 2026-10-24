@@ -13,7 +13,7 @@ Start at the top.
 |---|---|---|---|
 | `GET /us/statutes/section/{actId}/cross-state` | 1 | 6 | At most one provision per state, most similar first, up to 25 states |
 | `POST /us/statutes/search` with `state` as a list | 1 | 4 | One merged ranking across the states you named |
-| One search per state | 1 per state | 4 per state, so 208 for 52 | A guaranteed top hit for each state, including the ones with no strong match |
+| One search per state | 1 per state | 4 per state, so 200 for the 50 states | A guaranteed top hit for each state, including the ones with no strong match |
 
 **Endpoints used:** `GET /us/statutes/section/{actId}/cross-state`, `POST /us/statutes/search`, and `GET /us/statutes/coverage` (free) to check which jurisdictions carry the corpus.
 
@@ -73,7 +73,7 @@ async function crossState(actId, limit = 10) {
 
 Take the `actId` from a `/us/statutes/search` result rather than assembling the string yourself.
 Do not have one? Spend one search to find it, then one `cross-state` call.
-That is two calls for a multi-state comparison against 52 for the per-jurisdiction loop.
+That is two calls for a multi-state comparison against 50 for the per-state loop.
 
 <Warning>
   `similarity` is a retrieval score between 0 and 1 describing how closely two
@@ -162,7 +162,7 @@ Raise `limit` (up to 50) and group by each result's `state`, and treat a missing
 ## Fallback: one search per state
 
 Loop only when you need a guaranteed slot for every named jurisdiction, including the ones with a weak match, and the visible gaps matter more than the spend.
-This is one call per jurisdiction, 52 in all, against a single `cross-state` call.
+This is one call per state, 50 in all (the 50 states; DC and the territories are not counted), against a single `cross-state` call.
 
 <Steps>
   <Step title="Drop the states that do not carry the corpus">

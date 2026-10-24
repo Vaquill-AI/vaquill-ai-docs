@@ -5,7 +5,7 @@ description: "Drop-in legal AI bots for Slack, Discord, Microsoft Teams, Telegra
 keywords: ["slack legal bot", "discord legal bot", "teams legal bot", "telegram legal bot", "whatsapp legal bot", "signal legal bot"]
 ---
 
-There are six chatbots, one per platform, and they share one architecture. Each bot keeps per-channel (or per-DM) conversation history, calls the Vaquill statutes API, renders statute citations, and enforces per-user rate limits.
+There are six chatbots, one per platform, and they share one architecture. Each bot keeps per-channel (or per-DM) conversation history, calls the Vaquill US primary-law search API, renders citations to statutes, regulations, court rules and agency guidance, and enforces per-user rate limits.
 
 <CardGroup cols={2}>
   <Card title="Slack" href="/integrations/chatbots/slack">
@@ -37,7 +37,7 @@ flowchart TD
     A["User message<br/>(Slack, Discord, Teams, etc.)"] --> B["Platform webhook / WebSocket"]
     B --> C["Bot runtime<br/>(Python or Node)"]
     C -->|"POST /api/v1/us/statutes/search"| D["Vaquill statutes API"]
-    D --> E["Format response<br/>+ statute citations"]
+    D --> E["Format response<br/>+ citations"]
     E --> F["Reply in-thread<br/>(when supported)"]
 
     style A fill:#dcfce7,stroke:#16a34a,color:#15803d
@@ -50,14 +50,14 @@ All six bots share the same components:
 - A conversation manager for per-channel or per-DM chat history
 - A rate limiter with a Redis or in-memory backend
 - Slash or prefix commands: `help`, `clear`, `examples`, `stats`
-- Statute citation rendering built on each platform's own primitives (Block Kit, Adaptive Cards, inline keyboards)
+- Citation rendering built on each platform's own primitives (Block Kit, Adaptive Cards, inline keyboards)
 
 ## Pick by deployment surface
 
 | Bot | Hosting model | Public URL required? |
 |---|---|---|
 | Slack | Socket Mode (no URL) or HTTP | HTTP mode only |
-| Discord | Long-poll | No |
+| Discord | Outbound WebSocket (Discord gateway) | No |
 | Microsoft Teams | HTTP via Azure Bot Framework | Yes |
 | Telegram | Polling or webhook | Webhook mode only |
 | WhatsApp | HTTP via Twilio webhooks | Yes |

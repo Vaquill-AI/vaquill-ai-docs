@@ -24,7 +24,7 @@ Source: [github.com/Vaquill-AI/integrations/widget-next](https://github.com/Vaqu
 ## Prerequisites
 
 - Node.js 18+ ([download](https://nodejs.org/))
-- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/settings/api](https://app.vaquill.ai/settings/api). See [Authentication](/api-guide/authentication).
+- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/settings](https://app.vaquill.ai/settings). See [Authentication](/api-guide/authentication).
 
 ## Quickstart
 
@@ -58,7 +58,7 @@ Source: [github.com/Vaquill-AI/integrations/widget-next](https://github.com/Vaqu
 
 ## Configuration
 
-The API key is the only secret. Everything else is hardcoded in `src/config/constants.ts` so embedders edit one file and redeploy.
+The API key is the only secret. The two `NEXT_PUBLIC_*` variables below are optional, non-secret display defaults. All other settings are set in `src/config/constants.ts`, so embedders edit one file and redeploy.
 
 ### Environment variables
 

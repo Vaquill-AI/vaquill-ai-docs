@@ -4,10 +4,10 @@ description: "The 53 named federal sources behind corpusType=AGENCY_GUIDANCE, ea
 ---
 
 Sub-regulatory federal guidance: what an agency says its own rules mean, short of a
-regulation. **53 named sources across 26 agencies.** The table below sums to 86,900 documents.
+regulation. **53 named sources across 26 agencies.** The table below sums to 87,082 documents.
 
 <Note>
-  The 86,900 total covers the named sources on this page only, which is the number the table below
+  The 87,082 total covers the named sources on this page only, which is the number the table below
   sums to. The `AGENCY_GUIDANCE` corpus type holds more: guidance not attributed to one of the
   named sources carries the token without a `source` you can filter on. The token's own total is in
   the [federal coverage table](/api-guide/coverage/federal).
@@ -35,11 +35,11 @@ their results.
 
 <Note>
   `GET /us/statutes/coverage` computes its `AGENCY_GUIDANCE` total out of band rather than per
-  request, so for up to a day after a source is ingested it can report fewer documents than this
-  page. The column below sums to 86,900, measured per source on 2026-09-07 and 2026-09-08. On
-  2026-10-13 the endpoint reported 96,966 for the whole `AGENCY_GUIDANCE` token, and this page
-  does not break that difference down by source. Every row is a served count, not an ingested one.
-  The gap is widest on IRS written determinations, where 45,358 documents are ingested and 35,485
+  request, so for up to a day after a source is ingested it can lag the corpus. The column below sums to
+  87,082, measured per source on 2026-09-07 and 2026-09-08. On 2026-10-13 the endpoint reported
+  96,966 for the whole `AGENCY_GUIDANCE` token, 9,884 more than the column, and this page does
+  not break that difference down by source. Every row is a served count, not an ingested one.
+  Ingested and served counts differ most on IRS written determinations, where 45,358 documents are ingested and 35,485
   are reachable through the API, the difference being 9,873 OCR-read scans. The endpoint stays
   authoritative.
 </Note>
@@ -158,7 +158,7 @@ their results.
 </Accordion>
 
 <Accordion title="irs_irm - agency procedure, not law">
-  The IRS's own instruction manual for its employees, and the largest source here at 121,234
+  The IRS's own instruction manual for its employees, with 121,234
   retrieval passages. Every passage is labeled "IRS internal procedure" and `goodLawStatus` is
   `unknown` on every section, because no IRS source states when an IRM section is superseded.
   Do not read an IRM response timeframe as a statutory deadline.
@@ -419,7 +419,7 @@ their results.
 
 <CardGroup cols={2}>
   <Card title="Federal coverage" href="/api-guide/coverage/federal">
-    The other 13 federal corpora, with per-corpus scope limits.
+    The other 14 federal corpora, with per-corpus scope limits.
   </Card>
   <Card title="Corpus types" href="/api-guide/concepts/corpus-types">
     Every `corpusType` token and how `source` combines with it.

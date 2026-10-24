@@ -27,7 +27,7 @@ Source: [github.com/Vaquill-AI/integrations/vaquill-widget-pro](https://github.c
 
 ## Status and caveats
 
-The chat-completion plumbing in `src/lib/ai/vaquill-client.ts` talks to the Vaquill AI app's chat backend for both streaming and non-streaming paths. A few legacy endpoints from the upstream RAG-widget fork are stubbed. Per-message feedback persists only to the local session cache, citation-by-id lookup and file uploads throw a "not supported" error, and agent-settings return fixed Vaquill defaults.
+The chat-completion plumbing in `src/lib/ai/vaquill-client.ts` talks to the Vaquill AI app's chat backend for both streaming and non-streaming paths. A few endpoints inherited from the widget framework are stubbed. Per-message feedback persists only to the local session cache, citation-by-id lookup and file uploads throw a "not supported" error, and agent-settings return fixed Vaquill defaults.
 
 <Warning>
   The server-side session map lives in process memory. On Vercel cold starts or multi-instance deployments it resets. The React UI's IndexedDB / localStorage is the durable copy, so users do not lose history, but server-side `getConversationMessages` returns empty for a cold instance until at least one turn is sent.
@@ -38,7 +38,7 @@ The `AgentCapability` enum (`fastest-responses`, `optimal-choice`, `advanced-rea
 ## Prerequisites
 
 - Node.js 18+
-- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/developer](https://app.vaquill.ai/developer)
+- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/settings](https://app.vaquill.ai/settings)
 - Optional: an OpenAI API key if you want voice mode (TTS / STT)
 
 ## Quickstart

@@ -7,7 +7,7 @@ keywords: ["vaquill chrome extension", "statute search chrome extension", "chrom
 
 A Manifest V3 Chrome extension that puts Vaquill AI's statute search in any browser tab. The popup calls `api.vaquill.ai` directly using the user's own API key. There is no proxy server and no backend to run.
 
-Works in any Chromium-based browser (Chrome, Edge, Brave, Arc, Opera). The public API covers US statutes only: the US Code, the CFR, all 50 state statute codes, the U.S. Constitution, the Federal Rules, and Executive Orders.
+Works in any Chromium-based browser (Chrome, Edge, Brave, Arc, Opera). The public API covers US primary law: statutes and codes (the US Code and every state and territory code), regulations (the CFR and state administrative codes), constitutions, court rules, agency guidance, the Federal Register, and more. See [API Coverage](/api-guide/coverage).
 
 Source: [github.com/Vaquill-AI/integrations/chrome-extension](https://github.com/Vaquill-AI/integrations/tree/main/chrome-extension).
 
@@ -22,7 +22,7 @@ Source: [github.com/Vaquill-AI/integrations/chrome-extension](https://github.com
 ## Prerequisites
 
 - Google Chrome (or any Chromium-based browser) version 110+
-- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/settings/api](https://app.vaquill.ai/settings/api). See [Authentication](/api-guide/authentication).
+- A Vaquill API key (`vq_key_...`) from [app.vaquill.ai/settings](https://app.vaquill.ai/settings). See [Authentication](/api-guide/authentication).
 
 ## Quickstart
 
@@ -237,7 +237,7 @@ The extension uses vanilla JavaScript with no build step. Edit files directly, t
 
 **API key not working**
 
-- Generate a new key at [app.vaquill.ai/settings/api](https://app.vaquill.ai/settings/api) and re-enter it in the Options page.
+- Generate a new key at [app.vaquill.ai/settings](https://app.vaquill.ai/settings) and re-enter it in the Options page.
 - Check you have credits at [app.vaquill.ai/settings/billing](https://app.vaquill.ai/settings/billing).
 
 **Extension not loading**

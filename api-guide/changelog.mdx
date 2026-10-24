@@ -385,8 +385,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   of Columbia identify an opinion by its issue date, and where a date carries more than one, by the
   official who asked. Those identifiers are ours, derived from what the publisher prints.
 
-  Both are served `goodLawStatus: "unknown"`, as the whole corpus is, and both are subscribable
-  as change-alert boards.
+  All seven are served `goodLawStatus: "unknown"`, as the whole corpus is, and all seven are
+  subscribable as change-alert boards.
 
   Corpus-wide this takes coverage to **5,089,670 sections** across 53 jurisdictions, indexed as
   **19,239,374** retrieval passages, measured 2026-09-11.
@@ -829,7 +829,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 </Update>
 
 <Update label="2026-09-05" description="State financial-institutions regulator bulletins are live as source=state_financial_bulletin under corpusType=STATE_AGENCY_GUIDANCE">
-  ## State financial-institutions regulator bulletins (Arizona, Oregon)
+  ## State financial-institutions regulator bulletins (Arizona, Oregon, New Jersey, Vermont)
 
   `STATE_AGENCY_GUIDANCE` now has **two named sources** and takes a `source` filter:
 
@@ -844,9 +844,9 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   **Nothing you already query changes.** Existing insurance-bulletin results keep their citations, their `actId` values and their counts, and a search with no `source` filter now spans both. A search for insurance guidance will never be handed a credit-union bulletin: the two are separate categories, and each document's `source` says which it is.
 
-  **This is not coverage of state banking law.** These two states are served because their banking regulator is combined with their insurance regulator and publishes both series on one index, under numbers we can cite. Most states' financial regulators publish no numbered series at all, so `source=state_financial_bulletin` returns nothing for the other 47 jurisdictions and no wider rollout is planned.
+  **This is not coverage of state banking law.** These four states are served because their banking regulator is combined with their insurance regulator and publishes both series on one index, under numbers we can cite. Most states' financial regulators publish no numbered series at all, so `source=state_financial_bulletin` returns nothing for any other state and no wider rollout is planned.
 
-  **`state_financial_bulletin` is served `goodLawStatus: "unknown"`.** Neither regulator has rescinded anything we hold (0 of 35 in Arizona, 0 of 10 in Oregon), so there is no measured rescission signal to certify against. Arizona's insurance bulletins keep `good_law` on their own signal, which is 15 of 199 marked (same state and `corpusType`, different publishers). Read `unknown` as "we make no claim", not as "probably still current".
+  **`state_financial_bulletin` is served `goodLawStatus: "unknown"`.** Neither the Arizona nor the Oregon regulator has rescinded anything we hold (0 of 35 in Arizona, 0 of 10 in Oregon), so there is no measured rescission signal to certify against. Arizona's insurance bulletins keep `good_law` on their own signal, which is 15 of 199 marked (same state and `corpusType`, different publishers). Read `unknown` as "we make no claim", not as "probably still current".
 
   Every document carries an `issuedDate` from the publisher's own index, and both sources refresh weekly alongside the rest of the state-guidance registry.
 </Update>
@@ -935,7 +935,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   The unfair-labor-practice and representation cases decided by the five-member National Labor Relations Board itself, which bind later Board panels and the administrative law judges beneath them. **2,762 decisions, 2012 to date**, under `source=nlrb_board_decision`.
 
-  This is a **bounded 15-year window** of a 90-year, 66,612-decision archive. A full backfill is planned.
+  This is a **bounded 15-year window** of a 90-year, 66,612-decision archive. As of 2026-09-04 a full backfill was planned; it shipped on 2026-09-07.
 
   **Two citation forms, both served, neither normalized into the other.** A Board decision is cited `NNN NLRB No. N` as a slip opinion and `NNN NLRB NNN` once the bound volume closes and assigns it a page. These are different identifiers, not variants, because the page number does not exist until the volume closes: 57.45% carry a `slipOpinionNumber` and 42.55% a `pageNumber`, which shows where a decision is in its lifecycle. 56.07% carry the Board's own notice that the opinion "is subject to formal revision before publication in the bound volumes".
 
@@ -1098,7 +1098,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   Each section carries `currentThrough` (e.g. `Public Law 117-58`), naming
   the amending law the compilation reflects. Across the collection
   that ranges from `Public Law 96-308` (1980) to `Public Law 119-75` (2026),
-  a 45-year span in the same corpus. **2.6% of compilations state no currency
+  a 46-year span in the same corpus. **2.6% of compilations state no currency
   at all**, and those carry `compilationCurrencyState: "unstated"` with
   `currentThrough: null` rather than a guessed date.
   `STATUTE_COMPILATION` does not carry a `goodLawStatus` certification.
@@ -1220,8 +1220,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   | Jurisdiction | Sections | Jurisdiction | Sections |
   |---|---|---|---|
-  | New Jersey | 53,319 | Alaska | 25,717 |
-  | Mississippi | 56,800 | Arizona | 23,099 |
+  | Mississippi | 56,800 | Alaska | 25,717 |
+  | New Jersey | 53,319 | Arizona | 23,099 |
   | Oregon | 40,790 | Georgia | 19,795 |
   | Nevada | 30,785 | Rhode Island | 1,185 |
   | Hawaii | 27,121 | Vermont | 1,116 |

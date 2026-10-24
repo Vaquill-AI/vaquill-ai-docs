@@ -5,13 +5,13 @@ description: "Vaquill legal AI in Slack, with @mentions, slash commands, DMs, an
 keywords: ["vaquill slack bot", "slack legal ai", "slack rag bot", "slack socket mode", "slack ask bot"]
 ---
 
-This bot runs Vaquill AI's legal research in a Slack workspace. It responds to `@mentions`, direct messages, and slash commands, and it replies in-thread with cited case law and statutes. Follow-up questions do not need another mention. Source code is at [github.com/Vaquill-AI/integrations/slack-bot](https://github.com/Vaquill-AI/integrations/tree/main/slack-bot).
+This bot runs Vaquill AI's legal research in a Slack workspace. It responds to `@mentions`, direct messages, and slash commands, and it replies in-thread with answers cited to US primary law: statutes, regulations, court rules and agency guidance. Follow-up questions do not need another mention. Source code is at [github.com/Vaquill-AI/integrations/slack-bot](https://github.com/Vaquill-AI/integrations/tree/main/slack-bot).
 
 ## Features
 
 - `@mention`, DM, and `/vaquill` slash command surfaces
 - Per-thread conversation memory with configurable timeout
-- Cited sources block (case name, citation, court) and Helpful / Not Helpful feedback buttons
+- Cited sources block (code or rule, citation, section) and Helpful / Not Helpful feedback buttons
 - Starter-question buttons when the bot is mentioned without a query
 - Per-user and per-channel rate limits (in-memory or Redis-backed)
 - User and channel allowlists / blocklists

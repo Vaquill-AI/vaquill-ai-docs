@@ -204,7 +204,7 @@ There are two independent mechanisms, and they answer different questions.
 | Sends | `X-Vaquill-Signature: sha256=<hex>` | `Authorization`, or a header you name |
 | Checked by | Your handler, recomputing an HMAC | Your gateway, before your code runs |
 
-Most teams reach for `webhookAuth` first, because it works with middleware they already have. Set neither, either, or both.
+`webhookAuth` sends a static credential that an API gateway or middleware can check before your handler runs. Set neither, either, or both.
 
 | `scheme` | What arrives at your endpoint |
 | --- | --- |
@@ -307,7 +307,7 @@ curl -X POST https://api.vaquill.ai/api/v1/watches/{watchId}/test \
 
 ## What changed, and the diff
 
-`GET /watches/{watchId}/changes` lists exactly which sections a board added, amended, or removed, newest first, scoped to the watch's own lifetime (a change from before you subscribed never appears, matching your delivery history).
+`GET /watches/{watchId}/changes` lists exactly which sections a board added, amended, or removed, newest first, covering the source's whole captured history, including changes from before you subscribed. To see only what your watch has covered, pass `since` set to the watch's `createdAt`. Capture begins when change tracking started for that source, and events are kept for about five years, so an empty list means no captured change, not that a section was never amended.
 
 <CodeGroup>
 ```bash cURL
@@ -400,7 +400,7 @@ while True:
 
 ### Paging backwards with beforeId
 
-`sinceId` only walks forward, so it cannot get you the history that already existed when you created the watch. `beforeId` is how you backfill.
+`sinceId` only walks forward from a cursor you already hold, so it does not page back into earlier history. `beforeId` is how you backfill the history captured before you created the watch.
 
 Keep `order=desc` (the default), and pass the **lowest** `id` you have seen as `beforeId` to fetch the page behind it. Repeat until a page comes back empty.
 

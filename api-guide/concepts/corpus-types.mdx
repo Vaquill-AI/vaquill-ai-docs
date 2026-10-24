@@ -5,7 +5,7 @@ description: "The 22 corpusType tokens, how they scope a search, and how source 
 
 `corpusType` chooses which body of law a search runs against. It is the most important filter in
 the API, since it decides whether you get a statute, a regulation, a court rule, agency guidance
-or a decided case.
+or an agency adjudication.
 
 ```json
 { "query": "security deposit return", "corpusType": "STATE", "state": "ca" }
@@ -133,7 +133,7 @@ what makes the field trustworthy rather than derived from a title.
 
 ## Choosing between tokens that look alike
 
-Five pairs are routinely confused. Picking the wrong token returns a confident answer to a
+Four pairs are routinely confused. Picking the wrong token returns a confident answer to a
 different question.
 
 | You want | Use | Not |
@@ -143,7 +143,7 @@ different question.
 | An act that was never codified | `STATUTE_COMPILATION` | `USC`, which has no address for it |
 | A regulation as it reads **now** | `CFR` | `CFR_ANNUAL`, which is a past published edition |
 | What a regulation said in 2004 | `CFR_ANNUAL` | `CFR` with `asOf`, which reconstructs rather than reproduces |
-| What an agency **thinks** a rule means | `AGENCY_GUIDANCE` | `AGENCY_ADJUDICATION`, which is decided cases |
+| What an agency **thinks** a rule means | `AGENCY_GUIDANCE` | `AGENCY_ADJUDICATION`, which is decided agency matters |
 | How an agency **decided** a case | `AGENCY_ADJUDICATION` | `AGENCY_GUIDANCE` |
 
 For asking any corpus what it said on a past date, see

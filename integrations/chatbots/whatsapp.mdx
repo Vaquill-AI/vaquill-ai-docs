@@ -5,7 +5,7 @@ description: "Vaquill legal AI on WhatsApp via Twilio, with a FastAPI server, sl
 keywords: ["vaquill whatsapp bot", "whatsapp legal ai", "twilio whatsapp bot", "whatsapp rag bot", "whatsapp business api"]
 ---
 
-A WhatsApp bot that connects Twilio to the Vaquill `/ask` API. Users message a WhatsApp number, Twilio forwards the message to your FastAPI server, and the bot calls Vaquill AI. The answer, with cited sources, comes back asynchronously so the request stays within Twilio's 15-second timeout. Source code at [github.com/Vaquill-AI/integrations/whatsapp-bot](https://github.com/Vaquill-AI/integrations/tree/main/whatsapp-bot).
+A WhatsApp bot that connects Twilio to the Vaquill US primary-law search API (`POST /us/statutes/search`). Users message a WhatsApp number, Twilio forwards the message to your FastAPI server, and the bot calls Vaquill AI. The answer, with cited sources, comes back asynchronously so the request stays within Twilio's 15-second timeout. Source code at [github.com/Vaquill-AI/integrations/whatsapp-bot](https://github.com/Vaquill-AI/integrations/tree/main/whatsapp-bot).
 
 ## Features
 
@@ -160,7 +160,7 @@ The most-used environment variables are below. The full list is in the [repo `.e
 | `TWILIO_AUTH_TOKEN` | Yes | - | Twilio Auth Token |
 | `TWILIO_WHATSAPP_NUMBER` | Yes | - | Sender number with `whatsapp:` prefix |
 | `VAQUILL_MODE` | No | `standard` | Default research mode |
-| `VAQUILL_COUNTRY_CODE` | No | `IN` | Jurisdiction filter, e.g. `US` |
+| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
 | `RATE_LIMIT_DAILY` | No | `100` | Per-user daily cap |
 | `RATE_LIMIT_HOUR` | No | `30` | Per-user hourly cap |
 | `RATE_LIMIT_MINUTE` | No | `5` | Per-user minute cap |

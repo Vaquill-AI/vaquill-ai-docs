@@ -26,7 +26,7 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
     rules, state registers, state agency guidance and AG opinions.
   </Card>
   <Card title="Agency guidance" href="/api-guide/coverage/agency-guidance">
-    **98K+ documents** from 53 named federal sources, each filterable with `source`.
+    **97K+ documents** from 53 named federal sources, each filterable with `source`.
   </Card>
   <Card title="State session laws" href="/api-guide/session-laws">
     **20,604 acts** across 50 jurisdictions from the 2025 sessions, as enacted, with dates,
@@ -37,8 +37,8 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
 ## What's in the corpus
 
 This is the only table on the page with exact counts, so each fact has a single number. The
-statutes, regulations, court rules, constitutions and registers, agency guidance, AG opinion and
-federal rows were measured **2026-10-09**. The endpoint above is live.
+statutes, regulations, court rules, constitutions and registers, agency guidance and AG opinion rows were measured **2026-10-09**, and the federal row
+on **2026-10-13**. The endpoint above is live.
 
 | Corpus | Jurisdictions | Sections | `corpusType` |
 |---|---|---:|---|
@@ -49,7 +49,7 @@ federal rows were measured **2026-10-09**. The endpoint above is live.
 | State registers (notices, not codified law) | 24 | 144,903 | `STATE_REGISTER` |
 | State agency guidance | 49 | 13,360 | `STATE_AGENCY_GUIDANCE` |
 | State AG opinions | 43 | 104,572 | `STATE_AG_OPINION` |
-| Federal, 15 corpora | Federal | 1,527,270 | See [Federal](/api-guide/coverage/federal) |
+| Federal, 15 corpora | Federal | 1,530,173 | See [Federal](/api-guide/coverage/federal) |
 
 State session laws are held apart from the table above and served by their own endpoints: 20,604 acts across 50 jurisdictions from the 2025 sessions, measured 2026-10-05.
 See [State Session Laws](/api-guide/session-laws).
@@ -126,7 +126,7 @@ Queryable with `corpusType=STATE_AG_OPINION` paired with `state`.
   **These are persuasive authority, not binding law.** Officials follow them in practice, and an
   AG opinion is very often the only interpretive authority that exists for a provision no court
   has reached. Every section in this corpus is served with `goodLawStatus: "unknown"` by
-  construction: only three of the 52 jurisdictions publish any supersession signal at all, so we
+  construction: only three of the 52 jurisdictions surveyed publish any supersession signal at all, so we
   do not certify an opinion as current. See
   [Status and currency](/api-guide/concepts/status-and-currency).
 </Warning>
@@ -182,7 +182,7 @@ year filter.
   Arkansas requires the Attorney General to reproduce the entire proposed initiated act or
   constitutional amendment inside the opinion, and they are served whole.
 
-**Indiana, 9,759 opinions, 1906-2026.** The deepest archive here, with one limitation.
+**Indiana, 9,759 opinions, 1906-2026.** The earliest start of any jurisdiction here, with one limitation.
 
 - Indiana publishes in two citation forms, and both are carried as the state prints them:
   numbered opinions (`2026 Ind. Op. Att'y Gen. 02`) from 1944, and page cites into the annual and
@@ -205,7 +205,7 @@ inside annual report volumes and are not yet extracted.
 opinions are published on a network whose publisher has not permitted us to hold them, so we do
 not hold them and do not intend to without permission.
 
-**Florida, 20,923 opinions, 1913-2026.** Florida is the deepest AG archive we carry, and its
+**Florida, 20,923 opinions, 1913-2026.** Florida is the largest AG archive we carry, and its
 publisher serves it in two forms that are different products:
 
 - 1971-2026, 4,166 opinions, full text. The state publishes these as HTML with its own
