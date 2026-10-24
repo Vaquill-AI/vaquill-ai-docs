@@ -41,17 +41,17 @@ The Vaquill connector adds US primary law to Claude through a **Connect** button
     Claude sends you to Vaquill to sign in, then shows a consent screen naming what Claude is asking for. Approve it once and the decision is remembered, so reconnecting later does not ask again.
   </Step>
   <Step title="Make one live call">
-    A green connection proves nothing. See [Verify it works](#verify-it-works) below.
+    A connected status does not prove it works. See [Verify it works](#verify-it-works) below.
   </Step>
 </Steps>
 
 ## Verify it works
 
 <Warning>
-  **Never trust a green connection.** The server completes the MCP handshake and lists all of its tools with **no credential at all**. Authentication is enforced at the API call behind each tool, not at the protocol layer, so "Connected" and a full tool list are both consistent with a completely broken credential.
+  **A connected status is not proof of a working credential.** The server completes the MCP handshake and lists all of its tools with **no credential at all**. Authentication is enforced at the API call behind each tool, not at the protocol layer, so "Connected" and a full tool list are both consistent with a completely broken credential.
 </Warning>
 
-The only real test is one live call, and the cheapest one is free:
+The only real test is one live call. The cheapest is free:
 
 > "Use Vaquill to list statutes coverage for California."
 
@@ -63,7 +63,7 @@ Test each surface separately. Claude Code, claude.ai, Claude Desktop and Cowork 
 
 You do not create one. On your first connect, Vaquill provisions a key for the connector automatically and holds it server-side. Claude never sees it.
 
-Two consequences worth knowing:
+This has two consequences:
 
 - **It does not count against your plan's key cap.** Connector keys are tracked separately from the keys you create by hand, so connecting does not consume one of your 2 (or 5, on Business) active-key slots, and it cannot lock you out of creating one.
 - **It does not appear in your dashboard key list.** That list shows only keys you created, so the connector's key cannot be seen or revoked from there. Disconnecting the connector in Claude stops Claude using it, but does not itself revoke the key; contact support if you need it revoked outright.
@@ -74,9 +74,9 @@ Billing is unchanged: the connector draws on the same credit balance as any othe
 
 The connector serves the **US** corpus: the US Code, all 50 state codes plus DC and Puerto Rico, federal and state regulations, court rules, constitutions, agency guidance and adjudications, session laws and the Federal Register.
 
-**India is not available over OAuth.** The India corpus is served from a separate, deliberately disjoint document at `https://mcp.vaquill.ai/in/mcp`, and it authenticates with a `vq_key_` API key in an `Authorization` header rather than a Connect button. There is no consent flow for it yet. See [Vaquill MCP](/integrations/mcp/vaquill) for the key-based setup.
+**India is not available over OAuth.** The India corpus is served from a separate document at `https://mcp.vaquill.ai/in/mcp`, and it authenticates with a `vq_key_` API key in an `Authorization` header instead of a Connect button. There is no consent flow for it yet. See [Vaquill MCP](/integrations/mcp/vaquill) for the key-based setup.
 
-That separation is intentional in both directions: a US connection never exposes India tools, and the reverse. Connect only the corpus you need, because every connected server keeps its tool definitions in context for the whole conversation.
+A US connection never exposes India tools, and an India connection never exposes US ones. Connect only the corpus you need, because every connected server keeps its tool definitions in context for the whole conversation.
 
 ## Which one should I use
 
@@ -108,4 +108,4 @@ You can run the connector and the plugin together, but there is no reason to: bo
 
 ## Attribution
 
-**On the Pro plan, attribution is required**: a visible "Legal data by Vaquill AI" credit, linked to the site, wherever the data is surfaced. Business waives it. This is a licence term, not a suggestion, and it applies to the connector exactly as it does to a key.
+**On the Pro plan, attribution is required**: a visible "Legal data by Vaquill AI" credit, linked to the site, wherever the data is surfaced. Business waives it. This is a licence term, and it applies to the connector the same way it applies to a key.

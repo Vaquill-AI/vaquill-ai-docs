@@ -47,11 +47,11 @@ the `corpusType` board it was captured on.
   itself. For the publisher's own dates read `amendmentHistory` on
   `GET /us/statutes/section/{actId}`.
 
-  Coverage is bounded by capture, not by the age of the law. Change capture
+  Coverage depends on capture, not on the age of the law. Change capture
   began long after the corpus did, runs per source, and events are swept at 24
-  months. An empty `changes` list means **no captured change**, not **never
-  amended**. The `coverage` field on the response says so in prose. Surface it
-  rather than rendering an empty list as "unchanged".
+  months. An empty `changes` list means no change was captured. It does not
+  mean the section was never amended. The `coverage` field on the response says
+  so in prose. Surface it rather than rendering an empty list as "unchanged".
 </Warning>
 
 A `removed` as the newest change means the section is gone from the corpus, so
@@ -69,9 +69,9 @@ cross-references the one you asked about.
 | `limit` | 25 | Max 100. `truncated` is true when more exist. |
 
 A section lookup already tells you what a section cites.
-This is the other direction, and it is the one you cannot get by reading the
+This route goes the other direction, which you cannot get by reading the
 section: which provisions elsewhere depend on this one.
-That is the question behind "if this changes, what else is affected".
+It answers "if this changes, what else is affected".
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/cited-by?limit=50" \
@@ -89,8 +89,8 @@ refunded.
 
 <Note>
   This reads references as the publisher wrote them. A citation the source never
-  recorded in machine-readable form cannot appear here, so treat a result as
-  evidence of a citation rather than proof there are no others.
+  recorded in machine-readable form cannot appear here, so a missing row does
+  not prove a section is uncited.
 </Note>
 
 ## Definitions: the terms that govern a section
@@ -99,7 +99,7 @@ refunded.
 apply to a section, parsed from its chapter's definitions section.
 No parameters.
 
-Statutes do not use ordinary English.
+Statutes often depart from ordinary English.
 "Person" routinely includes corporations, "employee" routinely excludes
 independent contractors, and the section you are reading almost never says so:
 the definition lives in a separate section elsewhere in the chapter.
@@ -157,9 +157,9 @@ since a federal section has no state analogue by definition.
   `similarity` is a retrieval score between 0 and 1 describing how closely two
   provisions read. It is not a legal opinion.
 
-  A high score means the provisions cover the same ground, never that they
-  impose the same obligation, and the differences are usually the point. Treat
-  this as the shortlist to read, not the answer.
+  A high score means the provisions cover the same ground. It does not mean they
+  impose the same obligation, and the differences are usually the point. Use
+  the results as a shortlist to read.
 </Warning>
 
 ## Related

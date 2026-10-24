@@ -3,9 +3,9 @@ title: "Data & Privacy"
 description: "What the Vaquill API stores about your requests, who processes them, and how to use it with sensitive client matters"
 ---
 
-This page covers the developer API (`api.vaquill.ai`) and the MCP server, not the Vaquill AI chat product. The two are separate systems with separate data handling: chat is built to retain conversation history by design, since that's the product. The API is not. It is a data service. It returns US primary law (statutes, regulations, court rules and related government sources) and it is built to keep as little of your traffic as possible.
+This page covers the developer API (`api.vaquill.ai`) and the MCP server, not the Vaquill AI chat product. The two are separate systems with separate data handling. Chat retains conversation history by design, since that is the product. The API is a data service that returns US primary law (statutes, regulations, court rules and related government sources), and it keeps as little of your traffic as possible.
 
-The short version: your query text (the `query` on `/us/statutes/search`, or any other request body or parameter) is never written to a database or a log. It exists in memory for the length of the request, and then it's gone. We don't run language models on your requests, we don't generate summaries, and we don't train on anything you send.
+Your query text (the `query` on `/us/statutes/search`, or any other request body or parameter) is never written to a database or a log. It lives in memory for the length of the request and is then discarded. We don't run language models on your requests or generate summaries from them, and we don't train on anything you send.
 
 ## What's stored
 
@@ -28,7 +28,7 @@ There is no query-content logging to switch off, because there is none. Nothing 
 
 ## Training and secondary use
 
-Query content is never used to train models, improve the service, or build aggregated or de-identified datasets. We don't keep it, so we couldn't. The [Data Processing Agreement](https://vaquill.ai/dpa) commits Vaquill AI and its sub-processors to the same. The only things we use to run and improve the service are the usage records in the table: call counts, response times and error rates.
+Query content is never used to train models, improve the service, or build aggregated or de-identified datasets. We don't keep it, so there is nothing to train on. The [Data Processing Agreement](https://vaquill.ai/dpa) commits Vaquill AI and its sub-processors to the same. The only things we use to run and improve the service are the usage records in the table: call counts, response times and error rates.
 
 ## Who processes your requests
 
@@ -85,7 +85,7 @@ If you build your own product on the API and serve your own end users, [Section 
 
 ## Why webhook secrets and delivery status are the exception
 
-Two things in the storage table look like they hold onto more than "nothing": your webhook secret, and the status of each delivery attempt. Both are necessary to the feature itself, not incidental collection.
+Two entries in the storage table go beyond "nothing": your webhook secret, and the status of each delivery attempt. The webhook feature needs both, and neither is incidental collection.
 
 The webhook secret is what lets Vaquill AI sign each delivery with `X-Vaquill-Signature` so you can verify it came from us. It's stored encrypted and is never returned by any endpoint once you set it. See [Law Change Alerts](/api-guide/alerts) for how the signature works.
 
@@ -93,7 +93,7 @@ Delivery attempts (status code, success, a short error string) exist so `GET /wa
 
 ## What we don't do (yet)
 
-There's no self-serve control today to set a custom retention window or request early deletion of your account's records. If your organization needs that (a shorter window, a signed data processing agreement, or deletion on request) for a compliance review or an RFP, email [support](mailto:contact@vaquill.ai) and we'll work it out directly. This is worth asking for; enterprise legal-AI buyers increasingly expect it, and we'd rather hear the requirement than have you guess at it.
+There's no self-serve control today to set a custom retention window or request early deletion of your account's records. If your organization needs that (a shorter window, a signed data processing agreement, or deletion on request) for a compliance review or an RFP, email [support](mailto:contact@vaquill.ai) and we will work it out directly.
 
 ## Related
 

@@ -4,14 +4,14 @@ description: "How often a citation resolves to the right section, how often it r
 ---
 
 This page reports how well `GET` and `POST /us/statutes/resolve` read real citations.
-It is measured, not estimated, and it lists the gaps as plainly as the strengths.
-Figures were taken on 2026-10-08 against the live corpus.
+The figures are measured, not estimated, and the gaps are listed next to the strengths.
+They were taken on 2026-10-08 against the live corpus.
 
 ## The headline
 
 We test two kinds of citation.
-**25,112 citations should resolve to one section.**
-**1,575 should not**: a whole chapter, a run of sections, a string that fits more than one law, or law we do not hold.
+25,112 citations should resolve to one section.
+1,575 should not: a whole chapter, a run of sections, a string that fits more than one law, or law we do not hold.
 
 | Citations that should resolve (25,112) | Share |
 |---|---:|
@@ -25,10 +25,9 @@ We test two kinds of citation.
 | Answered, and marked so you can tell (`matchLevel`) | 144 |
 | Answered with a wrong section | 3 |
 
-**A wrong answer is the number that matters most.**
-A missed citation costs you a retry.
-A wrong section can end up in a brief.
-So the resolver is built to refuse when it is unsure, and every figure below shows wrong answers beside right ones.
+The wrong-section count matters most.
+A missed citation costs a retry, but a wrong section can end up in a brief, so the resolver is built to refuse when it is unsure.
+Every figure below shows wrong answers beside right ones.
 
 ## By area
 
@@ -146,8 +145,8 @@ A bare rule-set abbreviation that several states print (`CR 56`, `RAP 2.5`) is r
 
 ## Where coverage is thinner
 
-**Court rules are the weakest area.**
-Most of the citations that get no answer are court rules, because the rule is held but in a shape the lookup cannot reach yet (for example one record that spans several rule numbers, or a state's own short form that we do not read).
+Court rules are the weakest area.
+Most of the citations that get no answer are court rules. The rule is held, but in a shape the lookup cannot reach yet (for example one record that spans several rule numbers, or a state's own short form that we do not read).
 Outside court rules, no area misses more than 1.4% of its citations.
 
 - About 649 of the 1,171 court-rule misses resolve as soon as the caller passes `state`.
@@ -162,10 +161,9 @@ Outside court rules, no area misses more than 1.4% of its citations.
 The test set was built by research passes that catalogued how citations are written for each jurisdiction and form, attested each against a court rule, a legislature page or an opinion where one could be fetched, and resolved the expected section from the live corpus.
 Every score compares the resolver's answer with that expected section.
 
-Read the figures with these limits in mind:
+The figures have limits:
 
-- The set is our own research.
-  It is not an independent benchmark, and the forms we thought of are over-represented compared with forms we did not.
+- The set is our own research, not an independent benchmark, and the forms we thought of are over-represented compared with forms we did not.
 - It measures the resolver in isolation.
   Real traffic includes malformed and incomplete strings that a clean test set does not.
 - Some entries were corrected after the corpus grew, so that a citation that now resolves correctly is not scored as a miss.

@@ -1,16 +1,16 @@
 ---
 title: "Signal Bot"
 sidebarTitle: "Signal"
-description: "Vaquill legal AI on Signal via signal-cli-rest-api - Docker Compose stack with primary or linked-device registration."
+description: "Vaquill legal AI on Signal via signal-cli-rest-api, as a Docker Compose stack with primary or linked-device registration."
 keywords: ["vaquill signal bot", "signal legal ai", "signal-cli-rest-api", "signalbot", "signal rag bot"]
 ---
 
-A Signal messenger bot for Vaquill AI, built on the unofficial [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) and the [signalbot](https://github.com/signalbot-org/signalbot) Python framework. Two Docker containers - `signal-cli` (handles the Signal protocol) and `signal-bot` (Python app calling Vaquill AI) - communicate over a local WebSocket. Source code at [github.com/Vaquill-AI/integrations/signal-bot](https://github.com/Vaquill-AI/integrations/tree/main/signal-bot).
+A Signal messenger bot for Vaquill AI, built on the unofficial [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) and the [signalbot](https://github.com/signalbot-org/signalbot) Python framework. It runs as two Docker containers that communicate over a local WebSocket: `signal-cli` handles the Signal protocol, and `signal-bot` is the Python app that calls Vaquill AI. Source code at [github.com/Vaquill-AI/integrations/signal-bot](https://github.com/Vaquill-AI/integrations/tree/main/signal-bot).
 
 <Warning>
   Signal does not offer an official bot API. This integration uses the unofficial signal-cli project.
 
-  **Account ban risk** exists if Signal's anti-abuse systems detect bot-like behavior. Keep volume low, use a dedicated phone number, and pin Docker image versions in production.
+  Signal's anti-abuse systems may ban an account that shows bot-like behavior. Keep volume low, use a dedicated phone number, and pin Docker image versions in production.
 </Warning>
 
 ## Features
@@ -18,7 +18,7 @@ A Signal messenger bot for Vaquill AI, built on the unofficial [signal-cli-rest-
 - Plain-text Q&A via the Vaquill `/ask` API
 - Per-chat conversation history
 - Slash-like commands: `help`, `examples`, `stats`, `clear`
-- Runs entirely inside a local Docker network - no public URL required
+- Runs entirely inside a local Docker network, so no public URL is required
 
 ## Prerequisites
 
@@ -28,7 +28,7 @@ A Signal messenger bot for Vaquill AI, built on the unofficial [signal-cli-rest-
 
 ## Platform setup
 
-You need to either register a fresh phone number with Signal, or link the bot as a secondary device on an existing Signal account.
+Either register a fresh phone number with Signal, or link the bot as a secondary device on an existing Signal account.
 
 ### Option A: Register a fresh number (primary device)
 
@@ -54,7 +54,7 @@ You need to either register a fresh phone number with Signal, or link the bot as
 
 ### Option B: Link as a secondary device
 
-This keeps your existing Signal phone active and avoids re-registering a number:
+Your existing Signal phone stays active, and you do not have to re-register a number:
 
 ```bash
 curl "http://localhost:8080/v1/qrcodelink?device_name=vaquill-bot"
@@ -63,7 +63,7 @@ curl "http://localhost:8080/v1/qrcodelink?device_name=vaquill-bot"
 Open the returned URL (or scan the QR), then in your Signal mobile app go to **Settings > Linked Devices > Add a new device** and scan it.
 
 <Info>
-  The registration is tied to the `signal-cli` Docker volume. Back it up - losing the volume means re-registering and a new Signal safety number.
+  The registration is tied to the `signal-cli` Docker volume. Back it up, because losing the volume means re-registering and getting a new Signal safety number.
 </Info>
 
 ## Quickstart
@@ -189,10 +189,10 @@ Deploy as two separate applications in the same project:
 
 ### Risks to plan for
 
-- **No official Signal bot API** - this is an unofficial integration.
-- **Account ban risk** if Signal detects automated behavior. Keep volume low and ideally use a dedicated number.
-- **Protocol breakage** - signal-cli updates can break on Signal protocol changes. Pin image versions (`bbernhard/signal-cli-rest-api:0.92`) in production rather than `latest`.
-- **Volume backups** - the phone-number registration is tied to the persistent volume. Back it up regularly.
+- Signal has no official bot API, so this is an unofficial integration.
+- Signal may ban the account if it detects automated behavior. Keep volume low and use a dedicated number where you can.
+- Changes to the Signal protocol can break signal-cli. Pin image versions (`bbernhard/signal-cli-rest-api:0.92`) in production rather than `latest`.
+- The phone-number registration is tied to the persistent volume. Back it up regularly.
 
 ## Troubleshooting
 
@@ -208,7 +208,7 @@ Deploy as two separate applications in the same project:
 
 <CardGroup cols={2}>
   <Card title="WhatsApp" href="/integrations/chatbots/whatsapp">
-    The official Business API path.
+    The official Business API route.
   </Card>
   <Card title="Telegram" href="/integrations/chatbots/telegram">
     Lightest setup, no Docker required.

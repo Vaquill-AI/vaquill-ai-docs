@@ -90,7 +90,7 @@ It takes the same scoping filters as search, runs no ranking, and returns an exa
 A scope that matches nothing is refunded.
 
 It takes no `query`, deliberately: ranking runs over a bounded window, so "how many sections match this query" has no answer beyond the size of that window.
-Counting a scope is exact, which is what you want before deciding whether to walk one.
+Counting a scope is exact, which helps when you are deciding whether to walk one.
 
 See [Build a subject corpus](/api-guide/recipes/subject-corpus).
 </Accordion>
@@ -147,7 +147,7 @@ For applicability, exception and enforcement provisions, classify from the headi
 <AccordionGroup>
 
 <Accordion title="How do I find what changed since my last sync?">
-Three mechanisms, for three different questions.
+Which mechanism to use depends on the question.
 
 | You want | Use |
 |---|---|
@@ -162,7 +162,7 @@ See [Law change alerts](/api-guide/alerts).
 
 <Accordion title="How often does a given section actually change?">
 Read `amendmentYears`, `lastAmendedYear` and `amendmentsCount` on the section.
-Those come from the publisher's own record and go back decades, which is what you want for a question about how volatile a provision is.
+Those come from the publisher's own record and go back decades, so they suit a question about how volatile a provision is.
 
 See [Amendment history](/api-guide/concepts/amendment-history).
 </Accordion>
@@ -203,10 +203,10 @@ For the corpus itself rather than answers about it, see [Bulk and SQL access](/a
 </Accordion>
 
 <Accordion title="Can I get a bulk export of a corpus that is not in the public dataset?">
-Sometimes, as an agreed arrangement rather than a self-serve download, because the constraint is licensing rather than engineering.
+Sometimes, by agreement. It is not a self-serve download, because the constraint is licensing, not engineering.
 Delivery matches the public files: Parquet, one file per jurisdiction, with a manifest and checksums.
 
-A narrower scope, a subject area or a specific set of jurisdictions, is a much faster conversation than a full corpus.
+A narrower scope, such as a subject area or a specific set of jurisdictions, is a much faster conversation than a full corpus.
 Email [contact@vaquill.ai](mailto:contact@vaquill.ai) with the scope you need.
 </Accordion>
 

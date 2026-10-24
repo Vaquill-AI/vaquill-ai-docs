@@ -3,11 +3,11 @@ title: "Bulk and SQL access"
 description: "Query the whole US primary-law corpus as a database. 308 Parquet files in an object store, readable in place over HTTPS with DuckDB or loaded into Postgres, plus direct access to the vector index"
 ---
 
-The API answers one question at a time. When you need the corpus itself, take it.
+The API answers one question at a time. For the corpus itself, use the bulk files.
 
 Every dated snapshot ships as Parquet in a public object store. You can query it
-where it sits, load it into your own warehouse, or pull the whole thing down and
-never call us again.
+where it sits, load it into your own warehouse, or download all of it and run
+without calling us again.
 
 ```sql
 -- Runs as-is. No key, no download, no signup.
@@ -135,40 +135,39 @@ shasum -a 256 -c SHA256SUMS
 ## The vector index
 
 The corpus is also held as an embedded, chunked retrieval index. Direct access
-to that index is available under a data licence, which matters if you would
-rather not spend the compute re-embedding several million sections to get back
-to where we already are.
+to that index is available under a data license, which saves you the compute of
+re-embedding several million sections yourself.
 
 Talk to us at [contact@vaquill.ai](mailto:contact@vaquill.ai) about scope.
 
 ## What this is not
 
 <Warning>
-  This is not a hosted replica we operate for you. There is no connection string
-  to rent. You take a copy and run it on your own infrastructure, which is the
-  point: the copy is yours, and it keeps working if we do not.
+  We do not operate a hosted replica for you, and there is no connection string
+  to rent. You take a copy and run it on your own infrastructure. The copy is
+  yours and keeps working even if we stop operating.
 </Warning>
 
-## Licence
+## License
 
 The legal text is public domain under the government edicts doctrine
 (*Georgia v. Public.Resource.Org*, 590 U.S. 255 (2020)). Our compilation, the
 schema, citations, hierarchy and cross-references, is CC BY-NC 4.0 from snapshot
 v2026.09 (earlier snapshots were released under CC BY 4.0 and stay that way).
-Commercial use of the compilation needs a separate licence from us. The
+Commercial use of the compilation needs a separate license from us. The
 ingestion pipelines are Apache-2.0.
 
 Attribute as "Open US Law by Vaquill AI, CC BY-NC 4.0".
 
 <Warning>
-  **The free snapshot and a paid bulk licence are not the same thing.** Anything
-  you take from the public object store is yours under the licence it was
+  The free snapshot and a paid bulk license are licensed differently. Anything
+  you take from the public object store is yours under the license it was
   published with: CC BY 4.0 for snapshots before v2026.09, CC BY-NC 4.0 from
   v2026.09. Those grants are irrevocable.
 
   A paid bulk delivery, where we ship you the corpus under a separate signed
-  agreement rather than answering calls, is different: on termination or expiry
-  you delete stored copies of our compilation within 30 days. There the corpus
-  is the deliverable, so open-ended retention would let one period buy it
+  agreement rather than answering calls, works the other way: on termination or
+  expiry you delete stored copies of our compilation within 30 days. The corpus
+  is the deliverable there, so open-ended retention would let one period buy it
   outright. See [Rights and licensing](/api-guide/rights-and-licensing).
 </Warning>

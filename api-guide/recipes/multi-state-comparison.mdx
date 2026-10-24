@@ -3,7 +3,7 @@ title: "Compare a rule across states"
 description: "Get the comparable provision in other states from one section you already have, or run one multi-state search, instead of looping a search per jurisdiction"
 ---
 
-**What this gets you:** a multi-state comparison table for any rule, built automatically instead of by hand - useful for due diligence, multi-state compliance, or any "how does this vary by state" question.
+**What this gets you:** a multi-state comparison table for a rule, built from API calls instead of by hand. It suits due diligence, multi-state compliance, and any "how does this vary by state" question.
 
 Many legal questions are really the same question asked of many jurisdictions: how does each state handle security deposits, non-competes, or breach notice?
 There are three ways to answer that here, and they differ by an order of magnitude in cost.
@@ -78,9 +78,8 @@ That is two calls for a multi-state comparison against 52 for the per-jurisdicti
 <Warning>
   `similarity` is a retrieval score between 0 and 1 describing how closely two
   provisions read. It is not a legal opinion. A high score means the provisions
-  cover the same ground, never that they impose the same obligation, and the
-  differences are usually the point. Treat the response as the shortlist to read,
-  not the answer.
+  cover the same ground, not that they impose the same obligation, and the
+  differences are usually the point. Read the response as a shortlist.
 </Warning>
 
 A trimmed response:
@@ -150,7 +149,7 @@ def best_per_state(results: list[dict]) -> dict[str, dict]:
 ```
 </CodeGroup>
 
-One caveat that decides whether this is enough: the response is **one merged ranking**, not one slot per state.
+One caveat decides whether this is enough. The response is a single merged ranking with no reserved slot per state.
 A jurisdiction whose provision is worded unusually can be pushed off the page by five strong hits from another state.
 Raise `limit` (up to 50) and group by each result's `state`, and treat a missing state as "not in the top N", not as "no such law".
 

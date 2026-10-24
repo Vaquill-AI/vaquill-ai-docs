@@ -3,8 +3,8 @@ title: "State and territory coverage"
 description: "Per-jurisdiction section counts for statutes, regulations, constitutions and court rules across all 56 US jurisdictions"
 ---
 
-**3.5M+ sections across 56 jurisdictions**, 50 states, DC, Puerto Rico, Guam, the Northern Mariana Islands, the US Virgin Islands and American Samoa. The per-jurisdiction
-matrix below carries the measured counts, with the date they were taken.
+**3.5M+ sections across 56 jurisdictions**, 50 states, DC, Puerto Rico, Guam, the Northern Mariana Islands, the US Virgin Islands and American Samoa. The matrix below gives
+the measured counts per jurisdiction, with the date they were taken.
 
 Each column maps to a `corpusType` filter paired with `state`: statutes to `STATE`, regulations
 to `REGULATION`, constitutions to `STATE_CONSTITUTION`, court rules to `STATE_RULES`.
@@ -13,25 +13,25 @@ to `REGULATION`, constitutions to `STATE_CONSTITUTION`, court rules to `STATE_RU
 { "query": "landlord retaliation", "corpusType": "STATE", "state": "ms" }
 ```
 
-Pass a **list** to `state` to search several jurisdictions in one call, which costs one search
+Pass a list to `state` to search several jurisdictions in one call, which costs one search
 rather than one per jurisdiction.
 
 ## Per-jurisdiction matrix
 
 Measured 2026-10-09, sorted by statute volume. A dash means we do not serve that corpus for that
-jurisdiction. The dashes (Guam, the District of Columbia and the Virgin Islands have no constitution row of their own) are explained in
+jurisdiction. Guam, the District of Columbia and the Virgin Islands have no constitution row of their own, as explained in
 [The territories](#the-territories).
-Markers [1], [2] and [3] are no longer gaps and are kept because the build behind each is worth reading. Marker [4] was retired when Missouri's court rules were added, and the other numbers are unchanged so that existing links keep working. Marker [5]
-is not a gap but a sourcing caveat, in
-[Massachusetts regulations are an unofficial copy](#massachusetts-regulations-are-an-unofficial-copy-and-we-say-so-per-section).
-Marker [6] is also a sourcing caveat, in
+Markers [1], [2] and [3] describe how those jurisdictions' court rules were built. Markers [5] and [6] are sourcing caveats, explained in
+[Massachusetts regulations are an unofficial copy](#massachusetts-regulations-are-an-unofficial-copy-and-we-say-so-per-section)
+and
 [Oklahoma regulations come from two sources](#oklahoma-regulations-come-from-two-sources-and-the-currencynote-says-which).
+There is no marker [4].
 
 <Note>
   These rows are counted on a slightly different rule from the corpus totals: they exclude
   superseded records and do not collapse versioned duplicates, so summing a column lands a little
-  under the matching `corpusType` total. Court rules are the widest case. Take `GET /us/statutes/coverage` as authoritative for a total
-  and this table as the per-jurisdiction shape.
+  under the matching `corpusType` total. Court rules show the widest gap. `GET /us/statutes/coverage` is authoritative for a total,
+  and this table gives the per-jurisdiction shape.
 </Note>
 
 | Jurisdiction | Statutes | Regulations | Constitution | Court Rules |
@@ -127,8 +127,8 @@ Cite them as `12 V.I. R. & Regs. § 803-52`, `V.I. R. Civ. P. 6-3` and `V.I. S. 
 
 ### Why one jurisdiction shows no court rules
 
-No jurisdiction does any more. The heading is kept so that existing links keep working.
-Missouri's court rules (1,536 sections) and Vermont's (833 rules) were the last two added.
+Every jurisdiction in the matrix has court rules.
+Missouri's (1,536 sections) and Vermont's (833 rules) were the last two added.
 
 **[1] Served from the publisher the Judiciary points to** - Vermont.
 Vermont publishes its amendment stream (promulgation orders, rule changes, proposed amendments) on
@@ -141,23 +141,23 @@ professional conduct. Each rule is cited as the Judiciary cites it (`Vt. R. Civ.
 withheld under our licence. The rule text itself is a government edict and in the public domain.
 
 **[2] Built from a 2023 compilation plus the amending orders applied forward** - Colorado.
-Two Colorado publishers are involved. The **legislature's** Office of Legislative Legal Services
+Two Colorado publishers are involved. The legislature's Office of Legislative Legal Services
 publishes the consolidated volume, and the 2023 edition is still the current one: no later edition
 has ever been issued, and the office now routes current court-rules access to a paid commercial
-product. The **judiciary** publishes every adopted rule change as a free order on its own site, and
+product. The judiciary publishes every adopted rule change as a free order on its own site, and
 each order carries the amended text.
 
-Colorado is therefore the one jurisdiction here whose court rules are not a single consolidated
-fetch. The 2023 volume is the base, and every adopted order issued after it is applied forward on
-top, so a rule reflects the amendments made since the compilation stranded.
+Colorado is therefore the one jurisdiction here whose court rules do not come from a single
+consolidated source. The 2023 volume is the base, and every adopted order issued after it is applied forward on
+top, so a rule reflects the amendments made since the compilation.
 
-Two limits worth knowing, because neither is visible from a section count:
+Two limits apply, and neither is visible from a section count:
 
-- **Not every order could be applied automatically.** Where an order changes a rule in a way our
-  pipeline cannot apply with confidence, that rule serves its 2023 text and says so in
-  `sourceNote`, naming the order, its adoption date and its effective date. Those rules are
-  labelled rather than silently stale, and the label is the thing to read before relying on one.
-- **Eleven rules are suspended, not in force.** The Colorado Rules of ICWA Procedure (Chapter 28.3)
+- **Not every order could be applied automatically.** Where an order changes a rule in a way we
+  cannot apply with confidence, that rule serves its 2023 text and says so in
+  `sourceNote`, naming the order, its adoption date and its effective date. Read that label
+  before relying on such a rule.
+- **Eleven rules are suspended.** The Colorado Rules of ICWA Procedure (Chapter 28.3)
   were adopted effective 2024-01-01 and suspended by the Supreme Court on 2025-11-06. They carry
   `actStatus=suspended` and are served for reference.
 
@@ -171,23 +171,23 @@ Oklahoma Evidence Code). Those are already in the corpus, matched against the pu
 section counts (1,026 civil procedure, 999 criminal procedure, 103 evidence), so re-ingesting them
 under `STATE_RULES` would be duplicate coverage.
 
-That is not the whole state. Oklahoma's judiciary separately promulgates rule sets that are **not**
-in the statute book, and those are now served under `STATE_RULES`: the Rules for District Courts,
+The judiciary also promulgates rule sets that are not
+in the statute book, and those are served under `STATE_RULES`: the Rules for District Courts,
 Rules of the Supreme Court, Rules of Civil Appellate Procedure, Rules of the Court of Criminal
 Appeals, Rules of Professional Conduct, Rules Governing Disciplinary Proceedings, the Code of
 Judicial Conduct and the Rules for Admission to the Practice of Law, together with the individual
 district courts' local rules and the Title Examination Standards.
 
-So the 2,116 figure is **additional** coverage, not a re-ingest of the statute-book rules. Titles 12
-and 22 and the Evidence Code stay under `corpusType=STATE` and are not duplicated here, so a search
-for Oklahoma civil procedure should still be scoped to `STATE` rather than `STATE_RULES`.
+So the 2,116 figure is additional coverage. Titles 12
+and 22 and the Evidence Code stay under `corpusType=STATE` and are not duplicated here, so scope a
+search for Oklahoma civil procedure to `STATE`, not `STATE_RULES`.
 
 ### Oklahoma regulations come from two sources, and the `currencyNote` says which
 
 **[6] Mixed provenance** - Oklahoma regulations. Measured 2026-09-11.
 
-Oklahoma is the one jurisdiction where the Regulations column is not a single corpus, and the split
-is worth knowing before you cite from it.
+Oklahoma is the one jurisdiction where the Regulations column mixes two sources, so check which
+one a section comes from before you cite it.
 
 | | sections | titles |
 |---|---|---|
@@ -196,18 +196,18 @@ is worth knowing before you cite from it.
 | Total distinct | **57,648** | 155 of 204 assigned |
 
 The Secretary of State publishes the official Oklahoma Administrative Code, but that office does not
-permit automated access to either its Code site or its Oklahoma Register archive, and we honor that.
-The official host is not a route we use.
+permit automated access to its Code site or its Oklahoma Register archive, so the official host is
+not a source we use.
 
-What we serve instead, for the 66 titles where it exists, is the copy each promulgating agency
-publishes of its own rules. Those copies are self-labeled unofficial, and **every section carries
-that in its `currencyNote` with `officialStatus: "unofficial"`**, so a section sourced from an
-agency PDF is distinguishable from one sourced from the compilation without having to ask us. The
+For the 66 titles where it exists, we serve the copy each promulgating agency
+publishes of its own rules. Those copies are self-labeled unofficial, and every section carries
+that label in its `currencyNote` with `officialStatus: "unofficial"`, so a section sourced from an
+agency PDF can be told apart from one sourced from the compilation. The
 remaining 138 assigned titles publish no machine-readable copy of their rules, so those sections
-continue to come from the 2024 compilation rather than being dropped.
+continue to come from the 2024 compilation.
 
 The denominator above is the Oklahoma Register's own Agency/Title Index, 204 titles assigned as of
-6-30-26, re-derived on every refresh rather than hardcoded. 49 assigned titles are served by neither
+6-30-26, re-derived on every refresh. 49 assigned titles are served by neither
 source. For anything where the controlling text matters, cite the official Code.
 
 ### Massachusetts regulations are an unofficial copy, and we say so per section
@@ -218,15 +218,15 @@ Bookstore and expressly disclaims the free copy it publishes on `mass.gov`. Ever
 carries an `Official Version:` field reading, depending on the regulation, *"Purchase the official
 print version"* or *"Published by the Massachusetts Register"*.
 
-We ingest the free copy because the text of a regulation is a government edict and outside
+We serve the free copy because the text of a regulation is a government edict and outside
 copyright under *Georgia v. Public.Resource.Org*, 140 S. Ct. 1498 (2020), and because "unofficial"
-here is an accuracy-and-authority disclaimer rather than a licence restriction. **Every
-Massachusetts regulation we serve carries that disclaimer in its `currencyNote`**, and the
+here is an accuracy-and-authority disclaimer rather than a licence restriction. Every
+Massachusetts regulation we serve carries that disclaimer in its `currencyNote`, and the
 publisher's own wording is preserved per section, so you can tell which of the two statements
 applies to the section you are reading. For anything where the controlling text matters, cite the
 print edition.
 
-Two consequences worth knowing:
+Two consequences follow:
 
 - **No amendment history.** Massachusetts publishes its regulatory history only in the
   Massachusetts Register, a paid subscription. The free copy carries a `REGULATORY AUTHORITY`
@@ -245,8 +245,7 @@ There is no separate UCC corpus, because the UCC is not law until a legislature 
 Each state's enacted version is part of that state's statutes, so search it with `corpusType: "STATE"` and `state`, and cite it in the state's own numbering.
 The model's § 2-207 is `Cal. Com. Code § 2207`, `6 Del. C. § 2-207`, `Tex. Bus. & Com. Code § 2.207`, `Iowa Code § 554.2207` and `N.D. Cent. Code § 41-02-14`, and those are the forms the citation resolver expects.
 
-We do not serve the model text or the Official Comments.
-Both are copyrighted by the American Law Institute and the Uniform Law Commission, and this API serves neither.
+We do not serve the model text or the Official Comments, which are copyrighted by the American Law Institute and the Uniform Law Commission.
 Where two states' enacted text differs, the difference is the law, so read the enacted section rather than the model.
 
 Known differences and gaps, measured 2026-09-24 against Articles 2 and 9:
@@ -254,7 +253,7 @@ Known differences and gaps, measured 2026-09-24 against Articles 2 and 9:
 - **Louisiana never enacted Article 2.** Its other articles are served under La. R.S. Title 10.
 - **Puerto Rico did not adopt Article 2**, and its commercial transactions law (Ley 208-1995) is not yet in the corpus.
 - **Not yet served, fix in progress:** Alabama, Kentucky, Massachusetts, Missouri, Nebraska, New Hampshire and Rhode Island.
-  In each case our ingest dropped the chapter; the publisher has it.
+  In each case the chapter is missing from our corpus although the publisher has it.
 - **Served, but the citation does not resolve yet:** Oklahoma (`Okla. Stat. tit. 12A`) and Washington (`RCW 62A`).
   Search finds the sections; resolve a citation by the form search returns until the fix lands.
 
@@ -277,7 +276,7 @@ The rest are reserved or repealed numbers and say so in `actStatus`.
 | Michigan | the Wayne County Circuit Court |
 
 Each court's rules are read from its own site and checked against a count taken from the court's own contents list or index, so a rule that is missing fails the load.
-A court whose rules could only be read as a scan or as a redline with strike-through text is left out rather than served with errors, so the list above is the courts we hold, not a claim to cover a state's trial courts.
+A court whose rules could only be read as a scan or as a redline with strike-through text is left out rather than served with errors. The list above is the courts we hold, and it makes no claim to cover a state's trial courts.
 
 Cite a local rule the way the court does.
 These resolve through `/us/statutes/resolve`:
@@ -294,14 +293,12 @@ These resolve through `/us/statutes/resolve`:
 | `Cuyahoga C.P. Loc.R. 24.0` | `SRULES_OH_CUYAHOGA_R24_0` |
 | `Ariz. Local R. Prac. Super. Ct. (Maricopa) 2.8` | `SRULES_AZ_MARICOPA_R2_8` |
 
-Arizona's county rules were previously filed under one rule-set code, so several counties' Rule 1 shared an identifier.
-They are now keyed by county.
+Arizona's county rules are keyed by county, so no two counties' Rule 1 share an identifier.
 
 ## Where bar associations supply the text
 
 Most of this corpus is read from a government site.
-These sets are read from a bar association's own site instead, and we say so because it is a different kind of source.
-The rules are the same rules; the copy is the bar association's.
+The sets below come from a bar association's own site instead, which is a different kind of source: the rules are the same, but the copy is the bar association's.
 Where the controlling text matters, check the court's or the bar's current publication.
 
 | Jurisdiction | Set | Read from | Documents |
@@ -346,7 +343,7 @@ Not held: state session laws outside the [session laws](/api-guide/session-laws)
 ## State administrative registers
 
 `corpusType=STATE_REGISTER` holds the notices a state printed in its official register: proposed, adopted and emergency rule text, one document per printed item, cited by register volume and page (`36 Pa. Bull. 510`).
-**It is not codified law.**
+It is not codified law.
 A register page often prints a rule that was later withdrawn, amended or never adopted, and the codified rule under `REGULATION` is the operative text.
 Register items are served with `goodLawStatus: "unknown"` by construction, `year` is the year of the issue the item was printed in, and they are never treated as primary law when search ranks results, so a register notice does not outrank the rule it concerns.
 Search them by naming the token: `{"corpusType": "STATE_REGISTER", "state": "pa"}`.
@@ -388,31 +385,31 @@ See [Register citations](/api-guide/concepts/citation-formats#register-citations
 
 ## State agency guidance
 
-State-issued regulatory guidance that interprets state law, the state-scoped analog of federal
-agency guidance. Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
+State-issued regulatory guidance that interprets state law, the state-level counterpart of
+federal agency guidance. Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
 
 **13,353 documents across 49 jurisdictions.** Unlike statutes, regulations, constitutions and
-court rules, this is **not** on a comprehensive 52-jurisdiction rollout: it lands state by state,
+court rules, it is not on a 52-jurisdiction rollout. It lands state by state,
 and some states may never be built.
 
 Almost all of it is insurance-regulator guidance (`source=state_insurance_bulletin`). Four states,
-Arizona, Oregon, New Jersey and Vermont, publish their **financial-institutions** regulator's
+Arizona, Oregon, New Jersey and Vermont, publish their financial-institutions regulator's
 guidance on the same index, and those documents are served separately as
 `source=state_financial_bulletin` so an insurance search is never handed a credit-union bulletin.
 
 That second source covers banking, credit unions, trust companies, escrow agents, consumer
 lenders, money transmitters, loan originators and investment advisers. It exists only for these
 four states, because most states' banking regulators publish no numbered series and there is
-nothing to cite. It is not a claim to cover state banking law.
+nothing to cite. It does not claim to cover state banking law.
 
 `state_financial_bulletin` is served `goodLawStatus: "unknown"`: neither regulator has rescinded
 anything we hold, so there is no measured signal to certify against. The insurance source keeps
 its own per-state verdict.
 
-Cadence here is per state, not per document.
-The bulletins dispatcher runs daily and walks about two states a day, so each state's series is
-re-pulled roughly once a month rather than on a fixed weekday.
-[`GET /boards`](/api-guide/alerts) carries `lastRetrievedAt` per state, which is the figure to read
+Refresh is per state, not per document.
+A daily job covers about two states, so each state's series is
+refreshed roughly once a month rather than on a fixed weekday.
+[`GET /boards`](/api-guide/alerts) carries `lastRetrievedAt` per state, so read that figure
 rather than this column.
 
 | State | Source | Documents | Refresh |
@@ -484,8 +481,8 @@ Formal written opinions in which a state's chief legal officer construes that st
 constitution and regulations for an officer, legislator or local government who asked. Queryable
 with `corpusType=STATE_AG_OPINION` paired with `state`.
 
-**104,572 opinions across 43 jurisdictions.** Like state agency guidance this is **not** a
-comprehensive rollout: it lands jurisdiction by jurisdiction, and it is early. The survey behind
+**104,572 opinions across 43 jurisdictions.** Like state agency guidance, it is not a
+comprehensive rollout. It lands jurisdiction by jurisdiction and is still early. The survey behind
 this corpus measured roughly 184,600 individually addressable opinions across 52 jurisdictions, so
 what is live is a fraction of what exists. Call `GET /us/statutes/coverage` for the live figure
 rather than this page, which is written by hand.
@@ -494,11 +491,11 @@ rather than this page, which is written by hand.
   **Persuasive authority, not binding law.** Every opinion here is served with
   `goodLawStatus: "unknown"`, in every jurisdiction, by construction: only five of the 52
   jurisdictions publish any supersession signal at all, so we will not certify that an opinion
-  still stands. Read it as "we make no claim", not as "probably still current".
+  still stands. Read `unknown` as "we make no claim about whether this is still current".
 </Warning>
 
 <Warning>
-  🔴 **Montana carries no issue date.** The state publishes by volume, cited as
+  **Montana carries no issue date.** The state publishes by volume, cited as
   `43 Mont. Op. Att'y Gen. No. 14`, and prints no date on an opinion. Every other jurisdiction
   here answers an `asOf` query from its issue date; Montana's 3,527 cannot, and are reachable by
   citation, volume and search instead.
@@ -514,7 +511,7 @@ rather than this page, which is written by hand.
 | North Dakota | 5,550 | 1942-2026 | Three families: legal, advisory, and open-records |
 | Washington | 4,430 | 1949-2026 | Two series, formal `AGO` and letter `AGLO`, filterable on `series` |
 | Louisiana | 3,720 |  |  |
-| Montana | 3,527 | vols. 15-44 | 🔴 Cited by volume and opinion number; the state publishes no issue date, so these do not answer an `asOf` query. Volumes 1-14 are excluded: their leading number is a page in the bound volume, not an opinion number |
+| Montana | 3,527 | vols. 15-44 | Cited by volume and opinion number; the state publishes no issue date, so these do not answer an `asOf` query. Volumes 1-14 are excluded: their leading number is a page in the bound volume, not an opinion number |
 | Texas | 3,502 | 1983-2026 | The seven post-1983 series only. Roughly 14,800 earlier opinions sit behind paths the state restricts automated access to, so they are not held |
 | Oklahoma | 3,052 | 1975-2026 |  |
 | Tennessee | 2,651 | 2000-2026 | The archive begins in 2000; the state answers pre-2000 requests by telephone only |
@@ -551,11 +548,11 @@ rather than this page, which is written by hand.
 | Vermont | 16 | 2000-2025 |  |
 
 <Note>
-  **Iowa is not served**: it publishes its opinions only through a commercial service. A few further
+  Iowa is not served: it publishes its opinions only through a commercial service. A few further
   jurisdictions are not built because the publisher identifies opinions by subject alone, and an
-  identifier we invented would not survive the publisher renaming a document. Identification by date
-  is no longer a reason to refuse: where the publisher prints a structured issue date, that date is
-  the citable key, which is how the District of Columbia, Mississippi and West Virginia are served.
+  identifier we invented would not survive the publisher renaming a document. Where the publisher
+  prints a structured issue date, that date is the citable key, which is how the District of
+  Columbia, Mississippi and West Virginia are served.
 </Note>
 
 <CardGroup cols={2}>

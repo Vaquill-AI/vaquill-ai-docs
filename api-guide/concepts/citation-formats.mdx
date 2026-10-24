@@ -5,8 +5,8 @@ description: "Which citation strings resolve, why the form your state prints is 
 
 `GET /us/statutes/resolve` turns a citation string into one exact section, and
 `POST /us/statutes/resolve` does the same for up to 50 at a time.
-This page answers the two questions that decide whether either works for you:
-**what to send**, and **when to scope it**.
+This page covers what to send and when to scope it, which together decide whether
+either route works for you.
 
 ## The short answer: send back the citation we gave you
 
@@ -76,8 +76,8 @@ Some acronyms belong to two jurisdictions. For those, `resolve` returns
 
 <Warning>
   `resolved: false` on one of these is the correct answer, not a gap. A wrong
-  section is a wrong statement of the law; an unresolved citation is a question
-  you can answer.
+  section misstates the law, while an unresolved citation is a question you can
+  answer.
 </Warning>
 
 **Pass `state` and they resolve.** You have told us which jurisdiction you mean,
@@ -119,10 +119,9 @@ citation.
   Some set acronyms are shared. `CR` is both the Kentucky Civil Rules and the
   Washington Superior Court Civil Rules; `RAP` belongs to Washington, Kentucky
   and West Virginia; `TCR` to Oregon and West Virginia. These return
-  `resolved: false` until you pass `state`, and they are refused on the
-  acronym's own ambiguity, **not** on whether we happen to hold that rule
-  number for one state only. A gap in our coverage must never read as
-  disambiguation.
+  `resolved: false` until you pass `state`. The refusal comes from the
+  acronym's own ambiguity, even when we hold that rule number for only one
+  state. A gap in our coverage never counts as disambiguation.
 </Warning>
 
 ```bash
@@ -154,7 +153,7 @@ Vermont's court rules resolve in the Judiciary's own forms, `Vt. R. Civ. P. 26` 
 
 ## Scoping: a constraint, not a hint
 
-`state` and `corpusType` **narrow** a lookup. They never redirect one.
+`state` and `corpusType` narrow a lookup and never redirect one.
 
 <Steps>
   <Step title="A citation that agrees with the scope resolves normally">
@@ -162,14 +161,13 @@ Vermont's court rules resolve in the Judiciary's own forms, `Vt. R. Civ. P. 26` 
     as the unscoped call.
   </Step>
   <Step title="A citation that disagrees returns resolved: false">
-    `cite=O.C.G.A. § 51-1-6&state=tx` does **not** find a Texas section that
+    `cite=O.C.G.A. § 51-1-6&state=tx` does not find a Texas section that
     happens to share the number. It returns `resolved: false`.
   </Step>
 </Steps>
 
-That refusal is the point. Scope when a citation form is shared across
-jurisdictions or corpora, which is exactly when a bare lookup could pick the
-wrong one:
+Scope when a citation form is shared across jurisdictions or corpora, since
+that is when a bare lookup could pick the wrong one:
 
 - `8 CCR 1206-2` is Colorado and `22 CCR 76227` is California. The acronym alone
   cannot say which, so pass `state`.
@@ -185,8 +183,8 @@ wrong one:
 
 ## When the answer is not the exact unit you cited: `matchLevel`
 
-An exact match carries none of the fields below, so every answer that resolved before is unchanged.
-Four optional fields appear on both `GET` and `POST /us/statutes/resolve` only when `section` is **not** the exact unit you cited.
+An exact match carries none of the fields below.
+Four optional fields appear on both `GET` and `POST /us/statutes/resolve` only when `section` is not the exact unit you cited.
 `resolved` keeps its meaning (a section came back) and is `true` at every level, so read `matchLevel` to tell an exact section from a first-of-several.
 
 | `matchLevel` | You cited | `section` is | Companion field |
@@ -260,7 +258,7 @@ The `children` array above is cut to two of the twelve entries for this page; th
   A flagged answer is the first section of several, or a correction of what you wrote.
   Do not treat it as the section you cited.
   Citation verification that must mean "this exact string names exactly this section" should accept only an answer with no `matchLevel`.
-  A citation that resolved to nothing before and resolves now only through a flagged reading (the first section of a chapter, a repair, a register reference) is not pinned to rank 1 by `POST /us/statutes/search` and is not accepted by the `{actId}` routes.
+  A citation that resolves only through a flagged reading (the first section of a chapter, a repair, a register reference) is not pinned to rank 1 by `POST /us/statutes/search` and is not accepted by the `{actId}` routes.
 </Warning>
 
 ### Register citations
@@ -354,11 +352,11 @@ print(resp["resolvedCount"], "of", resp["count"], "resolved")
 
 </CodeGroup>
 
-Four things to know about the response and the price.
+The response and the price work as follows.
 
 **Every input gets an entry.**
 An unresolved citation comes back with `resolved: false`, never as an omission.
-A caller checking thirty citations needs to know WHICH failed, and a shorter
+A caller checking thirty citations needs to know which ones failed, and a shorter
 array cannot say that.
 
 **Duplicates are collapsed** before pricing and before the response is built, so
@@ -372,8 +370,8 @@ applied to every citation in the call.
 A batch spanning jurisdictions should omit them and let each citation name its
 own.
 
-**Batching buys a round trip, not a discount.**
-It is billed per citation, exactly as if you resolved them one at a time.
+**Batching is billed per citation.**
+It saves round trips, but the price is exactly what it would be if you resolved them one at a time.
 Unresolved citations are charged, because a confident "this does not resolve" is
 the answer you are paying for when you are verifying a model's output.
 Only citations we failed to process because of a backend error are refunded, so
@@ -382,7 +380,7 @@ read `creditsConsumed` rather than multiplying.
 ## Scoping on search is a different thing
 
 On `POST /us/statutes/search`, `state` and `corpusType` filter the candidate pool
-before ranking. Two consequences worth knowing:
+before ranking. Two consequences follow:
 
 - A **recognized citation** passed as the `query` is pinned to rank 1 at
   `relevanceScore: 1.0`, scoped or not. If you want one exact section, prefer
@@ -390,7 +388,7 @@ before ranking. Two consequences worth knowing:
   real.
 - For a **natural-language query**, scoping changes which candidates are
   considered, so scoped and unscoped searches legitimately return different
-  result sets. That is filtering working, not a bug.
+  result sets. That is the filter working as designed.
 
 ## State session law citations
 

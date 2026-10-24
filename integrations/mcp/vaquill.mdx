@@ -5,10 +5,10 @@ description: "US primary law MCP for Claude, Cursor, VS Code, and Windsurf. Stat
 keywords: ["vaquill mcp", "legal mcp server", "claude legal mcp", "us law mcp", "usc mcp", "cfr mcp", "cursor legal research", "vs code legal mcp"]
 ---
 
-The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client - Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf - direct access to the Vaquill AI Developer API. It covers the full US corpus: the US Code, the CFR, every state and territory statutory code, state and federal regulations, court rules, constitutions, agency guidance and adjudications, session laws and the Federal Register. Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
+The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client (Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf) direct access to the Vaquill AI Developer API. It covers the full US corpus: the US Code, the CFR, every state and territory statutory code, state and federal regulations, court rules, constitutions, agency guidance and adjudications, session laws and the Federal Register. Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
 
 <Note>
-  **Two mounts, deliberately disjoint.** `https://mcp.vaquill.ai/s/_` serves the US corpus; `https://mcp.vaquill.ai/in/s/_` serves Indian legislation. Each is built from its own OpenAPI document, so a US connection never exposes India tools and the reverse. The same `vq_key_` works on both. Connect only the one you need: every connected server keeps its tool definitions in context for the whole conversation.
+  **Two separate mounts.** `https://mcp.vaquill.ai/s/_` serves the US corpus and `https://mcp.vaquill.ai/in/s/_` serves Indian legislation. Each is built from its own OpenAPI document, so a US connection never exposes India tools and an India connection never exposes US ones. The same `vq_key_` works on both. Connect only the one you need, because every connected server keeps its tool definitions in context for the whole conversation.
 </Note>
 
 <CardGroup cols={3}>
@@ -26,10 +26,10 @@ The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextpr
 ## Quickstart
 
 <Note>
-  **On Claude, the fastest path is now the [connector](/integrations/mcp/claude-connector)**: paste `https://mcp.vaquill.ai/mcp`, click Connect, and skip the key entirely. It is also the only path that works in Cowork. Everything below is the API-key setup, which is what Cursor, VS Code, Windsurf and other non-Claude clients need.
+  **On Claude, the fastest path is the [connector](/integrations/mcp/claude-connector).** Paste `https://mcp.vaquill.ai/mcp`, click Connect, and skip the key entirely. It is also the only path that works in Cowork. Everything below is the API-key setup, which Cursor, VS Code, Windsurf and other non-Claude clients need.
 </Note>
 
-For a key-based setup, the fastest path is the hosted remote MCP on Claude.ai web - no install, no local Python, no config files.
+For a key-based setup, the fastest path is the hosted remote MCP on Claude.ai web. It needs no install, no local Python and no config files.
 
 <Prompt
   description="**Install Vaquill MCP in Claude Code** with one paste. Replaces a manual config edit."
@@ -70,12 +70,12 @@ If anything fails, show me the exact error and the output of `claude mcp list`.
     Claude sends the value exactly as you type it and adds no scheme of its own, so the value field holds `Bearer vq_key_...` and **not** `Authorization: Bearer vq_key_...`.
   </Step>
   <Step title="Look up a statute">
-    Try: *"What does 17 CFR 240.10b-5 say about insider trading?"* - Claude will call `search_us_statutes` and pull the section text.
+    Try: *"What does 17 CFR 240.10b-5 say about insider trading?"* Claude calls `search_us_statutes` and pulls the section text.
   </Step>
 </Steps>
 
 <Info>
-  Remote MCP connectors are available on Claude Pro, Max, Team, and Enterprise plans. The **Request headers** section is in beta and is enabled per account, it accepts a short allowlist of header names, and it holds at most four. If you do not see it, use the path-token URL, or connect from Claude Code, Cursor, VS Code, or Windsurf, which all carry the header as written. On Team and Enterprise an owner adds the connector under Organization settings first.
+  Remote MCP connectors are available on Claude Pro, Max, Team, and Enterprise plans. The **Request headers** section is in beta and is enabled per account. It accepts a short allowlist of header names and holds at most four. If you do not see it, use the path-token URL, or connect from Claude Code, Cursor, VS Code, or Windsurf, which all carry the header as written. On Team and Enterprise an owner adds the connector under Organization settings first.
 </Info>
 
 ## Client setup
@@ -224,17 +224,17 @@ claude mcp add --scope user vaquill -e VAQUILL_API_KEY=vq_key_your_key_here \
 
 ## Tools
 
-Tools are generated from the OpenAPI document at startup, so the catalogue tracks the API rather than the package version. The US mount publishes **26 tools**, one per API operation plus the `search` and `fetch` pair; the India mount publishes 22. Every tool is read-only: none creates, changes or deletes anything.
+Tools are generated from the OpenAPI document at startup, so the catalogue follows the API, not the package version. The US mount publishes **26 tools**, one per API operation plus the `search` and `fetch` pair; the India mount publishes 22. Every tool is read-only: none creates, changes or deletes anything.
 
 <Warning>
-  `act_id` is never assembled by hand. The title and section are derivable from a citation but the chapter is not, so a constructed id usually 404s and the failure reads like missing coverage. Take it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section Identifiers](/api-guide/concepts/section-ids).
+  Never assemble an `act_id` by hand. The title and section can be derived from a citation but the chapter cannot, so a constructed id usually 404s and the failure looks like missing coverage. Take it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section Identifiers](/api-guide/concepts/section-ids).
 </Warning>
 
 ### Discovery
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `list_statutes_coverage` | The live coverage matrix: corpus legend, per-jurisdiction counts, freshness and retrieval status. Call this before treating an empty result as an absence. | Free |
+| `list_statutes_coverage` | The live coverage matrix: corpus legend and per-jurisdiction counts. Call this before treating an empty result as an absence. | Free |
 | `get_pricing` | Current credit pricing per endpoint. No auth required. | Free |
 | `list_statute_divisions` | Walk the statutory hierarchy one level down. Refunded on an empty level. | 1 |
 
@@ -332,18 +332,18 @@ On the US endpoint `https://mcp.vaquill.ai/mcp`, the default is **OAuth 2.1**: t
 Clients that cannot run OAuth authenticate with your Vaquill API key instead. Three options, in priority order:
 
 1. **Bearer header** (remote): `Authorization: Bearer vq_key_...`
-2. **Path token** (remote): `https://mcp.vaquill.ai/s/vq_key_...` - convenient when your client cannot send custom headers.
+2. **Path token** (remote): `https://mcp.vaquill.ai/s/vq_key_...`. Use this when your client cannot send custom headers.
 3. **Environment variable** (local): `VAQUILL_API_KEY=vq_key_...` for `uvx` / stdio launches.
 
 Keys are scoped per workspace and revocable from the [dashboard](https://app.vaquill.ai/settings). For the full auth model, request signing, and rotation policy, see [Authentication](/api-guide/authentication).
 
 <Warning>
-  Treat the path-token URL as a secret - anyone with the URL can spend credits from your account. Prefer the bearer-token form whenever the client supports it.
+  Treat the path-token URL as a secret, because anyone with the URL can spend credits from your account. Use the bearer-token form whenever the client supports it.
 </Warning>
 
 ## Self-hosting
 
-The MCP server is a thin wrapper around the public Vaquill API, so most users will not need to self-host. Run from source when you want to pin a version, add custom telemetry, or modify tool descriptions.
+The MCP server is a thin wrapper around the public Vaquill API, so most users do not need to self-host. Run from source if you want to pin a version, add custom telemetry or change tool descriptions.
 
 ```bash
 git clone https://github.com/Vaquill-AI/vaquill-mcp.git

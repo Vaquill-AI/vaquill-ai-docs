@@ -21,7 +21,7 @@ There are two Vaquill MCP servers, and they expose completely different things.
 </CardGroup>
 
 <Note>
-  **Using Claude? Start with the [connector](/integrations/mcp/claude-connector).** It is a Connect button, needs no API key, and is the only option that works in Cowork. The key-based setup below is for every other client.
+  **Using Claude? Start with the [connector](/integrations/mcp/claude-connector).** It is a Connect button with no API key, and it is the only option that works in Cowork. The key-based setup below is for every other client.
 </Note>
 
 <CardGroup cols={1}>
@@ -40,9 +40,9 @@ The two share no credential and no host. A statutes key is refused by the Worksp
 
 ## What it covers
 
-The Vaquill MCP is built from the Developer API's own OpenAPI document, so it reaches **the whole US corpus, not just statutes**: the US Code and every state and territory statutory code, the CFR and state administrative regulations, court rules, state and federal constitutions, agency guidance and adjudications, session laws and the Federal Register. Every corpus is ingested from its own official source and re-pulled on a recurring cycle - daily for the CFR, a weekly check for a new annual US Code edition, and every 7 days or monthly for a state depending on how it publishes its code. See [API Coverage](/api-guide/coverage) for the live matrix and current counts.
+The Vaquill MCP is built from the Developer API's own OpenAPI document, so it reaches the whole US corpus, and statutes are only part of it. That means the US Code and every state and territory statutory code, the CFR and state administrative regulations, court rules, state and federal constitutions, agency guidance and adjudications, session laws and the Federal Register. Every corpus is ingested from its own official source and re-pulled on a recurring cycle: daily for the CFR, a weekly check for a new annual US Code edition, and every 7 days or monthly for a state, depending on how it publishes its code. See [API Coverage](/api-guide/coverage) for the live matrix and current counts.
 
-Use the Vaquill MCP when you want your AI assistant to search primary law, resolve a citation to an exact provision, pull authoritative text to ground an answer, or read a section as it stood on a past date.
+Use it to have an assistant search primary law, resolve a citation to an exact provision, pull authoritative text to ground an answer, or read a section as it stood on a past date.
 
 ## Supported clients
 
@@ -64,7 +64,7 @@ The server works with any MCP-compatible client. Tested with:
 |---|---|---|
 | Vaquill MCP | `https://mcp.vaquill.ai/s/<your-key>` | `uvx vaquill-mcp` |
 
-Hosted is the fastest path: paste a URL into your client and start using the tools. Self-hosting gives you control over rate limits, audit logging, and network egress.
+Hosted is the fastest path. Paste a URL into your client and the tools appear. Self-hosting gives you control over rate limits, audit logging and network egress.
 
 ## Authentication model
 

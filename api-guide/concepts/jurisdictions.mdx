@@ -3,24 +3,24 @@ title: "Jurisdictions & State Codes"
 description: "The jurisdictions the API accepts, how state codes and the federal jurisdiction work, and the two endpoints that tell you what is actually there"
 ---
 
-`state` accepts **56 US jurisdictions**: all 50 states, plus the District of
+`state` accepts 56 US jurisdictions: all 50 states, plus the District of
 Columbia, Puerto Rico, Guam (`gu`), the Northern Mariana Islands (`mp`), the US
 Virgin Islands (`vi`) and American Samoa (`as`).
 Federal law lives under its own `federal` jurisdiction, separate from the states.
 
-Accepting a jurisdiction is not the same as holding every corpus for it, so read
-`GET /us/statutes/coverage` before you scope a search.
+The API accepting a jurisdiction does not mean it holds every corpus for it, so
+read `GET /us/statutes/coverage` before you scope a search.
 
 ## How jurisdictions are keyed
 
-- **State codes** are 2-letter strings: `ca`, `tx`, `ny`, `fl`, and so on.
+- State codes are 2-letter strings: `ca`, `tx`, `ny`, `fl`, and so on.
   They are case-insensitive, and an unrecognized value is rejected with a 422
   rather than silently matching nothing.
-- Pass a **list** to search several at once (`"state": ["ca", "ny", "tx"]`),
+- Pass a list to search several at once (`"state": ["ca", "ny", "tx"]`),
   which is one call instead of one per jurisdiction.
-- **`federal`** is the jurisdiction for the federal corpora. A federal search
+- `federal` is the jurisdiction for the federal corpora. A federal search
   needs only a `corpusType`, no `state`.
-- Each jurisdiction row from `/us/statutes/coverage` carries a **`kind`**:
+- Each jurisdiction row from `/us/statutes/coverage` carries a `kind`:
   `federal`, `state`, or `territory`. DC, Puerto Rico, Guam, the Northern Mariana
   Islands, the Virgin Islands and American Samoa are `territory`.
 
@@ -29,15 +29,15 @@ Accepting a jurisdiction is not the same as holding every corpus for it, so read
   statutory code (`STATE`) and constitution (`STATE_CONSTITUTION`) but no
   administrative regulations (`REGULATION`) or court rules (`STATE_RULES`) yet.
 
-  Check coverage before you scope a search. Do not assume.
+  Check coverage before you scope a search.
 </Warning>
 
 ## The two discovery endpoints
 
 <CardGroup cols={2}>
   <Card title="GET /us/statutes/coverage">
-    Which corpora exist in which jurisdiction, with document counts, freshness
-    notices and retrieval status. Free, no credits.
+    Which corpora exist in which jurisdiction, with document counts. For the
+    age of a source, read `GET /boards`. Free, no credits.
   </Card>
   <Card title="GET /us/statutes/divisions">
     Walk the hierarchy one level at a time: a state's codes, then its chapters,
@@ -105,12 +105,15 @@ console.log("available corpora:", Object.keys(ca.corpora));
 </CodeGroup>
 
 <Note>
-  A count is not an age. `data.freshness` names statute corpora that are no
-  longer being refreshed. `GET /boards` carries `lastRetrievedAt` and
-  `cadence` per source, so a count can be read as maintained or frozen.
+  This response gives counts but does not say how recently a corpus was
+  refreshed. `GET /boards` is free and carries `lastRetrievedAt` and
+  `cadence` per source, so read it alongside the counts here to tell a
+  maintained corpus from a frozen one.
 
-  Each notice names a `(jurisdiction, corpusType)` pair, never a whole
+  A board names a `(jurisdiction, corpusType)` pair, never a whole
   jurisdiction: a state can be frozen in one corpus and current in another.
+  Where a publisher states its own currency, it rides on each section as
+  `currentThrough`.
 </Note>
 
 ## Listing a state's codes

@@ -1,10 +1,10 @@
 ---
 title: "Rights and licensing"
-description: "Straight answers on what you may do with the data: persist it, build embeddings and derived indexes, show it to your own users, redistribute it, and what you keep if you stop paying"
+description: "What you may do with the data: persist it, build embeddings and derived indexes, show it to your own users, redistribute it, and what you keep if you stop paying"
 ---
 
-Most legal-data vendors make you book a call to find out what you are allowed
-to build. Here are the answers.
+This page states what you are allowed to build with the data, so you do not
+need to book a call to find out.
 
 <Note>
   This page is a plain-language summary. The
@@ -16,15 +16,15 @@ to build. Here are the answers.
 
 | Can I... | Answer |
 |---|---|
-| Cache and persist responses in my own database? | **Yes**, including permanently, where that store powers your product |
-| Build embeddings, vector indexes or other derived indexes? | **Yes**, for your own product |
-| Show the legal text to my own end users? | **Yes**, with a credit unless your plan waives it |
-| Keep what I cached from the API if I stop paying? | **Yes.** No deletion obligation |
-| Keep a bulk delivery after the contract ends? | **No.** Delete the compilation within 30 days |
-| Redistribute the statutory text itself? | **Yes**, without restriction. It is public domain |
-| Resell the structured corpus as a dataset, feed or API? | **No**, not without a separate signed agreement |
-| Ship it under my own brand? | **Under a white-label agreement**, yes |
-| Train a model on it? | **Yes**, unless the model is a competing legal-data service |
+| Cache and persist responses in my own database? | Yes, including permanently, where that store powers your product |
+| Build embeddings, vector indexes or other derived indexes? | Yes, for your own product |
+| Show the legal text to my own end users? | Yes, with a credit unless your plan waives it |
+| Keep what I cached from the API if I stop paying? | Yes. No deletion obligation |
+| Keep a bulk delivery after the contract ends? | No. Delete the compilation within 30 days |
+| Redistribute the statutory text itself? | Yes, without restriction. It is public domain |
+| Resell the structured corpus as a dataset, feed or API? | No, not without a separate signed agreement |
+| Ship it under my own brand? | Under a white-label agreement, yes |
+| Train a model on it? | Yes, unless the model is a competing legal-data service |
 
 ## Why the text is unrestricted
 
@@ -36,40 +36,40 @@ contract for a legislature are uncopyrightable government edicts.
 We claim no ownership of that text and nothing in our terms restricts your use
 of it.
 
-What is licensed to you is the **compilation**: the schema, the citations, the
+What is licensed to you is the compilation: the schema, the citations, the
 hierarchy, the cross-references, the metadata and the assembled corpus. That is
-the work product, and it is the only thing the restrictions below touch.
+the work product, and the restrictions below apply to it alone.
 
 <Tip>
-  This is worth checking against any vendor whose corpus derives from a
-  commercial legal publisher's codification, because that layer can carry rights
-  the raw text does not. Ask where each jurisdiction was sourced from.
+  Check this with any vendor whose corpus derives from a commercial legal
+  publisher's codification. That layer can carry rights the raw text does not,
+  so ask where each jurisdiction was sourced from.
 </Tip>
 
 ## What you keep if you leave
 
 <CardGroup cols={2}>
   <Card title="Retrieved through the API">
-    Responses you cached during a paid term are **yours to keep**. No deletion
-    obligation, and you may keep showing them to your customers. That includes
-    the citations, hierarchy and cross-references those responses carry, because
-    a cached answer is not usable without them.
+    Responses you cached during a paid term are yours to keep. There is no
+    deletion obligation, and you may keep showing them to your customers. That
+    includes the citations, hierarchy and cross-references those responses
+    carry, because a cached answer is not usable without them.
   </Card>
   <Card title="Delivered in bulk">
-    Different, and deliberately so. On termination or expiry of a bulk
-    arrangement you **delete stored copies of our compilation within 30 days**.
-    There the corpus itself is the deliverable, so permanent retention would let
-    a single period buy it outright.
+    The rule differs here on purpose. On termination or expiry of a bulk
+    arrangement you delete stored copies of our compilation within 30 days.
+    The corpus itself is the deliverable, so permanent retention would let a
+    single period buy it outright.
 
     You still keep anything you had independently retrieved through the API, the
-    public-domain text, anything obtained under the Open US Law licences, and
+    public-domain text, anything obtained under the Open US Law licenses, and
     Output already embedded in work product you delivered to your clients.
   </Card>
 </CardGroup>
 
 The public-domain text carries no restriction either way, and never did.
 
-Retention is not a licence to redistribute. Whatever you keep, you may not
+Retention is not a license to redistribute. Whatever you keep, you may not
 resell our compilation as a standalone data product, nor use it to build a
 competing legal-data API or database.
 
@@ -89,8 +89,8 @@ Without a separate signed agreement, you will not:
 - exceed or circumvent your plan's rate limits or credit allowance, including by
   spreading access across accounts
 
-Each of those is available under a written agreement. They are commercial terms,
-not prohibitions on principle.
+Each of those is available under a written agreement, so they are commercial
+terms and not matters of principle.
 
 ## Attribution
 
@@ -100,8 +100,8 @@ Output is shown to your end users. A footer, an about page or a data-sources
 page is fine. One credit per product, not one per response. The console gives
 you the exact snippet.
 
-It is **not** required for internal or back-office use where nothing is shown
-outside your organisation, or for evaluation.
+It is not required for internal or back-office use where nothing is shown
+outside your organization, or for evaluation.
 
 Attribution can be waived commercially. Talk to us.
 
@@ -110,14 +110,14 @@ Attribution can be waived commercially. Talk to us.
 Separately from the paid API, the whole corpus is published as
 [Open US Law](/api-guide/bulk-and-sql):
 
-- **Public-domain text**: no restriction
-- **Our compilation**: CC BY-NC 4.0 from snapshot v2026.09, CC BY 4.0 before that
-- **The ingestion pipelines**: Apache-2.0
+- Public-domain text: no restriction
+- Our compilation: CC BY-NC 4.0 from snapshot v2026.09, CC BY 4.0 before that
+- The ingestion pipelines: Apache-2.0
 
 CC BY 4.0 snapshots (before v2026.09) already grant commercial use,
 redistribution, remixing and model training, irrevocably. From v2026.09 the
 compilation is CC BY-NC 4.0: free for research, teaching, legal aid and other
-non-commercial use, with commercial use under a separate licence. The
+non-commercial use, with commercial use under a separate license. The
 public-domain text stays unrestricted either way, and what you retrieve through
 the API is covered by the Terms, Section 21.
 

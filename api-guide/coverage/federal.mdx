@@ -31,12 +31,12 @@ data by chapter.
 
 ## Scope limits by corpus
 
-Read the entry for any corpus you are about to rely on. Each one states what is deliberately
+Read the entry for any corpus you are about to rely on. Each one lists what is deliberately
 not held.
 
 <AccordionGroup>
 
-<Accordion title="United States Code - served at the current OLRC release point">
+<Accordion title="United States Code: served at the current OLRC release point">
   The source is the Office of the Law Revision Counsel's release points, which OLRC issues as
   Congress enacts laws, rather than GPO's annual edition. A weekly job checks for a new release
   point and re-ingests when one appears. Every section states what it is current through in
@@ -49,8 +49,8 @@ not held.
   search.
 </Accordion>
 
-<Accordion title="Statutes at Large - as enacted, so deliberately not current law">
-  Federal public and private laws **as enacted**, session by session, 1789-2026, across every
+<Accordion title="Statutes at Large: as enacted, so deliberately not current law">
+  Federal public and private laws as enacted, session by session, 1789-2026, across every
   bound volume GPO publishes, 137 in all. This is the source the US Code is compiled from,
   so a US Code section's `publicLawCites` resolve here to the enacting text.
 
@@ -61,12 +61,12 @@ not held.
 
   Sections resolve by `actId`, for example `SAL_PL116-136_DVA_TII_S1109` (CARES Act section 1109).
 
-  Because these are laws as enacted they are a historical record rather than a statement of
-  current law: they carry `actStatus: "enacted"` and `goodLawStatus: "unknown"` deliberately.
+  Because these are laws as enacted, they are a historical record and not a statement of
+  current law, and they carry `actStatus: "enacted"` and `goodLawStatus: "unknown"` by design.
   For what the law says today, use `corpusType=USC`.
 </Accordion>
 
-<Accordion title="CFR annual editions - a section observed at published dates, not extra breadth">
+<Accordion title="CFR annual editions: a section observed at published dates, not extra breadth">
   GPO's officially published annual edition of the CFR, 31 editions from 1996 to 2026, all 49
   titles. A section is stored once per distinct run of text rather than once per edition, so
   312,132 distinct sections are held as 886,066 section versions and served as 2,844,809 passages.
@@ -74,35 +74,35 @@ not held.
   The section count is what enters the federal total. This is the same body of regulation as the
   `CFR` corpus observed at published dates, not additional breadth.
 
-  Two behaviors a caller needs. **`editionsObserved` is an enumeration, never a range**: a version
-  observed in 1998, 1999 and 2003 lists exactly those years, and a date in an unobserved gap comes
-  back with `asOf.isBounded: false` rather than the nearest year held. **A citation year is the
-  volume's own `<REVISED>` year, not the folder GPO filed it under**, because GPO reprints
-  unchanged volumes forward without re-dating them; 167 versions in title 26 sit in the 1997
-  folder stamped 1990.
+  Two behaviors matter to a caller. First, `editionsObserved` is an enumeration, never a range: a
+  version observed in 1998, 1999 and 2003 lists exactly those years, and a date in an unobserved
+  gap comes back with `asOf.isBounded: false` rather than the nearest year held. Second, a
+  citation year is the volume's own `<REVISED>` year, not the folder GPO filed it under. GPO
+  reprints unchanged volumes forward without re-dating them, and 167 versions in title 26 sit in
+  the 1997 folder stamped 1990.
 
   `CFR_ANNUAL` serves an edition as published, while `asOf` on
   `GET /us/statutes/section/{actId}/body` reconstructs a section from observed change history.
   See [Point-in-time law](/api-guide/point-in-time) for when each applies.
 </Accordion>
 
-<Accordion title="Federal Register notices - a curated 2.7% slice, not the notice series">
+<Accordion title="Federal Register notices: a curated 2.7% slice, not the notice series">
   **Held:** notices that act on a rulemaking, which is withdrawing a proposed rule, extending or
   reopening a comment period, publishing significant agency guidance, and announcing negotiated
   rulemaking. That is 20,642 of the 768,338 notices published in the period (measured 2026-10-13), about 2.7%. Every
-  point is admitted by one of those four rules. `frNoticeClass` records which, but it is ingest-side metadata and is not currently returned by the API.
+  notice is admitted by one of those four rules. `frNoticeClass` records which, but it is ingest-side metadata and is not currently returned by the API.
 
   **Not held:** Paperwork Reduction Act information collections, meeting notices, permits and
   applications, antidumping proceedings, Privacy Act system-of-records notices, and the
-  unclassified remainder. Do not read this token as complete notice coverage.
+  unclassified remainder. This token is not complete notice coverage.
 
-  Notices carry an **empty CFR cross-reference graph** (`crossReferencesCfr` at 0%, and the ingest-side `frTopics` likewise,
+  Notices carry an empty CFR cross-reference graph (`crossReferencesCfr` at 0%, and the ingest-side `frTopics` likewise,
   `frRegulationIdNumbers` at 2%, against 100% and 94% on rules), so a notice is not reachable by a
   CFR-citation filter. `frDocketIds` at 73.5% is the join key that works. A notice amends nothing,
   so `amendmentYears` is empty and `goodLawStatus` is `unknown`.
 </Accordion>
 
-<Accordion title="Administrative adjudications - seven bodies, and no overruling signal">
+<Accordion title="Administrative adjudications: seven bodies, and no overruling signal">
   Federal matters decided by an agency through a formal process, with precedential weight on that
   body's later decisions.
 
@@ -125,27 +125,27 @@ not held.
 
   Five further scope limits:
 
-  - The FTC slice is the **Part 3 administrative body only**, 1,431 records carrying the
+  - The FTC slice is the Part 3 administrative body only, 1,431 records carrying the
     Commission's own `Administrative` action type. Its 2,039 federal-court records and roughly
     2,636 records carrying neither action type are not held. FTC rules are excluded because they
     are codified at 16 C.F.R. and served under `corpusType=CFR`.
-  - **The FTC unit is a FILING, not a decision.** A Part 3 docket is mostly documents written by
+  - The FTC unit is a filing, not a decision. A Part 3 docket is mostly documents written by
     the parties: 21% of passages are the operative instruments (complaints, decisions and orders,
     consent agreements) and the rest are motions, notices of appearance, exhibits and
-    public-comment analyses. Nothing is dropped on that basis, the whole docket is served, but the
-    per-filing label is not yet a response field or a search filter.
-  - The NLRB slice is now the **full archive, 1935-12-30 to date**: 66,597 of the 66,600
-    decisions the Board's own volume listing enumerates. Two are excluded and named -
-    `227 NLRB 427`, whose PDF contains only the caption and no body under two independent
-    extractors, and `321 NLRB 10`, a file no OCR engine will accept. Neither is a
-    coverage decision; both are re-tried if the Board re-issues the file.
-  - **OLC opinions issued in 2021 and later are not included.** They have not appeared in a bound
+    public-comment analyses. Nothing is dropped on that basis and the whole docket is served, but
+    the per-filing label is not yet a response field or a search filter.
+  - The NLRB slice is the full archive, 1935-12-30 to date: 66,597 of the 66,600
+    decisions the Board's own volume listing enumerates. Two are excluded, `227 NLRB 427`
+    (its PDF contains only the caption and no body under two independent extractors) and
+    `321 NLRB 10` (a file no OCR engine will accept). Neither is a
+    coverage decision, and both are re-tried if the Board re-issues the file.
+  - OLC opinions issued in 2021 and later are not included. They have not appeared in a bound
     volume, and the Department's slip-opinion listing cannot be paginated.
-  - **SEC ALJ initial decisions are not held**, and neither are BIA reporter volumes 1 to 7,
+  - SEC ALJ initial decisions are not held, and neither are BIA reporter volumes 1 to 7,
     which EOIR does not publish.
 </Accordion>
 
-<Accordion title="US tax treaties - about 60% of the Senate record has no instrument text">
+<Accordion title="US tax treaties: about 60% of the Senate record has no instrument text">
   Two sources under one `corpusType=US_TAX_TREATY`, 19,646 retrieval passages.
 
   **The IRS mirror** (173, `us_tax_treaty` and `us_tax_treaty_technical_explanation`): 71
@@ -161,12 +161,12 @@ not held.
   reservations, understandings and declarations that narrow a treaty's effect in US law live;
   `senate_treaty_document` (290) is the President's transmittal message, from GPO.
 
-  Two limits. **About 60% of the Senate record is metadata with no instrument text** from either
-  publisher, which `source` states rather than hides. **Termination is not tracked**, because no
+  Two limits apply. About 60% of the Senate record is metadata with no instrument text from either
+  publisher, and `source` says which records those are. Termination is not tracked, because no
   source held states it, so `goodLawStatus` is `unknown` on every record.
 </Accordion>
 
-<Accordion title="Federal local court rules - each court's own rules, not the national Federal Rules">
+<Accordion title="Federal local court rules: each court's own rules, not the national Federal Rules">
   The rules a federal court publishes for itself: the 13 courts of appeals, the habeas rules
   (Sections 2254 and 2255), six national bodies (Armed Forces, Federal Claims, Tax Court,
   International Trade, Veterans Claims, and the Manual for Courts-Martial) and 32 district-court
@@ -179,7 +179,7 @@ not held.
   Districts of New York publish one joint set.
 
   Every court is taken from its own site and checked against that court's own contents list or
-  index, so a missing rule fails the load rather than passing silently.
+  index, so a missing rule is caught.
 
   Not held: the other 61 district courts, local bankruptcy rules, and the internal operating
   procedures of the Fifth, Seventh, Eighth and Eleventh Circuits (the Fifth, Eighth and Eleventh
@@ -190,20 +190,20 @@ not held.
   Use `corpusType=FEDERAL_LOCAL_RULES`.
 </Accordion>
 
-<Accordion title="Statute Compilations - an act as amended through a stated public law">
-  An act's own text **as amended through** a stated later public law, from GovInfo's official
+<Accordion title="Statute Compilations: an act as amended through a stated public law">
+  An act's own text as amended through a stated later public law, from GovInfo's official
   compilations. Act-organized rather than codified, so a citation like "Section 210 of the Public
   Utility Regulatory Policies Act" resolves here even though that section was never codified into
   a positive-law title and has no `USC` address.
 
   Distinct from Statutes at Large, which holds the same acts as enacted. Each section states its
   own currency in `currentThrough`, ranging from `Public Law 96-308` (1980) to `Public Law 119-75`
-  (2026). **2.6% of compilations state no currency at all** and carry
-  an unstated currency rather than a guessed date, recorded ingest-side as `compilationCurrencyState` and not returned by the API. Cross-references into `USC`
+  (2026). 2.6% of compilations state no currency at all. They carry an unstated currency rather
+  than a guessed date (recorded ingest-side as `compilationCurrencyState`, not returned by the API). Cross-references into `USC`
   are captured as `crossReferencesUsc`.
 </Accordion>
 
-<Accordion title="US Sentencing Guidelines - former versions are separate documents">
+<Accordion title="US Sentencing Guidelines: former versions are separate documents">
   The 302 current guideline sections, plus Appendix A (the statutory index) and Appendix B, whose
   Part III carries the text of FORMER guidelines and commentary as they read before amendment.
   The former versions are separate documents, not variants of the current section.
@@ -212,8 +212,8 @@ not held.
 </AccordionGroup>
 
 <Note>
-  Federal Register and Executive Order cadence depends on `federalregister.gov`, which has been
-  throttling and rate-limiting traffic in 2026. That can occasionally push a weekly pull later.
+  Federal Register and Executive Order pulls depend on `federalregister.gov` being available, which
+  can occasionally push a weekly pull later.
 </Note>
 
 <CardGroup cols={2}>

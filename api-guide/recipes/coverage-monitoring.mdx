@@ -3,9 +3,9 @@ title: "Monitor corpus coverage and changes"
 description: "Poll changedSince for sections that moved since your last sync, and diff coverage snapshots to catch a jurisdiction gaining a whole new corpus"
 ---
 
-**What this gets you:** an early-warning system for your own product - know when the law you depend on moved, and when a state or agency you depend on gains coverage, instead of finding out by accident.
+**What this gets you:** an early-warning check for your own product. It tells you when the law you depend on has moved, and when a state or agency you depend on gains coverage.
 
-Two different questions live on this page, and they need two different tools.
+Which tool to use depends on the question.
 
 | Question | Use |
 |---|---|
@@ -15,8 +15,8 @@ Two different questions live on this page, and they need two different tools.
 
 ## The sync filter: `changedSince`
 
-`changedSince` takes a `YYYY-MM-DD` date and restricts a search to sections we have OBSERVED change on since then.
-It is the purpose-built answer to "what moved since my last run", and it needs no snapshot files and no diffing of your own.
+`changedSince` takes a `YYYY-MM-DD` date and restricts a search to sections where we have observed a change since then.
+It answers "what moved since my last run" directly, with no snapshot files and no diffing of your own.
 
 <CodeGroup>
 ```bash cURL
@@ -66,7 +66,7 @@ Then read each hit's history with `GET /us/statutes/section/{actId}/changes` whe
 
 - **These are observed changes, not effective dates.**
   A refresh compared the publisher against the copy we held and found it different.
-  The date is when we SAW it, which is an upper bound on when it took effect.
+  The date is when we saw it, which is an upper bound on when it took effect.
 - **Coverage is bounded by capture, not by the age of the law.**
   Change capture began long after the corpus did, it is per-source, and events are swept at 5 years.
   An empty result means no captured change in the window, never that nothing was amended.
@@ -75,8 +75,8 @@ Then read each hit's history with `GET /us/statutes/section/{actId}/changes` whe
   That is deliberate: a partial change set would look complete to a sync job, which would then mark itself current having never seen the sections that were cut.
   Narrow with `corpusType` and `state`.
 - **A search still needs a `query`.**
-  `changedSince` narrows a search, it is not a firehose of everything that moved.
-  Run it once per topic you actually track, which is what makes the result small enough to act on.
+  `changedSince` narrows a search and does not list everything that moved.
+  Run it once per topic you track, which keeps each result small enough to act on.
 
 <Note>
   Paging is bounded: `limit` caps at 50 and `offset` at 70, so the deepest
@@ -86,9 +86,9 @@ Then read each hit's history with `GET /us/statutes/section/{actId}/changes` whe
 </Note>
 
 <Note>
-  An empty window is a real answer and is charged the ordinary 4-credit search
-  price. "Nothing moved since Tuesday" is what lets a nightly job do nothing with
-  confidence. Read `creditsConsumed` rather than assuming.
+  An empty window is a valid answer and is charged the ordinary 4-credit search
+  price, so a nightly job can do nothing when nothing moved. Read
+  `creditsConsumed` rather than assuming.
 </Note>
 
 ### A nightly job

@@ -3,27 +3,26 @@ title: "Ground an LLM answer in statutes (RAG)"
 description: "Retrieve authoritative US statutes and regulations, then make an LLM answer only from that text with citations that link back to the official government source"
 ---
 
-**What this gets you:** an AI assistant that answers legal questions from real statute text instead of its own memory, with a citation and a link to the official source on every claim, so users can verify it instead of taking the model's word for it.
+**What this gets you:** an AI assistant that answers legal questions from statute text instead of its own memory. Each claim carries a citation and a link to the official source, so users can check it.
 
-Turn a user question into a grounded, citable answer. You retrieve the governing
-sections from Vaquill AI, pull their full text, and pass that text to an LLM in your
-stack with strict instructions: answer only from the provided sources, cite every
-claim, and link back to the official government source. This is the classic
-retrieve-then-ground (RAG) loop, and it is the single most reliable way to keep a
-legal assistant from making things up.
+The recipe turns a user question into a grounded, citable answer. You retrieve the
+governing sections from Vaquill AI, pull their full text, and pass that text to an
+LLM in your stack with strict instructions: answer only from the provided sources,
+cite every claim, and link back to the official government source. This is the
+standard retrieve-then-ground (RAG) loop. The model can only draw on text you
+supplied, so there is less room for invented law.
 
 **Endpoints used:** `POST /us/statutes/search` (retrieve), `GET /us/statutes/section/{actId}/body` (full text).
 
 <Tip>
   **You can collapse the two calls into one.** Pass `"includeBody": true` on the
   search and every hit comes back with its full text on `body`, so three grounded
-  sources take one round trip instead of four. It costs the same: the search
-  plus the ordinary price for each row that actually returns text, and a row
-  whose text cannot be resolved comes back with `body: null` and is not
-  charged. It buys latency, not
-  a discount, and it multiplies with `limit`, so page deliberately. The two-call
-  version below is written out because it is the one to use when you rank more
-  candidates than you ground on.
+  sources take one round trip instead of four. The cost is the search plus the
+  ordinary price for each row that actually returns text. A row whose text cannot
+  be resolved comes back with `body: null` and is not charged. This saves
+  latency, not money, and the cost multiplies with `limit`, so page deliberately.
+  The two-call version below is the one to use when you rank more candidates than
+  you ground on.
 </Tip>
 
 <Info>
@@ -258,8 +257,7 @@ if __name__ == "__main__":
     Use the canonical preference order in
     [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
     rather than writing your own, so the same section links to the same official
-    page everywhere in your product. This is what lets your users verify the law
-    themselves, and it is what keeps your product honest.
+    page everywhere in your product. Users can then verify the law themselves.
   </Accordion>
 </AccordionGroup>
 

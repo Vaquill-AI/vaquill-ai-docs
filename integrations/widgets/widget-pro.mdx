@@ -5,7 +5,7 @@ description: "Full-featured Next.js chat widget with multi-thread sidebar, voice
 keywords: ["vaquill widget pro", "voice legal chat", "multi thread chat widget", "legal AI sidebar", "TTS legal chat", "STT legal chat", "gamification legal chat"]
 ---
 
-The heavyweight Vaquill AI widget. A Next.js 15 + React 19 chat surface with a persistent conversation sidebar, voice mode (TTS + STT), cross-tab sync via BroadcastChannel, gamification (XP and streaks), and multiple citation display modes. Use this when you want a Vaquill-style full experience embedded in your site rather than the minimal proxy widget.
+The full-featured Vaquill AI widget, built on Next.js 15 and React 19. It has a persistent conversation sidebar, voice mode (TTS + STT), cross-tab sync via BroadcastChannel, gamification (XP and streaks) and several citation display modes. Use it when you want the full Vaquill-style experience embedded in your site.
 
 Source: [github.com/Vaquill-AI/integrations/vaquill-widget-pro](https://github.com/Vaquill-AI/integrations/tree/main/vaquill-widget-pro).
 
@@ -15,19 +15,19 @@ Source: [github.com/Vaquill-AI/integrations/vaquill-widget-pro](https://github.c
 
 ## What you get
 
-- **Persistent conversation sidebar** with rename, delete, and search
-- **Voice mode** - microphone input with VAD plus TTS playback
-- **Cross-tab sync** via BroadcastChannel - threads stay consistent across browser tabs
-- **Gamification** - XP, streaks, and engagement progress
-- **Citation display modes** - cards, tabs, accordion, or pills
-- **TTS provider matrix** - OpenAI, ElevenLabs, Edge, Google, StreamElements
-- **Multi-turn `chatHistory`** preserved server-side in a process-local session map
-- **Both embed modes** - floating button and iframe
+- Persistent conversation sidebar with rename, delete, and search
+- Voice mode: microphone input with VAD plus TTS playback
+- Cross-tab sync via BroadcastChannel, so threads stay consistent across browser tabs
+- Gamification: XP, streaks, and engagement progress
+- Citation display modes: cards, tabs, accordion, or pills
+- TTS providers: OpenAI, ElevenLabs, Edge, Google, StreamElements
+- Multi-turn `chatHistory`, kept server-side in a process-local session map
+- Two embed modes, floating button and iframe
 - IndexedDB + localStorage fallback for client-side persistence
 
 ## Status and caveats
 
-The chat-completion plumbing in `src/lib/ai/vaquill-client.ts` talks to the Vaquill AI app's chat backend for both streaming and non-streaming paths. A few legacy endpoints from the upstream RAG-widget fork are stubbed and degrade gracefully: per-message feedback persists only to the local session cache, citation-by-id lookup and file uploads throw a clear "not supported" error, and agent-settings return Vaquill-flavoured defaults.
+The chat-completion plumbing in `src/lib/ai/vaquill-client.ts` talks to the Vaquill AI app's chat backend for both streaming and non-streaming paths. A few legacy endpoints from the upstream RAG-widget fork are stubbed. Per-message feedback persists only to the local session cache, citation-by-id lookup and file uploads throw a "not supported" error, and agent-settings return fixed Vaquill defaults.
 
 <Warning>
   The server-side session map lives in process memory. On Vercel cold starts or multi-instance deployments it resets. The React UI's IndexedDB / localStorage is the durable copy, so users do not lose history, but server-side `getConversationMessages` returns empty for a cold instance until at least one turn is sent.
@@ -168,7 +168,7 @@ vercel
 ```
 
 <Tip>
-  When deploying behind a single-instance hobby plan, the in-memory session map survives between requests. For Pro / Enterprise plans with multiple regions, expect the server-side history to be per-instance - the client storage is the source of truth.
+  When deploying behind a single-instance hobby plan, the in-memory session map survives between requests. For Pro / Enterprise plans with multiple regions, expect the server-side history to be per-instance. The client storage is the source of truth.
 </Tip>
 
 ### Railway
@@ -196,7 +196,7 @@ npm run lint     # eslint
 - Production must be served over HTTPS (browser mic access requires it).
 - Grant the browser microphone permission for the site origin.
 - Verify `OPENAI_API_KEY` is set and `TTS_PROVIDER` is configured.
-- On Safari and iOS, WebM audio is unsupported - the widget falls back to MP4.
+- On Safari and iOS, WebM audio is unsupported, so the widget falls back to MP4.
 
 **Chat returns nothing**
 

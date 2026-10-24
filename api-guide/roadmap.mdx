@@ -3,14 +3,14 @@ title: "Roadmap"
 description: "Corpora Vaquill AI has not built yet, what is deliberately out of scope, and how to detect new coverage programmatically"
 ---
 
-**This page lists only what is NOT built yet.**
+This page lists only what is not built yet.
 
 For what is queryable right now, `GET /us/statutes/coverage` is the live answer and this page is not.
 It reports every jurisdiction, every corpus and every section count at the moment you call it, it is free, and it needs no authentication beyond your key.
 The human-readable version is [Coverage](/api-guide/coverage), and what has already shipped is in the [Changelog](/api-guide/changelog).
 
-Everything below ships through the same pipeline as the current data: official government source, chunked and embedded, citation-linked, on a recurring refresh.
-Each lands behind the same `corpusType` filter, so there is nothing to integrate.
+Everything below would ship the way the current data does: from an official government source, citation-linked and refreshed on a schedule.
+Each corpus lands behind the same `corpusType` filter, so there is nothing to integrate.
 
 <Note>
   This page is maintained by hand and the corpus is not, so treat it as direction rather than as a manifest. Poll `GET /us/statutes/coverage` to detect new corpora, and see [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled diff. No date on this page is a commitment.
@@ -34,7 +34,7 @@ Pennsylvania's Consolidated Statutes are complete; only the older unconsolidated
 The current text of a rule answers what it says today.
 It does not answer what it said on the date of the conduct, which is the question most compliance disputes actually turn on.
 
-The CFR annual editions, 1996 to 2026, are **live** under `corpusType=CFR_ANNUAL`, and the Statutes at Large are live under `SESSION_LAW`.
+The CFR annual editions, 1996 to 2026, are live under `corpusType=CFR_ANNUAL`, and the Statutes at Large are live under `SESSION_LAW`.
 These are what is still missing around them.
 
 | Source | What it adds | Official source |
@@ -44,7 +44,7 @@ These are what is still missing around them.
 
 The **LSA** is the official month-by-month map from a CFR section to the change that hit it and the Federal Register page that made it.
 It is the join key between the `CFR` and `FEDERAL_REGISTER` corpora already in the API, and it answers "what changed this month" directly.
-Now that the annual editions are in, the LSA is what turns two adjacent editions into a reason a section changed.
+With the annual editions live, the LSA is what would explain why a section differs between two adjacent editions.
 
 **FAR and DFARS class deviations** matter because, since the Federal Acquisition Regulation overhaul, agencies have been applying model deviation text that 48 C.F.R. does not yet reflect.
 FAR and DFARS are already served inside `CFR`; the deviations are what a contracting officer is operating under in the meantime.
@@ -55,7 +55,7 @@ FAR and DFARS are already served inside `CFR`; the deviations are what a contrac
 |---|---|---|
 | Federal local rules | The 61 district courts not yet held, and the bankruptcy courts | uscourts.gov and each court's own site |
 
-Federal local rules are **live** under `corpusType=FEDERAL_LOCAL_RULES` for 52 courts: the 13 courts of appeals, the habeas rules, six national bodies and 32 district-court rule sets covering 33 of the 94 district courts.
+Federal local rules are live under `corpusType=FEDERAL_LOCAL_RULES` for 52 courts: the 13 courts of appeals, the habeas rules, six national bodies and 32 district-court rule sets covering 33 of the 94 district courts.
 What is outstanding is the other 61 district courts and the local bankruptcy rules, adopted under 28 U.S.C. 2071 and Federal Rule of Civil Procedure 83.
 These modify the national Federal Rules in every district, so the national rules alone are an incomplete picture of what governs a filing.
 They are citable in their own form, for example `N.D. Cal. Civ. L.R. 7-2`.
@@ -64,7 +64,7 @@ This is a large item: each remaining court publishes its own set, mostly as PDFs
 
 ## Tax
 
-The Internal Revenue Manual is **live** under `AGENCY_GUIDANCE`, as are IRS notices, revenue procedures, revenue rulings and announcements.
+The Internal Revenue Manual is live under `AGENCY_GUIDANCE`, as are IRS notices, revenue procedures, revenue rulings and announcements.
 Two IRS corpora are not.
 
 | Source | What it adds |
@@ -74,8 +74,8 @@ Two IRS corpora are not.
 
 ## Administrative adjudication
 
-`corpusType=AGENCY_ADJUDICATION` is **live** and currently serves seven bodies: FTC Part 3 administrative filings, SEC opinions and adjudicatory orders, MSPB, BIA and Attorney General precedent decisions, NLRB Board decisions, DOJ Office of Legal Counsel opinions, and CFPB enforcement actions.
-See [Federal coverage](/api-guide/coverage/federal) for the per-body scope limits, which are real and worth reading before you rely on this corpus.
+`corpusType=AGENCY_ADJUDICATION` is live and currently serves seven bodies: FTC Part 3 administrative filings, SEC opinions and adjudicatory orders, MSPB, BIA and Attorney General precedent decisions, NLRB Board decisions, DOJ Office of Legal Counsel opinions, and CFPB enforcement actions.
+Each body has its own scope limits. Read [Federal coverage](/api-guide/coverage/federal) before relying on this corpus.
 
 These bodies are not in it yet.
 
@@ -87,7 +87,7 @@ These bodies are not in it yet.
 
 The DOL bodies span an 80+ case-type taxonomy: SOX, AIR21, STAA, ERA, OSH, OFCCP, LCA, black lung and longshore, among others.
 
-On customer demand: the Occupational Safety and Health Review Commission (OSHRC), the Federal Mine Safety and Health Review Commission (FMSHRC), the Federal Energy Regulatory Commission (FERC), Commodity Futures Trading Commission (CFTC) reparations, the US Tax Court, the Armed Services and Civilian Boards of Contract Appeals (ASBCA and CBCA), the EPA Environmental Appeals Board, and the Departmental Appeals Board (DAB) of the Department of Health and Human Services (HHS).
+The following would be added on customer demand: the Occupational Safety and Health Review Commission (OSHRC), the Federal Mine Safety and Health Review Commission (FMSHRC), the Federal Energy Regulatory Commission (FERC), Commodity Futures Trading Commission (CFTC) reparations, the US Tax Court, the Armed Services and Civilian Boards of Contract Appeals (ASBCA and CBCA), the EPA Environmental Appeals Board, and the Departmental Appeals Board (DAB) of the Department of Health and Human Services (HHS).
 
 ## Federal regulatory dockets
 
@@ -110,7 +110,7 @@ No documents from these agencies are in the corpus today.
 | Department of Housing and Urban Development (HUD) | Fair housing guidance |
 | Department of Justice (DOJ) Civil Rights Division | Americans with Disabilities Act guidance |
 
-Agencies that **are** covered include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
+Covered agencies include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
 Their per-source detail is in [Agency guidance coverage](/api-guide/coverage/agency-guidance).
 
 ## Under evaluation
@@ -124,7 +124,7 @@ It would not change the position immediately below on general case law and docke
 
 ## Out of scope
 
-Deliberate exclusions, not gaps. If you need one of these, we are not your supplier.
+These are deliberate exclusions. If you need one of them, we are not your supplier.
 
 | Not building | Why |
 |---|---|
@@ -138,20 +138,19 @@ Deliberate exclusions, not gaps. If you need one of these, we are not your suppl
 
 ### GAO
 
-GAO decisions of the Comptroller General on appropriations law and bid protests were previously planned and are now a deliberate no.
+GAO decisions of the Comptroller General on appropriations law and bid protests are a deliberate no.
 
-The obstacle is policy, not transport.
-GAO does not permit automated access to its decision listings and offers no sitemap, feed or API.
+GAO does not permit automated access to its decisions, and we honor that. It offers no feed or API either.
 The only bulk source is govinfo's `GAOREPORTS` collection, which runs from 1989 to 2008 and then stops.
 A bid-protest corpus that ends 18 years ago invites a customer to read absence as a finding, which is worse than not serving it.
 
 ### The line on court material
 
-**We carry rules a court formally adopts and publishes as binding on everyone appearing before it. We do not carry an individual judge's preferences.**
+We carry rules a court formally adopts and publishes as binding on everyone appearing before it. We do not carry an individual judge's preferences.
 
 Formally adopted rules are stable, citable, published under statutory authority, and amended on a visible cycle. That covers the Federal Rules and Supreme Court Rules today, the state court rules in the [Coverage](/api-guide/coverage) matrix, and the federal local rules above.
 
-Judge-specific material fails every one of those tests: over 1,500 judges, no consistent location, no citation form, revised or voided silently on rotation. We could ingest it. We could not keep it honest, and a confidently stale answer is worse than none.
+Judge-specific material fails every one of those tests: over 1,500 judges, no consistent location, no citation form, revised or voided silently on rotation. We could collect it, but we could not keep it current, and a confidently stale answer is worse than none.
 
 ## Related
 

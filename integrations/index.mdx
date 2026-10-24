@@ -5,26 +5,26 @@ description: "MCP servers, chatbots, widgets, browser extensions, and automation
 keywords: ["vaquill integrations", "legal AI integrations", "slack legal bot", "discord legal bot", "whatsapp legal bot", "chrome extension legal AI", "mcp server legal", "n8n legal research"]
 ---
 
-Put Vaquill AI wherever your team already works - Claude, Slack, a marketing site, a Google Sheet. Every integration is open-source, self-hostable, and calls the same [Vaquill statutes API](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions) under the hood.
+Use Vaquill AI from the tools your team already has open: Claude, Slack, a marketing site, a Google Sheet. Every integration is open-source and self-hostable, and all of them call the same [Vaquill statutes API](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions).
 
 <CardGroup cols={2}>
   <Card title="MCP Servers" href="/integrations/mcp">
-    Plug Vaquill AI's full US statute corpus (US Code, CFR, all 50 state codes) into Claude, Cursor, VS Code, or any MCP client.
+    Connect Vaquill AI's US statute corpus (US Code, CFR, all 50 state codes) to Claude, Cursor, VS Code, or any MCP client.
   </Card>
   <Card title="Chatbots" href="/integrations/chatbots">
     Legal Q&A in Slack, Discord, Microsoft Teams, Telegram, WhatsApp, or Signal with thread memory and cited sources.
   </Card>
   <Card title="Widgets" href="/integrations/widgets">
-    Embed a chat widget on any site - one script tag, an iframe, or a full Next.js deployment with voice and history.
+    Embed a chat widget on any site with one script tag, an iframe, or a full Next.js deployment that adds voice and history.
   </Card>
   <Card title="Browser Extensions" href="/integrations/browser/chrome">
-    Research from any browser tab without leaving the page. Chrome, Edge, Brave, Arc, Opera.
+    Research from any browser tab without leaving the page. Works in Chrome, Edge, Brave, Arc, and Opera.
   </Card>
   <Card title="Automation" href="/integrations/automation/n8n">
-    n8n and Make.com templates that turn a Google Sheet of questions into a Sheet of answers and cited sources.
+    n8n and Make.com templates that read questions from a Google Sheet and write back matching statute sections and citations.
   </Card>
   <Card title="GitHub" href="https://github.com/Vaquill-AI/integrations">
-    Every integration is MIT-licensed and ready to fork.
+    Every integration is MIT-licensed. Fork what you need.
   </Card>
 </CardGroup>
 
@@ -47,7 +47,7 @@ Put Vaquill AI wherever your team already works - Claude, Slack, a marketing sit
 
 ## Common architecture
 
-Every integration is a thin wrapper: take input from the surface (Slack message, browser popup, webhook), call the statutes search endpoint, render the matching statute sections.
+Each integration is a thin wrapper. It takes input from its surface (a Slack message, browser popup, or webhook), calls the statutes search endpoint, and renders the matching statute sections.
 
 ```mermaid
 flowchart LR
@@ -62,7 +62,7 @@ flowchart LR
     style D fill:#f0fdf4,stroke:#16a34a,color:#15803d
 ```
 
-One API key (`vq_key_...`) from your [dashboard](https://app.vaquill.ai/settings) drives them all. Configuration is via environment variables; every integration ships with a Dockerfile and at least one cloud-deploy recipe.
+One API key (`vq_key_...`) from your [dashboard](https://app.vaquill.ai/settings) works for all of them. Configuration is through environment variables, and every integration ships with a Dockerfile and at least one cloud-deploy recipe.
 
 ## Build your own
 

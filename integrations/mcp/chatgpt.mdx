@@ -5,10 +5,10 @@ description: "Connect US primary law to ChatGPT and Codex over MCP. The standard
 keywords: ["chatgpt mcp", "chatgpt connector legal", "codex mcp server", "openai apps sdk legal", "deep research connector", "us law chatgpt"]
 ---
 
-The same MCP server that serves Claude serves ChatGPT and Codex. One endpoint, one credit balance, one corpus of United States primary law.
+The MCP server that serves Claude also serves ChatGPT and Codex. It is the same endpoint, credit balance and corpus of United States primary law.
 
 <Note>
-  **Nothing here is Claude-specific.** `https://mcp.vaquill.ai/mcp` speaks the Model Context Protocol over Streamable HTTP, which is an open standard. Client-specific pages exist because the *setup steps* differ, not the server.
+  `https://mcp.vaquill.ai/mcp` speaks the Model Context Protocol over Streamable HTTP, an open standard, so nothing on it is specific to Claude. The client-specific pages exist because the setup steps differ. The server is the same.
 </Note>
 
 ## Connect
@@ -35,12 +35,12 @@ Research-style clients, including ChatGPT's deep research and company-knowledge 
 They are deliberately additive. If your client can call the typed tools instead, prefer them: `search_us_statutes` filters by jurisdiction, corpus, date and status, which the generic pair cannot.
 
 <Warning>
-  **`url` is always a non-empty string on a result.** Research clients render a citation only when it is present, so a result with an empty `url` is silently uncitable. Every legal-record result carries its official government source URL.
+  **`url` is always a non-empty string on a result.** Research clients render a citation only when it is present, so a result with an empty `url` could not be cited. Every legal-record result carries its official government source URL.
 </Warning>
 
 ## Verify it works
 
-A green connection proves nothing. Make one real call, and the cheapest is free:
+A connected status does not prove the server works. Make one real call. The cheapest one is free:
 
 > "List statutes coverage for California."
 

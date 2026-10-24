@@ -3,15 +3,15 @@ title: "Add the corpus as an AI agent tool (MCP)"
 description: "Give an AI agent authoritative statute search, either through the hosted Vaquill MCP server or by wrapping the REST API as your own tool"
 ---
 
-**What this gets you:** any AI agent - Claude, Cursor, or one you built - gains the ability to look up real US law on its own, mid-conversation, with citations, instead of guessing from training data.
+**What this gets you:** an AI agent (Claude, Cursor, or one you built) that can look up US law on its own, mid-conversation, with citations, instead of guessing from training data.
 
-Grounding an AI agent in authoritative legal text is one of the most common uses of this API. There are two ways to do it: connect an MCP-compatible client to the hosted Vaquill MCP server, or wrap the REST API as a tool your own agent can call. Both return citations and source links, so answers stay grounded in official government text.
+There are two ways to ground an agent in legal text: connect an MCP-compatible client to the hosted Vaquill MCP server, or wrap the REST API as a tool your own agent can call. Both return citations and source links to official government text.
 
 **Endpoints used:** `POST /us/statutes/search` for the custom-tool path. The hosted server path needs no direct REST calls from you.
 
 ## Path A: Hosted Vaquill MCP server
 
-The fastest route is the hosted Vaquill MCP server. Any MCP-compatible client can connect to it and query US statutes and regulations directly, without you writing glue code. The server exposes statute search and retrieval as tools the agent can call, and every result comes back with a citation and a link to the official source.
+The hosted Vaquill MCP server is the fastest route. Any MCP-compatible client can connect to it and query US statutes and regulations with no glue code on your side. It exposes statute search and retrieval as tools the agent can call, and each result carries a citation and a link to the official source.
 
 <Card title="Vaquill MCP server" href="/integrations/mcp/vaquill">
   Connection details, available tools, and setup steps for the hosted MCP server.
@@ -26,10 +26,10 @@ When you are building your own tool-calling agent, define a `search_statutes` fu
 <Steps>
   <Step title="Implement the tool function">
     Ask the API for a narrow result with `fields` rather than fetching 40+ fields
-    and throwing most of them away in Python. Every field you did not ask for is
-    a field that never crossed the wire, never entered the tool result, and never
-    entered the model's context window. `actId` and `citation` always come back,
-    because a row without them cannot be used or attributed.
+    and throwing most of them away in Python. A field you do not request never
+    crosses the wire and never reaches the model's context window. `actId` and
+    `citation` always come back, because a row without them cannot be used or
+    attributed.
 
     ```python Python
     import requests
@@ -153,12 +153,12 @@ When you are building your own tool-calling agent, define a `search_statutes` fu
   </Step>
 
   <Step title="Keep answers grounded">
-    Instruct the model to cite the `citation` field and link the `sourceUrl` for every legal claim, and to say when the corpus returns no match rather than guessing. This keeps the agent honest and traceable back to official text.
+    Instruct the model to cite the `citation` field and link the `sourceUrl` for every legal claim, and to say when the corpus returns no match rather than guessing. Every claim in the answer then traces back to official text.
   </Step>
 </Steps>
 
 <Tip>
-  For heavy agent traffic, cache the `/us/statutes/coverage` response and reuse it to steer `corpusType` and `state` on tool calls. That narrows searches and avoids searching jurisdictions with no data.
+  For heavy agent traffic, cache the `/us/statutes/coverage` response and use it to steer `corpusType` and `state` on tool calls. Searches stay narrow and skip jurisdictions with no data.
 </Tip>
 
 ## Related

@@ -23,7 +23,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
     - `parsedQuery` shows exactly how your expression was read, with every grouping that could be in doubt parenthesized. Send it back as the query to run the same search.
     - `queryWarnings` lists plain-English warnings about a valid expression that may not mean what you intended, such as `AND` and `OR` mixed without parentheses.
   - **In `any` mode,** `queryHint` tells you when a query looks like a Boolean expression, so you can switch to `matchType: "boolean"`.
-  - **Nothing is silently loosened.** A malformed expression, an unsupported operator or a value out of bounds is a `422` naming the problem and its character position, and it is not charged.
+  - **Invalid input is rejected.** A malformed expression, an unsupported operator or a value out of bounds is a `422` naming the problem and its character position, and it is not charged.
   - **Pricing:** the same as any search, 4 credits per call. A `503` from a temporary backend outage is refunded.
 
   See [Boolean Search](/api-guide/concepts/boolean-search) for precedence, limits, recall and errors.
@@ -145,7 +145,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   | `POST /us/session-laws/search` | 4 per page |
 
   - It searches the enacted text. Language an act strikes out is never searched and never appears in a snippet.
-  - Ranking is keyword relevance, not meaning, so a question has to share vocabulary with the act. Each result says how it matched (`matchType`, `matchedBy`); there is no "no good match" flag.
+  - Ranking uses keyword relevance only, so a question has to share vocabulary with the act. Each result says how it matched (`matchType`, `matchedBy`); there is no "no good match" flag.
   - Filters: `jurisdiction`, `session`, `series`, `instrumentType`, `approvedFrom`, `approvedTo`. `limit` is 1 to 25 and `offset` plus `limit` reaches at most the 60 best matches.
   - An empty result is charged. A request that fails validation is a `422` and is not charged.
 
@@ -216,7 +216,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   ## Search within an article or a rule set
 
-  Everything you can browse, you can now search inside.
+  Every browsable corpus can now be searched inside a container.
   `POST /us/statutes/search` takes a new `article` filter, and `code` takes a federal rule set.
 
   - `{"corpusType": "CONSTITUTION", "article": "Amendment XIV"}` searches the Fourteenth Amendment.
@@ -256,8 +256,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `POST /us/statutes/count` takes the scoping filters and returns an exact section count. No
   query, no ranking, 1 credit, and a scope that matches nothing is refunded.
 
-  It answers the question that has to come first when you are building a corpus rather than
-  looking one section up: how big is this job. Texas regulations are 43,638 sections; 26 TAC
+  Use it to size a job before building a corpus. Texas regulations are 43,638 sections; 26 TAC
   chapter 554 is 279. Count the scope, enumerate it with `/divisions`, then rank within it
   with `/search`.
 
@@ -268,8 +267,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `POST /us/statutes/sections` now accepts `includeBody`. Each section comes back with its text
   on `body` instead of metadata only.
 
-  Priced from the ordinary body rate per row that returns text, so it buys a round trip and not a
-  discount, and rows whose text cannot be resolved come back `null` and are not charged. Read
+  Priced from the ordinary body rate per row that returns text, so it saves a round trip but not
+  credits, and rows whose text cannot be resolved come back `null` and are not charged. Read
   `creditsConsumed` rather than computing it.
 
   ## `changedSince` now tells you how much it matched
@@ -303,35 +302,34 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `renumberedTo` and `transferredTo` are raw publisher pointers (`self:4651`), not identifiers of
   ours, and passing one to a section endpoint is a 404. They now come with `renumberedToLabel` and
   `transferredToLabel`, the same pointer written out (`section 10105 of Title 34`), and their
-  descriptions say plainly that the raw form is not an `actId`.
+  descriptions state that the raw form is not an `actId`.
 </Update>
 
 <Update label="2026-09-13" description="STATE_RULES reaches 50 jurisdictions: Colorado, built from a 2023 compilation plus every amending order since">
   ## `STATE_RULES`: Colorado
 
   **1,194 rules, 58,447 sections across 50 jurisdictions.** Colorado is the one jurisdiction here
-  whose court rules are not a single consolidated fetch, and the difference is worth reading before
-  you rely on it.
+  whose court rules are not a single consolidated fetch.
 
   Colorado's Office of Legislative Legal Services stopped publishing after the **2023** edition and
   now routes current court-rules access to a paid commercial product. The Supreme Court, separately,
   publishes every adopted rule change as a free order carrying the amended text. So the 2023 volume
   is the base and every adopted order issued after it is applied forward on top.
 
-  What that means per rule, all of it readable from the response rather than assumed:
+  Per rule, readable from the response:
 
   - **180 rules** carry an amendment adopted in 2024 to 2026.
   - **958 rules** have not been touched by any adopted order since the compilation, so their 2023
-    text is the current law. The order series is contiguous with no gaps, which is what makes that
-    statement checkable rather than a hope.
+    text is the current law. The order series is contiguous with no gaps, so that
+    statement can be checked.
   - **45 rules** could not be updated automatically. They serve their 2023 text and say so in
-    `sourceNote`, naming the order, its adoption date and its effective date. 🔴 **Read that field
-    before relying on one of these**; they are labelled, not silently stale.
+    `sourceNote`, naming the order, its adoption date and its effective date. Read that field
+    before relying on one of these.
   - **11 rules are suspended, not in force.** The Colorado Rules of ICWA Procedure (Chapter 28.3)
     were adopted effective 2024-01-01 and suspended by the Supreme Court on 2025-11-06. They carry
     `actStatus=suspended` and are served for reference.
 
-  Coverage spans Chapters 1 to 38, so this is not only civil procedure: criminal, appellate,
+  Coverage spans Chapters 1 to 38: civil, criminal, appellate,
   juvenile, probate and county-court procedure, evidence, professional conduct, judicial conduct and
   discipline, magistrates, water courts and public access to records. The statewide Practice
   Standards under C.R.C.P. 121 are addressable individually, cited as `C.R.C.P. 121 § 1-15`.
@@ -347,7 +345,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   scope limit, is on
   [state coverage](/api-guide/coverage/states#state-attorney-general-opinions).
 
-  - **Montana, 3,527 opinions, volumes 15 to 44.** 🔴 **These carry no issue date.** Montana
+  - **Montana, 3,527 opinions, volumes 15 to 44.** **These carry no issue date.** Montana
     publishes by volume and prints no date on an opinion, so unlike every other jurisdiction here
     they do not answer an `asOf` query. They are reachable by citation, volume and search.
     Volumes 1 to 14 are excluded: the leading number on those is a page in the bound volume, not
@@ -355,10 +353,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - **North Carolina, 1,106 opinions, 1976-2010.** The state prints no opinion number, so these
     are keyed on issue date plus the official who asked.
 
-  Montana was previously listed as excluded on the basis of an access signal its site returned.
-  On re-reading, that signal was a hosting-platform default rather than anything the state wrote,
-  so the exclusion was lifted. Documents on the one host whose operator did set its own
-  restriction remain excluded and are not held.
+  Montana, previously excluded, is now held. Documents on the one host whose operator restricts
+  access remain excluded and are not held.
 
   Corpus-wide this takes coverage to **5,095,028 sections** across 53 jurisdictions, indexed as
   **19,288,724** retrieval passages.
@@ -367,15 +363,15 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 <Update label="2026-09-11" description="STATE_AG_OPINION reaches 34 jurisdictions and 68,874 opinions: seven more states, plus corrected agency-guidance and federal counts">
   ## `STATE_AG_OPINION`: seven more jurisdictions
 
-  Seven jurisdictions land, taking the corpus to **68,874 opinions across 34 jurisdictions**.
+  Seven jurisdictions are added, bringing the corpus to **68,874 opinions across 34 jurisdictions**.
 
   - **Alabama, 11,928 opinions, 1979 to present.** The state's own archive begins in 1979.
     Earlier opinions exist but Alabama does not publish them itself, so they are a stated
-    coverage limit rather than a gap we intend to close.
+    coverage limit.
   - **West Virginia, 151 opinions, 2007-2026.** The state prints no opinion number, so these are
     cited by date and requester surname.
   - **Texas, 2,914 opinions, 1983-2026.** The seven post-1983 series only. Roughly 14,800 earlier
-    opinions sit behind paths the state restricts automated access to, so we do not hold them.
+    opinions sit behind paths the state restricts access to, so we do not hold them.
   - **Massachusetts, 529 opinions, 1968-1993**, split out of the Attorney General's annual
     reports. Only that era carries citable opinion numbers.
   - **Mississippi, 520 opinions, 2020-2026.** The state's pre-2020 opinion database is no longer
@@ -410,7 +406,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 <Update label="2026-09-10" description="STATE_AG_OPINION reaches 27 jurisdictions and 52,754 opinions: 22 more states, including California, Missouri, Washington and the Dakotas">
   ## `STATE_AG_OPINION`: 22 more jurisdictions
 
-  Twenty-two jurisdictions land at once, taking the corpus to **52,754 opinions across 27
+  Twenty-two jurisdictions are added at once, bringing the corpus to **52,754 opinions across 27
   jurisdictions**. The full per-state table, with each jurisdiction's scope limit, is on
   [state coverage](/api-guide/coverage/states#state-attorney-general-opinions).
 
@@ -418,8 +414,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   **Tennessee** 2,650, **California** 1,961, **South Dakota** 1,652, **Illinois** 1,451 and
   **Nebraska** 1,191. Every one is served `goodLawStatus: "unknown"`, as the whole corpus is.
 
-  Four scope decisions are worth stating plainly, because each one is a boundary rather than a
-  gap, and each is recorded on the coverage page:
+  Four scope limits, each recorded on the coverage page:
 
   - **Missouri runs 1962 to present.** The 1933-1961 era is not served: the number printed on
     those opinions is a requester-alphabetical folder position, not a document identifier, so
@@ -452,7 +447,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   All four are served `goodLawStatus: "unknown"`, like every other jurisdiction here.
 
-  Coverage limits worth knowing before you query them:
+  Coverage limits:
 
   - **Arkansas** lists 334 further opinions its own index carries a row for and whose
     document it has never published. Those are recorded as a coverage limit, not
@@ -460,7 +455,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - **Indiana** reaches back to 1906 and publishes in two citation forms, both carried
     as the state prints them: numbered opinions from 1944, and page cites into the
     annual and biennial report volumes before that. In the scanned eras Indiana cut its
-    bound volumes into per-opinion PDFs **by page**, so an opinion running past its page
+    bound volumes into per-opinion PDFs by page, so an opinion running past its page
     cut is severed in the state's own file. We serve everything Indiana publishes, but
     for those the text is the opening pages. The 1960s, 1970s and 2000 onward are
     unaffected. Every Indiana opinion also carries the statutes it construes, the
@@ -468,8 +463,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - **Idaho** is opinions only. The Guidelines, Certificates of Review, Annual Reports
     and Tables of Citations that share its feed are a different instrument and are not
     here. Pre-1985 opinions exist only inside annual report volumes.
-  - **Oklahoma** is deliberately 2023 onward. Its older opinions are published on a
-    network whose publisher does not permit automated access, so we do not hold them.
+  - **Oklahoma** is 2023 onward. Its older opinions are published on a
+    network whose publisher restricts access, so we do not hold them.
 
 </Update>
 
@@ -480,8 +475,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   construes that state's own statutes, constitution and regulations for a state
   officer, legislator or local government who asked.
 
-  It is frequently the **only interpretive authority that exists** for a provision no
-  court has reached, which is the reason to hold it.
+  It is often the only interpretive authority for a provision no court has reached.
 
   <Warning>
     **Persuasive authority, not binding law.** Every section in this corpus is served
@@ -491,8 +485,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
     not as "probably still current".
   </Warning>
 
-  **Delaware, 843 opinions, 1995-2026.** Two things about its
-  composition, because a buyer would otherwise be surprised by both:
+  **Delaware, 843 opinions, 1995-2026.** Composition:
 
   - Delaware runs one numbered series and does not separate its opinion types. Only
     about **17** of the numbered items are substantive Attorney General opinions; the
@@ -518,7 +511,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   Two new `source` codes under `corpusType=AGENCY_GUIDANCE`, both from ftc.gov.
 
-  **`ftc_hsr_interpretation` - 4,589 documents, 1978-2025.** The Hart-Scott-Rodino
+  **`ftc_hsr_interpretation`: 4,589 documents, 1978-2025.** The Hart-Scott-Rodino
   premerger notification interpretations, both halves under one code. The 20
   **formal** interpretations are the Commission's own authoritative construction of
   a Premerger Notification Rule under 16 C.F.R. 803.30, a closed series issued 1978
@@ -531,7 +524,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   An informal interpretation is staff views, not Commission action, and is not
   binding on the Commission.
 
-  **`ftc_advocacy_filing` - 860 documents, 1985-2026.** Comments and letters the
+  **`ftc_advocacy_filing`: 860 documents, 1985-2026.** Comments and letters the
   Commission and its staff address to state legislatures, state supreme courts,
   governors and other federal agencies on the competition effects of a proposed
   measure. **These bind nobody**: they decide no case, construe no FTC rule, and
@@ -541,8 +534,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   ### Two gaps stated up front
 
-  The FTC serves **no HSR informal interpretation from 1997 at all** - none exists
-  at the publisher, against 141 in 1996 and 83 in 1998 - so roughly 100 to 140
+  The FTC serves **no HSR informal interpretation from 1997 at all**. None exists
+  at the publisher, against 141 in 1996 and 83 in 1998, so roughly 100 to 140
   interpretations from that year are missing from the source rather than from this
   corpus.
 
@@ -572,28 +565,27 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   judges beneath them. The count is the publisher's own: the volume listing
   enumerates 66,600 decisions across volumes 0 to 375, and 66,597 are served.
 
-  **Currency is still not asserted, and widening the corpus does not change that.**
+  **Currency is still not asserted.**
   `goodLawStatus` remains `unknown` on every one of these decisions. The Board
   publishes no overruling or supersession signal, and its CITENET Classified Index
   is a subject digest rather than a citator, with no reverse edge from an overruled
-  decision to the one that overruled it. A decision is served as issued. Whether a
-  later Board overruled it is a question we do not answer, and the older the
-  decision the likelier that matters, because Board doctrine moves with Board
-  composition. Each point carries a `coverageNote` saying so.
+  decision to the one that overruled it. A decision is served as issued. We do not say whether a
+  later Board overruled it. The older the decision, the more that matters,
+  because Board doctrine moves with Board composition. Each point carries a `coverageNote` saying so.
 
-  **Two decisions are excluded, and named rather than silently absent:**
+  **Two decisions are excluded:**
 
-  - `227 NLRB 427` - the publisher's PDF contains only the case caption and no
+  - `227 NLRB 427`: the publisher's PDF contains only the case caption and no
     body. Two independent extractors agree, so there is nothing to serve.
-  - `321 NLRB 10` - a file no OCR engine will accept.
+  - `321 NLRB 10`: a file no OCR engine will accept.
 
   Both are re-tried if the Board re-issues them.
 
   **Both citation forms are served and neither is normalized into the other**, as
   before: `NNN NLRB No. N` while a decision is a slip opinion, `NNN NLRB NNNN`
   once the bound volume closes and assigns it a page. Across the full archive the
-  balance shifts hard toward the bound form, because most of the archive is closed
-  volumes. That is expected, not a regression.
+  balance shifts toward the bound form, because most of the archive is closed
+  volumes.
 
   `corpusType=AGENCY_ADJUDICATION` now serves **100,920 sections** across its seven
   bodies, up from 37,085.
@@ -611,7 +603,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   plus 4,820 the IRS does not type on the document itself.
 
   That is **45,358 of the 45,431 determinations the IRS lists, 99.84%**.
-  Corrected 2026-09-07: 45,358 is the ingested count. **35,485 are reachable through the API, 78.1%**;
+  Corrected 2026-09-07: 45,358 is the count held. **35,485 are reachable through the API, 78.1%**;
   the 9,873 OCR-read scans are not currently served. See [Agency guidance coverage](/api-guide/coverage/agency-guidance).
 
   Each carries the publisher's own `Number`, `UILC` code list, `Subject` and
@@ -622,26 +614,24 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   <Warning>
     **A written determination binds one taxpayer and may not be cited as
     precedent.** 26 U.S.C. § 6110(k)(3) provides that it "may not be used or
-    cited as precedent" - that is the statute, not our caveat. Every one of the
+    cited as precedent". Every one of the
     45,358 therefore carries `actStatus: "non_precedential"` rather than
     `in_force`, and says so again in `currencyNote`. Read one as evidence of how
     the Service analysed one taxpayer's facts, never as a rule of general
     application.
   </Warning>
 
-  **`goodLawStatus` is `unknown` on all of them, deliberately.** The Service
+  **`goodLawStatus` is `unknown` on all of them.** The Service
   publishes no status or revocation field for written determinations, so whether
   a later determination revoked or modified any given one is **not asserted
-  here**. We would rather say we do not know than imply currency we cannot
-  measure.
+  here**. We do not imply currency we cannot measure.
 
-  **9,873 documents were read by OCR, and `extractionMethod` tells you which.**
+  **9,873 documents were read by OCR and are marked by `extractionMethod`.**
   The IRS publishes much of this series as scans of signed paper rather than as
   typeset text, so those carry `extractionMethod: "ocr"` and the rest carry
-  `"text_layer"`. Two consequences are worth knowing before you rely on the
-  text. The section symbol survives scanning less reliably than the words around
+  `"text_layer"`. Two consequences follow. The section symbol survives scanning less reliably than the words around
   it, so a passage may read `section 501(c)(3)` where the page prints
-  `§ 501(c)(3)` - **search for either form**. And a stamped control number in a
+  `§ 501(c)(3)`, so search for either form. And a stamped control number in a
   letterhead can lose a digit, which is why `actId` and `citation` are taken from
   the IRS index rather than from the scanned text.
 
@@ -656,8 +646,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `corpusType=AGENCY_GUIDANCE` now also covers the CMS Medicare Internet-Only
   Manuals (`source=cms_iom`, 11,018 sections across 21 publications, 26,153
   retrieval passages), addressed at CMS's own section numbering and cited
-  `Medicare Claims Processing Manual (Pub. 100-04), Ch. 12 SS 20.1`. This is how
-  Medicare actually runs day to day: Pub. 100-04 says what a provider may bill
+  `Medicare Claims Processing Manual (Pub. 100-04), Ch. 12 SS 20.1`. These manuals
+  govern day-to-day Medicare operations: Pub. 100-04 says what a provider may bill
   and how, Pub. 100-02 says what Medicare covers, and Pub. 100-08 is what a MAC
   reads before it opens an audit.
 
@@ -677,15 +667,15 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
     instruction here as a regulation.
   </Warning>
 
-  **Five of CMS's 25 publications hold nothing or almost nothing, and those are
-  the publisher's gaps rather than ours.** Pub. 100-12 (State Medicaid Manual),
+  **Five of CMS's 25 publications hold nothing or almost nothing. These are
+  gaps at the publisher.** Pub. 100-12 (State Medicaid Manual),
   100-13 (Medicaid CHIP) and 100-23 (Payment Error Rate Measurement) publish no
   chapters at all; 100-21 is titled Reserved; and 100-18, the Medicare
   Prescription Drug Benefit (Part D) Manual, is a two-page table of contents
   whose own text states that several chapters "have not been disseminated via
   HPMS or Pub. 100-18". Pub. 100-14 does not exist.
 
-  That scope statement is now a FIELD rather than a footnote:
+  The scope statement is now a field:
   `GET /statutes/coverage` returns `sourceScopeNotes` on each `corpusTypes`
   entry, keyed by the `source` value you can filter on. It carries a per-source
   declaration for a token that fans out to many unrelated sources, where the
@@ -701,8 +691,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   `corpusType=AGENCY_ADJUDICATION` now also covers the Federal Trade Commission's
   Part 3 adjudicative docket (`source=ftc_administrative_decision`, 18,023
-  documents), 1995 to date. This is where the Section 5 doctrine on unfair and
-  deceptive acts and unfair methods of competition actually lives: administrative
+  documents), 1995 to date. It holds the Section 5 doctrine on unfair and
+  deceptive acts and unfair methods of competition: administrative
   complaints, initial decisions, Commission opinions, consent agreements and the
   orders that modify them, across the Franchise Rule, the Telemarketing Sales
   Rule, COPPA, Made in USA, HSR and the Safeguards Rule.
@@ -710,8 +700,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   Cited by docket (`FTC Docket 9436`) where the record prints one, and always by
   the Commission's permanent File Number in `caseNumber`.
 
-  **The unit is a FILING, not a decision**, which is the thing to know before
-  querying it. A Part 3 docket is mostly documents written by the parties:
+  **The unit is a filing, not a decision.** A Part 3 docket is mostly documents written by the parties:
   measured on the corpus, 21% of passages are the operative instruments
   (complaints, decisions and orders, consent agreements) and the rest are
   motions, notices of appearance, exhibits and public-comment analyses. The
@@ -749,7 +738,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   | State and territory | 3,481,512 |
   | Retrieval passages | 18,723,678 |
 
-  Two counting units are in play and they are not interchangeable.
+  Two counting units are used, and they are not interchangeable.
   A **section** is one provision or document, which is what `sectionCount` reports.
   A **retrieval passage** is one indexed chunk, and a long document has many.
 
@@ -759,18 +748,18 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   ## Every counted corpus type is now filterable
 
   Checked against the deployed OpenAPI document on 2026-09-07: the published `corpusType` enum carries all 19 tokens, `CFR_ANNUAL`, `FEDERAL_REGISTER_NOTICE`, `STATUTE_COMPILATION` and `AGENCY_ADJUDICATION` among them.
-  A corpus that `/statutes/coverage` counts is a corpus you can scope a search to; there is no longer a token that is counted but rejected.
+  Every corpus that `/statutes/coverage` counts can be used as a search scope.
 
   The six per-body `source` values are live in the same document: `nlrb_board_decision`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `cfpb_enforcement_action` and `irs_irm`.
 
-  ## Things that stay true when the number goes up
+  ## Scope limits that apply to these figures
 
-  Nothing in this entry widens a claim, and four scope limits travel with these figures wherever they are quoted.
+  Four scope limits apply to these figures wherever they are quoted.
 
   - Federal Register **notices** are 17,616 of the 766,073 published in the period, **2.30%**, four operative classes by design. That is not notice coverage and is never described as such.
   - The **Internal Revenue Manual** is agency procedure, not law. It is the IRS's own instruction manual for its employees and does not bind the agency against a taxpayer.
   - The **adjudication** corpora (FTC Part 3, NLRB, MSPB, BIA, SEC, OLC, CFPB) carry no verified doctrinal currency. `goodLawStatus` is `unknown` by design on all but the CFPB slice, and nothing here implies good-law assurance. A live `corpusType=AGENCY_ADJUDICATION` search returns `nlrb_board_decision` hits with `goodLawStatus: "unknown"`, which is the intended answer and not a gap.
-  - **Statutes at Large** is law **as enacted**. It carries `goodLawStatus: "unknown"` deliberately and is a historical record rather than a statement of current law; for what the law says today, use `corpusType=USC`.
+  - **Statutes at Large** is law **as enacted**. It carries `goodLawStatus: "unknown"` and is a historical record rather than a statement of current law; for what the law says today, use `corpusType=USC`.
 </Update>
 
 <Update label="2026-09-06" description="OFAC sanctions FAQs join AGENCY_GUIDANCE, with their prior versions as separately citable documents">
@@ -787,11 +776,11 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   **361 prior versions** are served as their own citable documents with `actStatus: "superseded"`,
   taken from OFAC's own FAQ Archive and stamped with the publisher's timestamps, so the earlier text
-  is retrievable rather than described. A superseded version never competes with the current answer
+  is retrievable. A superseded version never competes with the current answer
   in search; ask for it by act_id.
 
   **238 FAQs (24.1%) carry at least one observed revision**; the deepest is FAQ 999 with 12. A
-  version whose text is byte-identical to the one before it is NOT counted as a revision - OFAC
+  version whose text is byte-identical to the one before it is not counted as a revision. OFAC
   re-saves FAQs without changing them, and 183 of its 1,533 archive rows are exactly that.
 
   ## Two bounds, served on every passage
@@ -801,31 +790,31 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   date it first published that version. Those 860 version records carry `observedDate` and **no**
   `effectiveDate`, because that date is when we observed the text and not when OFAC published it.
 
-  **279 FAQ numbers have been rescinded and OFAC publishes nothing for them** - no text, no date, no
-  reason. A rescinded FAQ is absent from this corpus rather than marked withdrawn, so a gap in the
-  numbering is a rescission, not a hole in our coverage. Both bounds are in `currencyNote` and
+  **279 FAQ numbers have been rescinded and OFAC publishes nothing for them**: no text, no date, no
+  reason. A rescinded FAQ is absent from this corpus and not marked withdrawn, so a gap in the
+  numbering is a rescission and not a gap in our coverage. Both bounds are in `currencyNote` and
   `coverageNote` on every passage.
 
   ## `asOf` answers from the stored version, not a reconstruction
 
   `GET /statutes/section/{act_id}/body?asOf=2026-04-01` returns the version OFAC published on that
   date, verbatim, with `asOf.source` = `stored_edition`. There is no diff walk and no
-  `basisChangeId`: the earlier text is a document we hold, so we serve it rather than rebuild it.
+  `basisChangeId`: the earlier text is a document we hold, so we serve it as stored.
 
-  Three answers are distinguished, and the difference matters:
+  Three answers are distinguished:
 
   | Your date | What comes back |
   |---|---|
   | on or after the FAQ's first version | that version's text, `isBounded: false` |
-  | after 2023-03-22 but before the FAQ existed | `existed: false`, no text - a real answer |
+  | after 2023-03-22 but before the FAQ existed | `existed: false`, no text (a real answer) |
   | before 2023-03-22 | the earliest text we hold, `isBounded: true` |
 
-  That last row is the one to read. **`isBounded: true` means the text is the earliest we hold and
-  NOT the text in force on your date.** Rendering it as point-in-time law makes a claim we did not
-  make. Note `isBounded` does not mean the same thing on the `stored_edition` engine used by
-  `CFR_ANNUAL`; read `engine` first.
+  In the last row, **`isBounded: true` means the text is the earliest we hold and
+  not the text in force on your date.** Presenting it as point-in-time law claims more than the API
+  does. `isBounded` has a different meaning on the `stored_edition` engine used by
+  `CFR_ANNUAL`; check `engine` first.
 
-  Sanctions LISTS (SDN, consolidated) and General Licenses are deliberately not here. General License
+  Sanctions lists (SDN, consolidated) and General Licenses are not included. General License
   links are served as cross-references.
 </Update>
 
@@ -842,7 +831,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 <Update label="2026-09-05" description="State financial-institutions regulator bulletins are live as source=state_financial_bulletin under corpusType=STATE_AGENCY_GUIDANCE">
   ## State financial-institutions regulator bulletins (Arizona, Oregon)
 
-  `STATE_AGENCY_GUIDANCE` now fans out into **two named sources** rather than one, and takes a `source` filter:
+  `STATE_AGENCY_GUIDANCE` now has **two named sources** and takes a `source` filter:
 
   | `source` | Contents | Documents |
   |---|---|---:|
@@ -851,13 +840,13 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   **155 new documents across 584 retrieval passages**, from four regulators that each share an index with their state's insurance regulator: **New Jersey** DOBI banking (81), **Arizona** DIFI (35, covering banks, credit unions, trust companies, escrow agents, consumer lenders, money transmitters, loan originators, collection agencies and sales finance), **Vermont** DFR banking and securities (29), and **Oregon** DFR financial services (10, covering investment advisers, collection agencies and pawnbrokers, student loan servicers, income share agreements and debt management).
 
-  New Jersey and Vermont are the clearest illustration of why this is scoped the way it is. DOBI runs ONE numbered series across insurance, banking AND the Real Estate Commission; the real-estate bulletins are in neither corpus, because licensing brokers is neither insurance nor a financial institution. Vermont runs a SEPARATE series per division, so `Banking Bulletin #50` and `Insurance Bulletin #50` are different documents and each carries its series in its identifier.
+  New Jersey and Vermont show how the scope was drawn. DOBI runs one numbered series across insurance, banking and the Real Estate Commission; the real-estate bulletins are in neither corpus, because licensing brokers is neither insurance nor a financial institution. Vermont runs a separate series per division, so `Banking Bulletin #50` and `Insurance Bulletin #50` are different documents and each carries its series in its identifier.
 
   **Nothing you already query changes.** Existing insurance-bulletin results keep their citations, their `actId` values and their counts, and a search with no `source` filter now spans both. A search for insurance guidance will never be handed a credit-union bulletin: the two are separate categories, and each document's `source` says which it is.
 
-  **This is not a claim to cover state banking law.** These two states are served because their banking regulator is combined with their insurance regulator and publishes both series on one index, under numbers we can cite. Most states' financial regulators publish no numbered series at all, so `source=state_financial_bulletin` returns nothing for the other 47 jurisdictions and no wider rollout is planned.
+  **This is not coverage of state banking law.** These two states are served because their banking regulator is combined with their insurance regulator and publishes both series on one index, under numbers we can cite. Most states' financial regulators publish no numbered series at all, so `source=state_financial_bulletin` returns nothing for the other 47 jurisdictions and no wider rollout is planned.
 
-  **`state_financial_bulletin` is served `goodLawStatus: "unknown"`, deliberately.** Neither regulator has rescinded anything we hold (0 of 35 in Arizona, 0 of 10 in Oregon), so there is no measured rescission signal to certify against. Arizona's INSURANCE bulletins keep `good_law` on their own signal, which is 15 of 199 marked - same state, same `corpusType`, two publishers, two verdicts. Read `unknown` as "we make no claim", not as "probably still current".
+  **`state_financial_bulletin` is served `goodLawStatus: "unknown"`.** Neither regulator has rescinded anything we hold (0 of 35 in Arizona, 0 of 10 in Oregon), so there is no measured rescission signal to certify against. Arizona's insurance bulletins keep `good_law` on their own signal, which is 15 of 199 marked (same state and `corpusType`, different publishers). Read `unknown` as "we make no claim", not as "probably still current".
 
   Every document carries an `issuedDate` from the publisher's own index, and both sources refresh weekly alongside the rest of the state-guidance registry.
 </Update>
@@ -896,25 +885,24 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   | Retrieval passages | **2,844,809** |
   | Editions | 31 (1996-2026) |
 
-  **Read the headline number as section VERSIONS, not sections.** A section is stored once per distinct run of text, not once per edition. A section whose wording never changed between 1996 and 2026 is ONE record whose `editionsObserved` lists every year it was observed in, rather than thirty-one near-identical copies.
+  **The headline number counts section versions, not sections.** A section is stored once per distinct run of text, not once per edition. A section whose wording never changed between 1996 and 2026 is ONE record whose `editionsObserved` lists every year it was observed in, rather than thirty-one near-identical copies.
 
   **`editionsObserved` is an enumeration, never a range.** A version observed in 1998, 1999 and 2003 lists exactly those three years. It does not imply 2000 to 2002, and a date falling in an unobserved gap is answered with `asOf.isBounded: false` rather than served from the nearest year we happen to hold.
 
   **Citation years are each volume's own `<REVISED>` year, not the folder GPO filed it under.** GPO reprints unchanged volumes into later folders without re-dating them, so only the date inside the volume is authoritative. That is why 167 versions in title 26 (parts 502, 503 and 509) carry 1990 while sitting in the 1997 folder.
 
-  This corpus is deliberately **not** offered as a change-alert board. The existing `cfr` board already carries the daily change signal for the same regulations, so a second board would fire once a year on a whole edition and repeat what subscribers had already been told the day each change happened.
+  This corpus is **not** offered as a change-alert board. The existing `cfr` board already carries the daily change signal for the same regulations, so a second board would fire once a year on a whole edition and repeat what subscribers had already been told the day each change happened.
 
   `CFR_ANNUAL` and the `asOf` parameter are both point-in-time routes and are **not** interchangeable. The corpus serves an edition **as published**; `asOf=YYYY-MM-DD` on `GET /us/statutes/section/{actId}/body` **reconstructs** a section from observed change history against the current CFR.
 </Update>
 
 <Update label="2026-09-04" description="New corpusType: FEDERAL_REGISTER_NOTICE, a curated 17,612-notice slice of the Federal Register notice series">
-  ## `FEDERAL_REGISTER_NOTICE`, and what it deliberately does not hold
+  ## `FEDERAL_REGISTER_NOTICE`, and what it does not hold
 
   Federal Register **notices**, 1994 to present, under the new `corpusType=FEDERAL_REGISTER_NOTICE`. **17,612 documents, 128,564 retrieval passages.**
 
-  🔴 **This is a curated slice, not the notice series.**
+  **This is a curated slice, not the notice series.**
   The Federal Register published **766,073** notices in this period and we hold **2.3%** of them.
-  Saying so is the point: a corpus is worth what its limits are known to be, and a token that looked like complete notice coverage would be wrong in the one way that matters.
 
   **What is held** is the four classes of notice that act on a rulemaking:
 
@@ -927,13 +915,12 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   **What is not held** is everything else, which is mostly Paperwork Reduction Act information collections, meeting notices, permits and applications, antidumping proceedings and Privacy Act system-of-records notices.
   None of those states or changes a legal obligation.
-  The 748,461 excluded documents are each recorded by Federal Register document number in our candidate ledger, so the scope can be widened later without re-ingesting the series.
+  The other 748,461 documents in the period are not held.
 
-  **A separate token from `FEDERAL_REGISTER` on purpose.**
-  Rules and proposed rules are ingested whole.
-  Folding notices in would attach this partial-scope statement to 5.5M points that are not partial, which is a false claim in the other direction.
+  **This is a separate token from `FEDERAL_REGISTER`.**
+  Rules and proposed rules are held whole, and a partial-scope statement would be wrong for the 5.5M points that are not partial.
 
-  ⚠️ **Notices carry an empty CFR cross-reference graph.**
+  **Notices carry an empty CFR cross-reference graph.**
   `crossReferencesCfr` and `frTopics` are 0% and `frRegulationIdNumbers` is 2%, against 100% and 94% on rules, so a notice is **not** reachable by a CFR-citation filter.
   `frDocketIds`, at 73.5%, is the join key that works.
 
@@ -948,17 +935,17 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   The unfair-labor-practice and representation cases decided by the five-member National Labor Relations Board itself, which bind later Board panels and the administrative law judges beneath them. **2,762 decisions, 2012 to date**, under `source=nlrb_board_decision`.
 
-  This is a **bounded 15-year window** of a 90-year, 66,612-decision archive. That is a scope decision, not an omission: the window covers essentially every decision a practicing labor lawyer searches day to day, and the full backfill is tracked as a named follow-up.
+  This is a **bounded 15-year window** of a 90-year, 66,612-decision archive. A full backfill is planned.
 
-  **Two citation forms, both served, neither normalized into the other.** A Board decision is cited `NNN NLRB No. N` as a slip opinion and `NNN NLRB NNN` once the bound volume closes and assigns it a page. These are different facts rather than variants, because the page number does not exist until the volume closes: 57.45% carry a `slipOpinionNumber`, 42.55% a `pageNumber`, and which one a decision carries is itself the record of where it sits in its own lifecycle. 56.07% carry the Board's own notice that the opinion "is subject to formal revision before publication in the bound volumes".
+  **Two citation forms, both served, neither normalized into the other.** A Board decision is cited `NNN NLRB No. N` as a slip opinion and `NNN NLRB NNN` once the bound volume closes and assigns it a page. These are different identifiers, not variants, because the page number does not exist until the volume closes: 57.45% carry a `slipOpinionNumber` and 42.55% a `pageNumber`, which shows where a decision is in its lifecycle. 56.07% carry the Board's own notice that the opinion "is subject to formal revision before publication in the bound volumes".
 
-  Every decision carries `caseName`, `caseNumber` (the Board's own docket, e.g. `28-CA-230115`), `volume` and `issuedDate` at 100%, plus the source PDF and extracted text in R2.
+  Every decision carries `caseName`, `caseNumber` (the Board's own docket, e.g. `28-CA-230115`), `volume` and `issuedDate` at 100%, plus the source PDF and extracted text.
 
-  ## goodLawStatus is `unknown`, and that is the point
+  ## goodLawStatus is `unknown`
 
-  Board doctrine swings hard with Board composition, and **the NLRB publishes no overruling or supersession signal for its decisions.** Its CITENET Classified Index is a subject digest rather than a citator: it records an overruling only as editorial prose on the decision doing the overruling, with no reverse edge on the decision that was overruled. Measured against the landed corpus, no decision carries a dead status.
+  Board doctrine shifts with Board composition, and **the NLRB publishes no overruling or supersession signal for its decisions.** Its CITENET Classified Index is a subject digest rather than a citator: it records an overruling only as editorial prose on the decision doing the overruling, with no reverse edge on the decision that was overruled. No decision in the corpus carries a dead status.
 
-  So every decision is served as the Board issued it, with `goodLawStatus: "unknown"` and a `coverageNote` stating the limit. **Do not read that as "still good law".** It means we can show you faithfully what the Board decided and we will not assert whether a later Board has since overruled it.
+  So every decision is served as the Board issued it, with `goodLawStatus: "unknown"` and a `coverageNote` stating the limit. **Do not read that as "still good law".** It means the decision is reproduced as the Board issued it, and we do not assert whether a later Board has overruled it.
 
   Unpublished Board decisions are summary dispositions with no independent precedential value, are published as a separate series, and are out of scope by design.
 </Update>
@@ -968,13 +955,13 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   The Securities and Exchange Commission's own adjudicated rulings: appeals from an administrative law judge, review of a self-regulatory organization's disciplinary action (FINRA, an exchange), and applications for review. **5,790 documents, 1996-04-05 to 2026-09-01**, under `source=sec_commission_opinion`.
 
-  These bind the Commission's own later adjudications and the ALJs beneath it, and they are the securities bar's primary source on what the SEC believes the securities laws mean in a contested posture. Cited by release number: `Exchange Act Release No. 34-106254`. One action issued under several securities statutes at once carries every release number it was given in `citableAs`.
+  These bind the Commission's own later adjudications and the ALJs beneath it. Cited by release number: `Exchange Act Release No. 34-106254`. One action issued under several securities statutes at once carries every release number it was given in `citableAs`.
 
-  **The File-Number proceeding graph.** Every document carries its Administrative Proceeding File Number in `fileNumber` (99.6%; 112 documents name more than one, because the Commission consolidates proceedings). Documents sharing a File Number are ONE proceeding, and they are linked in date order through `supersedes` / `supersededBy` - 2,353 proceedings, 65.4% of them holding more than one document, 3,641 links across 86.7% of the series.
+  **The File-Number proceeding graph.** Every document carries its Administrative Proceeding File Number in `fileNumber` (99.6%; 112 documents name more than one, because the Commission consolidates proceedings). Documents sharing a File Number are one proceeding and are linked in date order through `supersedes` / `supersededBy`: 2,353 proceedings, 65.4% of them holding more than one document, 3,641 links across 86.7% of the series.
 
-  🔴 **Those links record a SEQUENCE, not a currency verdict, and no SEC document is served with a dead `actStatus` because of one.** A docket says a later document exists; it does not say the earlier one stopped being good law. This series is overwhelmingly interlocutory - 839 orders to show cause, 820 orders extending time to issue a decision, 227 orders scheduling briefs, against 901 opinions of the Commission - so a later document routinely affirms the earlier one, schedules briefing, or merely notices an initial decision as final. `goodLawStatus` is `unknown` for the series.
+  **Those links record a sequence, not a currency verdict, and no SEC document is served with a dead `actStatus` because of one.** A docket says a later document exists; it does not say the earlier one stopped being good law. This series is overwhelmingly interlocutory (839 orders to show cause, 820 orders extending time to issue a decision, 227 orders scheduling briefs, against 901 opinions of the Commission), so a later document routinely affirms the earlier one, schedules briefing, or merely notices an initial decision as final. `goodLawStatus` is `unknown` for the series.
 
-  **What is not here, stated rather than implied.** ALJ **initial decisions** are deliberately not included: an initial decision is what one judge concluded before the Commission acted, and the SEC publishes no supersession field, so serving one as current authority would misstate its weight. Where an opinion names the initial decision it reviews, the citation is carried in `relatedCitations` and the referenced document is not in the corpus - that happens on 3.3% of the series. The 18,637-item settled-order and Fair Fund docket is also excluded, because a consent order reciting allegations is not a decision holding them proven. Federal court review under 15 U.S.C. 78y is not published on the SEC's adjudication listings and is not reflected here. Every section states these bounds in its own `coverageNote`.
+  **What is not here.** ALJ **initial decisions** are not included: an initial decision is what one judge concluded before the Commission acted, and the SEC publishes no supersession field, so serving one as current authority would misstate its weight. Where an opinion names the initial decision it reviews, the citation is carried in `relatedCitations` and the referenced document is not in the corpus. That happens on 3.3% of the series. The 18,637-item settled-order and Fair Fund docket is also excluded, because a consent order reciting allegations is not a decision holding them proven. Federal court review under 15 U.S.C. 78y is not published on the SEC's adjudication listings and is not reflected here. Every section states these bounds in its own `coverageNote`.
 </Update>
 
 <Update label="2026-09-04" description="BIA and Attorney General precedent decisions join AGENCY_ADJUDICATION: the full I&N Dec. reporter, 3,292 decisions">
@@ -982,7 +969,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   The Board of Immigration Appeals' published precedent decisions, the Attorney General's decisions reviewing the Board, and the legacy INS and USCIS administrative decisions the same reporter carries. 3,292 decisions across volumes 8 to 30, 1958 to 2026.
 
-  A published Board decision binds every immigration judge and every DHS officer nationwide under 8 C.F.R. 1003.1(g) unless and until it is overruled. This is the operative body of immigration law between the statute and the circuit courts, and it is not in any general case-law database.
+  A published Board decision binds every immigration judge and every DHS officer nationwide under 8 C.F.R. 1003.1(g) unless and until it is overruled. This is the body of immigration law between the statute and the circuit courts.
 
   **Three sources under the existing token**, filterable with `source`:
 
@@ -996,7 +983,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   **The overruling graph.** The Board states its own effect on earlier decisions in the holdings prose beside each entry. 343 of those statements resolve into `supersedes` / `supersededBy` links, with the publisher's own verb in `dispositionVerb` and the sentence itself in `history`. `overruled_in_part` is stored distinctly and does not carry a dead `actStatus`. 70 decisions are served dead on this evidence; the corpus as a whole stays `goodLawStatus: "unknown"`.
 
-  **What is not here, stated rather than implied.** Volumes 1 to 7 are not published on EOIR's precedent page. Holdings prose begins at volume 19, so an overruling of a pre-1984 decision by a pre-1984 decision is invisible. A court of appeals can reject a precedent for its own circuit while it remains in force elsewhere, and EOIR publishes nothing about that. Unpublished single-member Board orders are not precedent and are out of scope. Every point states these in its own `coverageNote`.
+  **What is not here.** Volumes 1 to 7 are not published on EOIR's precedent page. Holdings prose begins at volume 19, so an overruling of a pre-1984 decision by a pre-1984 decision is invisible. A court of appeals can reject a precedent for its own circuit while it remains in force elsewhere, and EOIR publishes nothing about that. Unpublished single-member Board orders are not precedent and are out of scope. Every point states these in its own `coverageNote`.
 </Update>
 
 <Update label="2026-09-04" description="CFPB compliance guidance joins AGENCY_GUIDANCE: 16 circulars and 95 supervisory-guidance documents">
@@ -1005,29 +992,26 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   The other half of the Bureau's output, alongside the enforcement actions
   below. **111 documents** across two new sources:
 
-  - **`cfpb_circular`** (16) - Consumer Financial Protection Circulars, cited
-    `Circular 2023-01`. These are the Bureau telling every enforcer and every
-    firm how it reads a statute, so they are the most broadly applicable thing
-    it publishes.
-  - **`cfpb_supervisory_guidance`** (95) - bulletins, policy statements,
+  - **`cfpb_circular`** (16): Consumer Financial Protection Circulars, cited
+    `Circular 2023-01`. They state how the Bureau reads a statute, for
+    enforcers and firms alike.
+  - **`cfpb_supervisory_guidance`** (95): bulletins, policy statements,
     interpretive rules and rescissions.
 
-  This completes a shelf that was missing its most-read agency: we already
-  carried OCC bulletins and interpretive letters, FDIC FILs, Federal Reserve SR
-  letters and FinCEN guidance, and nothing from the one federal consumer-finance
-  regulator a bank compliance officer reads every week.
+  This adds the federal consumer-finance regulator to the existing agency
+  guidance sources, which already include OCC bulletins and interpretive
+  letters, FDIC FILs, Federal Reserve SR letters and FinCEN guidance.
 
-  **The Bureau's enforcement actions are NOT here.** They are adjudications and
+  **The Bureau's enforcement actions are not here.** They are adjudications and
   live under `corpusType=AGENCY_ADJUDICATION`: an enforcement action binds one
   named respondent, while a circular addresses the whole market. Folding them
   together would make an `AGENCY_GUIDANCE` search mean two different things.
 
-  Two things worth knowing about coverage. The two series have opposite shapes -
-  a circular publishes its full text on its page, while a supervisory-guidance
-  page is a landing stub whose real document is the linked PDF - and both are
-  served as full text regardless. And **Circular 2023-03 is deliberately absent**:
-  the Bureau archived it, publishes no text for it, and leaves only a
-  third-party mirror, which we do not source from.
+  The two series differ in shape. A circular publishes its full text on its page,
+  while a supervisory-guidance page is a landing stub whose real document is the
+  linked PDF. Both are served as full text. **Circular 2023-03 is absent**: the
+  Bureau archived it, publishes no text for it, and leaves only a third-party
+  mirror.
 
   `goodLawStatus` is `unknown` on both sources. Neither publishes a structured
   rescission signal, so we do not claim currency we cannot verify.
@@ -1037,10 +1021,9 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   ## CFPB enforcement actions, under `AGENCY_ADJUDICATION`
 
   **386 Consumer Financial Protection Bureau enforcement actions**, filterable
-  with `source=cfpb_enforcement_action`. This closes a hole in a shelf we
-  already had: we carry OCC bulletins, FDIC FILs, Federal Reserve SR letters
-  and FinCEN guidance, and carried nothing from the one federal consumer-finance
-  regulator whose output a bank compliance officer reads every week.
+  with `source=cfpb_enforcement_action`. This adds the federal
+  consumer-finance regulator alongside the OCC bulletins, FDIC FILs, Federal
+  Reserve SR letters and FinCEN guidance already held.
 
   **Both forums are included and are separable on the new `forum` field.** 225
   actions are administrative proceedings carried on a Bureau File No. such as
@@ -1049,32 +1032,31 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   citation, because that identifier belongs to the court rather than to the
   Bureau. One action carries both labels.
 
-  **The unit is the ACTION, not the filing.** A consent order and the
+  **The unit is the action, not the filing.** A consent order and the
   stipulation consenting to it are one record, because a stipulation is not a
   separate legal instrument from the order it stipulates to and splitting them
   makes every search return two half-answers. `relatedDocuments` names every
-  filing whose text a record carries - 993 documents in total, a mean of 2.6 per
+  filing whose text a record carries: 993 documents in total, a mean of 2.6 per
   action and a maximum of 17. Twelve actions are served with the Bureau's own
   summary alone, because it posts no document for them.
 
-  ### 185 of the 386 are excluded from ordinary search, on purpose
+  ### 185 of the 386 are excluded from ordinary search
 
   The Bureau publishes its own three-value status enum and defines it publicly.
-  An action it marks `Expired/Terminated/Dismissed` - meaning the matter "did
-  not result in, or is no longer subject to, ongoing compliance obligations" -
+  An action it marks `Expired/Terminated/Dismissed` (meaning the matter "did
+  not result in, or is no longer subject to, ongoing compliance obligations")
   is served with a dead `actStatus` and is therefore outside ordinary search
-  results. That is correct for an order that no longer binds anyone, and it is
-  close to half the set, so it is stated here rather than left to be discovered.
+  results. That is correct for an order that no longer binds anyone. It covers
+  close to half the set.
 
-  That status **bundles three different endings** and the Bureau does not
-  separate them: a matter it lost or withdrew is not the same event as an order
+  That status covers three different endings and the Bureau does not
+  separate them: a matter it lost or withdrew differs from an order
   that ran its term. Every record therefore carries the Bureau's own status
-  string verbatim in `history`, so you can see the ambiguity we inherited rather
-  than only our reading of it.
+  string verbatim in `history`.
 
   ### The first `AGENCY_ADJUDICATION` source with a real `goodLawStatus`
 
-  No publisher in this corpusType ships a structured overruling field - an
+  No publisher in this corpusType ships a structured overruling field. An
   adjudication is superseded by another decision, and the document itself never
   changes when it stops being good law. MSPB and OLC records therefore carry
   `goodLawStatus: "unknown"`. The CFPB is the exception: its status enum is
@@ -1088,11 +1070,11 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   ## New corpusType: `STATUTE_COMPILATION`
 
   A new federal corpus token for a public law's own text **as amended through**
-  a stated later public law - GovInfo's official compilations. **80,276
+  a stated later public law: GovInfo's official compilations. **80,276
   sections across 2,680 compilations**, sourced from GovInfo's `COMPS`
   collection.
 
-  This fills a real citation gap. A section like "Section 210 of the Public
+  This fills a citation gap. A section like "Section 210 of the Public
   Utility Regulatory Policies Act" has no `USC` address, because it was never
   codified into a positive-law title; `STATUTE_COMPILATION` is where it
   resolves.
@@ -1103,19 +1085,19 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
     "corpusType": "STATUTE_COMPILATION" }
   ```
 
-  **Distinct from both of its neighbors, deliberately.** `USC` is the codified,
-  subject-organized arrangement - only for provisions that were codified at
+  **Distinct from both neighboring tokens.** `USC` is the codified,
+  subject-organized arrangement, and only for provisions that were codified at
   all. `SESSION_LAW` (the Statutes at Large) holds the same acts **as
   enacted**, a frozen historical record that carries `actStatus: "enacted"` and
   `goodLawStatus: "unknown"` by design. `STATUTE_COMPILATION` makes the
   opposite claim: "this is the act as it reads today, amended through Public
-  Law 117-58." Folding it into either neighbor would mean a customer reading a
-  decades-old snapshot as current law.
+  Law 117-58." Merging it into either would risk a
+  decades-old snapshot being read as current law.
 
-  **Currency is stated per document, and read it before relying on the text.**
+  **Currency is stated per document.**
   Each section carries `currentThrough` (e.g. `Public Law 117-58`), naming
-  exactly which amending law the compilation reflects. Across the collection
-  that ranges from `Public Law 96-308` (1980) to `Public Law 119-75` (2026) -
+  the amending law the compilation reflects. Across the collection
+  that ranges from `Public Law 96-308` (1980) to `Public Law 119-75` (2026),
   a 45-year span in the same corpus. **2.6% of compilations state no currency
   at all**, and those carry `compilationCurrencyState: "unstated"` with
   `currentThrough: null` rather than a guessed date.
@@ -1123,7 +1105,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   **The join into `USC` is captured, not resolved.** Where GovInfo publishes a
   structured cross-reference into the Code (`16 U.S.C. 2603`, for example),
-  it's served as `crossReferencesUsc`, so a caller can look up the codified
+  it is served as `crossReferencesUsc`, so a caller can look up the codified
   version of a compiled provision directly.
 
   Full text is served by `GET /statutes/section/{actId}/body`, exactly like
@@ -1135,8 +1117,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   A new federal corpus token for **administrative adjudication**: matters decided
   by a federal body through a formal process, carrying precedential weight on its
-  later decisions. It is deliberately separate from `AGENCY_GUIDANCE`, which is
-  interpretive rather than adjudicative, so a `corpusType=AGENCY_GUIDANCE` search
+  later decisions. It is separate from `AGENCY_GUIDANCE`, which is
+  interpretive and not adjudicative, so a `corpusType=AGENCY_GUIDANCE` search
   keeps meaning one thing.
 
   ## Department of Justice Office of Legal Counsel opinions
@@ -1172,13 +1154,12 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   ## Merit Systems Protection Board decisions
 
   **5,455 MSPB decisions**, November 2018 to September 2026, sourced from the
-  Board's own published JSON manifests at `mspb.gov`. The MSPB adjudicates
+  Board's own site, `mspb.gov`. The MSPB adjudicates
   federal-employee appeals: removals, suspensions, demotions, reduction-in-force
   challenges, Individual Right of Action whistleblower claims under the
   Whistleblower Protection Act, and USERRA cases.
 
-  **The two series are separately filterable, and that distinction is load
-  bearing.** 106 **precedential** decisions, cited `YYYY MSPB N`, bind
+  **The two series are separately filterable.** 106 **precedential** decisions, cited `YYYY MSPB N`, bind
   administrative judges across the Board's regional offices. 5,349
   **nonprecedential** orders do not: the Board states in the orders themselves
   that they "do not add significantly to the body of MSPB case law". Filter with
@@ -1206,7 +1187,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   the later decision affirmed, modified or reversed the earlier one, so neither
   do we.
 
-  **One gap, stated plainly.** MSPB decisions are reviewable by the Federal
+  **One gap.** MSPB decisions are reviewable by the Federal
   Circuit under 5 U.S.C. 7703, and a reversed decision is no longer good law. The
   Board publishes nothing about this, and a decision cannot mention its own later
   appeal, so a decision reversed on appeal is **not** marked as such here. Every
@@ -1218,7 +1199,6 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   **State regulations now cover all 52 jurisdictions, 50 states plus DC and
   Puerto Rico: about 1.51M rules**, up from 48 states and about 1.22M.
-  No jurisdiction is now without a regulations corpus.
 
   Three are entirely new, each from the jurisdiction's own publisher:
 
@@ -1246,8 +1226,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   | Nevada | 30,785 | Rhode Island | 1,185 |
   | Hawaii | 27,121 | Vermont | 1,116 |
 
-  Oklahoma, Pennsylvania and Massachusetts are not yet re-sourced. Each is
-  documented as such rather than partially ingested.
+  Oklahoma, Pennsylvania and Massachusetts are not yet re-sourced and are
+  documented as such.
 
   ## Coverage corrections
 
@@ -1280,22 +1260,22 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 </Update>
 
 <Update label="2026-08-23" description="New corpusType: SESSION_LAW, the US Statutes at Large">
-  ## Read a law as Congress enacted it, not as it was codified
+  ## Read a law as Congress enacted it
 
-  A fifteenth `corpusType` lands: **`SESSION_LAW`**, the US Statutes at Large.
+  A fifteenth `corpusType` is added: **`SESSION_LAW`**, the US Statutes at Large.
   **5,256 public and private laws, 110,287 sections, 1999 to 2026.**
 
   The US Code is a *compilation*. It reorganizes enacted text by subject and
   drops the structure the enacting Congress used, so a US Code section does not
-  tell you what the act it came from actually said. `SESSION_LAW` does.
+  tell you what the act it came from said. `SESSION_LAW` does.
 
   ```json
   { "query": "paycheck protection program eligibility", "corpusType": "SESSION_LAW" }
   ```
 
-  **The join is the point.** A US Code section's `publicLawCites` resolve
-  directly into this corpus, so you can go from codified text to enacting text
-  in one hop. That join resolves for **every** US Code section we serve.
+  A US Code section's `publicLawCites` resolve directly into this corpus,
+  giving one hop from codified text to enacting text. The join resolves for
+  every US Code section we serve.
 
   ```
   GET /statutes/section/SAL_PL116-136_DVA_TII_S1109   CARES Act section 1109
@@ -1343,13 +1323,12 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   Mexico (3,462 rules across 47 rule sets), New Jersey and Kentucky added. New
   Mexico, New Jersey and Kentucky are also now watchable as law-change boards.
 
-  Counts in your own integration are worth re-reading from
-  `GET /statutes/coverage` rather than carried forward: a re-source can move a
-  jurisdiction's count in either direction.
+  Re-read counts from `GET /statutes/coverage` instead of carrying them
+  forward. A re-source can move a jurisdiction's count in either direction.
 </Update>
 
 <Update label="2026-08-21" description="GET /boards returned only the first 200 sources">
-  ## Fixed: /boards silently truncated its own catalogue
+  ## Fixed: /boards truncated its catalogue
 
   `GET /boards` defaulted to `limit=200` and returned no `total`, so with 216
   watchable sources every client was reading a truncated list with nothing in
@@ -1357,8 +1336,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `usc`**, the US Code.
 
   The response now carries a `total`, and paging is explicit. If you built a
-  source picker from this endpoint, re-fetch it: sources you never saw are not
-  new, they were always there.
+  source picker from this endpoint, re-fetch it. Sources you did not see before
+  were already present.
 
   `GET /watches` also gained filters, so a large watch list can be narrowed
   server-side instead of client-side.
@@ -1377,13 +1356,13 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   | `GET /statutes/section/{actId}/definitions` | Which defined terms govern it? | 4 |
   | `GET /statutes/section/{actId}/cross-state` | How do other states handle this? | 6 |
 
-  **`/changes`** is the one that removes a workaround. Every change our
+  **`/changes`** removes a workaround. Every change our
   refreshes have observed to a section: when it was added, each time its text
   was replaced, and whether it has since been removed. Answering that used to
   require creating a board watch and waiting, because a watch can only show
   changes that postdate it. This reads the captured history directly.
 
-  **`/related`** returns the sections a reader would actually turn to, not the
+  **`/related`** returns the sections a reader is likely to need, instead of the
   numerically adjacent row, which in most codes belongs to an unrelated part.
 
   Not-found and failed lookups are not charged. An empty result for a section
@@ -1391,28 +1370,27 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 </Update>
 
 <Update label="2026-08-18" description="Every jurisdiction now reports when we last pulled it">
-  ## Coverage answers "how old is this?" without you having to assume
+  ## Coverage reports how old each jurisdiction's data is
 
   `GET /statutes/coverage` gained a **`retrieval`** array covering every
   `(jurisdiction, corpusType)` pair, maintained ones included:
 
-  - **`lastRetrievedAt`** - when we last pulled that body of law from its
+  - **`lastRetrievedAt`**: when we last pulled that body of law from its
     publisher and finished cleanly
-  - **`cadence`** - how often we do
-  - **`status`** - `current`, `stale`, `failing`, or `never_retrieved`
+  - **`cadence`**: how often we do
+  - **`status`**: `current`, `stale`, `failing`, or `never_retrieved`
 
-  Read it alongside a section count so the count carries an age. Note this is
-  when we last *checked*, not when the law last changed, and not a claim that
-  the text is current as of that date. Where a publisher states its own
-  currency, that rides on the section itself as `currentThrough`.
+  Read it alongside a section count. It records when we last checked, not when
+  the law last changed, and it does not claim the text is current as of that
+  date. Where a publisher states its own currency, that appears on the section
+  itself as `currentThrough`.
 
-  The **`freshness`** array is the companion: it names only the pairs that are
-  *not* being updated, each with a plain-language reason, so a large count can
-  be read as maintained rather than merely large.
+  The **`freshness`** array lists only the pairs that are not being updated,
+  each with a plain-language reason.
 </Update>
 
 <Update label="2026-08-12" description="Watch a citation instead of a whole source">
-  ## Scoped alerts: watch a citation, not a source
+  ## Scoped alerts: watch a citation
 
   `POST /watches` and `PATCH /watches/{watchId}` now accept an optional
   **`scope`** so an alert can follow one title, chapter, part or section
@@ -1437,22 +1415,21 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   documents are numbered items rather than citations, such as the Federal
   Register, are not scopable.
 
-  **Nothing changes for existing alerts.** An omitted `scope` means the whole
-  source, exactly as before, and every watch created before today keeps
-  behaving identically. See [Alerts](/api-guide/alerts#narrow-a-watch-to-a-citation).
+  **Existing alerts are unchanged.** An omitted `scope` means the whole
+  source, and watches created before this change behave as before. See [Alerts](/api-guide/alerts#narrow-a-watch-to-a-citation).
 </Update>
 
 <Update label="2026-08-12" description="Nine new response fields: version history, currency and amendment provenance">
   ## Follow a superseded section to the text that replaced it
 
-  Sections now return the provenance the corpus has always stored. Nine fields,
-  all additive, all optional: nothing in your existing integration changes.
+  Sections now return stored provenance in nine additive, optional fields.
+  Nothing in existing integrations changes.
 
   | Field | What it carries |
   |---|---|
   | `supersededBy` | `actId` of the section that replaced this one |
   | `supersedes` | `actId` of the earlier version this one replaced |
-  | `effectiveDate` | when THIS version took effect |
+  | `effectiveDate` | when this version took effect |
   | `priorEffectiveDates` | earlier effective dates on record |
   | `history` | the publisher's own credit line, verbatim |
   | `amendmentHistory` | structured amendment entries, where recorded separately |
@@ -1460,9 +1437,9 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   | `currentThrough` | the date the publisher states the text is current through |
   | `ruleSet` | for court rules, the rule family |
 
-  **The one that changes what you can build: `supersededBy`.** A section with
-  `actStatus=superseded` used to be a dead end. You could tell it was not
-  current law, but nothing in the response pointed at what replaced it. Now:
+  **`supersededBy`** points a superseded section to its replacement. Before
+  this change a section with `actStatus=superseded` was known not to be current
+  law, but nothing in the response identified what replaced it. Example:
 
   ```
   GET /statutes/section/SRULES_ND_NDSUPCTADMINR_R46_V20050504_20160801
@@ -1478,14 +1455,12 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   Point-in-time research is one hop in either direction.
 
   `currentThrough` is set on every US Code section, so a currency check no
-  longer depends on the publisher having written prose. `ruleSet` matters more
-  than it looks for court rules: rule numbers repeat across families, and a
-  Civil Rule 12 and a Criminal Rule 12 both exist in most states, so this is
-  what tells them apart.
+  longer depends on the publisher having written prose. `ruleSet` tells court
+  rule families apart: rule numbers repeat across families, and a Civil Rule 12
+  and a Criminal Rule 12 both exist in most states.
 
-  Every field is omitted when the publisher does not record it, rather than
-  returned empty. Absence means the source is silent, never that we did not
-  look.
+  Every field is omitted when the publisher does not record it. Absence means
+  the source is silent.
 </Update>
 
 <Update label="2026-08-12" description="State court rules expand from 10 to 43 jurisdictions">
@@ -1496,26 +1471,25 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   HI, IA, ID, IN, KS, LA, MA, ME, MI, MS, MT, NC, ND, NE, NH, OH, OR, PR, RI,
   SC, TN, UT, VA, WA, WI, WV, WY.
 
-  Every jurisdiction is ingested from its own court system or legislature,
-  New York included, which is served from `nycourts.gov`.
+  Every jurisdiction's rules come from its own court system or legislature
+  (New York's from `nycourts.gov`).
   Coverage spans civil, criminal, appellate, evidence, professional
   conduct and local rules; the District of Columbia alone carries 21 separately
   numbered rule families across its Superior Court divisions.
 
   Rules are refreshed monthly and carry `actStatus`, `goodLawStatus`,
   `amendmentYears`, `amendmentsCount` and `lastAmendedYear` where the publisher
-  prints them. Amendment coverage varies by source and is a property of the
-  publisher, not the ingest: some courts print a dated credit under every rule,
+  prints them. Amendment coverage varies by source and depends on the
+  publisher: some courts print a dated credit under every rule,
   others print none at all.
 
-  A state absent from this list is usually not a backlog item. Some publish no
-  consolidated rules text from a government source; several codify their rules
-  into the statute book, where they are already served under `corpusType=STATE`
-  (Nebraska's evidence rules are a good example, sitting in the statutes as
-  `Neb. Rev. Stat. 27-401` and deliberately not duplicated here); and at least
-  one restricts automated access by published court policy, which we honor.
-  Call `GET /statutes/coverage` for the live per-jurisdiction picture rather
-  than assuming a state is missing.
+  A state absent from this list is usually not pending. Some publish no
+  consolidated rules text from a government source, and several codify their
+  rules into the statute book, where they are already served under
+  `corpusType=STATE` (Nebraska's evidence rules sit in the statutes as
+  `Neb. Rev. Stat. 27-401` and are not duplicated here). At least one
+  restricts access by published court policy.
+  Call `GET /statutes/coverage` for the live per-jurisdiction picture.
 </Update>
 
 <Update label="2026-08-12" description="State insurance regulator guidance expands to 40 jurisdictions">
@@ -1524,8 +1498,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `STATE_AGENCY_GUIDANCE` holds each state insurance regulator's own bulletins and
   circular letters: the interpretive and enforcement guidance that sits between the
   statute and the regulation. It is the state-level analog of federal
-  `AGENCY_GUIDANCE`, and it is queryable with `corpusType=STATE_AGENCY_GUIDANCE`
-  paired with a `state`.
+  `AGENCY_GUIDANCE` and is queried with `corpusType=STATE_AGENCY_GUIDANCE`
+  and a `state`.
 
   Coverage is now **8,986 documents across 40 jurisdictions**, up from 5 states.
   Per-jurisdiction counts are in [API Coverage](/api-guide/coverage#state-agency-guidance),
@@ -1536,7 +1510,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   gap is recorded.
 
   A small number of states publish no browsable bulletin archive at all; those are
-  documented as such rather than partially ingested.
+  documented as such.
 </Update>
 
 <Update label="2026-08-11" description="Search ranks current law above superseded and rescinded versions">
@@ -1549,21 +1523,18 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   ordered as though they were current law: 29,901 `superseded`, 12,041
   `rescinded`, and smaller counts of `revoked`, `expired`, `deleted`,
   `recodified`, `unconstitutional` and `rejected`. The effect was largest
-  wherever a corpus keeps prior versions as their own addressable records, so
-  a court rule with a version history or a rescinded state regulation was
-  where you were most likely to see it. A superseded version is near-identical
-  to the live one by construction, which is precisely what makes a relevance
-  score unable to separate the two.
+  where a corpus keeps prior versions as their own addressable records, such as
+  a court rule with a version history or a rescinded state regulation. A
+  superseded version is near-identical to the live one, so a relevance score
+  cannot separate the two.
 
-  **Dead law is still returned and still searchable.** That is deliberate:
-  research routinely needs the text that was in force when the events
-  happened, so a repealed section is a legitimate result rather than noise. It
-  now ranks below live law of comparable relevance instead of being hidden,
-  and every result still carries `actStatus` and `goodLawStatus`, so you can
-  filter it out or surface it on purpose.
+  **Dead law is still returned and searchable.** Research often needs the text
+  that was in force when the events happened, so a repealed section is a valid
+  result. It now ranks below live law of comparable relevance instead of being
+  hidden, and every result carries `actStatus` and `goodLawStatus` for
+  filtering.
 
-  No request or response shape changed, and there is nothing to update on your
-  side. If you were relying on the previous ordering to reach prior versions,
+  No request or response shape changed. If you were relying on the previous ordering to reach prior versions,
   filter on `actStatus` explicitly.
 </Update>
 
@@ -1592,14 +1563,13 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   address, or both. When that source refreshes with real changes, you get a
   signed webhook delivery (`X-Vaquill-Event: board.updated`,
   `X-Vaquill-Signature` when a secret is set) and/or an email naming the
-  exact sections that were added, amended, or removed -- not just a count.
+  exact sections that were added, amended, or removed, not just a count.
 
   `GET /watches/{watchId}/changes` lists that same detail on demand, scoped
   to your watch's own lifetime. For any `amended` section where `hasDiff`
   is `true`, `GET /watches/{watchId}/changes/{changeId}/diff` returns the
   section's text before and after that specific change, so you can show
-  exactly what moved rather than sending someone back to reread the whole
-  section.
+  what changed.
 
   `PATCH /watches/{watchId}` pauses, resumes, or rotates a destination.
   `POST /watches/{watchId}/test` fires a one-off test delivery before you
@@ -1618,18 +1588,17 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   `source=fcc_declaratory_ruling`) resolve a petitioner's request for the
   Commission to state its interpretation of a statute, rule, or order in a
   specific factual context. FERC Policy Statements (45 statements back to
-  1996, citable by the real practitioner "___ FERC ¶ _____" Reports form
+  1996, citable by the practitioner "___ FERC ¶ _____" Reports form
   when a statement has been paginated into a bound volume, falling back to
   "Docket No. {docket} ({date}): {title}" otherwise,
   `source=ferc_policy_statement`) are FERC's generally-applicable
-  interpretive vehicle, deliberately narrower than the docket-based
+  interpretive vehicle, narrower than the docket-based
   eLibrary universe of case-specific orders. DOE Appliance Standards
   Guidance and FAQs (60 final, non-archived documents, citable as "DOE
   Appliance Standards Guidance: {question} ({date})",
   `source=doe_appliance_guidance`) interpret the Energy Policy and
   Conservation Act program DOE administers; documents the source itself
-  marks "draft" are excluded, never ingested as if they were settled
-  guidance. See [Coverage](/api-guide/coverage#federal) for the updated
+  marks "draft" are excluded. See [Coverage](/api-guide/coverage#federal) for the updated
   count.
 </Update>
 
@@ -1700,7 +1669,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   Interpretive Letter No. 1188", `source=occ_interpretive_letter`), and
   FDIC Financial Institution Letters (2,313 back to 1994, spanning both
   FDIC's active and inactive FIL indexes so superseded letters stay
-  queryable with `act_status=superseded` rather than silently dropped,
+  queryable with `act_status=superseded`,
   `source=fdic_fil`). See [Coverage](/api-guide/coverage#federal) for the
   updated count.
 </Update>
@@ -1724,8 +1693,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   The Federal Acquisition Regulation (FAR, 48 C.F.R. ch. 1) and Defense FAR
   Supplement (DFARS, ch. 2) were already in the corpus as part of `CFR`
   (Title 48). `/statutes/resolve` and citation-shaped search queries now
-  accept the forms practitioners actually use -- `FAR 52.219-14`,
-  `DFARS 252.225-7001`, with or without periods or a pinpoint subsection --
+  accept the forms practitioners use (`FAR 52.219-14`,
+  `DFARS 252.225-7001`, with or without periods or a pinpoint subsection)
   and resolve them straight to the existing CFR record. Filter to just FAR or
   just DFARS within `corpusType=CFR` with `source=far` / `source=dfars`.
 
@@ -1773,7 +1742,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   ## Supreme Court Rules join Federal Rules of Procedure
 
   `/statutes/resolve` and `corpusType=FEDERAL_RULES` search now cover the
-  Rules of the Supreme Court of the United States (`Sup. Ct. R. N`), ingested
+  Rules of the Supreme Court of the United States (`Sup. Ct. R. N`), taken
   from the official supremecourt.gov committee print alongside the five
   Federal Rules of Procedure sets already served. See
   [Coverage](/api-guide/coverage#federal) for the updated count.
@@ -1784,8 +1753,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   `corpusType=AGENCY_GUIDANCE` now also covers the DOJ & FTC Merger Guidelines
   (2023), the DOJ Antitrust Division Leniency Policy, and US Copyright Office
-  Circulars, each independently filterable and citation-labeled, folded into
-  the same `AGENCY_GUIDANCE` token you already query. See
+  Circulars, each independently filterable and citation-labeled, under
+  the existing `AGENCY_GUIDANCE` token. See
   [Coverage](/api-guide/coverage#federal) for the updated count.
 </Update>
 
@@ -1822,8 +1791,8 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
   - **Annotated / prefixed federal statutes**: the annotated `42 U.S.C.A. § 1983`
     and `42 U.S.C.S. § 1983` forms, `Title 42 U.S.C. § 1983`, and a doubled `§§`.
 
-  This is additive and precision-focused: a Bluebook citation names one exact
-  section, so it stays the most reliable way to reach or verify a section. See
+  This is additive. A Bluebook citation names one exact section and remains the
+  most reliable way to reach or verify one. See
   [Resolve and verify a citation](/api-guide/recipes/citation-lookup).
 </Update>
 
@@ -1929,15 +1898,14 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
     list of section strings, e.g. `['1.6011-4']`), and govinfo `granuleId` / `packageId`.
 
   `goodLawStatus` is conservative: jurisdictions without a reliable repeal signal report
-  `unknown` rather than over-claiming that a section is current.
+  `unknown` instead of asserting that a section is current.
 
 </Update>
 
 <Update label="2026-07-18" description="Regulations, coverage discovery, and pagination">
   ## Regulations, Federal Register, and agency guidance are now queryable
 
-  Three new `corpusType` tokens open up corpora that were already in the corpus but not
-  filterable:
+  Three new `corpusType` tokens make existing corpora filterable:
 
   - `REGULATION`: state administrative regulations (176K+ rules across 12 states).
   - `FEDERAL_REGISTER`: Federal Register agency rules, final and proposed (100K+ documents).
@@ -1951,7 +1919,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   A self-describing coverage matrix. It returns a legend of every `corpusType` token (its meaning and whether it is federal or state scoped) plus, for each jurisdiction, the per-corpusType counts.
 
-  Call it to learn exactly what is queryable where, then pass a token as `corpusType`. See [Jurisdictions and State Codes](/api-guide/concepts/jurisdictions) and the [coverage monitoring recipe](/api-guide/recipes/coverage-monitoring).
+  Call it to see what is queryable where, then pass a token as `corpusType`. See [Jurisdictions and State Codes](/api-guide/concepts/jurisdictions) and the [coverage monitoring recipe](/api-guide/recipes/coverage-monitoring).
 
   ## GET /statutes/states now returns a per-corpusType breakdown
 
@@ -1967,7 +1935,7 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   ## Fix: STATE_RULES now returns results
 
-  The `STATE_RULES` (state court rules) corpus is now correctly served. Court rules are
+  The `STATE_RULES` (state court rules) corpus is now served. Court rules are
   available for a handful of states, discoverable via `/statutes/coverage`.
 
   ## New documentation

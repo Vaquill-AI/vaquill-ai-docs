@@ -1,9 +1,9 @@
 ---
 title: "Best Practices"
-description: "Get better results and build resilient integrations"
+description: "Scoping, matching, caching and retry habits for production use of the API"
 ---
 
-A few habits make Vaquill AI integrations faster, cheaper, and more accurate. Follow these when you move from a prototype to production.
+These habits matter most when you move a Vaquill AI integration from prototype to production.
 
 ## Scope every query
 
@@ -23,7 +23,7 @@ You can scope tighter still. `code` (state, e.g. `tx_pe`) and `titleNumber` (USC
 
 `matchType` is the exact-match control in the API, and it is what you reach for when hybrid ranking is too loose.
 
-| Value | Behaviour | Use it for |
+| Value | Behavior | Use it for |
 |---|---|---|
 | `any` (default) | Hybrid semantic plus keyword ranking | Natural-language questions |
 | `all` | Every query term must appear in the text | Multi-term lookups where recall is hurting you |
@@ -64,14 +64,14 @@ Each result also carries a `parent` object: the `/us/statutes/divisions` query t
 
 ## Discover before you search
 
-Two endpoints answer everything about what is queryable.
+Two endpoints show what is queryable.
 
 - `GET /us/statutes/coverage` is the corpus matrix. Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids guessing a token that has no data for that state and wasting a call on an empty result.
 - `GET /us/statutes/divisions` is the hierarchy. Pass `corpusType=STATE&state=XX` to list a state's individual statutory codes (Penal, Civil, and so on) and their `code` values, or drill in with `titleNumber`, `code`, `chapter` and `part`.
 
 ## Cache coverage
 
-Coverage grows weekly, not hourly. Cache `/us/statutes/coverage` and `/us/statutes/divisions` for hours or a day rather than calling them on every request. They still count against your rate limits.
+Coverage grows weekly, so cache `/us/statutes/coverage` and `/us/statutes/divisions` for hours or a day rather than calling them on every request. They still count against your rate limits.
 
 ## Store the actId values you care about
 
@@ -83,11 +83,11 @@ Store the citation next to it. An `actId` survives an amendment and a repeal, bu
 
 - On `429`, respect the `Retry-After` header and use exponential backoff. See [Errors](/api-guide/errors).
 - On `402`, stop, surface a clear message, resolve it in your account dashboard, then retry.
-- Both are expected in production. Build for them rather than treating them as fatal.
+- Both are expected in production, so handle them as part of normal control flow.
 
 ## Treat relevanceScore as a within-response rank
 
-`relevanceScore` (0 to 1) orders results **within a single response**. It is a relative rank, not a calibrated confidence score.
+`relevanceScore` (0 to 1) orders results within a single response. It is a relative rank and is not a calibrated confidence score.
 
 Do not compare scores across different queries and do not use a fixed threshold (for example "drop anything below 0.7") to decide what to keep. To narrow results, tighten `query`, `corpusType`, and `state` instead.
 
@@ -108,7 +108,7 @@ To judge how likely the top result is to be the right section, read `matchQualit
 | `none` | Same as `noGoodMatch: true`. |
 | `null` | The ranking was degraded; retry. |
 
-The tiers are measured on our labelled evaluation set and may be re-cut as the index changes. Treat a value you do not recognise as `moderate`.
+The tiers are measured on our labeled evaluation set and may be re-cut as the index changes. Treat a value you do not recognize as `moderate`.
 
 `noGoodMatch` and `matchQuality` are properties of the query, so every page of one search carries the same values.
 It says nothing about whether the top result is the right section. A same-topic section from the wrong jurisdiction or the wrong layer (a state statute for a federal question, a regulation for a statute) can rank first, so check `citation` and `state` before you rely on it.
@@ -117,7 +117,7 @@ Browse is ordered differently. `GET /us/statutes/divisions` returns divisions in
 
 ## Link users to official sources
 
-Each result carries source links (`htmlUrl`, `pdfUrl`, `xmlUrl`, `textUrl`, `docxUrl`, `stateHtmlUrl`, `govInfoHtmlUrl`, `govInfoPdfUrl`, `externalUrl`; any may be null). For user-facing deep links, prefer the official government link (state legislature or govinfo.gov) so readers land on authoritative text. This keeps your product grounded and verifiable.
+Each result carries source links (`htmlUrl`, `pdfUrl`, `xmlUrl`, `textUrl`, `docxUrl`, `stateHtmlUrl`, `govInfoHtmlUrl`, `govInfoPdfUrl`, `externalUrl`; any may be null). For user-facing deep links, prefer the official government link (state legislature or govinfo.gov) so readers land on authoritative text.
 
 ## Related
 

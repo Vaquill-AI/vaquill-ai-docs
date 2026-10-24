@@ -1,11 +1,11 @@
 ---
 title: "Slack Bot"
 sidebarTitle: "Slack"
-description: "Drop the Vaquill legal AI into Slack with @mentions, slash commands, DMs, and in-thread context."
+description: "Vaquill legal AI in Slack, with @mentions, slash commands, DMs, and in-thread context."
 keywords: ["vaquill slack bot", "slack legal ai", "slack rag bot", "slack socket mode", "slack ask bot"]
 ---
 
-Bring Vaquill AI's legal research engine into any Slack workspace. The bot responds to `@mentions`, direct messages, and slash commands, replies in-thread with cited case law and statutes, and supports follow-up questions without re-mentioning the bot. Source code lives at [github.com/Vaquill-AI/integrations/slack-bot](https://github.com/Vaquill-AI/integrations/tree/main/slack-bot).
+This bot runs Vaquill AI's legal research in a Slack workspace. It responds to `@mentions`, direct messages, and slash commands, and it replies in-thread with cited case law and statutes. Follow-up questions do not need another mention. Source code is at [github.com/Vaquill-AI/integrations/slack-bot](https://github.com/Vaquill-AI/integrations/tree/main/slack-bot).
 
 ## Features
 
@@ -25,7 +25,7 @@ Bring Vaquill AI's legal research engine into any Slack workspace. The bot respo
 
 ## Platform setup
 
-You need a Slack app with bot scopes, event subscriptions, two slash commands, and either Socket Mode or HTTP mode enabled.
+The bot needs a Slack app with bot scopes, event subscriptions, two slash commands, and either Socket Mode or HTTP mode enabled.
 
 <Steps>
   <Step title="Create the Slack app">
@@ -55,7 +55,7 @@ You need a Slack app with bot scopes, event subscriptions, two slash commands, a
     Create `/vaquill` and `/vaquill-help` under **Slash Commands**. Use `https://your-domain.com/slack/events` as the Request URL for HTTP mode.
   </Step>
   <Step title="Enable Socket Mode (recommended for dev)">
-    Under **Socket Mode**, toggle it on. When prompted, create an **App-Level Token** with the `connections:write` scope. Copy the token (starts with `xapp-`) - this is your `SLACK_APP_TOKEN`.
+    Under **Socket Mode**, toggle it on. When prompted, create an **App-Level Token** with the `connections:write` scope. Copy the token (starts with `xapp-`). This is your `SLACK_APP_TOKEN`.
 
     Skip this step if you want HTTP mode.
   </Step>
@@ -77,7 +77,7 @@ The bot auto-detects mode: if `SLACK_APP_TOKEN` is set, it uses Socket Mode. Oth
 | **Setup work** | Toggle Socket Mode in app settings | Set Request URLs on Events, Commands, Interactivity |
 
 <Tip>
-  Use Socket Mode locally to skip ngrok entirely. Switch to HTTP mode in production by removing `SLACK_APP_TOKEN` from the environment.
+  Use Socket Mode locally and you do not need ngrok. For production, switch to HTTP mode by removing `SLACK_APP_TOKEN` from the environment.
 </Tip>
 
 ## Quickstart
@@ -122,7 +122,7 @@ The bot auto-detects mode: if `SLACK_APP_TOKEN` is set, it uses Socket Mode. Oth
 
 ## Configuration
 
-The top env vars. See [the repo's `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/slack-bot/.env.example) for the full reference.
+The main environment variables are below. [The repo's `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/slack-bot/.env.example) has the full reference.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -184,7 +184,7 @@ docker run -d --name vaquill-slack-bot \
   <Card title="Render">
     Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
 
-    Free tier sleeps after 15 minutes - slash commands may time out on cold starts.
+    The free tier sleeps after 15 minutes, so slash commands may time out on cold starts.
   </Card>
   <Card title="Fly.io">
     `fly launch`, then `fly secrets set ...` for each env var, then `fly deploy`.

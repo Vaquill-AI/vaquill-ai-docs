@@ -7,10 +7,10 @@ Sub-regulatory federal guidance: what an agency says its own rules mean, short o
 regulation. **53 named sources across 26 agencies.** The table below sums to 86,900 documents.
 
 <Note>
-  That total counts the **named sources on this page only**, and it is the number the table below
-  sums to. The `AGENCY_GUIDANCE` corpus type holds more than this: guidance that is not attributed
-  to one of the named sources carries the token without carrying a `source` you can filter on. See
-  the [federal coverage table](/api-guide/coverage/federal) for the token's own total.
+  The 86,900 total covers the named sources on this page only, which is the number the table below
+  sums to. The `AGENCY_GUIDANCE` corpus type holds more: guidance not attributed to one of the
+  named sources carries the token without a `source` you can filter on. The token's own total is in
+  the [federal coverage table](/api-guide/coverage/federal).
 </Note>
 
 All 53 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one with
@@ -22,27 +22,26 @@ All 53 sit behind the single `corpusType=AGENCY_GUIDANCE` token. Narrow to one w
 
 <Note>
   `GET /us/statutes/coverage` names every source in its `AGENCY_GUIDANCE` legend, and an
-  invalid `source` returns the full list with each code's name. Treat those two as
-  authoritative over this page for **which sources exist** and what each code is called.
+  invalid `source` returns the full list with each code's name. Where this page disagrees with
+  those two, they win on which sources exist and what each code is called.
 </Note>
 
 ## The registry
 
 Grouped by agency. Documents are citable items (`act_id`), measured per source on 2026-09-07,
 and on 2026-09-08 for the two FTC sources added that day.
-Sources marked **[note]** have a caveat in [Source notes](#source-notes) that changes how you
-should read their results.
+Sources marked **[note]** have a caveat in [Source notes](#source-notes) that affects how to read
+their results.
 
 <Note>
   `GET /us/statutes/coverage` computes its `AGENCY_GUIDANCE` total out of band rather than per
   request, so for up to a day after a source is ingested it can report fewer documents than this
-  page.
-  The column below sums to 86,900, measured per source on 2026-09-07 and 2026-09-08. On
-  2026-10-13 `GET /us/statutes/coverage` reported 96,966 for the whole `AGENCY_GUIDANCE` token.
-  This page does not break that difference down by source. Every row is a served count, not an
-  ingested one. The distinction matters most
-  on IRS written determinations, where 45,358 documents are ingested and 35,485 are reachable
-  through the API, the difference being 9,873 OCR-read scans. The endpoint stays authoritative.
+  page. The column below sums to 86,900, measured per source on 2026-09-07 and 2026-09-08. On
+  2026-10-13 the endpoint reported 96,966 for the whole `AGENCY_GUIDANCE` token, and this page
+  does not break that difference down by source. Every row is a served count, not an ingested one.
+  The gap is widest on IRS written determinations, where 45,358 documents are ingested and 35,485
+  are reachable through the API, the difference being 9,873 OCR-read scans. The endpoint stays
+  authoritative.
 </Note>
 
 | Source | `source` | Documents | Coverage |
@@ -135,27 +134,27 @@ should read their results.
   IRS Written Determinations under 26 U.S.C. § 6110: **28,641 Private Letter Rulings, 5,573 Chief
   Counsel Advice memoranda, 5,482 Tax Exempt and Government Entities determination letters and 842
   Technical Advice Memoranda**, plus 4,820 the IRS does not type on the document itself.
-  402,546 retrieval passages, and by document count the largest source in this token.
+  It has 402,546 retrieval passages and is the largest source in this token by document count.
 
-  **Each is directed only to the taxpayer who requested it, and § 6110(k)(3) says it "may not be
-  used or cited as precedent".** That is not our caveat, it is the statute, and it is why every one
+  Each is directed only to the taxpayer who requested it, and § 6110(k)(3) says it "may not be
+  used or cited as precedent". The caveat comes from the statute, and it is why every one
   of the 45,358 carries `actStatus: "non_precedential"` rather than `in_force`. Read one as evidence
   of how the Service analysed one taxpayer's facts, never as a rule of general application.
 
-  Coverage runs **1999-01-08 to 2026-09-04**, 28 distinct years. **35,485 determinations are
-  served, 78.1% of the 45,431 the IRS lists.** The 9,873 OCR-read scans are ingested but are not
+  Coverage runs from 1999-01-08 to 2026-09-04, 28 distinct years. Of the 45,431 determinations the
+  IRS lists, 35,485 are served (78.1%). The 9,873 OCR-read scans are ingested but are not
   currently reachable through the API.
 
-  **9,873 of these were read by OCR rather than from a text layer**, because the IRS publishes them
-  as scans of signed paper. Those are recorded ingest-side as `extractionMethod: "ocr"`, which the API does not currently return; the rest
-  carry `"text_layer"`. Two things follow from that and are worth knowing before you rely on the
-  text. The section symbol survives OCR less reliably than the words around it, so a passage may
-  read `section 501(c)(3)` where the page prints `§ 501(c)(3)`; search for either. And a stamped
-  control number in a letterhead can lose a digit, which is why the document's own `actId` and
+  Those 9,873 were read by OCR rather than from a text layer, because the IRS publishes them
+  as scans of signed paper. They are recorded ingest-side as `extractionMethod: "ocr"`, which the API does not currently return; the rest
+  carry `"text_layer"`. Two consequences matter before you rely on the text. The section symbol
+  survives OCR less reliably than the words around it, so a passage may
+  read `section 501(c)(3)` where the page prints `§ 501(c)(3)`; search for either. A stamped
+  control number in a letterhead can also lose a digit, which is why the document's own `actId` and
   `citation` are taken from the IRS index rather than from the scanned text.
 
-  **73 determinations are not served.** 56 are scans no OCR could read, 14 failed a legibility
-  check, and 3 are not PDFs at the publisher's end. They are a measured absence, not a silent gap.
+  73 determinations are not served: 56 are scans no OCR could read, 14 failed a legibility
+  check, and 3 are not PDFs at the publisher's end. Each is counted, so none is a silent gap.
 </Accordion>
 
 <Accordion title="irs_irm - agency procedure, not law">
@@ -173,15 +172,15 @@ should read their results.
   How Medicare runs day to day: Pub. 100-04 says what a provider may bill, 100-02 what Medicare
   covers, 100-08 what a contractor reads before an audit. 26,153 retrieval passages.
 
-  **Not law.** Courts have repeatedly held that manual provisions are not binding substantive
+  Not law. Courts have repeatedly held that manual provisions are not binding substantive
   rules; the binding requirements are in the Social Security Act and 42 C.F.R. Every passage says
   so in `currencyNote` and `goodLawStatus` is `unknown`.
 
-  **98.4% of sections carry CMS's own `(Rev. N, Issued, Effective, Implementation)` stamp**,
+  98.4% of sections carry CMS's own `(Rev. N, Issued, Effective, Implementation)` stamp,
   spanning 2000 to 2026 across 27 distinct years.
 
-  Five of CMS's 25 publications hold nothing or almost nothing, and those are the publisher's
-  gaps rather than ours: 100-12, 100-13 and 100-23 publish no chapters at all, 100-21 is titled
+  Five of CMS's 25 publications hold nothing or almost nothing, and those gaps are the
+  publisher's: 100-12, 100-13 and 100-23 publish no chapters at all, 100-21 is titled
   Reserved, and 100-18 (Part D) is a two-page table of contents whose own text says several
   chapters were never disseminated outside HPMS. Chapters are replaced in place and CMS publishes
   no superseded editions, so `asOf` is not bounded for this corpus.
@@ -193,15 +192,15 @@ should read their results.
   2,326 retrieval passages. It is the companion to `whd_opinion_letter`, which it cites and does
   not contain.
 
-  **Not law**, and WHD says so: its own page states these pages "may not reflect current
+  Not law, and WHD says so: its own page states these pages "may not reflect current
   legislation, regulations, significant court decisions" and that the Federal Register and the
   CFR "remain the official resources". `goodLawStatus` is `unknown`.
 
-  Revision history arrives in three registers: all 22 chapters carry WHD's `Source: FOH revision
+  Revision history comes in three forms. All 22 chapters carry WHD's `Source: FOH revision
   N, published DATE` stamp, 90 provisions (6.0%) carry a provision-level revision date, and 1,267
   (84.5%) carry at least one dated row from WHD's pre-2016 revision tables.
 
-  Chapter numbering is **not contiguous** (10-16, 19-25, 30-33, 36, 39, 46, 64). The missing
+  Chapter numbering is not contiguous (10-16, 19-25, 30-33, 36, 39, 46, 64). The missing
   numbers return 404 from WHD itself.
 </Accordion>
 
@@ -212,8 +211,8 @@ should read their results.
   letters, and the 7 Administrator Interpretations that replaced opinion letters entirely between
   2010 and 2017 and are the only documents covering that gap.
 
-  **Unusually for sub-regulatory guidance, WHD publishes a machine-readable withdrawal
-  apparatus**, so `actStatus` is read off DOL's own footnote table and disclaimer lines rather
+  WHD publishes a machine-readable withdrawal signal, which is unusual for sub-regulatory
+  guidance, so `actStatus` is read off DOL's own footnote table and disclaimer lines rather
   than inferred: 561 `in_force`, 28 `withdrawn`, 3 `superseded`, 2 `vacated` by the
   Administrative Review Board. Most withdrawals are the March 2, 2009 mass withdrawal, 17 of
   which WHD re-issued in 2018 under new numbers.
@@ -222,10 +221,10 @@ should read their results.
   opposite status, so each is served under its own `act_id` and the predecessor stays retrievable
   as withdrawn.
 
-  The publisher's index lists 596 records and **594 are served**: FLSA2009-1NA and FLSA2009-2NA
+  The publisher's index lists 596 records and 594 are served. FLSA2009-1NA and FLSA2009-2NA
   carry a truncated PDF path with no filename that 404s on dol.gov itself, so they are recorded
-  as fetch failures rather than invented. The numbering is intact otherwise, every FLSA year runs
-  1 to max with no gap and FMLA-1 to FMLA-113 is complete.
+  as fetch failures. The numbering is intact otherwise: every FLSA year runs
+  1 to max with no gap, and FMLA-1 to FMLA-113 is complete.
 </Accordion>
 
 <Accordion title="eeoc_guidance - the retirement banner is the only signal EEOC publishes">
@@ -233,17 +232,17 @@ should read their results.
   sections. 4,990 retrieval passages. By authority cited: Title VII (98 documents), the ADA (92),
   the Rehabilitation Act (70), the ADEA (45), GINA (32), the Equal Pay Act (27).
 
-  **The enumeration is EEOC's own sitemap** filtered to `/laws/guidance/`, which yields all 179
+  The enumeration is EEOC's own sitemap filtered to `/laws/guidance/`, which yields all 179
   documents. EEOC's `/eeoc-guidance` hub renders only 56 of them with no pager, and those 56 are
-  a strict subset, so building from the hub would ship a third of the corpus and report success.
+  a strict subset, so building from the hub would cover about a third of the corpus.
 
-  **`act_id` is the URL slug, deliberately not EEOC's OLC control number**: 178 documents print a
-  control number and they hold only 177 distinct values, because `EEOC-NVTA-2016-3` is printed on
+  `act_id` is the URL slug rather than EEOC's OLC control number. 178 documents print a
+  control number but they hold only 177 distinct values, because `EEOC-NVTA-2016-3` is printed on
   two unrelated documents. The number is carried as metadata instead.
 
   `goodLawStatus` is read from EEOC's own banner rather than defaulted: 172 documents are
   `in_force`, 6 `superseded`, 1 `rescinded`, each dead document carrying the Commission's own
-  sentence as evidence. **That banner is the only retirement record EEOC publishes.**
+  sentence as evidence. That banner is the only retirement record EEOC publishes.
   `/rescinded-guidance`, `/withdrawn-guidance` and `/laws/guidance/rescinded` all 404, so this is
   a verdict about retirements EEOC announced on the document itself; guidance the Commission
   quietly stopped relying on reads `in_force`.
@@ -252,7 +251,7 @@ should read their results.
   Compliance Manual Section column and every one is a filing instruction about a neighboring
   manual section ("Appears after Rescinded 604").
 
-  Federal-sector appellate decisions are **not** here: they are decided cases, they belong under
+  Federal-sector appellate decisions are not here. They are decided cases and belong under
   `corpusType=AGENCY_ADJUDICATION`, and they are reachable only through a search path the agency
   restricts automated access to.
 </Accordion>
@@ -263,7 +262,7 @@ should read their results.
   health-care antitrust. 3,926 retrieval passages. An advisory opinion binds only its requester
   and decides no case, which is why it sits here and not under `AGENCY_ADJUDICATION`.
 
-  **206 of the 430 have no entry of their own in the FTC's listing.** The Commission's FCRA topic
+  206 of the 430 have no entry of their own in the FTC's listing. The Commission's FCRA topic
   pages index the staff letters answering each section of the Act, one letter under as many
   sections as it answers, and each is served as its own citable document.
 
@@ -272,8 +271,8 @@ should read their results.
 
   Two documents are truncated on ftc.gov itself (`advisory-opinion-coffey-02-11-98` ends
   mid-word) and two more (`informal-staff-advisory-opinion-97-2` and `-97-3`) are byte-identical
-  there, so one of those pages carries the wrong letter. Both are the publisher's defects, and
-  both are served as the Commission serves them rather than hidden.
+  there, so one of those pages carries the wrong letter. Both defects are the publisher's, and
+  both documents are served as the Commission serves them.
 </Accordion>
 
 <Accordion title="ftc_hsr_interpretation - one series, two halves, and 1997 is missing at the source">
@@ -285,20 +284,20 @@ should read their results.
   Filter the two apart with `documentSubtype`; join them on `construedRule`, which carries the
   rule number the interpretation is about on 99.0% of documents.
 
-  🔴 **1997 is entirely absent, at the publisher.** The FTC serves no informal interpretation
+  1997 is entirely absent at the publisher. The FTC serves no informal interpretation
   numbered for that year at all, against 141 in 1996 and 83 in 1998, so roughly 100 to 140
   interpretations from 1997 are missing from the source rather than from this corpus.
 
-  The FTC's own listing counts 4,759, which is a LINK count: 186 interpretations are served
+  The FTC's own listing counts 4,759, which is a link count: 186 interpretations are served
   twice under a duplicate page. Each is held once, under the interpretation number the
   Commission assigns.
 
-  An informal interpretation is **staff views, not Commission action**, and is expressly not
+  An informal interpretation reflects staff views, not Commission action, and is expressly not
   binding on the Commission. Where the record also attaches an "Original Image" scan of the
   same letter, it is listed in `relatedDocuments` and not mirrored: it is a redacted photocopy
   of text the document already carries in full.
 
-  `goodLawStatus` is **UNKNOWN** for this source. The Commission states a supersession in the
+  `goodLawStatus` is UNKNOWN for this source. The Commission states a supersession in the
   slug of one interpretation and publishes three dated versions of another; those relations are
   served as `supersedes` / `supersededBy`, and no document is marked dead on the strength of
   them. `effectiveDate` is absent on 13 of the 20 formal interpretations, because the FTC
@@ -307,25 +306,25 @@ should read their results.
 </Accordion>
 
 <Accordion title="ftc_advocacy_filing - advisory only: these bind nobody">
-  Comments and letters the Commission and its staff address to **state legislatures, state
-  supreme courts, governors and other federal agencies** about the competition effects of a
+  Comments and letters the Commission and its staff address to state legislatures, state
+  supreme courts, governors and other federal agencies about the competition effects of a
   proposed measure. 860 filings, 1985 to 2026.
 
-  🔴 **They bind nobody.** Unlike every other source under `AGENCY_GUIDANCE`, an advocacy
+  They bind nobody. Unlike every other source under `AGENCY_GUIDANCE`, an advocacy
   filing is not the agency telling the regulated public how it reads a law it administers: it
   decides no case, construes no FTC rule, and the recipient is free to ignore it. It is held as
-  its own `source` with its own `forum` (`ftc_advocacy`) precisely so it can be scoped out in
+  its own `source` with its own `forum` (`ftc_advocacy`) so it can be scoped out in
   one parameter, and every document says so in its own `coverageNote`.
 
-  The Matter Number is a **program-level** number the FTC reuses across many filings (one
-  covers 29 different documents), so it identifies a program, not a document, and is served as
+  The Matter Number is a program-level number the FTC reuses across many filings (one
+  covers 29 different documents). It identifies a program, not a document, and is served as
   `caseNumber` rather than as a citation.
 
-  `goodLawStatus` is **UNKNOWN** for this source.
+  `goodLawStatus` is UNKNOWN for this source.
 </Accordion>
 
 <Accordion title="ftc_policy_statement - what Section 5 means, as opposed to one requester's answer">
-  The Commission's own statements of what Section 5 MEANS: the Policy Statement on Deception
+  The Commission's own statements of what Section 5 means: the Policy Statement on Deception
   (1983), on Unfairness (1980), the 2022 statement on the scope of unfair methods of competition,
   and the FTC-DOJ antitrust and merger guidelines. 1,719 retrieval passages, `effective_date` on
   100%. This is the standard the Commission's Part 3 orders apply.
@@ -346,7 +345,7 @@ should read their results.
   reconstruction. Amendment history covers the 2021 release only (719 amended, 101 renumbered
   sections); the Office publishes no change log for 2017 or 2014.
 
-  An `asOf` answer is the MANUAL in force on that date, not the LAW. The Office's own exception
+  An `asOf` answer is the manual in force on that date, not the law. The Office's own exception
   for "an amendment to the regulations, intervening case law, or previously announced changes in
   practice" is served verbatim on every section.
 </Accordion>
@@ -366,31 +365,32 @@ should read their results.
   across all 38 sanctions programs. 989 current FAQs plus 361 prior versions, 1,823 retrieval
   passages.
 
-  **Prior versions are separate, citable documents** taken from OFAC's own FAQ Archive and served
-  `actStatus: "superseded"`, so `asOf` on a FAQ returns the text OFAC published on that date
+  Prior versions come from OFAC's own FAQ Archive and are served as separate, citable documents
+  with `actStatus: "superseded"`, so `asOf` on a FAQ returns the text OFAC published on that date
   rather than a reconstruction. 238 FAQs (24.1%) carry at least one observed revision; the
   deepest is FAQ 999 with 12 versions.
 
-  **The revision trail starts 2023-03-22 and goes no further back.** OFAC migrated its FAQs to a
+  The revision trail starts 2023-03-22 and goes no further back. OFAC migrated its FAQs to a
   new website that day and stamped every then-active FAQ with the migration date rather than its
   original publication date, so 860 version records carry an ingest-side `observedDate`, not returned by the API, with no
   `effectiveDate`.
 
-  **OFAC has rescinded 279 FAQ numbers and publishes nothing for any of them**, so a rescinded
+  OFAC has rescinded 279 FAQ numbers and publishes nothing for any of them, so a rescinded
   FAQ is absent rather than marked withdrawn. Sanctions lists (SDN, consolidated) and General
   Licenses are not included; General License links are served as cross-references.
 </Accordion>
 
 <Accordion title="ferc_policy_statement - deliberately narrower than eLibrary">
-  FERC's generally-applicable interpretive vehicle, 2,698 retrieval passages. Deliberately
-  narrower than the docket-based eLibrary universe of case-specific orders, which is not held.
+  FERC's generally applicable interpretive vehicle, 2,698 retrieval passages. The source is
+  deliberately narrower than the docket-based eLibrary universe of case-specific orders, which is
+  not held.
 </Accordion>
 
 <Accordion title="administrative_guidance - synthesized reference figures, not agency text">
   Annually adjusted dollar thresholds that do not live in USC or CFR section text: the state and
   local tax (SALT) cap, the Child Tax Credit, 401(k) limits, the Subchapter V debt limit. Each is
-  primary-sourced but assembled by us rather than published as a single agency document, which is
-  why it is named separately rather than folded in with the agency sources above.
+  primary-sourced but assembled by us rather than published as a single agency document, so it is
+  named separately from the agency sources above.
 </Accordion>
 
 </AccordionGroup>

@@ -54,12 +54,12 @@ Source: [github.com/Vaquill-AI/vaquill-plugin](https://github.com/Vaquill-AI/vaq
   </Step>
 </Steps>
 
-Never write the key into `.mcp.json`, a committed `.env`, or any file under version control. The variable indirection exists precisely so the key never lands in the repo.
+Never write the key into `.mcp.json`, a committed `.env`, or any file under version control. Reading the key from an environment variable keeps it out of the repo.
 
 ## Verify it works
 
 <Warning>
-  **A green connection proves nothing.** The server completes the handshake and lists all of its tools with no `Authorization` header at all, with an unexpanded `${VAQUILL_API_KEY}` template, and with an invalid key. `claude mcp list` showing `Connected`, and a full tool list in `/mcp`, are both consistent with a completely broken credential.
+  **A successful connection does not show the credential works.** The server completes the handshake and lists all of its tools with no `Authorization` header at all, with an unexpanded `${VAQUILL_API_KEY}` template, and with an invalid key. `claude mcp list` showing `Connected`, and a full tool list in `/mcp`, are both consistent with a completely broken credential.
 </Warning>
 
 The only real smoke test is one live call, and the cheapest is free:
@@ -70,7 +70,7 @@ The only real smoke test is one live call, and the cheapest is free:
 
 ## Commands
 
-Ten slash commands, each written to state its own caveats rather than leave you to infer them.
+The plugin adds ten slash commands. Each one states its own caveats in its output.
 
 | Command | What it does |
 | --- | --- |
@@ -113,4 +113,4 @@ An empty result set is not an authentication problem. Since an outage returns 50
 
 ## Attribution
 
-**On the Pro plan, attribution is required**: a visible "Legal data by Vaquill AI" credit, linked to the site, wherever the data is surfaced. Business waives it. If you are building something customer-facing on Pro, this is a licence term rather than a suggestion.
+**On the Pro plan, attribution is required**: a visible "Legal data by Vaquill AI" credit, linked to the site, wherever the data is surfaced. Business waives it. If you are building something customer-facing on Pro, treat it as a licence term.

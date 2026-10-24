@@ -4,10 +4,9 @@ description: "Assemble every statute and regulation relevant to one subject acro
 ---
 
 Compliance and monitoring products need a different guarantee from a research product.
-A research question wants the best answer.
-A compliance database wants to be able to say it did not miss anything.
+A research question wants the best answer. A compliance database has to be able to say it missed nothing.
 
-Ranked search cannot give you the second one, because it returns the most relevant matches rather than all of them.
+Ranked search cannot give you that, because it returns the most relevant matches, not all of them.
 This recipe builds the corpus by enumeration and uses search only to narrow it.
 
 <Steps>
@@ -94,7 +93,7 @@ Intersect that union against the spine from step 2.
 
 Two reasons this beats one broad query:
 
-- Filters are applied before retrieval, so each scoped query gets a full-depth pool **within its slice**. Scoping buys recall rather than spending it.
+- Filters are applied before retrieval, so each scoped query gets a full-depth pool within its slice. Scoping raises recall.
 - One query per concept gives you independent pools. `defibrillator OR cardiac arrest` is read as a single string, including the word `OR`, and dilutes both concepts.
 
 See [How search works](/api-guide/concepts/search) for the ranking model and the absence of query operators.

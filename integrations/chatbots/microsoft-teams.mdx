@@ -5,7 +5,7 @@ description: "Vaquill statute search for Microsoft Teams with Adaptive Cards, te
 keywords: ["vaquill teams bot", "microsoft teams legal ai", "teams azure bot", "adaptive cards legal", "teams rag bot"]
 ---
 
-Bring Vaquill AI into Microsoft Teams via the Bot Framework. The bot replies in personal chats, channels (with `@mention`), and threads with Adaptive Cards that include cited statute sections and source links. Source code at [github.com/Vaquill-AI/integrations/ms-teams-bot](https://github.com/Vaquill-AI/integrations/tree/main/ms-teams-bot).
+This bot connects Vaquill AI to Microsoft Teams through the Bot Framework. It replies in personal chats, channels (with `@mention`), and threads, using Adaptive Cards that include cited statute sections and source links. Source code at [github.com/Vaquill-AI/integrations/ms-teams-bot](https://github.com/Vaquill-AI/integrations/tree/main/ms-teams-bot).
 
 ## Features
 
@@ -28,7 +28,7 @@ Bring Vaquill AI into Microsoft Teams via the Bot Framework. The bot replies in 
 | ngrok (local dev only) | Tunnels your localhost to a public HTTPS URL |
 | Redis (optional) | For distributed rate limiting |
 
-You need three credentials before you can run the bot: `TEAMS_APP_ID`, `TEAMS_APP_PASSWORD`, and `VAQUILL_API_KEY`.
+Before you run the bot, get three credentials: `TEAMS_APP_ID`, `TEAMS_APP_PASSWORD`, and `VAQUILL_API_KEY`.
 
 ## Platform setup
 
@@ -40,10 +40,10 @@ You need three credentials before you can run the bot: `TEAMS_APP_ID`, `TEAMS_AP
     - **Supported account types**: Single tenant (recommended) or Multi-tenant
     - **Redirect URI**: leave blank
 
-    Click **Register**. Copy the **Application (client) ID** - this is your `TEAMS_APP_ID`.
+    Click **Register**. Copy the **Application (client) ID**. This is your `TEAMS_APP_ID`.
   </Step>
   <Step title="Create a client secret">
-    In the registration, go to **Certificates & secrets > Client secrets > + New client secret**. Description: `Teams Bot Secret`, Expires: **24 months**. Click **Add** and **immediately copy the Value column** - this is your `TEAMS_APP_PASSWORD`.
+    In the registration, go to **Certificates & secrets > Client secrets > + New client secret**. Description: `Teams Bot Secret`, Expires: **24 months**. Click **Add** and immediately copy the **Value** column. This is your `TEAMS_APP_PASSWORD`.
 
     <Warning>
       Copy the **Value**, not the Secret ID. The Value is shown only once.
@@ -140,7 +140,7 @@ You need three credentials before you can run the bot: `TEAMS_APP_ID`, `TEAMS_AP
 
 ## Configuration
 
-Top env vars. See the [repo `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/ms-teams-bot/.env.example) for the full set.
+The main environment variables are below. The [repo `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/ms-teams-bot/.env.example) has the full set.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -165,7 +165,7 @@ Top env vars. See the [repo `.env.example`](https://github.com/Vaquill-AI/integr
 | `/clear` | Clear conversation history for the current chat |
 | `/status` | Show rate-limit usage and bot status |
 | `@Vaquill Bot <question>` | Ask in a channel (mention required) |
-| Personal chat | Send any message - no mention needed |
+| Personal chat | Send any message. No mention needed |
 
 ## Deployment
 
@@ -210,8 +210,8 @@ Set environment variables under **Web App > Configuration > Application settings
 |---|---|
 | Bot not responding in Teams | Confirm messaging endpoint ends with `/api/messages`. Confirm the app is installed in Teams. Try personal chat first to isolate channel-permission issues. |
 | Authentication errors | Verify `TEAMS_APP_ID` matches Azure Portal > Bot > Configuration. Regenerate the client secret if expired. Restart the bot after credential changes. |
-| Vaquill API 401 | `VAQUILL_API_KEY` is invalid - generate a new one. |
-| Vaquill API 402 | Insufficient credits - top up at [app.vaquill.ai/settings](https://app.vaquill.ai/settings). |
+| Vaquill API 401 | `VAQUILL_API_KEY` is invalid. Generate a new one. |
+| Vaquill API 402 | Insufficient credits. Top up at [app.vaquill.ai/settings](https://app.vaquill.ai/settings). |
 | Rate-limit hits | Raise `RATE_LIMIT_PER_USER` / `RATE_LIMIT_PER_CHANNEL`, or set `REDIS_URL` for shared state. |
 
 Test the Vaquill API directly to isolate bot issues:
@@ -230,7 +230,7 @@ curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
     Slack workspace equivalent.
   </Card>
   <Card title="Discord" href="/integrations/chatbots/discord">
-    Same engine, no Azure required.
+    Same engine, with no Azure requirement.
   </Card>
   <Card title="Chatbots overview" href="/integrations/chatbots">
     Compare all six platforms.

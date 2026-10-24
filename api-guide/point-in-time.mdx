@@ -15,23 +15,22 @@ on that date. It is billed as an ordinary body fetch.
 
 This matters when the question is dated: what an employer's obligation was on the day of the
 conduct, which version of a rule a contract signed in 2019 incorporated, what a regulation required
-before an amendment. Answering it from today's text is how a confidently wrong answer gets built.
+before an amendment. Today's text gives the wrong answer to all of these.
 
 ## Every answer says where it came from
 
-The response carries an `asOf` block. **Read `source` before you use the text**, because the same
+The response carries an `asOf` block. Read `source` before you use the text, because the same
 parameter is answered by two different mechanisms and one of them is an estimate.
 
 | `source` | What you are holding | Charged |
 |---|---|---|
 | `live` | We captured no change after your date, so today's text is what stood then, as far as we ever saw. | Yes |
 | `reconstructed` | Rebuilt from the before-side of the first change we captured after your date. | Yes |
-| `unavailable` | We know it changed but cannot rebuild the earlier text. No text is returned. | **No, refunded** |
+| `unavailable` | We know it changed but cannot rebuild the earlier text. No text is returned. | No, refunded |
 
 A fourth outcome is not a `source` value at all: `existed: false` means the earliest thing we ever
-captured for this section is its **addition**, and that addition postdates your date, so it
-demonstrably did not exist yet. That is an answer, arguably the most valuable one this parameter
-gives, so it is charged.
+captured for this section is its addition, and that addition postdates your date, so it
+demonstrably did not exist yet. That is a definite answer, so it is charged.
 
 | Field | Meaning |
 |---|---|
@@ -48,8 +47,8 @@ Pass `basisChangeId` to
 event the answer rests on.
 
 <Warning>
-  **`isBounded: true` means we observed no change affecting that date. That is not the same as
-  there having been none.**
+  `isBounded: true` means we observed no change affecting that date. It does not mean
+  there was none.
 
   It is set when your date predates `observedFrom`, or when we captured no change for that section
   at all. Change capture began long after the corpus did, and runs per source, so a bounded answer
@@ -61,7 +60,7 @@ event the answer rests on.
 
 <Note>
   An `asOf` response never populates `html`, on any corpus. Reconstructed text is plain text, and
-  synthesising markup the publisher never printed would defeat the point of the endpoint. Use
+  synthesizing markup the publisher never printed would defeat the point of the endpoint. Use
   `text`, or `content` where the corpus supports it.
 </Note>
 
@@ -72,9 +71,9 @@ weight the answer carries.
 
 <CardGroup cols={2}>
   <Card title="A published edition">
-    For corpora where the publisher issues dated editions, `asOf` resolves to **the edition that
-    was in force on your date**, served as published. This is the publisher's own artifact, not our
-    estimate.
+    For corpora where the publisher issues dated editions, `asOf` resolves to the edition that
+    was in force on your date, served as published. It is the publisher's own text, with no
+    estimate from us.
   </Card>
   <Card title="A reconstruction">
     Everywhere else, the corpus holds one current text per citation and the earlier one is rebuilt
@@ -88,13 +87,13 @@ weight the answer carries.
 |---|---|
 | `CFR_ANNUAL` | 31 GPO annual editions, 1996-2026, all 49 titles. `asOf` resolves to the edition in force. |
 | `copyright_compendium` | Three dated releases (2014, 2017, 2021). Resolves to the edition the Copyright Office states applied. |
-| `ofac_faq` | 361 prior FAQ versions are **separate citable documents** from OFAC's own archive, served `actStatus: "superseded"`. |
+| `ofac_faq` | 361 prior FAQ versions are separate citable documents from OFAC's own archive, served `actStatus: "superseded"`. |
 
-Two behaviours to expect on `CFR_ANNUAL`. **`editionsObserved` is an enumeration, never a range**:
-a version observed in 1998, 1999 and 2003 lists exactly those years, and a date in an unobserved
-gap returns `asOf.isBounded: false` rather than the nearest year held. **A citation year is the
-volume's own `<REVISED>` year, not the folder GPO filed it under**, because GPO reprints unchanged
-volumes forward without re-dating them.
+Two behaviors to expect on `CFR_ANNUAL`. First, `editionsObserved` is an enumeration and never a
+range: a version observed in 1998, 1999 and 2003 lists exactly those years, and a date in an
+unobserved gap returns `asOf.isBounded: false` rather than the nearest year held. Second, a
+citation year is the volume's own `<REVISED>` year, which can differ from the folder GPO filed it
+under, because GPO reprints unchanged volumes forward without re-dating them.
 
 ### Where history is a separate document rather than a date
 

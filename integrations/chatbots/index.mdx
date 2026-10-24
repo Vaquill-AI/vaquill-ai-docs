@@ -5,7 +5,7 @@ description: "Drop-in legal AI bots for Slack, Discord, Microsoft Teams, Telegra
 keywords: ["slack legal bot", "discord legal bot", "teams legal bot", "telegram legal bot", "whatsapp legal bot", "signal legal bot"]
 ---
 
-Six chat platforms, one architecture. Each bot maintains per-channel (or per-DM) conversation history, calls the Vaquill statutes API, renders structured statute citations, and enforces per-user rate limits.
+There are six chatbots, one per platform, and they share one architecture. Each bot keeps per-channel (or per-DM) conversation history, calls the Vaquill statutes API, renders statute citations, and enforces per-user rate limits.
 
 <CardGroup cols={2}>
   <Card title="Slack" href="/integrations/chatbots/slack">
@@ -30,7 +30,7 @@ Six chat platforms, one architecture. Each bot maintains per-channel (or per-DM)
 
 ## Shared architecture
 
-Every chatbot follows the same flow:
+Every chatbot follows this flow:
 
 ```mermaid
 flowchart TD
@@ -44,13 +44,13 @@ flowchart TD
     style D fill:#dcfce7,stroke:#16a34a,color:#15803d
 ```
 
-All six bots share:
+All six bots share the same components:
 
-- **Vaquill client** (`vaquill_client.py`) that wraps `POST /api/v1/us/statutes/search`
-- **Conversation manager** for per-channel or per-DM chat history
-- **Rate limiter** with Redis or in-memory backend
-- **Slash / prefix commands**: `help`, `clear`, `examples`, `stats`
-- **Statute citation rendering** appropriate to each platform's primitives (Block Kit, Adaptive Cards, inline keyboards, etc.)
+- A Vaquill client (`vaquill_client.py`) that wraps `POST /api/v1/us/statutes/search`
+- A conversation manager for per-channel or per-DM chat history
+- A rate limiter with a Redis or in-memory backend
+- Slash or prefix commands: `help`, `clear`, `examples`, `stats`
+- Statute citation rendering built on each platform's own primitives (Block Kit, Adaptive Cards, inline keyboards)
 
 ## Pick by deployment surface
 
@@ -63,21 +63,21 @@ All six bots share:
 | WhatsApp | HTTP via Twilio webhooks | Yes |
 | Signal | HTTP via signal-cli-rest-api | No (internal Docker network) |
 
-If you want zero exposed ports during development, Slack (Socket Mode), Discord, Telegram (polling), and Signal all run without a public URL.
+To avoid exposing any ports during development, use Slack (Socket Mode), Discord, Telegram (polling), or Signal. None of them need a public URL.
 
 ## Deploy targets
 
-All six bots ship with Dockerfiles and have been smoke-tested on:
+All six bots ship with Dockerfiles and have been smoke-tested on these targets:
 
-- **Docker Compose** (recommended for self-hosting)
-- **Railway** (Git-based deploys)
-- **Render** (free tier with cold starts)
-- **Fly.io** (low-latency regions)
-- **VPS + systemd** (full control)
-- **Azure App Service** (Teams bot only)
+- Docker Compose (recommended for self-hosting)
+- Railway (Git-based deploys)
+- Render (free tier with cold starts)
+- Fly.io (low-latency regions)
+- VPS + systemd (full control)
+- Azure App Service (Teams bot only)
 
-Each bot's page lists its specific deployment recipe.
+Each bot's page has its own deployment recipe.
 
 ## Source
 
-All chatbot code lives at [github.com/Vaquill-AI/integrations](https://github.com/Vaquill-AI/integrations) under one subdirectory per platform. Fork the repo, edit one bot, redeploy.
+All chatbot code lives at [github.com/Vaquill-AI/integrations](https://github.com/Vaquill-AI/integrations) with one subdirectory per platform.

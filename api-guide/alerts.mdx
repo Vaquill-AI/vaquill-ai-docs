@@ -1,13 +1,13 @@
 ---
 title: "Law Change Alerts"
-description: "Subscribe to a jurisdiction or corpus and get a webhook or email the moment it changes, down to the exact section"
+description: "Subscribe to a jurisdiction or corpus and get a webhook or email when it changes, with the exact sections that changed"
 ---
 
 Corpus data updates on its own refresh cadence (daily for the Federal Register and the eCFR, weekly for the US Code and agency guidance, every 7 days or monthly for state codes depending on how the state publishes, monthly for state regulations and court rules). Law Change Alerts let you subscribe to a **board** (a tracked source, identified by `corpusType` + `state`) and get notified automatically whenever it refreshes with real changes, instead of polling on your own schedule.
 
-Every alert names the exact sections that changed, not just a count, and you can fetch the old text next to the new text for any section that was amended.
+Every alert names the sections that changed, and for any amended section you can fetch the old text next to the new text.
 
-Every path below is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header. Every endpoint in this guide is **free** except one: [`GET /watches/{id}/changes/{changeId}/diff`](#read-the-diff-for-one-change) is metered, because it reconstructs both sides of the text. Everything else is authenticated and rate-limited but not credit-metered.
+Every path below is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header. Every endpoint in this guide is free except one: [`GET /watches/{id}/changes/{changeId}/diff`](#read-the-diff-for-one-change) is metered, because it reconstructs both sides of the text. The rest are authenticated and rate-limited but not credit-metered.
 
 <Warning>
   **Two plan limits apply to watches.**
@@ -21,11 +21,11 @@ Every path below is prefixed with `/api/v1` and every request needs an `Authoriz
 
 A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`. Watching a board does not change how often it refreshes. Read `cadence` as the declared staleness window a board is alerted against, not as a ceiling on how often it is re-pulled: nearly every state statute board declares `monthly` (Arkansas, Georgia and Tennessee declare `quarterly`), while the 25 bulk-sourced jurisdictions listed under [Which statute cadence applies where](/api-guide/coverage#which-statute-cadence-applies-where) are in fact re-pulled every 7 days.
 
-Not every jurisdiction we carry is watchable. Seven state statute jurisdictions (Delaware, the District of Columbia, Hawaii, Mississippi, New Mexico, North Carolina and Utah) are covered and queryable but have their automated re-pull held, so they are absent from `GET /boards` rather than listed as idle. A board is switched on only once its refresh has been shown to work. Read `GET /boards` as the list of what can be **watched**, never as the list of what we **cover**; for coverage, use `GET /us/statutes/coverage`.
+Not every jurisdiction we carry is watchable. Seven state statute jurisdictions (Delaware, the District of Columbia, Hawaii, Mississippi, New Mexico, North Carolina and Utah) are covered and queryable but have their automated re-pull held, so they are absent from `GET /boards` rather than listed as idle. A board is switched on only once its refresh has been shown to work. `GET /boards` lists what can be watched, which is narrower than what we cover. For coverage, use `GET /us/statutes/coverage`.
 
 A **watch** is your subscription to one board, on one or more channels (webhook, email, or both). By default a watch covers the whole board; see [Narrow a watch to a citation](#narrow-a-watch-to-a-citation) to follow one title or part instead.
 
-Two fields on each board tell you whether narrowing is available. **`scopable`** is `true` when `POST /watches` accepts a `scope` for that source. It is `false` for sources whose documents are not citations, such as the Federal Register, where an item is a numbered document rather than a section of a code, so there is no title or part to narrow by. **`scopeBrowseCorpus`** is the `corpusType` to pass to [`GET /us/statutes/divisions`](/api-reference/us-statutes/browse-the-statutory-hierarchy) if you want to enumerate a source's titles, chapters and parts. Note that it is deliberately a different vocabulary from the board's own `corpusType`: a board is `cfr`, and `/us/statutes/divisions` wants `CFR`. When `scopable` is `true` and `scopeBrowseCorpus` is `null`, narrowing works but there is no endpoint that lists that source's hierarchy for you.
+Two fields on each board tell you whether narrowing is available. **`scopable`** is `true` when `POST /watches` accepts a `scope` for that source. It is `false` for sources whose documents are not citations, such as the Federal Register, where an item is a numbered document rather than a section of a code, so there is no title or part to narrow by. **`scopeBrowseCorpus`** is the `corpusType` to pass to [`GET /us/statutes/divisions`](/api-reference/us-statutes/browse-the-statutory-hierarchy) if you want to enumerate a source's titles, chapters and parts. The vocabulary differs from the board's own `corpusType` on purpose: a board is `cfr`, and `/us/statutes/divisions` wants `CFR`. When `scopable` is `true` and `scopeBrowseCorpus` is `null`, narrowing works but there is no endpoint that lists that source's hierarchy for you.
 
 <CodeGroup>
 ```bash cURL
@@ -57,7 +57,7 @@ for b in all_boards():
 </CodeGroup>
 
 <Warning>
-  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There are about 244 boards today, so the default covers the whole registry right now, but that is a fact about today. Read `data.total` and `data.hasMore` and page on `offset`, as above.
+  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There are about 244 boards today, so the default covers the whole registry right now, but nothing guarantees that. Read `data.total` and `data.hasMore` and page on `offset`, as above.
 
   `GET /boards` is free, so paging it costs nothing but a request against your rate limit.
 </Warning>
@@ -129,7 +129,7 @@ watch = resp.json()["data"]
 
 ## Narrow a watch to a citation
 
-Watching an entire source can be more than you want. The Federal regulations refresh daily and change constantly, and a watch on all of `cfr` will tell you about every one of them. If you only care about 21 CFR part 314, say so:
+A watch on an entire source can be noisy. The federal regulations refresh daily and change constantly, so a watch on all of `cfr` reports every change. To follow only 21 CFR part 314, set a scope:
 
 <CodeGroup>
 ```bash cURL
@@ -161,7 +161,7 @@ resp = requests.post(
 ```
 </CodeGroup>
 
-`scope` takes four optional keys, from broadest to narrowest: **`title`**, **`chapter`**, **`part`**, **`section`**. Omit `scope` entirely to watch the whole source, which is the default and what every watch created before this feature does.
+`scope` takes four optional keys, from broadest to narrowest: **`title`**, **`chapter`**, **`part`**, **`section`**. Omit `scope` to watch the whole source, which is the default.
 
 Two rules keep a scope from matching more than you meant. **`title` is required** whenever you set any narrower level, because a bare part number appears in many unrelated titles. **`section` also needs `chapter` or `part`.** Both are rejected with a `400` naming the problem.
 
@@ -191,12 +191,12 @@ So a scope may instead name one section outright, using the `actId` that search 
 - **Works on every source**, including the flat ones where `scopable` is `false`. It is the only way to follow a single Federal Register document or one Justice Manual chapter.
 
 <Tip>
-  If a section is renumbered its act_id changes, and the watch stops matching. You are not left guessing: renumbering emits a `removed` event carrying the OLD act_id, so the watch fires once on the way out.
+  If a section is renumbered its act_id changes, and the watch stops matching. Renumbering emits a `removed` event carrying the old act_id, so the watch fires once on the way out.
 </Tip>
 
 ## Authenticating our deliveries
 
-There are two independent mechanisms, and choosing between them starts with noticing they answer different questions.
+There are two independent mechanisms, and they answer different questions.
 
 | | `webhookSecret` | `webhookAuth` |
 | --- | --- | --- |
@@ -278,7 +278,7 @@ Body:
 
 ### Verifying the signature
 
-`X-Vaquill-Signature` is a real HMAC, not a token echoed back. It is present only when you set `webhookSecret`; if you want a static credential your gateway can check instead, that is [`webhookAuth`](#authenticating-our-deliveries).
+`X-Vaquill-Signature` is an HMAC of the request body. It is present only when you set `webhookSecret`; if you want a static credential your gateway can check instead, that is [`webhookAuth`](#authenticating-our-deliveries).
 
 Compute `HMAC-SHA256(webhookSecret, raw_request_body_bytes)` and compare it, constant-time, to the hex digest after `sha256=`. Compute it over the **raw bytes you received**, before parsing JSON: re-serializing the parsed object changes key order and whitespace, and the digest will not match.
 
@@ -351,7 +351,7 @@ changes = requests.get(
 You can poll this endpoint as often as you like, including alongside a webhook or email watch.
 
 <Note>
-  **There is no "last checked" state to interfere with.** Notifications fire when a corpus refresh completes, not by comparing against a stored watermark, and this endpoint writes nothing. Polling cannot suppress, advance, or double-fire a delivery. (`lastNotifiedAt` on a watch records the outcome of the last delivery attempt, for your visibility. It is never an input to what gets sent.)
+  There is no "last checked" state to interfere with. Notifications fire when a corpus refresh completes, not by comparing against a stored watermark, and this endpoint writes nothing. Polling cannot suppress, advance, or double-fire a delivery. (`lastNotifiedAt` on a watch records the outcome of the last delivery attempt, for your visibility. It is never an input to what gets sent.)
 </Note>
 
 To fetch only what is new, pass `sinceId` with the `meta.cursor` from your previous page. Ids are a monotonic sequence, so this is exact: it cannot skip a change or return one twice, and it is immune to clock skew.
@@ -484,7 +484,7 @@ if diff["hasBefore"] and diff["hasAfter"]:
 </Note>
 
 <Warning>
-  A small number of sources (`corpusType=cfr`, and any change from before this feature shipped) report real `added`/`amended`/`removed` events but never a diff -- `hasDiff` stays `false` for them by design, not by bug. Everything else, including every state corpus, reports a real diff for every `amended` change.
+  A small number of sources (`corpusType=cfr`, and any change from before this feature shipped) report real `added`/`amended`/`removed` events but never a diff. `hasDiff` stays `false` for them by design. Everything else, including every state corpus, reports a real diff for every `amended` change.
 </Warning>
 
 ## Related

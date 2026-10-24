@@ -10,8 +10,7 @@ Most of them will be `null`, because most belong to a different corpus.
 A Federal Register rule has a docket number and a comment-close date.
 A US Code section has a source credit and a chapter.
 A court rule has a rule set.
-None of those apply to the others, and a null there means the field does not
-apply, not that we are missing it.
+None of those fields apply to the other corpora, so a null there is expected.
 
 This page tells the two apart.
 
@@ -72,8 +71,7 @@ have a column for.
 
 These are populated where a publisher states the relation itself, and null
 everywhere else.
-Null here means the publisher drew no link we could read, not that the field is
-unimplemented.
+A null here means the publisher drew no link we could read.
 
 | Field | Meaning |
 |-------|---------|
@@ -106,19 +104,18 @@ Read `source` and `isBounded` before using the text.
 `isBounded: true` means we observed no change affecting that date, which is not the same as there
 having been none.
 
-**Full contract, per-corpus behaviour and the billing rules are on
-[Point-in-time law](/api-guide/point-in-time).**
+The full contract, per-corpus behaviour and billing rules are on
+[Point-in-time law](/api-guide/point-in-time).
 
 ## Amendment fields on the Federal Register
 
-`amendmentYears` on a **final rule** is the year that rule was published, which
+`amendmentYears` on a final rule is the year that rule was published, which
 is the year it amended the CFR.
-A **proposed rule** carries no amendment years at all, because it amended
+A proposed rule carries no amendment years at all, because it amended
 nothing.
 
-That asymmetry is deliberate.
-A proposed rule that was never finalized, or was withdrawn, must not look like
-enacted law on the field a currency query trusts.
+The asymmetry is deliberate. A proposed rule that was never finalized, or was
+withdrawn, must not look like enacted law on the field a currency query trusts.
 
 ## Filtering by year
 
@@ -130,13 +127,12 @@ enacted law on the field a currency query trusts.
    rather than a missing one, so those sections carry no `lastAmendedYear` and
    are reached this way instead. The year itself is an index field and is not
    returned on a result; read `effectiveDate` for the date it came from.
-3. The document's own **publication or issue year**, for the corpora where that
+3. The document's own publication or issue year, for the corpora where that
    is what the document is dated by: Federal Register proposed rules, agency
    guidance, adjudications and the treaty record.
 
 <Note>
-The third case is deliberately scoped to those corpora and is **not** a general
-fallback. On statutes and regulations the underlying year field records when we
+The third case applies only to those corpora and is not a general fallback. On statutes and regulations the underlying year field records when we
 last ingested the text, not when the law changed, so matching it would answer a
 recent-year window with entire state codes.
 </Note>

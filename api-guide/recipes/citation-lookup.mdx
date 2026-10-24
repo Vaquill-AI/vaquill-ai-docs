@@ -3,7 +3,7 @@ title: "Resolve and verify a statute citation"
 description: "Take a statute or regulation citation string, resolve it to the governing section, and check a whole document's citations in one batch call"
 ---
 
-**What this gets you:** a way to catch a fabricated or wrong citation before it ships, whether it came from an LLM, a user, or your own database - one call tells you if a citation is real, and hands you the verified text if it is.
+**What this gets you:** a way to catch a fabricated or wrong citation before it ships, whether it came from an LLM, a user, or your own database. One call tells you whether a citation is real and returns the matching section if it is.
 
 Given a Bluebook citation string like `42 U.S.C. § 1983`, `16 C.F.R. § 444.1`, or
 `Del. Code Ann. tit. 13, § 1301`, resolve it to the exact section and get back the
@@ -39,14 +39,14 @@ rather than looking one up.
   2021-03`. This covers `STATE_AGENCY_GUIDANCE` (state insurance bulletins and
   circular letters) and `AGENCY_GUIDANCE` (IRS Notices, OCC Bulletins, CFTC
   staff letters and the rest). Because these are matched on the published
-  string rather than parsed, the `citation` we returned is not merely the
-  safest input here, it is the only one guaranteed to work.
+  string rather than parsed, the `citation` we returned is the only input
+  guaranteed to work.
 
   Scope `corpusType` (and `state`) when the citation names the corpus, so a
   same-numbered section in another corpus cannot rank first. Scope is a
-  **constraint, not a hint**: a citation naming a different jurisdiction
-  returns `resolved: false` rather than being forced into the scope, so leave
-  the scope off unless you are disambiguating.
+  constraint: a citation naming a different jurisdiction returns
+  `resolved: false` rather than being forced into the scope, so leave the
+  scope off unless you are disambiguating.
 
   See [Citation Formats](/api-guide/concepts/citation-formats) for every form
   that resolves, the shared acronyms refused on purpose, and how `state`
@@ -54,17 +54,17 @@ rather than looking one up.
 </Tip>
 
 <Warning>
-  This recipe covers **statutes and regulations only** (USC, CFR, state codes,
+  This recipe covers statutes and regulations only (USC, CFR, state codes,
   state regulations, constitutions, court rules, and other statute-corpus types).
-  It is not for case law citations. Case law is not part of the Vaquill Developer
-  API.
+  It does not handle case law citations, because case law is not part of the
+  Vaquill Developer API.
 </Warning>
 
 **Endpoints used:** `GET /us/statutes/resolve` for one citation, `POST /us/statutes/resolve` for up to 50 at a time.
 
 ## Resolve in one call
 
-`GET /us/statutes/resolve` does the whole thing for you: it parses the Bluebook citation, resolves it to the exact section, and returns the section metadata with an official source link. The `resolved` flag tells you whether the citation is real, which is exactly the signal you want when verifying a citation an LLM produced.
+`GET /us/statutes/resolve` parses the Bluebook citation, resolves it to the exact section, and returns the section metadata with an official source link. The `resolved` flag tells you whether the citation is real, which is the signal to check when verifying a citation an LLM produced.
 
 <CodeGroup>
 ```bash cURL
@@ -103,15 +103,15 @@ if (data.resolved) {
 ```
 </CodeGroup>
 
-A resolved response carries the full section (the same shape as `/us/statutes/section/{actId}`), plus `subsection` when the citation had a pinpoint like `42 U.S.C. § 1983(b)(2)`. When `resolved` is `false`, treat the citation as **unverified**, not current.
+A resolved response carries the full section (the same shape as `/us/statutes/section/{actId}`), plus `subsection` when the citation had a pinpoint like `42 U.S.C. § 1983(b)(2)`. When `resolved` is `false`, treat the citation as unverified, not current.
 
 <Note>
-  `/us/statutes/resolve` is charged whether or not the citation resolves, because a confident "this does not resolve" is the answer you want when checking an LLM's output. Only server errors are refunded.
+  `/us/statutes/resolve` is charged whether or not the citation resolves, because "this does not resolve" is a useful answer when you are checking an LLM's output. Only server errors are refunded.
 </Note>
 
 <Note>
-  **A guidance citation can be ambiguous, and we would rather answer nothing
-  than guess.** Some regulators reuse one citation across several documents:
+  A guidance citation can be ambiguous, and the API returns no match rather
+  than a guess. Some regulators reuse one citation across several documents:
   Delaware reissues `DE Domestic/Foreign Bulletin No. 113` five times, Vermont
   twice, and Massachusetts has three separate documents citing `MA Bulletin
   1991-01`. Where the publisher's own citation does not identify a single
@@ -214,16 +214,16 @@ A trimmed response:
 }
 ```
 
-Four things about the batch route are worth knowing before you build on it.
+The batch route behaves as follows.
 
-- **Every input gets an entry.**
-  An unresolved citation comes back with `resolved: false`, never as an omission, so you can tell WHICH of thirty citations failed.
+- Every input gets an entry.
+  An unresolved citation comes back with `resolved: false`, never as an omission, so you can tell which of thirty citations failed.
   The `results` array lines up with your de-duplicated input, in order.
-- **Duplicates are collapsed** before pricing and before the response is built, so the same citation sent twice costs once and returns one entry.
-- **Cost is per citation**, the same as resolving them one at a time.
-  Batching buys a round trip and latency, not a discount.
+- Duplicates are collapsed before pricing and before the response is built, so the same citation sent twice costs once and returns one entry.
+- Cost is per citation, the same as resolving them one at a time.
+  Batching saves a round trip and latency, not credits.
   Read `creditsConsumed` rather than multiplying: citations we failed to process because of a backend error are refunded.
-- **Scope the whole batch** with `state` or `corpusType` when every citation belongs to one jurisdiction or corpus.
+- Scope the whole batch with `state` or `corpusType` when every citation belongs to one jurisdiction or corpus.
   `22 CCR 76227` is California and `8 CCR 1206-2` is Colorado, and the acronym alone cannot say which.
   Omit both for a batch that spans jurisdictions and let each citation name its own.
 
@@ -257,18 +257,18 @@ It is the right call only when the tolerance itself is the point.
 
 <AccordionGroup>
   <Accordion title="Return an unresolved flag, not a guess">
-    `resolved: false` means **unverified**, not "not current". Do not fall
+    `resolved: false` means unverified, not "not current". Do not fall
     through to a loosely related section, and do not present a near match as the
     answer. If you are checking a citation an LLM produced, an unresolved flag is
-    exactly the signal that the model may have fabricated it.
+    a sign the model may have fabricated it.
   </Accordion>
   <Accordion title="Scope by corpus to cut false matches">
     The corpus token is usually right there in the citation. `... CFR ...` means
     `corpusType: "CFR"`; `... U.S.C. ...` means `"USC"`; a state code section
-    means `"STATE"` with the two-letter `state`. Scope is a **constraint, not a
-    hint**: a citation naming a different jurisdiction returns `resolved: false`
-    rather than being forced into the scope, so leave the scope off unless you
-    are disambiguating. `FAR`/`DFARS` citations live in CFR Title 48, so they are
+    means `"STATE"` with the two-letter `state`. Scope is a constraint: a
+    citation naming a different jurisdiction returns `resolved: false` rather
+    than being forced into the scope, so leave the scope off unless you are
+    disambiguating. `FAR`/`DFARS` citations live in CFR Title 48, so they are
     `corpusType: "CFR"`; add `source: "far"` or `source: "dfars"` to exclude
     every other CFR title from the ranking.
   </Accordion>

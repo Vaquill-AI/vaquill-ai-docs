@@ -3,9 +3,9 @@ title: "Grounding LLMs with Vaquill AI"
 description: "Why and how to ground model answers in retrieved, authoritative US statutory text"
 ---
 
-Generic language models are fluent about the law but not reliable about it. Ask one for a statute and it will often invent a plausible citation, misquote the text, or blend two unrelated sections into one confident paragraph. For legal work that is not a rough edge, it is a liability.
+Generic language models write fluently about the law and get it wrong often enough to matter. Ask one for a statute and it will sometimes invent a plausible citation, misquote the text, or blend two unrelated sections into one confident paragraph. In legal work that is a liability.
 
-Grounding fixes this. Instead of asking the model what the law says, you retrieve the authoritative sections first, hand the model their verbatim text, and require it to answer only from what you provided and cite every claim. Vaquill AI is built for exactly this loop: every section comes back with a citation, full text, and a link to the official government source, so your users can verify the answer against the primary record.
+Grounding addresses this. Instead of asking the model what the law says, you retrieve the authoritative sections first and hand the model their verbatim text. You then require it to answer only from what you provided and to cite every claim. Every section Vaquill AI returns has a citation, full text, and a link to the official government source, so your users can check the answer against the primary record.
 
 <Note>
   This page is the "why" and the judgment calls. The runnable, copy-paste implementation lives in the [RAG grounding recipe](/api-guide/recipes/rag-grounding), including the retrieval loop, the prompt, the citation check, and the tool-calling agent variant. Read this first, then go there for code.
@@ -15,15 +15,15 @@ Grounding fixes this. Instead of asking the model what the law says, you retriev
 
 A model with no retrieved context is answering from a compressed, lossy memory of its training data. For statutes that produces three predictable failures:
 
-- **Fabricated citations.** The model emits a section number that looks right but does not exist, or points to the wrong title or chapter.
-- **Misquoted text.** Even when the citation is real, the quoted language drifts from the enacted text. Small wording changes matter in law.
-- **Overconfident coverage.** The model answers a question the law does not actually address, rather than admitting the sources are silent.
+- Fabricated citations. The model emits a section number that looks right but does not exist, or points to the wrong title or chapter.
+- Misquoted text. Even when the citation is real, the quoted language drifts from the enacted text, and small wording changes matter in law.
+- Overconfident coverage. The model answers a question the law does not address instead of saying the sources are silent.
 
-Grounding removes the model's discretion over the facts. It retrieves, it does not remember. The model's only job is to read the sections you retrieved, synthesize an answer, and attribute each claim to a citation you can trace back to the official source.
+With grounding, retrieval supplies the facts and the model supplies none from memory. Its job is to read the sections you retrieved, write an answer, and attribute each claim to a citation you can trace back to the official source.
 
 ## The pattern
 
-Four steps turn a raw question into a grounded, verifiable answer.
+A raw question becomes a grounded, verifiable answer in four steps.
 
 <Steps>
   <Step title="Retrieve the relevant sections">
@@ -31,25 +31,25 @@ Four steps turn a raw question into a grounded, verifiable answer.
   </Step>
 
   <Step title="Fetch the authoritative text">
-    The `excerpt` is a ranking preview, not quotable text. Get the real thing either by setting `includeBody: true` on the search, which attaches each hit's full text on `body` in the same call, or by calling `GET /us/statutes/section/{actId}/body` per section. Both bill per body served, so this is a latency choice rather than a price one.
+    The `excerpt` is a ranking preview, not quotable text. Get the real thing either by setting `includeBody: true` on the search, which attaches each hit's full text on `body` in the same call, or by calling `GET /us/statutes/section/{actId}/body` per section. Both bill per body served, so the choice affects latency and not price.
   </Step>
 
   <Step title="Construct a grounded prompt">
     Build a prompt that gives the model the retrieved sections, each labeled with its citation and source URL, and instructs it to:
 
-    - answer **only** from the provided sections,
+    - answer only from the provided sections,
     - cite each claim by its `citation`,
     - say plainly that it cannot find support when the sources do not cover the question.
   </Step>
 
   <Step title="Link back to the source">
-    Show the answer with its citations, and link each one to the official government source URL returned with the section. The user verifies against the primary record, not against the model.
+    Show the answer with its citations, and link each one to the official government source URL returned with the section. The user can then verify against the primary record without relying on the model.
   </Step>
 </Steps>
 
 ## Practical guidance
 
-A few habits keep grounded answers accurate and cheap.
+These habits keep grounded answers accurate and cheap.
 
 <AccordionGroup>
   <Accordion title="Scope retrieval to the right corpusType">
@@ -63,7 +63,7 @@ A few habits keep grounded answers accurate and cheap.
   </Accordion>
 
   <Accordion title="Keep the retrieved text verbatim">
-    Do not summarize, clean up, or paraphrase a section before it reaches the model. Paraphrasing is where meaning quietly shifts, and it defeats the point of grounding. Pass the `plain` text through untouched, and let the model quote from it directly.
+    Do not summarize, clean up, or paraphrase a section before it reaches the model. Paraphrasing can shift the meaning, and it defeats the point of grounding. Pass the `plain` text through untouched, and let the model quote from it directly.
   </Accordion>
 
   <Accordion title="Carry the citation and source URL with every passage">
@@ -88,8 +88,6 @@ A few habits keep grounded answers accurate and cheap.
     A grounded turn is one search plus one body per section you cite, so cost scales with how many sections you cite rather than how many you retrieve. Cache on `actId`, which is a stable handle for a section, and read `creditsConsumed` on every response rather than computing cost from your page size.
   </Accordion>
 </AccordionGroup>
-
-The two properties that make this trustworthy: the model never sees text you did not retrieve, and you refuse to surface an answer whose citations you cannot trace back to the retrieved set.
 
 ## Related
 

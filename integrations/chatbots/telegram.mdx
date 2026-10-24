@@ -5,7 +5,7 @@ description: "Vaquill legal AI for Telegram with BotFather setup, markdown-table
 keywords: ["vaquill telegram bot", "telegram legal ai", "botfather", "telegram rag bot", "telegram ask bot"]
 ---
 
-A Telegram bot that answers legal questions via the Vaquill `/ask` API, renders markdown tables as PNG images, and surfaces case-law sources as tappable inline-keyboard buttons. Source code at [github.com/Vaquill-AI/integrations/telegram-bot](https://github.com/Vaquill-AI/integrations/tree/main/telegram-bot).
+A Telegram bot that answers legal questions through the Vaquill `/ask` API. It renders markdown tables as PNG images and shows case-law sources as tappable inline-keyboard buttons. Source code at [github.com/Vaquill-AI/integrations/telegram-bot](https://github.com/Vaquill-AI/integrations/tree/main/telegram-bot).
 
 ## Features
 
@@ -24,7 +24,7 @@ A Telegram bot that answers legal questions via the Vaquill `/ask` API, renders 
 | Python 3.10+ | [python.org](https://www.python.org/downloads/) |
 | Telegram account | [telegram.org](https://telegram.org/) |
 | Telegram Bot Token | [@BotFather](https://t.me/botfather) |
-| Vaquill API key | [app.vaquill.ai](https://app.vaquill.ai) - Settings > API Keys. See [Authentication](/api-guide/authentication). |
+| Vaquill API key | [app.vaquill.ai](https://app.vaquill.ai), under Settings > API Keys. See [Authentication](/api-guide/authentication). |
 
 ## Platform setup
 
@@ -33,7 +33,7 @@ A Telegram bot that answers legal questions via the Vaquill `/ask` API, renders 
     Search for **@BotFather** in Telegram (or open [t.me/botfather](https://t.me/botfather)) and press **Start**.
   </Step>
   <Step title="Create the bot">
-    Send `/newbot`. Provide a display name (e.g. `Vaquill Legal AI`), then a username ending in `bot` (e.g. `vaquill_legal_bot`). BotFather replies with your API token - copy it as `TELEGRAM_BOT_TOKEN`.
+    Send `/newbot`. Provide a display name (e.g. `Vaquill Legal AI`), then a username ending in `bot` (e.g. `vaquill_legal_bot`). BotFather replies with your API token. Copy it as `TELEGRAM_BOT_TOKEN`.
   </Step>
   <Step title="Register slash commands (optional)">
     Send `/setcommands`, choose your bot, and paste:
@@ -46,7 +46,7 @@ A Telegram bot that answers legal questions via the Vaquill `/ask` API, renders 
     clear - Clear conversation history
     ```
 
-    The bot also sets these on startup, but doing it manually makes them appear before the first run.
+    The bot also sets these on startup. Setting them manually makes them appear before the first run.
   </Step>
   <Step title="Description and avatar (optional)">
     `/setdescription` and `/setabouttext` set the text shown on the bot's profile. `/setuserpic` sets the avatar (use a square image at least 512x512).
@@ -55,7 +55,7 @@ A Telegram bot that answers legal questions via the Vaquill `/ask` API, renders 
 
 ## Quickstart
 
-Local development uses **polling mode** - no public URL or HTTPS certificate required.
+Local development uses polling mode, which needs no public URL or HTTPS certificate.
 
 <Steps>
   <Step title="Clone and install">
@@ -101,7 +101,7 @@ Local development uses **polling mode** - no public URL or HTTPS certificate req
 
 | Mode | Best for | Public URL? | How to enable |
 |---|---|---|---|
-| **Polling** | Local dev, single instance | No | Default - just run `python bot.py` |
+| **Polling** | Local dev, single instance | No | Default. Run `python bot.py` |
 | **Webhook** | Production, multi-instance | Yes (HTTPS) | Add an HTTP server and call Telegram's `setWebhook` |
 
 To switch to webhook mode, deploy behind HTTPS and register:
@@ -116,7 +116,7 @@ Verify with `getWebhookInfo`. Switch back to polling any time with `deleteWebhoo
 
 ## Configuration
 
-Top env vars. Full list in the [repo `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/telegram-bot/.env.example).
+The main environment variables are below. The full list is in the [repo `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/telegram-bot/.env.example).
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -171,7 +171,7 @@ services:
 
 <CardGroup cols={2}>
   <Card title="Render">
-    Deploy as a **Background Worker** (not Web Service) - polling does not need an HTTP port. `render.yaml` is included in the repo.
+    Deploy as a **Background Worker** (not a Web Service), since polling does not need an HTTP port. `render.yaml` is included in the repo.
   </Card>
   <Card title="Railway">
     `railway init && railway up`. Add `TELEGRAM_BOT_TOKEN` and `VAQUILL_API_KEY` in the Variables tab.
@@ -218,7 +218,7 @@ services:
 
 <CardGroup cols={2}>
   <Card title="WhatsApp" href="/integrations/chatbots/whatsapp">
-    Twilio-based, comparable consumer-messenger surface.
+    Twilio-based, and also a consumer messenger.
   </Card>
   <Card title="Signal" href="/integrations/chatbots/signal">
     Privacy-focused alternative.

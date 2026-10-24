@@ -5,13 +5,13 @@ description: "Vaquill legal AI for Discord servers with prefix commands, per-cha
 keywords: ["vaquill discord bot", "discord legal ai", "discord rag bot", "discord ask bot", "discord legal research"]
 ---
 
-Run Vaquill AI inside any Discord server. Members ask legal questions with `!ask`, the bot replies with cited cases and statutes, and per-channel history keeps follow-ups natural. Source code at [github.com/Vaquill-AI/integrations/discord-bot](https://github.com/Vaquill-AI/integrations/tree/main/discord-bot).
+This bot runs Vaquill AI inside a Discord server. Members ask legal questions with `!ask` and the bot replies with cited cases and statutes. Per-channel history lets members ask follow-up questions. Source code at [github.com/Vaquill-AI/integrations/discord-bot](https://github.com/Vaquill-AI/integrations/tree/main/discord-bot).
 
 ## Features
 
 - `!ask`, `!starters`, `!reset`, `!help` prefix commands (prefix is configurable)
 - Per-channel conversation history (cap configurable, default 20 exchanges)
-- "Show Sources" button on every response reveals cited case law and statutes
+- A "Show Sources" button on every response reveals the cited case law and statutes
 - Long answers paginated with Previous / Next buttons
 - Starter-question buttons via `!starters`
 - Per-user and per-channel rate limits with optional Redis backend
@@ -32,11 +32,11 @@ Run Vaquill AI inside any Discord server. Members ask legal questions with `!ask
   <Step title="Create the bot user and copy the token">
     In the sidebar, click **Bot**, then **Add Bot > Yes, do it!**. Click **Reset Token**, copy the value, and save it as `DISCORD_BOT_TOKEN`. You cannot view this token again after leaving the page.
   </Step>
-  <Step title="Enable Message Content Intent (critical)">
+  <Step title="Enable Message Content Intent">
     On the same **Bot** page, scroll to **Privileged Gateway Intents**. Toggle **Message Content Intent** on and click **Save Changes**.
 
     <Warning>
-      Without Message Content Intent the bot cannot read message text and will silently ignore every command. This is the most common cause of "bot online but does nothing".
+      Without Message Content Intent the bot cannot read message text and silently ignores every command. This is the most common cause of a bot that is online but does nothing.
     </Warning>
   </Step>
   <Step title="Generate the invite URL">
@@ -100,7 +100,7 @@ Run Vaquill AI inside any Discord server. Members ask legal questions with `!ask
 
 ## Configuration
 
-Top env vars - see the [repo's `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/discord-bot/.env.example) for the full set.
+The main environment variables are below. The [repo's `.env.example`](https://github.com/Vaquill-AI/integrations/blob/main/discord-bot/.env.example) has the full set.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -203,7 +203,7 @@ WantedBy=multi-user.target
     Slash commands and Socket Mode equivalent.
   </Card>
   <Card title="Telegram" href="/integrations/chatbots/telegram">
-    Lightest setup - BotFather only.
+    Lightest setup. Needs only BotFather.
   </Card>
   <Card title="Chatbots overview" href="/integrations/chatbots">
     Compare all six platforms.

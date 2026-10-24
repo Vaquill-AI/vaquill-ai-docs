@@ -19,8 +19,8 @@ Nothing on this page describes the US surface, and no `corpusType` token from th
 here.
 
 <Note>
-  **Two different units, measured two different ways.**
-  A **section** is one distinct (act, section) pair, and it is the unit a lawyer thinks in.
+  Sections and passages are different units, measured differently.
+  A **section** is one distinct (act, section) pair, the unit a lawyer thinks in.
   A **passage** is one retrieval chunk, and a section spans about 3.4 of them, so the collection
   holds far more passages than sections.
   Act and section counts on this page come from a dated scan; passage counts on
@@ -151,9 +151,9 @@ The middle column is the literal value to pass to the `state` filter.
   this is fixed at ingest.
 </Warning>
 
-## Depth: what we hold about an act, not just the act
+## Depth: what we hold about an act
 
-This is the part of the page to read before you build on this API.
+Read this section before you build on the API.
 "We hold the text of this act" and "we hold the record of what amended it" are different claims,
 and only the first is true for most of the corpus.
 `GET /acts/coverage` publishes the same four columns as a `depth` block so your code can read them
@@ -170,8 +170,8 @@ rather than trusting this page.
 
 A further **840 acts carry a non-zero amendment count with no parseable amendment record behind
 them**.
-Those acts return an empty event list, and the response says so in its own `coverage` block rather
-than leaving the emptiness to be read as "nothing ever changed".
+Those acts return an empty event list, and the response flags this in its own `coverage` block so
+the empty list is not read as "nothing ever changed".
 1,901 acts claim an amendment; we hold the events for 1,061 of them.
 
 ### Inside the amendment record
@@ -197,7 +197,7 @@ We do not rewrite it to incorporate the amendments we list.
 Every amendment event states this on itself, so currency never has to be inferred from silence.
 
 There is consequently **no point-in-time text reconstruction on this API**.
-An `asOf` parameter over unversioned text would be a wrong answer shaped like a right one, so it is
+An `asOf` parameter over unversioned text would return wrong answers that look right, so it is
 not offered.
 The US statutes API does offer point-in-time reconstruction; that is a different corpus with
 versioned editions behind it.
@@ -214,7 +214,7 @@ record involves an Act that never commenced.
 - `servedStatus`, which is our own serving decision;
 - `repealClaim`, which is the repeal record plus our caveat, including `commencementVerified`.
 
-A derived `goodLawStatus` maps an unverified repeal claim to **`unknown`**, not to `not_good_law`.
+A derived `goodLawStatus` maps an unverified repeal claim to `unknown`, not to `not_good_law`.
 The Factories Act, 1948 is the worked example: its recorded repeal is by the Industrial Relations
 Code, 2020, which has never been brought into force.
 
@@ -228,10 +228,6 @@ it is a snapshot with a date.
 An act ingested after that build is returned by `POST /acts/search` and by the act routes before it
 appears here.
 Every response states the build date in `note`.
-
-Until 2026-09-08 this route read a legacy table that predated the corpus and saw about 22,000 acts,
-roughly a third.
-If you built against that limitation, you can drop the workaround.
 
 ### The citation graph matches on titles, so it under-reports
 
@@ -252,7 +248,7 @@ distinguishable from "not applicable".
 
 The main cause is that India Code migrated from `indiacode.nic.in` to `indiacode.gov.in` around
 2026-08-19 and re-minted every item handle with no redirect map.
-The stored deep links are not merely stale, they 404.
+The stored deep links are stale and return 404.
 They are blanked rather than rewritten, because pointing an old handle at the new host produces a
 different 404 that merely looks current.
 An empty provenance URL is allowed; a broken one would be a false statement.
@@ -303,29 +299,20 @@ so we do not serve it as one.
 Both codes remain live law simultaneously for the lifetime of pending trials, so a mapping is a
 research aid and not a substitution rule.
 
-Before 2026-09-08 this route served 30 curated IPC pairs and 18 CrPC pairs, and five of those CrPC
-pairs named the wrong BNSS section.
-If you cached any of it, re-fetch.
+### An unmatchable filter value is refused, not charged
 
-### An unmatchable filter value is now refused, not charged
-
-A filter value outside the published vocabulary returns **422 and costs nothing**.
-
-Until 2026-09-08 it returned HTTP 200 with an empty result set and a full charge, so a request that
-could never match anything was billed as a legitimate no-results answer.
+A filter value outside the published vocabulary returns **422 and costs nothing**. The response
+names the parameter and the values it accepts.
 
 The enforced vocabularies are `category`, `actStatus`, `provisionType`, `sectionType`,
 `legalSubject`, `state` and `sort`.
 An inverted year range (`yearFrom` greater than `yearTo`) is refused the same way.
 
-`department` and `ministry` are **not** enforced and never will be.
+`department` and `ministry` are not enforced.
 `department` has 943 distinct values and `GET /acts/filters` truncates its own list at 256, so a
 closed list would reject values we actually hold.
 The enforced vocabularies are faceted from the corpus rather than read from a fixed list, so a value
 a future ingest introduces is served immediately rather than starting to 422.
-
-If your integration relied on an empty 200 for an invalid filter, it will now see a 422 naming the
-parameter and the values it accepts.
 
 ## Endpoints and what they cost
 

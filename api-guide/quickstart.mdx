@@ -3,13 +3,13 @@ title: "Quickstart"
 description: "Search US statutes and fetch a section in a few minutes"
 ---
 
-This guide takes you from zero to your first grounded statute answer. You will search the corpus, take an `actId` from the results, fetch that section's metadata and full text, and discover what is queryable.
+This guide walks through a first search, then fetches one section's metadata and full text using the `actId` from the results, and finally checks what is queryable.
 
 Every path is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header.
 
 <Steps>
   <Step title="Get an API key">
-    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Copy it once, it will not be shown again. See [Authentication](/api-guide/authentication) for details.
+    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Copy it right away, because it is not shown again. See [Authentication](/api-guide/authentication) for details.
   </Step>
 
   <Step title="Make your first search">
@@ -62,7 +62,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
     </CodeGroup>
 
-    A trimmed response looks like this (captured 2026-10-22; null fields are omitted, and only the first of five results is shown). The top-level fields describe the page, and each `results` entry carries a citation, an excerpt, and links to the official source.
+    A trimmed response looks like this (captured 2026-10-22; null fields are omitted, and only the first of five results is shown). The top-level fields describe the page. Each `results` entry has a citation, an excerpt, and links to the official source.
 
     ```json
     {
@@ -104,13 +104,13 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
 
     <Note>
-      `count` is how many results came back on **this page**, not a corpus-wide match count. No such total exists, because the API ranks a bounded candidate set rather than scoring the whole corpus. Use `hasMore` to decide whether to fetch the next page. See [Pagination](/api-guide/pagination).
+      `count` is the number of results on this page. It is not a corpus-wide match count, and no such total exists, because the API ranks a bounded candidate set rather than scoring the whole corpus. Use `hasMore` to decide whether to fetch the next page. See [Pagination](/api-guide/pagination).
 
-      The response also carries `total`, a **deprecated** alias for `count` kept for backward compatibility. Its name reads as a corpus-wide total, which it never was. Read `count` in new code.
+      The response also carries `total`, a deprecated alias for `count` kept for backward compatibility. Its name suggests a corpus-wide total, but it never was one. Read `count` in new code.
     </Note>
 
     <Note>
-      `creditsConsumed` is what this call actually cost. Read it rather than assuming a list price: failed and refunded work bills 0, and `includeBody: true` bills each row that returns text on top of the search. `GET /api-credits/pricing` returns the live matrix.
+      `creditsConsumed` is what this call actually cost. Failed and refunded work bills 0, and `includeBody: true` bills each row that returns text on top of the search, so read the field instead of assuming a list price. `GET /api-credits/pricing` returns the live matrix.
     </Note>
   </Step>
 
@@ -176,7 +176,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
   </Step>
 
   <Step title="Discover coverage">
-    The corpus grows weekly. Call `GET /us/statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data. Pass one of those tokens back into `/us/statutes/search`.
+    Coverage grows weekly. Call `GET /us/statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data. Pass one of those tokens back into `/us/statutes/search`.
 
     <CodeGroup>
     ```bash cURL

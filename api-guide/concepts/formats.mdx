@@ -31,11 +31,11 @@ preserved, `plain` when you want the publisher's whole body as text.
 
 ### Telling the law from the apparatus
 
-`plain` and `html` are the WHOLE body as the publisher prints it: the operative
+`plain` and `html` are the whole body as the publisher prints it: the operative
 text, then the source credit, then the notes apparatus (historical and revision
 notes, committee reports, editorial notes, amendments, effective-date notes).
 
-For **United States Code** sections that body is mostly not the law.
+For United States Code sections, that body is mostly not the law.
 Measured 2026-09-02, the operative text is a median 46% of it across USC, and as
 little as 3.4% on `17 U.S.C. § 107`, where 28,529 of 29,775 characters are
 commentary.
@@ -50,7 +50,7 @@ is the legislative history.
   A model handed the full body will quote a 1992 amendment note as the law in
   force, and it will look right.
 
-  ⚠️ USC only. CFR and the state corpora carry no equivalent structure in their
+  This applies to USC only. CFR and the state corpora carry no equivalent structure in their
   sources, so all three fields are null there and `plain` remains the whole body.
   Null means "we cannot split this reliably", never "this section is empty".
 </Warning>
@@ -58,8 +58,8 @@ is the legislative history.
 ### Choosing what comes over the wire: `format`
 
 `format` selects which representations are returned.
-Cost is unchanged whichever you pick: the fetch is the same either
-way, so this buys payload size, not price.
+Cost is the same whichever you pick, because the fetch is identical.
+The choice only changes payload size.
 
 | Value | Returns |
 |---|---|
@@ -82,8 +82,8 @@ Cite and verify against that, not against `source`, which names our storage
 backend and is not a citation.
 
 `sourceUrl` is null when we hold no official link for the section.
-We never substitute a third-party compiler, so an absent link is the correct
-answer rather than a gap you should work around.
+We never substitute a third-party compiler, so a null link is the correct
+answer and not a gap to work around.
 
 ## Point-in-time text: `asOf`
 
@@ -180,15 +180,14 @@ It names a sub-source inside a multi-source corpus (a federal rules set, an agen
 Where a state publishes its official text only through a commercial platform, the link is withheld under our licence: `sourceUrl` and `externalUrl` are null, and `licenseNote` says a link exists and is withheld.
 
 Some official publishers serve their code only through a JavaScript application.
-The Texas Administrative Code is the main case: the Secretary of State publishes it only on its Appian portal (`texas-sos.appianportalsgov.com`), so the link opens in a browser but returns an empty page shell to `curl` or any other plain HTTP client.
+The Texas Administrative Code is the main case: the Secretary of State publishes it only on its own portal (`texas-sos.appianportalsgov.com`), so the link opens in a browser but returns an empty page shell to `curl` or any other plain HTTP client.
 The link is still the correct citation.
 To confirm a section without a browser, use `adoptingCitations`, which lists the register instruments that adopted and amended it (for Texas, citations such as `50 TexReg 8285`), and read the text we captured at `textUrl`.
 
 <Info>
   The government links (`stateHtmlUrl`, `govInfoHtmlUrl`, `govInfoPdfUrl`) let
-  you deep-link users straight back to authoritative text on the state
-  legislature's site or govinfo.gov. That is the recommended way to cite a
-  source in your product.
+  you deep-link users to authoritative text on the state legislature's site or
+  govinfo.gov. Use them to cite a source in your product.
 </Info>
 
 ## Picking the best available format

@@ -5,7 +5,7 @@ description: "Self-hosted FastAPI + Vite chat widget bundled in a single Docker 
 keywords: ["docker chat widget", "self hosted legal chat", "fastapi chat widget", "vite chat widget", "floating chat widget", "intercom style legal AI", "embed legal AI"]
 ---
 
-A self-contained chat widget that bundles a FastAPI backend and a Vite-built frontend into a single Docker container. Drop it onto any server, point a script tag at it, and you get either a floating chatbot (Intercom-style) or an inline embed - no Vercel account, no Node toolchain in production.
+A chat widget that bundles a FastAPI backend and a Vite-built frontend into a single Docker container. Run it on any server and point a script tag at it to get either a floating chatbot (Intercom-style) or an inline embed. Production needs no Vercel account and no Node toolchain.
 
 Source: [github.com/Vaquill-AI/integrations/widget](https://github.com/Vaquill-AI/integrations/tree/main/widget).
 
@@ -17,7 +17,7 @@ Source: [github.com/Vaquill-AI/integrations/widget](https://github.com/Vaquill-A
 
 - One container: FastAPI backend serves both the JSON API and the built frontend
 - Two embed modes: floating chatbot (bottom-right bubble) or inline `<div>`
-- Single script tag install on the host site - no iframe required
+- Single script tag install on the host site, no iframe required
 - Configurable widget title, host port, and CORS origins
 - Structured statute source rendering: title, section, code, jurisdiction, excerpt, link
 - Health endpoint for Docker / Kubernetes probes
@@ -113,12 +113,12 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 
 <Tip>
-  In production, always replace `ALLOWED_ORIGINS=*` with an explicit list of domains that should be allowed to embed the widget.
+  In production, replace `ALLOWED_ORIGINS=*` with an explicit list of domains that should be allowed to embed the widget.
 </Tip>
 
 ## Embedding
 
-### Option 1 - Floating chatbot (Intercom-style)
+### Option 1: Floating chatbot (Intercom-style)
 
 Add one script tag before `</body>` on the host site:
 
@@ -140,7 +140,7 @@ A floating button appears in the bottom-right corner. Clicking it opens a slide-
 | `data-chat-width` | `400px` | Panel width on desktop |
 | `data-chat-height` | `600px` | Panel height |
 
-### Option 2 - Inline embed
+### Option 2: Inline embed
 
 ```html
 <!-- Place this div where you want the chat -->
@@ -241,7 +241,7 @@ sudo certbot renew --dry-run
 ```
 
 <Warning>
-  Modern browsers block mixed content. If your host site is HTTPS, the widget host must be HTTPS too - or the script tag will silently fail to load.
+  Modern browsers block mixed content. If your host site is HTTPS, the widget host must be HTTPS too, or the script tag will silently fail to load.
 </Warning>
 
 ## API endpoints

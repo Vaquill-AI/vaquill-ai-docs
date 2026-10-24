@@ -49,7 +49,7 @@ On `429`, the watch cap is 3 outside Business and 100 on Business.
 ### 400 versus 422
 
 A `422` is schema validation: a field is missing, or its type or range is wrong.
-FastAPI rejects it before your request reaches any business logic, and the response carries the `loc` array shown above.
+The API rejects it before your request reaches any business logic, and the response carries the `loc` array shown above.
 
 A `400` is a request that is well-formed but not allowed.
 `POST /watches` and `PATCH /watches/{id}` return it for:
@@ -65,7 +65,7 @@ The `detail` string names the specific problem, so read it rather than retrying.
 ### 409 on watches
 
 `POST /watches` returns `409` when you already hold a watch on the same board, the same channel, and the same scope.
-Watches are unique on that triple, so this means the subscription you were about to create already exists rather than that something went wrong.
+Watches are unique on that triple, so a `409` means the subscription already exists. Nothing has failed.
 `PATCH /watches/{id}` returns it for the same reason, when narrowing a watch's `scope` would collide with another watch you already hold.
 List your watches with `GET /watches` and reuse the existing one.
 
@@ -131,7 +131,7 @@ const data = await searchWithRetry({ query: "data breach notification" });
 </CodeGroup>
 
 <Tip>
-  Smooth your request rate before you hit the ceiling. A small client-side delay between calls in a paging loop keeps you comfortably under the limit and avoids retries entirely.
+  Pace your requests before you hit the ceiling. A small client-side delay between calls in a paging loop keeps you under the limit and cuts down on retries.
 </Tip>
 
 ## Troubleshooting

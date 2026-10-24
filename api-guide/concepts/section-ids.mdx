@@ -10,13 +10,13 @@ metadata and full text.
 You never construct an `actId` by hand. You get it from search results and pass
 it back to the section endpoints.
 
-An `actId` encodes where a section sits in its publisher's hierarchy, which is
-what makes it stable through the changes that matter most and what moves it in
-the one case that it does not.
+An `actId` encodes where a section sits in its publisher's hierarchy. That keeps
+it stable through most changes, and it moves only when the section's place in
+the hierarchy changes.
 
 ## What an actId looks like
 
-`actId` values encode the section's place in the source hierarchy. A few examples:
+Each `actId` encodes the section's place in the source hierarchy. A few examples:
 
 | actId | Points to |
 |---|---|
@@ -68,10 +68,9 @@ force under a new number.
   </Step>
   <Step title="Optional: fetch its neighbors">
     `GET /us/statutes/section/{actId}/related` returns the section's immediate
-    statutory neighbors - the previous and next section within the same
-    container (chapter, part, or code). This is not numeric adjacency; it's
-    what a lawyer would actually turn to next when reading a section in
-    context.
+    statutory neighbors: the previous and next section within the same
+    container (chapter, part, or code). Neighbors follow the statute's own
+    order, not numeric adjacency.
   </Step>
 </Steps>
 
@@ -201,8 +200,8 @@ console.log(body.available ? body.plain.slice(0, 500) : "text unavailable");
 ## When an actId misses
 
 The batch route `POST /us/statutes/sections` takes up to 50 `actIds` and tells
-you WHY each one missed, which is the difference between a bug in your code and
-a gap in ours.
+why each one missed, so you can tell a bug in your code from a gap in our
+corpus.
 
 Alongside `sections` it returns `notFound` (the bare ids) and `notFoundDetail`,
 one entry per missed id:
@@ -249,9 +248,9 @@ curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/related
 
 The response carries `previous` and `next` arrays (each a full section
 object, same shape as a search result) plus a `container` label naming what
-they're neighbors within (e.g. the enclosing chapter or part). Useful for
-"show me the surrounding sections" without a second search call - reading
-§ 1983 alongside §§ 1981-1982 and 1985 in one request, for example.
+they neighbor within (e.g. the enclosing chapter or part). This covers "show me
+the surrounding sections" without a second search call, such as reading
+§ 1983 alongside §§ 1981-1982 and 1985 in one request.
 
 ## Related
 

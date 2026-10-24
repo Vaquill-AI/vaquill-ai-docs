@@ -40,8 +40,8 @@ They return the top N by relevance, and there is no page two, so raise `limit` t
 Each search response includes these top-level fields:
 
 - `results`: the array of result objects for this page.
-- `count`: the number of results returned on **this page**, not the corpus-wide match count.
-- `total`: a **deprecated** alias for `count`. It is still returned for back-compatibility. Read `count` in new code.
+- `count`: the number of results returned on this page, not the corpus-wide match count.
+- `total`: a deprecated alias for `count`, still returned for back-compatibility. Read `count` in new code.
 - `offset`: the offset that was applied.
 - `hasMore`: `true` when more results are reachable beyond this page.
 - `changedSectionCount`: only when `changedSince` is set. How many sections changed in that window, before ranking. Compare it against `count` to see whether the page is the whole window or a slice of it.
@@ -67,7 +67,7 @@ The deepest reachable result is `offset + limit`. The full candidate pool is ran
 ```
 
 <Note>
-  If you need to survey a jurisdiction more broadly, scope with `corpusType` and `state` and run several narrower queries rather than trying to page past the window. Tighter scope also gives more predictable pages.
+  To survey a jurisdiction more broadly, scope with `corpusType` and `state` and run several narrower queries instead of paging past the window. A tighter scope also gives more predictable pages.
 </Note>
 
 ### Page until hasMore is false
@@ -150,9 +150,9 @@ They differ in what they tell you about the rest.
 `GET /watches` returns neither: page it by advancing `offset` until a page comes back shorter than `limit`.
 In practice one page is always enough there, because the watch cap is 3 outside Business and 100 on Business, and `limit` defaults to 100.
 
-`GET /boards` is the one that bites.
-Its `limit` defaults to 500 **and 500 is also the maximum**, so a client that never passes `offset` silently truncates the moment the registry passes 500 boards.
-There are about 244 boards today, so the default still covers the whole registry, but that is a fact about today rather than a guarantee.
+`GET /boards` needs more care.
+Its `limit` defaults to 500 and 500 is also the maximum, so a client that never passes `offset` silently truncates once the registry passes 500 boards.
+There are about 244 boards today, so the default still covers the whole registry, but nothing guarantees it will stay that way.
 Read `total` and page on `offset` instead of trusting one call.
 
 ```python Python
@@ -191,7 +191,7 @@ Change ids are monotonic across the whole corpus, so an id is a stable position 
 | `limit` | either | 1 to 200, default 50. |
 | `changeKind` | filter | `added`, `amended` or `removed`. Repeatable. |
 
-The two endpoints return the cursor in different places, which is the one thing to get right:
+The two endpoints return the cursor in different places:
 
 - `GET /watches/{id}/changes` returns it as `meta.cursor`, alongside `meta.hasMore`.
 - `GET /us/statutes/section/{actId}/changes` returns it as a top-level `cursor`, alongside a top-level `hasMore`.

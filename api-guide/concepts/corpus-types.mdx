@@ -3,15 +3,15 @@ title: "Corpus types"
 description: "The 22 corpusType tokens, how they scope a search, and how source narrows one further"
 ---
 
-`corpusType` chooses which body of law a search runs against. It is the single most important
-filter in the API: it decides whether you get a statute, a regulation, a court rule, agency
-guidance or a decided case.
+`corpusType` chooses which body of law a search runs against. It is the most important filter in
+the API, since it decides whether you get a statute, a regulation, a court rule, agency guidance
+or a decided case.
 
 ```json
 { "query": "security deposit return", "corpusType": "STATE", "state": "ca" }
 ```
 
-Pass one token or a list. This page is the **query vocabulary**: what each token means and how to
+Pass one token or a list. This page covers the query vocabulary: what each token means and how to
 scope it. For how much data sits behind each one and what is deliberately excluded, see
 [API Coverage](/api-guide/coverage).
 
@@ -116,13 +116,13 @@ asked.
 
 <Warning>
   **An AG opinion is persuasive authority, not binding law.** Officials follow them in practice,
-  and an AG opinion is very often the only interpretive authority that exists for a provision no
-  court has reached -- which is the reason to hold the corpus at all. But it does not bind a court,
-  and it must not be read as the rule.
+  and for a provision no court has reached, an AG opinion is often the only interpretive authority
+  there is. That is the reason to hold the corpus at all. It does not bind a court, though, and it
+  must not be read as the rule.
 
-  Every section in this corpus is served with `goodLawStatus: "unknown"`. That is by construction,
-  not an omission: only three of the 52 jurisdictions publish any supersession signal at all, so we
-  will not certify an opinion as still standing. See
+  Every section in this corpus is served with `goodLawStatus: "unknown"`. This is deliberate: only
+  three of the 52 jurisdictions publish any supersession signal at all, so we will not certify an
+  opinion as still standing. See
   [Status and currency](/api-guide/concepts/status-and-currency).
 </Warning>
 
@@ -133,7 +133,7 @@ what makes the field trustworthy rather than derived from a title.
 
 ## Choosing between tokens that look alike
 
-Five pairs are routinely confused, and picking the wrong one returns a confident answer to a
+Five pairs are routinely confused. Picking the wrong token returns a confident answer to a
 different question.
 
 | You want | Use | Not |
