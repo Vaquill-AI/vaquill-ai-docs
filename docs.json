@@ -116,6 +116,7 @@
               "api-guide/concepts/corpus-types",
               "api-guide/concepts/jurisdictions",
               "api-guide/concepts/citation-formats",
+              "api-guide/concepts/pinpoints",
               "api-guide/concepts/citation-quality",
               "api-guide/concepts/section-ids",
               "api-guide/concepts/section-intelligence",
@@ -241,6 +242,11 @@
         "icon": "github"
       },
       {
+        "label": "Postman collection",
+        "href": "https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd?action=share&source=copy-link&creator=52997016",
+        "icon": "paper-plane"
+      },
+      {
         "label": "Support",
         "href": "mailto:contact@vaquill.ai"
       }
@@ -346,6 +352,10 @@
           {
             "label": "API Reference",
             "href": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
+          },
+          {
+            "label": "Postman Collection",
+            "href": "https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd?action=share&source=copy-link&creator=52997016"
           },
           {
             "label": "Open US Law Dataset",
