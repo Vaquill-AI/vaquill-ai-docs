@@ -79,10 +79,12 @@ Then read each hit's history with `GET /us/statutes/section/{actId}/changes` whe
   Run it once per topic you track, which keeps each result small enough to act on.
 
 <Note>
-  Paging is bounded: `limit` caps at 50 and `offset` at 70, so the deepest
+  Paging is bounded in the ranked modes: `limit` caps at 50 and `offset` at 70, so the deepest
   reachable result is 120. If a window is returning full pages, tighten it with a
   later date, a `state` list, or a narrower `corpusType` rather than trying to
   page through it.
+  Boolean mode (`matchType: "boolean"`) is the exception: it pages to the end of
+  the matches, with `offset` up to 10,000.
 </Note>
 
 <Note>

@@ -10,9 +10,9 @@ Search finds the section that answers a question, but it cannot enumerate a code
 **Endpoint used:** `GET /us/statutes/divisions`.
 
 <Note>
-  Browse supports `USC`, `CFR`, `STATE`, `REGULATION`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
+  Browse supports `USC`, `CFR`, `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
   Every legend entry on `GET /us/statutes/coverage` carries a `browsable` flag that says which, so read it instead of probing.
-  State court rules, executive actions, the Federal Register and agency guidance are dated series or share no common tree; reach those with `POST /us/statutes/search` (see the [Quickstart](/api-guide/quickstart)).
+  Executive actions, the Federal Register and agency guidance are dated series or share no common tree; reach those with `POST /us/statutes/search` (see the [Quickstart](/api-guide/quickstart)).
   A request whose filters do not fit the corpus is rejected with `422` before anything is charged.
 </Note>
 
@@ -36,6 +36,25 @@ Pass the deepest level you already know, and the response returns the level dire
 | `corpusType=STATE_CONSTITUTION&state=nm` | the `articles` of the New Mexico Constitution |
 | `corpusType=FEDERAL_RULES` | the rule sets (`codes`): FRCP, FRE, FRCrP, FRAP, FRBP, Supreme Court Rules |
 | `corpusType=FEDERAL_RULES&code=frcp` | the Federal Rules of Civil Procedure (leaf) |
+| `corpusType=STATE_RULES&state=tx` | the state's court rule sets, such as the local rules of one trial court |
+| `corpusType=STATE_RULES&state=tx&code=HARRIS` | the levels and rules inside one rule set |
+
+Beyond `titleNumber`, `chapter`, `part`, `code` and `article`, the listing takes one filter per level a code or rule set can have.
+Each is passed back the way the listing returned it, with the `identifier` of a node whose `kind` names that level, and each is case-insensitive where it is text.
+
+| Filter | Level it lists | Where it applies |
+|---|---|---|
+| `title` | a title inside a code (`kind: title`), such as Title 5 of the Texas Penal Code | State codes and regulations; needs `code`. A U.S. Code or CFR title is `titleNumber`. |
+| `subtitle` | a subtitle | U.S. Code (needs `titleNumber`) and state codes (needs `code` and the `title` it sits in) |
+| `division` | a division | U.S. Code, as in Title 54 (needs `titleNumber`), and state or regulation codes such as California's (needs `code`) |
+| `subdivision` | a subdivision | U.S. Code only, Title 54; needs the `division` it belongs to |
+| `part` | a part | CFR, U.S. Code, and state codes or rule sets wherever a listing returned `kind: part`; on a state code or rule set it needs `code` |
+| `subpart` | a subpart | U.S. Code (needs `part` and `titleNumber`) and CFR (needs `titleNumber` and `part`) |
+| `subjectGroup` | a subject group | CFR only; needs `titleNumber` and `part`, and the `subpart` when the group sits inside one |
+| `subchapter` | a subchapter | U.S. Code (needs `titleNumber` and `chapter`) and state codes or rule sets (needs `code`) |
+| `act` | an act | State codes and court rules only, such as an Illinois act inside an ILCS chapter; needs `code` |
+
+`excludeRepealed` and `actStatus` narrow any listing by section status, the way they do on search.
 
 Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back, verbatim, as the filter its `kind` names (`title` as `titleNumber`, `chapter`, `part`, `code`, or `article`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
 
@@ -147,7 +166,9 @@ walk_title("USC", 42)
               return out
   ```
 
-  Do not reach for `POST /us/statutes/search` to finish an enumeration. Search is capped at 120 results for any one query, so it cannot complete a container that browse could not.
+  Do not reach for `POST /us/statutes/search` to finish an enumeration.
+  Ranked search caps at 120 results per query, so it cannot complete a container that browse could not.
+  `matchType: "boolean"` pages to the end of the matches (up to 10,000), but browse is still the way to enumerate a container.
 </Warning>
 
 <Note>

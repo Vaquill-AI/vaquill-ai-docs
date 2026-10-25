@@ -6,6 +6,23 @@ description: "Updates and additions to the Vaquill Developer API"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-10-25" description="Pinpoint lookups: the text of one subsection, paragraph or clause">
+  ## New: pinpoints
+
+  A citation such as `625 ILCS 5/11-601(c)` now returns the text of subsection (c) itself, not only the parent section.
+  No second model call and no parsing on your side.
+
+  - **`GET` and `POST /us/statutes/resolve`:** a pinpoint in the citation adds a `pinpoint` object beside `section`, on each item of a batch too. It carries the unit's own `text`, the `leadIn` it completes, its `children`, its `siblings`, its character offsets, and `structure`, which says how far to trust the outline.
+  - **`GET /us/statutes/section/{actId}/body`:** pass `pinpoint=(c)(1)` to get one unit beside the full body.
+  - **`POST /us/statutes/extract-citations`:** a resolved row that carried a pinpoint gets `pinpointMatch`.
+  - **`POST /us/statutes/search`:** set `includePinpoint: true` and the response names the subsection each hit matched, in `pinpoints`, keyed by `actId`.
+  - **Labels that contain a hyphen or a dot are one label.** `(d-1)`, `(a-5)` and `(f)(1.5)` resolve. Before this, a citation with an inserted subsection such as `625 ILCS 5/11-601(d-1)` came back as not held.
+  - **Misses are explicit.** A pinpoint the section does not have returns `matched: false` with `matchLevel`, `unmatched` and `available`, not the whole section. A section whose outline we could not recover says `no_structure`.
+  - **Pricing is unchanged.** The same credits as the call without a pinpoint, and `includePinpoint` adds nothing to a search.
+
+  See [Pinpoints](/api-guide/concepts/pinpoints) for the citation forms, what a miss looks like, and how to read `structure.quality`.
+</Update>
+
 <Update label="2026-10-22" description="Boolean terms-and-connectors search on POST /us/statutes/search">
   ## New: Boolean search (`matchType: "boolean"`)
 

@@ -21,7 +21,7 @@ See [Build a subject corpus](/api-guide/recipes/subject-corpus) for the full pip
 
 <Accordion title="I set limit and I am still capped. How deep does paging go?">
 `limit` runs 1 to 50 and defaults to 10.
-`offset` runs 0 to 70.
+`offset` runs 0 to 70, or 0 to 10,000 with `matchType: "boolean"`.
 The deepest reachable result for one query is `offset + limit`, and the ranked pool behind it is sized to match.
 
 If you are seeing a number that is not 10 or 50, it is almost certainly a default in your own client rather than ours.
@@ -111,7 +111,9 @@ Check `truncated` on every section listing from `GET /us/statutes/divisions`.
 
 A large container comes back in more than one page. When `truncated` is `true`, the response carries `nextCursor`: pass it back as `cursor` and repeat until it is `null`. Then compare your total against the parent node's `sectionCount` as an independent check.
 
-Do not finish an enumeration with `POST /us/statutes/search`. It caps at 120 results per query, so it cannot complete a container that browse could not.
+Do not finish an enumeration with `POST /us/statutes/search`.
+Ranked search caps at 120 results per query, so it cannot complete a container that browse could not.
+`matchType: "boolean"` pages to the end of the matches (up to 10,000), but browse is still the way to enumerate a container.
 
 See [Browse the hierarchy](/api-guide/recipes/browse-hierarchy).
 </Accordion>

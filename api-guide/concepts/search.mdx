@@ -66,7 +66,7 @@ See [Boolean search](/api-guide/concepts/boolean-search).
 Since they only narrow, an empty result under either means nothing we ranked for your query carried those terms.
 The corpus may still hold such a section, so fall back to `any`, or scope the query more tightly with the filters, before concluding something is missing.
 
-`boolean` is different: the expression is applied while the corpus is searched, not to a ranked pool afterwards, so a matching section is found wherever relevance would have ranked it, up to the 120 results every search returns.
+`boolean` is different: the expression is applied while the corpus is searched, not to a ranked pool afterwards, so a matching section is found wherever relevance would have ranked it, and it pages to the end of the matches (offset up to 10,000), where the other modes stop at 120 results.
 
 [Best practices](/api-guide/best-practices) works through when each one earns its place.
 

@@ -24,8 +24,15 @@ forms at once.
 | `source` | Our storage identifier for the text. Not a citation. |
 | `available` | Whether text was returned at all (bool) |
 | `note` | An optional note when text is partial or unavailable (string or `null`) |
+| `bodyUnavailable` | `true` when the publisher prints the section as images, so there is no text to return. Omitted otherwise. |
+| `bodyUnavailableReason` | Why there is no text, present with `bodyUnavailable`. Today the only value is `image_only_source`. |
 
 Always check `available` first.
+When `bodyUnavailable` is `true`, the section is real and its metadata is complete, but the publisher prints it as images (an appendix, a form, a map), so `html`, `plain` and `content` are `null` and `available` is `false`.
+Nothing is charged for a body in that case, and a retry returns the same answer.
+The reason `image_only_source` says why; where we may republish the publisher's link, `sourceUrl` points at the official copy.
+Both fields are left out of the response on every other section, so their absence means nothing is wrong.
+Search results and batch rows carry the same two fields, with `body` set to `null`.
 Use `html` when you are displaying the section in a UI and want its structure
 preserved, `plain` when you want the publisher's whole body as text.
 

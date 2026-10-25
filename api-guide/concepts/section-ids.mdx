@@ -194,7 +194,9 @@ console.log(body.available ? body.plain.slice(0, 500) : "text unavailable");
 <Tip>
   A `404` on either section endpoint means no section was found, and the `/body`
   endpoint returns text only when it is available. Check `available` before
-  reading `html` or `plain`.
+  reading `html` or `plain`. A section the publisher prints as images comes back
+  with `bodyUnavailable: true` and `bodyUnavailableReason: "image_only_source"`
+  instead of text.
 </Tip>
 
 ## When an actId misses
