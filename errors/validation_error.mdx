@@ -1,0 +1,56 @@
+---
+title: "Validation error"
+description: "validation_error: HTTP 422, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `validation_error` |
+| HTTP status | `422` |
+| Retryable | No |
+| Python | `vaquill.UnprocessableEntityError` |
+| TypeScript | `UnprocessableEntityError` |
+
+## What it means
+
+The request body or parameters failed schema validation.
+This is the default code for a `4xx` that the API could not classify more precisely.
+
+## What to do
+
+Read the `errors` array: each entry has `loc` (where), `msg` (why) and `type`.
+Fix the listed fields and send the request again.
+See [Errors](/api-guide/errors) for the legacy `errors` shape.
+
+## Example response
+
+The `detail` text is illustrative.
+The `errors` array is the legacy field-level list.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/validation_error",
+  "title": "Validation error",
+  "status": 422,
+  "detail": "Invalid request parameters",
+  "code": "validation_error",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58",
+  "errors": [
+    {
+      "loc": [
+        "body",
+        "query"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    }
+  ]
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `UnprocessableEntityError` and the TypeScript SDK raises `UnprocessableEntityError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

@@ -50,6 +50,13 @@ It is the only one of the two that is indexable, so it is what you filter on.
 | `vetoed` | Passed by the legislature and vetoed. |
 | `rejected` | A proposed constitutional article or amendment the electorate voted down. |
 | `proposed` | A draft published for comment. Full text, no legal force, and never law. |
+| `vacated` | Set aside on review (the Administrative Review Board's verb). It binds nobody. |
+
+**Filterable, never excludable**
+
+| Value | Meaning |
+|-------|---------|
+| `non_precedential` | A document the law forbids citing as precedent, such as an IRS private letter ruling. You may filter to it with `actStatus`, and `excludeRepealed` never drops it, because it is neither dead nor dormant. |
 
 A dead or dormant status is a real answer about the law, not a data quality flag.
 Several of these exist because one jurisdiction uses its own verb: `recompiled` is New Mexico's, `not_funded` is the District of Columbia's, `relocated` is Alaska's, `terminated` and `vetoed` are Wyoming's.
@@ -98,7 +105,7 @@ It is what you want for a compliance diff that asks what was lost rather than wh
 { "query": "security deposit", "state": "tx", "actStatus": ["repealed", "expired"] }
 ```
 
-The values you may pass are the values a result carries, listed above.
+The values you may pass are the values a result carries, listed above. A status we hold but cannot classify (such as `enacted` or `snapshot`) is not accepted.
 An unrecognized one is rejected with a 422 rather than silently matching nothing, so read the enum on the endpoint's OpenAPI schema if you want the machine-readable set.
 
 Combining a dead status here with `excludeRepealed: true` contradicts itself and is rejected with a 422 as well.

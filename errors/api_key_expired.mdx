@@ -1,0 +1,44 @@
+---
+title: "API key expired"
+description: "api_key_expired: HTTP 401, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `api_key_expired` |
+| HTTP status | `401` |
+| Retryable | No |
+| Python | `vaquill.AuthenticationError` |
+| TypeScript | `AuthenticationError` |
+
+## What it means
+
+The key is past its expiry date.
+
+## What to do
+
+Create a new key and replace the expired one.
+Do not retry with the same key.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/api_key_expired",
+  "title": "API key expired",
+  "status": 401,
+  "detail": "API key expired",
+  "code": "api_key_expired",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `AuthenticationError` and the TypeScript SDK raises `AuthenticationError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

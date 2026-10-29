@@ -3,10 +3,9 @@ title: "TypeScript SDK"
 description: "Install the Vaquill TypeScript client, resolve citations, search statutes and handle errors"
 ---
 
-{/* MUST NOT GO LIVE BEFORE THE BACKEND DEPLOY: the new error codes (code, retryable, retryAfterSeconds), the Idempotency-Key header and the Standard Webhooks headers are implemented in the backend working tree but are NOT deployed. This page describes the SDK as built, which assumes them. */}
 {/* Samples are copied from the README of vaquill-js, apart from the resolve and watch samples, which use the argument shapes its resource tests execute (statutes.resolve({ cite }), watches.create({ corpusType, state, channel, webhookUrl })). */}
 
-The TypeScript client runs on Node 20 or later, Bun, Deno and edge runtimes. It uses the platform `fetch` and has no runtime dependencies.
+The TypeScript client needs Node 20 or later. It is built on standard `fetch`, has no runtime dependencies, and is tested on Node 20, 22 and 24.
 For the options shared with the Python client, see the [SDKs overview](/api-guide/sdks/overview).
 
 <Warning>
@@ -31,7 +30,7 @@ const client = new Vaquill(); // reads VAQUILL_API_KEY (must start with vq_key_)
 const res = await client.statutes.search({ query: "assault with a deadly weapon", state: "tx" });
 console.log(res.results?.length, res.creditsConsumed);
 
-const { data, meta } = await client.statutes.getSection("TX_PE_22.01").withResponse();
+const { data, meta } = await client.statutes.getSection("USC_T42_C21_S1983").withResponse();
 console.log(meta.requestId, meta.creditsConsumed, meta.rateLimit.remainingDay);
 ```
 
@@ -134,7 +133,7 @@ The code is checked first, then the status, so an unknown code still gives the s
 - Retried: 408, 429 and 5xx, plus 409 only for `idempotency_in_progress`. Connection errors and timeouts are retried when it is safe.
 - Backoff is 0.5 s doubling to an 8 s cap, scaled down by 0 to 25 percent jitter. `retry-after-ms` wins over `Retry-After` (seconds or date), which wins over the body's `retryAfterSeconds`. A wait above 120 s is not retried.
 - Never retried: `insufficient_credits` (402), `daily_cap_exceeded`, any 4xx other than the above, and anything the server marks `retryable: false`.
-- Each charged call gets one generated `Idempotency-Key`, reused on every retry of that call. Pass `idempotencyKey: "..."` to choose your own.
+- Each charged call gets one generated `Idempotency-Key`, reused on every retry of that call. When the server honours the key, a retry cannot charge twice. Pass `idempotencyKey: "..."` to choose your own.
 - With `idempotencyKey: false` a charged call is not retried after a timeout, connection error or 5xx, because it could charge twice. A 429 `rate_limited` is still retried, since it is refused before any work.
 - Free `POST`s without a key (`watches.create`, `watches.test`) follow the same rule, so a retry cannot create a second watch.
 
@@ -158,11 +157,12 @@ for await (const s of client.statutes.searchAll({ query: "negligence" }, { maxPa
 `.withResponse()` returns the parsed `data`, the raw `response` and a `meta` object with `status`, `headers`, `requestId`, `creditsConsumed`, `idempotentReplayed`, `rateLimit` and `retries`.
 
 ```ts
-const { data, meta } = await client.statutes.getSection("TX_PE_22.01").withResponse();
+const { data, meta } = await client.statutes.getSection("USC_T42_C21_S1983").withResponse();
 console.log(meta.requestId, meta.creditsConsumed, meta.rateLimit.remainingDay);
 ```
 
-`client.rawRequest(method, path, { query, body, charged })` reaches endpoints newer than this SDK.
+`client.rawRequest(method, path, { query, body, charged })` reaches endpoints newer than this SDK and returns the parsed value.
+The Python `raw_request` returns an `APIResponse` instead, so it needs `.parse()`.
 
 ## Alerts and webhook verification
 
@@ -191,7 +191,7 @@ A secret that starts with `whsec_` is base64 decoded; any other secret is used a
 They throw `WebhookVerificationError` on any failure.
 
 <Warning>
-  `{ allowLegacy: true }` also accepts the old `X-Vaquill-Signature: sha256=<hex>` header when the Standard Webhooks headers are absent. That header signs only the body, so it has no replay protection: a captured delivery verifies forever. It is off by default.
+  `{ allowLegacy: true }` also accepts the old `X-Vaquill-Signature: sha256=<hex>` header when the Standard Webhooks headers are absent. That header signs only the body, so it has no replay protection: a captured delivery verifies forever. It is off by default, as in Python (`allow_legacy`).
 </Warning>
 
 See [Alerts](/api-guide/alerts) for the payload and delivery behavior.

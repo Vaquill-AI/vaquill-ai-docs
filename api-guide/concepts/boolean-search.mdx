@@ -579,7 +579,7 @@ It names the problem and, where there is one, the **0-based character position**
 | `judge(smith)` | `Invalid Boolean query: 'judge' is a case-law field; a statute section has no such field. Available fields: title (the section heading), cite (the citation), text (the body) at position 0` |
 | `site:gov AND tax` | `Invalid Boolean query: 'site' is not a field of this search; scope with the request's filters instead. Available fields: title (the section heading), cite (the citation), text (the body) at position 0` |
 
-A query over 500 characters fails schema validation instead, with the usual `loc` array described in [Errors](/api-guide/errors).
+A query over 500 characters fails schema validation instead, with the `errors` array and its `loc` described in [Errors](/api-guide/errors).
 
 One `422` is about an expression's weight, not its syntax.
 Every result is verified against the section's full text, and multi-word phrases and proximity (`/s`, `/p`, `/N`, `atleastN( )`, wildcards inside a proximity pair) need that check to confirm each candidate.

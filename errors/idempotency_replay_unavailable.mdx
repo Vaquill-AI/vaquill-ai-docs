@@ -1,0 +1,45 @@
+---
+title: "Idempotent replay unavailable"
+description: "idempotency_replay_unavailable: HTTP 409, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `idempotency_replay_unavailable` |
+| HTTP status | `409` |
+| Retryable | No |
+| Python | `vaquill.IdempotencyReplayUnavailableError` |
+| TypeScript | `IdempotencyReplayUnavailableError` |
+
+## What it means
+
+The original request completed, but its response was too large to replay.
+The call was not charged again.
+
+## What to do
+
+Check your balance with `GET /credits/balance` before deciding to repeat the call.
+If you need the data again, send a new request with a new key.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/idempotency_replay_unavailable",
+  "title": "Idempotent replay unavailable",
+  "status": 409,
+  "detail": "Original response is too large to replay",
+  "code": "idempotency_replay_unavailable",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `IdempotencyReplayUnavailableError` and the TypeScript SDK raises `IdempotencyReplayUnavailableError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

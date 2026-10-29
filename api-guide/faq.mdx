@@ -97,7 +97,7 @@ See [Build a subject corpus](/api-guide/recipes/subject-corpus).
 
 <Accordion title="Can I enumerate every section in a state, code, title or chapter?">
 Yes, with `GET /us/statutes/divisions`.
-It browses `USC`, `CFR`, `STATE` and `REGULATION`, one level at a time, and the leaf level returns every section in the container with its `actId`.
+It browses `USC`, `CFR`, `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`, one level at a time, and the leaf level returns every section in the container with its `actId`.
 
 Codes vary in depth.
 Most run code to chapter to section; some publish sections directly under the code.

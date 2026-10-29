@@ -6,6 +6,32 @@ description: "Updates and additions to the Vaquill Developer API"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-10-29" description="Official Python and TypeScript SDKs">
+  ## New: official Python and TypeScript SDKs
+
+  Typed clients for the US Data API are now published.
+
+  - **Python:** `pip install vaquill` (Python 3.11 or later), with a sync and an async client.
+  - **TypeScript:** `npm install @vaquill-ai/sdk` (Node 20 or later).
+  - **CLI:** the Python package ships a `vaquill` command for searches, citation resolution and credit checks from the shell.
+  - **Built in:** retries with backoff, typed errors, pagination iterators, an optional spend guard and Standard Webhooks signature verification.
+
+  Before 1.0 the API surface of the SDKs may change in minor versions.
+  See [SDKs](/api-guide/sdks/overview).
+</Update>
+
+<Update label="2026-10-26" description="Fuller section text: Iowa unit labels, Wisconsin tables">
+  ## Fuller section text: Iowa unit labels, Wisconsin tables
+
+  Two groups of sections now return more of what the publisher prints.
+
+  - **Iowa:** sections that print units at a third level now keep their `(n)` labels in the returned text (2,390 sections).
+  - **Wisconsin:** sections now keep their tables, forms, See-PDF lines and effective-date text (245 sections).
+  - **Text offsets changed with the text.** `charStart` and `charEnd` for these sections index into the new text. If you cached offsets, refresh them: `structure.textSha256` is the SHA-256 of the text the offsets belong to, so a stored copy whose hash differs is out of date.
+
+  See [Pinpoints](/api-guide/concepts/pinpoints) for the offsets and `structure.textSha256`.
+</Update>
+
 <Update label="2026-10-25" description="Pinpoint lookups: the text of one subsection, paragraph or clause">
   ## New: pinpoints
 

@@ -1,0 +1,46 @@
+---
+title: "Invalid API key"
+description: "invalid_api_key: HTTP 401, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `invalid_api_key` |
+| HTTP status | `401` |
+| Retryable | No |
+| Python | `vaquill.AuthenticationError` |
+| TypeScript | `AuthenticationError` |
+
+## What it means
+
+The key is malformed, unknown or revoked.
+This is also the default code for any `401` that the API could not classify more precisely.
+
+## What to do
+
+Check that the key starts with `vq_key_` and was copied whole.
+Create a new key in the developer dashboard if the old one was revoked.
+Do not retry with the same key.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/invalid_api_key",
+  "title": "Invalid API key",
+  "status": 401,
+  "detail": "Invalid or expired API key",
+  "code": "invalid_api_key",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `AuthenticationError` and the TypeScript SDK raises `AuthenticationError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

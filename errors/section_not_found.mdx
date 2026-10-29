@@ -1,0 +1,50 @@
+---
+title: "Section not found"
+description: "section_not_found: HTTP 404, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `section_not_found` |
+| HTTP status | `404` |
+| Retryable | No |
+| Python | `vaquill.NotFoundError` |
+| TypeScript | `NotFoundError` |
+
+## What it means
+
+No section matches the identifier you sent.
+The body keeps the legacy members `reason` and `didYouMean` beside the standard ones.
+
+## What to do
+
+Read `reason` to see why the lookup failed.
+Try the candidates in `didYouMean` when present.
+Use search or the hierarchy browse to find the correct identifier.
+
+## Example response
+
+The `detail` text is illustrative.
+`reason` and `didYouMean` carry the values the lookup produced.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/section_not_found",
+  "title": "Section not found",
+  "status": 404,
+  "detail": "Section not found",
+  "code": "section_not_found",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58",
+  "reason": "...",
+  "didYouMean": [
+    "..."
+  ]
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `NotFoundError` and the TypeScript SDK raises `NotFoundError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

@@ -141,6 +141,40 @@ A hit that cannot be named says why in `reason` (`no_single_unit`, `no_structure
 That is a verdict about the hit and not a failure.
 It never changes which sections are returned, their order or their scores, and the search is charged the same either way.
 
+## Coverage by state
+
+Coverage varies by state, so this table gives the measured rates where we have them and says where we do not.
+The percentages come from a full build of outlines over every section of the state, graded by `structure.quality` as described above.
+
+*As of 2026-10-26.*
+
+| State | Sections measured | Native or verified | Heuristic | None |
+|---|---|---|---|---|
+| Illinois | 72,251 | 98.7% | 1.2% | 0.1% |
+| Minnesota | 27,747 | 99.3% | 0.7% | 0.0% |
+| Missouri | Not published | Not published | Not published | Not published |
+| Wisconsin | Not published | Not published | Not published | Not published |
+| Iowa | Not published | Not published | Not published | Not published |
+
+Those percentages measure the build, not a given call.
+Where the outline for a response came from is in `structure.source`, and the grade is in `structure.quality`.
+Read both on every response.
+
+- **Illinois.** In the build, 68,219 of the 72,251 sections have an outline taken from the publisher's own markup.
+  Sections that hold several versions of the text in one record, and long sections whose enumerations run inside a sentence, are the likeliest to be `heuristic`.
+  Inserted labels such as `(d-1)` and `(1.5)` are kept as single labels.
+  A call can instead parse the outline from the section text, and that parse is graded on its own, so read `structure.quality`.
+- **Minnesota.** In the build, 26,325 of the 27,747 sections have an outline taken from the publisher's own markup, and a call can use a pre-built outline of the section.
+  A subdivision may open at `(1)` without a paragraph (a) before it.
+- **Missouri.** The outline is parsed from the text of the section, one paragraph per line.
+  A definitions section has no numbered subsection level, so in `Mo. Rev. Stat. 556.061(1)` the unit (1) sits directly under the section.
+- **Wisconsin.** The outline is parsed from the text of the section.
+  Letter inserts such as `(1m)`, `(2g)` and `(am)` are each one label, and repealed provisions leave gaps in the sequence, which is normal.
+- **Iowa.** The outline is parsed from the text of the section, where each paragraph is printed with the labels of the units above it.
+  A unit that only introduces numbered paragraphs can have an empty `text`, with the content in its `children`.
+
+For Missouri, Wisconsin and Iowa we do not publish a percentage, so use the grade on each response.
+
 ## Errors
 
 | Status | When | Charged |

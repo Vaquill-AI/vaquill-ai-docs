@@ -66,7 +66,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
     </CodeGroup>
 
-    A trimmed response looks like this (captured 2026-10-22; null fields are omitted, and only the first of five results is shown). The top-level fields describe the page. Each `results` entry has a citation, an excerpt, and links to the official source.
+    A trimmed response looks like this (captured 2026-10-22; fields that were null are left out of this sample, the live response lists them as `null`, and only the first of five results is shown). The top-level fields describe the page. Each `results` entry has a citation, an excerpt, and links to the official source.
 
     ```json
     {
@@ -229,5 +229,8 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
   </Card>
   <Card title="Postman collection" href="https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd?action=share&source=copy-link&creator=52997016" icon="paper-plane">
     Try every endpoint without writing code.
+  </Card>
+  <Card title="SDKs" href="/api-guide/sdks/overview">
+    Prefer a client library? The official Python and TypeScript SDKs wrap these calls with retries, typed errors and a spend guard.
   </Card>
 </CardGroup>

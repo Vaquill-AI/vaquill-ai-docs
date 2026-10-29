@@ -1,0 +1,46 @@
+---
+title: "Internal error"
+description: "internal_error: HTTP 500, retryable."
+---
+
+| | |
+|---|---|
+| Code | `internal_error` |
+| HTTP status | `500` |
+| Retryable | Yes |
+| Python | `vaquill.InternalServerError` |
+| TypeScript | `InternalServerError` |
+
+## What it means
+
+The API failed in a way it did not anticipate.
+The call is refunded.
+
+## What to do
+
+Retry with exponential backoff.
+If it persists, [contact support](mailto:contact@vaquill.ai) and include the `requestId`.
+The SDKs retry this code automatically.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/internal_error",
+  "title": "Internal error",
+  "status": 500,
+  "detail": "Internal server error",
+  "code": "internal_error",
+  "retryable": true,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `InternalServerError` and the TypeScript SDK raises `InternalServerError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

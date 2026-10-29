@@ -54,7 +54,7 @@ This saves round trips. It does not lower the cost of the rows that return text.
 
 **State, across 56 jurisdictions:** statutory codes (`STATE`), administrative regulations (`REGULATION`), constitutions (`STATE_CONSTITUTION`), court rules (`STATE_RULES`), state register notices (`STATE_REGISTER`, not codified law), and state regulator guidance (`STATE_AGENCY_GUIDANCE`).
 
-**State session laws:** 20,604 acts from the 2025 sessions across 50 jurisdictions, served by `/us/session-laws` rather than a `corpusType`. See [State Session Laws](/api-guide/session-laws).
+**State session laws:** 321,628 laws, sessions 1975 to 2026, across 52 jurisdictions, served by `/us/session-laws` rather than a `corpusType`. See [State Session Laws](/api-guide/session-laws).
 
 `STATE_AGENCY_GUIDANCE` is the newest corpus. It holds 13,000+ state Department of Insurance bulletins and circular letters across 49 jurisdictions, going back to 1924. A bulletin interprets the law and is not itself the law, so it has its own token rather than sharing `REGULATION`. Use it for insurance compliance and 50-state survey questions.
 
@@ -109,5 +109,8 @@ Scope any search with the `corpusType` token. See [Corpus Types](/api-guide/conc
 <CardGroup cols={2}>
   <Card title="Coverage" href="/api-guide/coverage">
     The jurisdiction matrix in human-readable form.
+  </Card>
+  <Card title="SDKs" href="/api-guide/sdks/overview">
+    Official Python and TypeScript clients for this API, plus a CLI.
   </Card>
 </CardGroup>

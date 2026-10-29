@@ -29,7 +29,7 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
     **97K+ documents** from 53 named federal sources, each filterable with `source`.
   </Card>
   <Card title="State session laws" href="/api-guide/session-laws">
-    **20,604 acts** across 50 jurisdictions from the 2025 sessions, as enacted, with dates,
+    **321,628 laws** across 52 jurisdictions, 1975 to 2026, as enacted, with dates,
     veto outcome and text.
   </Card>
 </CardGroup>
@@ -37,21 +37,21 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
 ## What's in the corpus
 
 This is the only table on the page with exact counts, so each fact has a single number. The
-statutes, regulations, court rules, constitutions and registers, agency guidance and AG opinion rows were measured **2026-10-09**, and the federal row
-on **2026-10-13**. The endpoint above is live.
+statutes, regulations, court rules, constitutions and registers, agency guidance and AG opinion rows were measured **2026-10-26**, and the federal row
+on **2026-10-26**. The endpoint above is live.
 
 | Corpus | Jurisdictions | Sections | `corpusType` |
 |---|---|---:|---|
-| State statutes | 56 | 2,017,497 | `STATE` |
-| State regulations | 56 | 1,496,990 | `REGULATION` |
-| State court rules | 56 | 71,967 | `STATE_RULES` |
-| State constitutions | 53 | 13,016 | `STATE_CONSTITUTION` |
-| State registers (notices, not codified law) | 24 | 144,903 | `STATE_REGISTER` |
-| State agency guidance | 49 | 13,360 | `STATE_AGENCY_GUIDANCE` |
-| State AG opinions | 43 | 104,572 | `STATE_AG_OPINION` |
-| Federal, 15 corpora | Federal | 1,530,173 | See [Federal](/api-guide/coverage/federal) |
+| State statutes | 56 | 2,092,582 | `STATE` |
+| State regulations | 56 | 1,497,346 | `REGULATION` |
+| State court rules | 56 | 69,998 | `STATE_RULES` |
+| State constitutions | 53 | 13,126 | `STATE_CONSTITUTION` |
+| State registers (notices, not codified law) | 24 | 153,269 | `STATE_REGISTER` |
+| State agency guidance | 49 | 13,382 | `STATE_AGENCY_GUIDANCE` |
+| State AG opinions | 45 | 109,398 | `STATE_AG_OPINION` |
+| Federal, 15 corpora | Federal | 1,528,990 | See [Federal](/api-guide/coverage/federal) |
 
-State session laws are held apart from the table above and served by their own endpoints: 20,604 acts across 50 jurisdictions from the 2025 sessions, measured 2026-10-05.
+State session laws are held apart from the table above and served by their own endpoints: 321,628 laws across 52 jurisdictions, sessions 1975 to 2026.
 See [State Session Laws](/api-guide/session-laws).
 
 Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats

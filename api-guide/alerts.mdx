@@ -57,7 +57,7 @@ for b in all_boards():
 </CodeGroup>
 
 <Warning>
-  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There are about 244 boards today, so the default covers the whole registry right now, but nothing guarantees that. Read `data.total` and `data.hasMore` and page on `offset`, as above.
+  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There were 313 boards on 2026-10-26, so the default covers the whole registry right now, but nothing guarantees that. Read `data.total` and `data.hasMore` and page on `offset`, as above.
 
   `GET /boards` is free, so paging it costs nothing but a request against your rate limit.
 </Warning>
@@ -73,7 +73,7 @@ Filter instead of paging where you can: `corpusType` and `state` both narrow the
       {"corpusType": "federal_register", "label": "Federal Register", "cadence": "daily",
        "scopable": false, "scopeBrowseCorpus": null}
     ],
-    "total": 244,
+    "total": 313,
     "hasMore": false
   },
   "meta": { "processingTimeMs": 12.4, "creditsConsumed": 0 }
@@ -498,5 +498,8 @@ if diff["hasBefore"] and diff["hasAfter"]:
   </Card>
   <Card title="Coverage" href="/api-guide/coverage">
     The jurisdiction and corpus matrix you're choosing a board from.
+  </Card>
+  <Card title="SDKs" href="/api-guide/sdks/overview">
+    The official SDKs create watches and verify webhook signatures for you.
   </Card>
 </CardGroup>

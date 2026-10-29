@@ -1,0 +1,45 @@
+---
+title: "Authentication required"
+description: "authentication_required: HTTP 401, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `authentication_required` |
+| HTTP status | `401` |
+| Retryable | No |
+| Python | `vaquill.AuthenticationError` |
+| TypeScript | `AuthenticationError` |
+
+## What it means
+
+The request carried no credential.
+
+## What to do
+
+Send your key in the `Authorization: Bearer vq_key_...` header.
+See [Authentication](/api-guide/authentication) for the header format and key rotation.
+Do not retry the same request without a key.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/authentication_required",
+  "title": "Authentication required",
+  "status": 401,
+  "detail": "Not authenticated",
+  "code": "authentication_required",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `AuthenticationError` and the TypeScript SDK raises `AuthenticationError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

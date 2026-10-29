@@ -1,0 +1,46 @@
+---
+title: "Permission denied"
+description: "permission_denied: HTTP 403, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `permission_denied` |
+| HTTP status | `403` |
+| Retryable | No |
+| Python | `vaquill.PermissionDeniedError` |
+| TypeScript | `PermissionDeniedError` |
+
+## What it means
+
+The key is valid, but your plan, the key's scope or the requested jurisdiction does not allow this call.
+For example, webhook delivery on a watch requires the Business plan.
+
+## What to do
+
+Read `detail` to see which of plan, scope or jurisdiction applies.
+Use a different channel or jurisdiction, or upgrade the plan.
+Retrying the same request cannot succeed.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/permission_denied",
+  "title": "Permission denied",
+  "status": 403,
+  "detail": "Your plan does not include this feature",
+  "code": "permission_denied",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `PermissionDeniedError` and the TypeScript SDK raises `PermissionDeniedError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

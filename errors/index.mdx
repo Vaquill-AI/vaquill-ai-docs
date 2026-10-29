@@ -1,0 +1,86 @@
+---
+title: "Error codes"
+description: "Every machine-readable error code the Data API returns, with what to do about each."
+---
+
+Errors from the Data API carry a stable `code` beside the legacy `detail` member.
+Branch on `code` in your own handling, and fall back to the HTTP status when `code` is absent.
+The set of codes is open, so treat an unknown value as its HTTP status class.
+
+The `type` member of every error body is a URL of the form `https://www.vaquill.ai/docs/errors/{code}`.
+Each code below has its own page.
+For the legacy status table and the `detail` and `errors` shapes, see [Errors](/api-guide/errors).
+
+## Body fields
+
+| Field | Meaning |
+|---|---|
+| `type` | URL naming the error kind. |
+| `title` | Short human title for the code. |
+| `status` | The HTTP status. |
+| `detail` | The legacy message, unchanged. |
+| `code` | The stable machine code. |
+| `retryable` | Whether the same request may succeed if you send it again. |
+| `requestId` | Id of the request. Quote it to support. |
+| `retryAfterSeconds` | Seconds to wait. Present only on a `429` or `503` that carries a `Retry-After` header. |
+
+## All codes
+
+| Code | Status | Retryable | Title |
+|---|---|---|---|
+| [`authentication_required`](/errors/authentication_required) | 401 | No | Authentication required |
+| [`invalid_api_key`](/errors/invalid_api_key) | 401 | No | Invalid API key |
+| [`api_key_expired`](/errors/api_key_expired) | 401 | No | API key expired |
+| [`permission_denied`](/errors/permission_denied) | 403 | No | Permission denied |
+| [`insufficient_credits`](/errors/insufficient_credits) | 402 | No | Insufficient credits |
+| [`rate_limited`](/errors/rate_limited) | 429 | Yes | Rate limited |
+| [`daily_cap_exceeded`](/errors/daily_cap_exceeded) | 429 | No | Daily cap exceeded |
+| [`validation_error`](/errors/validation_error) | 422 | No | Validation error |
+| [`invalid_query`](/errors/invalid_query) | 422 | No | Invalid query |
+| [`invalid_citation_input`](/errors/invalid_citation_input) | 422 | No | Invalid citation input |
+| [`section_not_found`](/errors/section_not_found) | 404 | No | Section not found |
+| [`resource_not_found`](/errors/resource_not_found) | 404 | No | Resource not found |
+| [`idempotency_key_reused`](/errors/idempotency_key_reused) | 422 | No | Idempotency key reused |
+| [`idempotency_in_progress`](/errors/idempotency_in_progress) | 409 | Yes | Idempotency request in progress |
+| [`idempotency_replay_unavailable`](/errors/idempotency_replay_unavailable) | 409 | No | Idempotent replay unavailable |
+| [`upstream_timeout`](/errors/upstream_timeout) | 503 | Yes | Upstream timeout |
+| [`service_unavailable`](/errors/service_unavailable) | 503 | Yes | Service unavailable |
+| [`internal_error`](/errors/internal_error) | 500 | Yes | Internal error |
+| [`conflict`](/errors/conflict) | 409 | No | Conflict |
+
+## How the SDKs expose them
+
+Both SDKs read the same body and map it to an exception class.
+They pick the class from `code` first and from the HTTP status second, so an unknown code still raises the right status class.
+
+| Information | Python (`vaquill`) | TypeScript |
+|---|---|---|
+| Base for HTTP errors | `APIStatusError` | `APIStatusError` |
+| HTTP status | `status_code` or `status` | `status` |
+| Machine code | `code` | `code` |
+| Retryable hint | `retryable` | `retryable` |
+| Wait hint | `retry_after_seconds` | `retryAfterSeconds` |
+| Request id | `request_id` | `requestId` |
+| Legacy members | `detail`, `errors` | `detail`, `errors` |
+
+`code` and `retryable` are `None` in Python and `null` in TypeScript when the server did not send them.
+
+### Class by code
+
+| Code | Python and TypeScript class |
+|---|---|
+| `insufficient_credits` | `InsufficientCreditsError` |
+| `daily_cap_exceeded` | `DailyCapExceededError` (a `RateLimitError`) |
+| `idempotency_key_reused` | `IdempotencyKeyReusedError` |
+| `idempotency_in_progress` | `IdempotencyInProgressError` |
+| `idempotency_replay_unavailable` | `IdempotencyReplayUnavailableError` |
+
+Every other code maps by status: `401` to `AuthenticationError`, `403` to `PermissionDeniedError`, `404` to `NotFoundError`, `409` to `ConflictError`, `422` to `UnprocessableEntityError`, `429` to `RateLimitError`, and `5xx` to `InternalServerError`.
+The three idempotency classes share the base class `IdempotencyConflictError`.
+
+### Automatic retries
+
+The SDKs retry `rate_limited`, `idempotency_in_progress`, `upstream_timeout`, `service_unavailable` and `internal_error`.
+They never retry `insufficient_credits` or `daily_cap_exceeded`.
+
+See the [Python SDK](/api-guide/sdks/python) and the [TypeScript SDK](/api-guide/sdks/typescript) pages for client setup.

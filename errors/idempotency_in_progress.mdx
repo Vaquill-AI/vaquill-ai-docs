@@ -1,0 +1,44 @@
+---
+title: "Idempotency request in progress"
+description: "idempotency_in_progress: HTTP 409, retryable."
+---
+
+| | |
+|---|---|
+| Code | `idempotency_in_progress` |
+| HTTP status | `409` |
+| Retryable | Yes |
+| Python | `vaquill.IdempotencyInProgressError` |
+| TypeScript | `IdempotencyInProgressError` |
+
+## What it means
+
+The original request with this `Idempotency-Key` is still running.
+
+## What to do
+
+Wait briefly and resend the same request with the same key.
+The SDKs retry this code automatically.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/idempotency_in_progress",
+  "title": "Idempotency request in progress",
+  "status": 409,
+  "detail": "A request with this idempotency key is still in progress",
+  "code": "idempotency_in_progress",
+  "retryable": true,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `IdempotencyInProgressError` and the TypeScript SDK raises `IdempotencyInProgressError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

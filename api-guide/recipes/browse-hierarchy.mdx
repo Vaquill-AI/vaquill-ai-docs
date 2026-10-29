@@ -19,18 +19,28 @@ Search finds the section that answers a question, but it cannot enumerate a code
 ## How drilling works
 
 Pass the deepest level you already know, and the response returns the level directly below it.
+Which level that is depends on the code, because each section's own place in its publisher's hierarchy decides it.
+A code does not have a fixed number of levels, so read `level` and each node's `kind` on every response instead of assuming a depth, and keep drilling until `isLeaf` is `true`.
 
 | You pass | You get back (`level`) |
 |---|---|
 | `corpusType=USC` | the USC `titles` |
 | `corpusType=USC&titleNumber=42` | the `chapters` in Title 42 |
-| `corpusType=USC&titleNumber=42&chapter=21` | the `sections` in Chapter 21 (leaf) |
+| `corpusType=USC&titleNumber=42&chapter=21` | the `subchapters` of Chapter 21 (a chapter with no subchapters lists its sections) |
+| `corpusType=USC&titleNumber=42&chapter=21&subchapter=I` | the `sections` in Subchapter I (leaf) |
+| `corpusType=USC&titleNumber=18` | the `parts` of Title 18, which sit above its chapters |
+| `corpusType=USC&titleNumber=8&chapter=12&subchapter=II` | the `parts` of Subchapter II, which sit below the chapter in this title |
 | `corpusType=CFR&titleNumber=17` | the `parts` in Title 17 |
-| `corpusType=CFR&titleNumber=17&part=240` | the `sections` in Part 240 (leaf) |
+| `corpusType=CFR&titleNumber=17&part=240` | the `subparts` and `subjectGroups` of Part 240 (a part with neither lists its sections) |
+| `corpusType=CFR&titleNumber=17&part=240&subpart=A` | the subject groups of Subpart A |
 | `corpusType=STATE&state=tx` | the state's `codes` |
-| `corpusType=STATE&state=tx&code=tx_pe` | the `chapters` in the Texas Penal Code |
-| `corpusType=STATE&state=ny&code=ny_jud` | the `articles` in the New York Judiciary Law (New York is divided by article, not chapter) |
-| `corpusType=STATE&state=ny&code=ny_jud&article=2` | the `sections` in Article 2 (leaf) |
+| `corpusType=STATE&state=tx&code=tx_pe` | the `titles` of the Texas Penal Code |
+| `corpusType=STATE&state=tx&code=tx_pe&title=5` | the `chapters` in Title 5 of the Texas Penal Code |
+| `corpusType=STATE&state=ca&code=ca_pen` | the `parts` of the California Penal Code, with any section outside a part beside them |
+| `corpusType=STATE&state=il&code=il_225` | the `acts` in 225 ILCS, a code that is a single chapter |
+| `corpusType=STATE&state=ny&code=ny_jud&article=2` | the `sections` in a New York article (New York is divided by article, not chapter) |
+| `corpusType=STATE&state=de&code=de_6&article=2` | the `parts` of UCC Article 2 in Delaware Title 6, which sits outside any chapter |
+| `corpusType=REGULATION&state=ny&code=ny_10&chapter=I` | the `parts` in Chapter I of 10 NYCRR |
 | `corpusType=CONSTITUTION` | the `articles` and amendments of the US Constitution |
 | `corpusType=CONSTITUTION&article=Amendment XIV` | the `sections` of the Fourteenth Amendment (leaf) |
 | `corpusType=STATE_CONSTITUTION&state=nm` | the `articles` of the New Mexico Constitution |
@@ -38,6 +48,10 @@ Pass the deepest level you already know, and the response returns the level dire
 | `corpusType=FEDERAL_RULES&code=frcp` | the Federal Rules of Civil Procedure (leaf) |
 | `corpusType=STATE_RULES&state=tx` | the state's court rule sets, such as the local rules of one trial court |
 | `corpusType=STATE_RULES&state=tx&code=HARRIS` | the levels and rules inside one rule set |
+
+The levels in this table are what the corpus recorded on the day it was written.
+A listing can also mix kinds: a state code lists its chapters followed by loose sections, and a U.S. Code chapter lists any section outside a subchapter beside its subchapters.
+`kind` on each node says what it is.
 
 Beyond `titleNumber`, `chapter`, `part`, `code` and `article`, the listing takes one filter per level a code or rule set can have.
 Each is passed back the way the listing returned it, with the `identifier` of a node whose `kind` names that level, and each is case-insensitive where it is text.
@@ -56,7 +70,9 @@ Each is passed back the way the listing returned it, with the `identifier` of a 
 
 `excludeRepealed` and `actStatus` narrow any listing by section status, the way they do on search.
 
-Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back, verbatim, as the filter its `kind` names (`title` as `titleNumber`, `chapter`, `part`, `code`, or `article`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
+The number of levels between a code and its sections is not fixed: a code lists whatever its own structure has (titles, then chapters, then subchapters, or only articles), and `level` says what a listing holds. Follow every node you are given, by the filter its `kind` names, until `level` is `sections`; never hard-code the depth.
+
+Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back, verbatim, as the filter its `kind` names (`title` as `titleNumber` on the U.S. Code and CFR and as `title` inside a state code, and likewise `subtitle`, `division`, `chapter`, `subchapter`, `part`, `subpart`, `subjectGroup`, `article`, `act` or `code`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
 
 <Note>
   Federal rules are published twice, by the Judicial Conference at uscourts.gov (`frcp`, `fre`, ...) and as an appendix to the U.S. Code (`uscapp_t28a_fre`, ...).
@@ -104,24 +120,29 @@ for (const node of data.divisions) {
 ```
 </CodeGroup>
 
-A trimmed response:
+A trimmed response (captured 2026-10-26, two of the chapters shown; names are printed the way the publisher prints them, here in capitals):
 
 ```json
 {
   "corpusType": "USC",
+  "state": null,
   "level": "chapters",
   "parentLabel": "Title 42",
   "divisions": [
-    { "identifier": "21", "name": "Civil Rights", "kind": "chapter", "isLeaf": false, "sectionCount": 62 },
-    { "identifier": "21A", "name": "Privacy Protection", "kind": "chapter", "isLeaf": false, "sectionCount": 9 }
+    { "identifier": "21", "name": "CIVIL RIGHTS", "kind": "chapter", "isLeaf": false, "actId": null, "sectionCount": 94 },
+    { "identifier": "21A", "name": "PRIVACY PROTECTION", "kind": "chapter", "isLeaf": false, "actId": null, "sectionCount": 6 }
   ],
   "count": 2
 }
 ```
 
+`name` is `null` when the publisher prints no heading for that container.
+See [Container names](/api-guide/concepts/hierarchy) for what each level is called and which jurisdictions name which levels.
+
 ## Walk a whole title
 
-Drill from a title to its chapters, then each chapter to its sections. Leaf nodes carry the `actId` you use to fetch metadata or full text.
+Drill from a title down until a node is a leaf. A leaf carries the `actId` you use to fetch metadata or full text.
+Because a chapter may list subchapters, parts or subparts before it lists sections, the walk is recursive: each node is passed back as the filter its `kind` names.
 
 ```python Python
 import requests
@@ -129,26 +150,39 @@ import requests
 BASE = "https://api.vaquill.ai/api/v1/us"
 HEADERS = {"Authorization": "Bearer vq_key_..."}
 
-
-def divisions(**params) -> dict:
-    resp = requests.get(f"{BASE}/statutes/divisions", headers=HEADERS, params=params)
-    resp.raise_for_status()
-    return resp.json()
-
-
-def walk_title(corpus_type: str, title_number: int) -> None:
-    chapters = divisions(corpusType=corpus_type, titleNumber=title_number)
-    for ch in chapters["divisions"]:
-        print(f'Chapter {ch["identifier"]}: {ch["name"] or ""}')
-        sections = divisions(
-            corpusType=corpus_type, titleNumber=title_number, chapter=ch["identifier"]
-        )
-        for sec in sections["divisions"]:
-            # sec["actId"] -> feed into POST /us/statutes/sections (see below)
-            print(f'  § {sec["identifier"]}  {sec["name"] or ""}  [{sec["actId"]}]')
+# The request filter each kind of node drills with. `title` is `titleNumber`
+# on the U.S. Code and the CFR, and `title` inside a state code.
+FILTER = {"title": "titleNumber", "chapter": "chapter", "subchapter": "subchapter",
+          "part": "part", "subpart": "subpart", "subjectGroup": "subjectGroup",
+          "subtitle": "subtitle", "division": "division", "subdivision": "subdivision",
+          "article": "article", "act": "act", "code": "code"}
 
 
-walk_title("USC", 42)
+def children(**scope) -> list[dict]:
+    """Every node one level down, following `nextCursor` across pages."""
+    out, cursor = [], None
+    while True:
+        params = {**scope, **({"cursor": cursor} if cursor else {})}
+        resp = requests.get(f"{BASE}/statutes/divisions", headers=HEADERS, params=params)
+        resp.raise_for_status()
+        page = resp.json()
+        out += page["divisions"]
+        cursor = page.get("nextCursor")
+        if not cursor:
+            return out
+
+
+def walk(scope: dict, depth: int = 0) -> None:
+    for node in children(**scope):
+        if node["isLeaf"]:
+            # node["actId"] -> feed into POST /us/statutes/sections (see below)
+            print("  " * depth + f'§ {node["identifier"]}  {node["name"] or ""}  [{node["actId"]}]')
+        else:
+            print("  " * depth + f'{node["kind"]} {node["identifier"]}  {node["name"] or ""}')
+            walk({**scope, FILTER[node["kind"]]: node["identifier"]}, depth + 1)
+
+
+walk({"corpusType": "USC", "titleNumber": 4})
 ```
 
 <Warning>

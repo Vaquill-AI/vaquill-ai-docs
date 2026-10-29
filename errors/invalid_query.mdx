@@ -1,0 +1,45 @@
+---
+title: "Invalid query"
+description: "invalid_query: HTTP 422, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `invalid_query` |
+| HTTP status | `422` |
+| Retryable | No |
+| Python | `vaquill.UnprocessableEntityError` |
+| TypeScript | `UnprocessableEntityError` |
+
+## What it means
+
+A Boolean query or a filter was refused before any charge.
+
+## What to do
+
+Read `detail` for the reason, such as a malformed expression.
+See [Boolean Search](/api-guide/concepts/boolean-search#errors) for the grammar and its error messages.
+Rejected requests are not charged.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/invalid_query",
+  "title": "Invalid query",
+  "status": 422,
+  "detail": "Boolean query could not be parsed",
+  "code": "invalid_query",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `UnprocessableEntityError` and the TypeScript SDK raises `UnprocessableEntityError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

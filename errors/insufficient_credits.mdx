@@ -1,0 +1,45 @@
+---
+title: "Insufficient credits"
+description: "insufficient_credits: HTTP 402, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `insufficient_credits` |
+| HTTP status | `402` |
+| Retryable | No |
+| Python | `vaquill.InsufficientCreditsError` |
+| TypeScript | `InsufficientCreditsError` |
+
+## What it means
+
+Your credit balance is too low to pay for this call.
+
+## What to do
+
+Top up your credits, then send the request again.
+`GET /credits/balance` is free and shows what you hold.
+Never retry before topping up. The SDKs do not retry this code.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/insufficient_credits",
+  "title": "Insufficient credits",
+  "status": 402,
+  "detail": "Insufficient credits",
+  "code": "insufficient_credits",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `InsufficientCreditsError` and the TypeScript SDK raises `InsufficientCreditsError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

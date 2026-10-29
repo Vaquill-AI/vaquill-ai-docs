@@ -9,15 +9,18 @@ Errors return JSON with a `detail` field:
 
 ```json
 {
-  "detail": "Invalid or missing API key."
+  "detail": "Invalid or expired API key"
 }
 ```
 
-Validation errors (422) include field-level details:
+The `401` text says which of three things is wrong: no key was sent, the key does not start with `vq_key_`, or the key is unknown, revoked or expired.
+
+Validation errors (422) keep `detail` as a short string and put the field-level details in `errors`:
 
 ```json
 {
-  "detail": [
+  "detail": "Invalid request parameters",
+  "errors": [
     {
       "loc": ["body", "query"],
       "msg": "Field required",
@@ -26,6 +29,10 @@ Validation errors (422) include field-level details:
   ]
 }
 ```
+
+Read `detail` for the message and `errors[].loc` to find the field.
+Some validation errors carry extra keys on each entry, such as `ctx` for a failed rule.
+A `422` from a rule that spans several fields (`chapter` without `titleNumber`, a malformed Boolean expression) is a plain `detail` string with no `errors` array, as is every other error status.
 
 ## Status Codes
 
@@ -52,6 +59,7 @@ A `422` is schema validation: a field is missing, or its type or range is wrong.
 The API rejects it before your request reaches any business logic, and the response carries the `loc` array shown above.
 
 A `400` is a request that is well-formed but not allowed.
+`GET` and `POST /us/statutes/resolve` return it for a `corpusType` or `state` scope they do not accept, and refund the charge.
 `POST /watches` and `PATCH /watches/{id}` return it for:
 
 - a `scope` the board cannot be narrowed by, or an `actId` scope that does not exist on that board,
@@ -71,7 +79,9 @@ List your watches with `GET /watches` and reuse the existing one.
 
 ## Rate Limiting
 
-Limits are enforced per API key and scale with your plan. When you exceed one the API returns `429` with a `Retry-After` header telling you how many seconds to wait. Respect it, and add exponential backoff so retries spread out under sustained pressure.
+Limits are enforced per API key and scale with your plan.
+Every response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` (a Unix timestamp) for the per-minute window, and `X-RateLimit-Limit-Day` and `X-RateLimit-Remaining-Day` for the daily one.
+When you exceed one the API returns `429` with a `Retry-After` header telling you how many seconds to wait. Respect it, and add exponential backoff so retries spread out under sustained pressure.
 
 <CodeGroup>
 ```python Python
@@ -154,5 +164,8 @@ const data = await searchWithRetry({ query: "data breach notification" });
   </Card>
   <Card title="Best practices" href="/api-guide/best-practices">
     Scope queries, cache coverage, and retry well.
+  </Card>
+  <Card title="SDKs" href="/api-guide/sdks/overview">
+    The official Python and TypeScript SDKs map these errors to typed exceptions and retry the safe ones for you.
   </Card>
 </CardGroup>

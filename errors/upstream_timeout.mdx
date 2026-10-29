@@ -1,0 +1,46 @@
+---
+title: "Upstream timeout"
+description: "upstream_timeout: HTTP 503, retryable."
+---
+
+| | |
+|---|---|
+| Code | `upstream_timeout` |
+| HTTP status | `503` |
+| Retryable | Yes |
+| Python | `vaquill.InternalServerError` |
+| TypeScript | `InternalServerError` |
+
+## What it means
+
+A service the API depends on did not answer in time.
+The call is refunded.
+
+## What to do
+
+Retry with exponential backoff.
+Honour `Retry-After` when it is present.
+The SDKs retry this code automatically.
+
+## Example response
+
+`retryAfterSeconds` appears only when the response carries a `Retry-After` header.
+The `detail` text is illustrative.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/upstream_timeout",
+  "title": "Upstream timeout",
+  "status": 503,
+  "detail": "Upstream service timed out",
+  "code": "upstream_timeout",
+  "retryable": true,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `InternalServerError` and the TypeScript SDK raises `InternalServerError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

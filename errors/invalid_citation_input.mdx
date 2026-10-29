@@ -1,0 +1,45 @@
+---
+title: "Invalid citation input"
+description: "invalid_citation_input: HTTP 422, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `invalid_citation_input` |
+| HTTP status | `422` |
+| Retryable | No |
+| Python | `vaquill.UnprocessableEntityError` |
+| TypeScript | `UnprocessableEntityError` |
+
+## What it means
+
+The request itself is malformed.
+This is not the same as a citation that parsed but did not resolve.
+
+## What to do
+
+Fix the request as `detail` describes.
+Send the citation as a string in the field the endpoint documents.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/invalid_citation_input",
+  "title": "Invalid citation input",
+  "status": 422,
+  "detail": "Invalid citation input",
+  "code": "invalid_citation_input",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `UnprocessableEntityError` and the TypeScript SDK raises `UnprocessableEntityError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

@@ -103,7 +103,10 @@ if (data.resolved) {
 ```
 </CodeGroup>
 
-A resolved response carries the full section (the same shape as `/us/statutes/section/{actId}`), plus `subsection` when the citation had a pinpoint like `42 U.S.C. § 1983(b)(2)`. When `resolved` is `false`, treat the citation as unverified, not current.
+A resolved response carries the full section (the same shape as `/us/statutes/section/{actId}`).
+When the citation had a pinpoint like `42 U.S.C. § 1983(b)(2)`, it also carries `subsection`, which echoes the pinpoint dot-joined, and a `pinpoint` object with the text of that subsection itself.
+See [Pinpoints](/api-guide/concepts/pinpoints) for the fields, and [Get one subsection](/api-guide/recipes/pinpoint-subsection) for a worked example.
+When `resolved` is `false`, treat the citation as unverified, not current.
 
 <Note>
   `/us/statutes/resolve` is charged whether or not the citation resolves, because "this does not resolve" is a useful answer when you are checking an LLM's output. Only server errors are refunded.

@@ -54,7 +54,7 @@ supplied, so there is less room for invented law.
   </Step>
   <Step title="Answer with links back to the source">
     Return the model's answer plus the list of cited sources, each linking to the
-    official government text (`htmlUrl`, `stateHtmlUrl`, or `govInfoHtmlUrl`).
+    official government text (`sourceUrl`, which every section carries when we hold an official link).
   </Step>
 </Steps>
 
@@ -70,7 +70,7 @@ curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -d '{"query": "employer retaliation whistleblower protection", "corpusType": "USC", "limit": 3}'
 
 # 2. Fetch the full text of one result by its actId
-curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body \
+curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T31_C53_S5323/body \
   -H "Authorization: Bearer vq_key_..."
 ```
 
@@ -134,26 +134,27 @@ async function fetchBody(actId) {
 
 </CodeGroup>
 
-A trimmed search result looks like this. Note the `actId` (used to fetch the
+A trimmed search result for that query looks like this (captured 2026-10-26, first of three results). Note the `actId` (used to fetch the
 body), the `citation`, and the source URLs.
 
 ```json
 {
   "results": [
     {
-      "actId": "USC_T42_C21_S1983",
-      "citation": "42 U.S.C. § 1983",
-      "citationShort": "42 U.S.C. § 1983",
-      "title": "Civil action for deprivation of rights",
+      "actId": "USC_T31_C53_S5323",
+      "citation": "31 U.S.C. § 5323 (2026)",
+      "citationShort": "31 U.S.C. § 5323",
+      "title": "Whistleblower incentives and protections",
       "corpusType": "USC",
-      "relevanceScore": 0.82,
-      "excerpt": "Every person who, under color of any statute, ordinance...",
-      "htmlUrl": "https://uscode.house.gov/...",
-      "govInfoHtmlUrl": "https://www.govinfo.gov/..."
+      "relevanceScore": 0.901,
+      "excerpt": "...(1) Prohibition against retaliation.— No employer may, directly or indirectly, discharge, demote, s...",
+      "textUrl": "https://statutes-us.vaquill.ai/usc/olrc/119-108/sections/USC_T31_C53_S5323.txt",
+      "externalUrl": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title31-section5323&num=0&edition=prelim",
+      "sourceUrl": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title31-section5323&num=0&edition=prelim"
     }
   ],
-  "total": 3,
-  "hasMore": false
+  "count": 3,
+  "hasMore": true
 }
 ```
 

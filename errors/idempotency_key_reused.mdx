@@ -1,0 +1,44 @@
+---
+title: "Idempotency key reused"
+description: "idempotency_key_reused: HTTP 422, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `idempotency_key_reused` |
+| HTTP status | `422` |
+| Retryable | No |
+| Python | `vaquill.IdempotencyKeyReusedError` |
+| TypeScript | `IdempotencyKeyReusedError` |
+
+## What it means
+
+You sent an `Idempotency-Key` that was already used with a different request.
+
+## What to do
+
+Use a fresh key for each distinct request.
+Reuse a key only when you resend the identical request.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/idempotency_key_reused",
+  "title": "Idempotency key reused",
+  "status": 422,
+  "detail": "Idempotency key was used with a different request",
+  "code": "idempotency_key_reused",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `IdempotencyKeyReusedError` and the TypeScript SDK raises `IdempotencyKeyReusedError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

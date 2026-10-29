@@ -1,0 +1,46 @@
+---
+title: "Service unavailable"
+description: "service_unavailable: HTTP 503, retryable."
+---
+
+| | |
+|---|---|
+| Code | `service_unavailable` |
+| HTTP status | `503` |
+| Retryable | Yes |
+| Python | `vaquill.InternalServerError` |
+| TypeScript | `InternalServerError` |
+
+## What it means
+
+A dependency of the API is down.
+The call is refunded.
+
+## What to do
+
+Retry with exponential backoff.
+Honour `Retry-After` when it is present.
+The SDKs retry this code automatically.
+
+## Example response
+
+`retryAfterSeconds` appears only when the response carries a `Retry-After` header.
+The `detail` text is illustrative.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/service_unavailable",
+  "title": "Service unavailable",
+  "status": 503,
+  "detail": "Service temporarily unavailable",
+  "code": "service_unavailable",
+  "retryable": true,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `InternalServerError` and the TypeScript SDK raises `InternalServerError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

@@ -1,0 +1,44 @@
+---
+title: "Resource not found"
+description: "resource_not_found: HTTP 404, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `resource_not_found` |
+| HTTP status | `404` |
+| Retryable | No |
+| Python | `vaquill.NotFoundError` |
+| TypeScript | `NotFoundError` |
+
+## What it means
+
+A watch, board, delivery or change with that id does not exist for your account.
+
+## What to do
+
+Check the id and that it belongs to your key's account.
+List the resource first to get valid ids.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/resource_not_found",
+  "title": "Resource not found",
+  "status": 404,
+  "detail": "Watch not found",
+  "code": "resource_not_found",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `NotFoundError` and the TypeScript SDK raises `NotFoundError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

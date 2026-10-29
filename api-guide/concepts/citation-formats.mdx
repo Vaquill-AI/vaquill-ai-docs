@@ -58,21 +58,24 @@ Also accepted, because real documents contain them:
 - **Typographic dashes.** Text copied from a PDF or Word document carries
   non-breaking hyphens, figure dashes and minus signs instead of `-`. They are
   invisible on screen and they are normalized for you.
-- **Pinpoint subsections.** `42 U.S.C. § 1983(b)(2)` resolves to the parent
-  section and echoes `(b)(2)` back in `subsection`.
+- **Pinpoint subsections.** `42 U.S.C. § 1983(b)(2)` resolves to its section.
+  `subsection` still echoes the dot-joined pinpoint (`b.2`).
+  A `pinpoint` object beside the section carries the unit itself: its text, path, children, siblings and character offsets.
+  See [Pinpoints](/api-guide/concepts/pinpoints).
 
 ## Forms that are refused on purpose
 
-Some acronyms belong to two jurisdictions. For those, `resolve` returns
-`resolved: false` rather than guessing.
+Some acronyms belong to two jurisdictions.
+We read the number that follows the acronym as well, and answer only when it fits one jurisdiction.
+When it fits both, `resolve` returns `resolved: false` rather than guessing.
 
-| Acronym | Claimed by |
-|---|---|
-| `MCA` | Montana **and** Mississippi Code Annotated |
-| `IC` | Indiana **and** Idaho Code |
-| `G.S.` | North Carolina **and** Connecticut General Statutes |
-| `G.L.` | Massachusetts **and** Rhode Island General Laws |
-| bare `R.S.` | Louisiana **and** New Jersey Revised Statutes |
+| Acronym | Claimed by | Resolves without `state` when the number settles it |
+|---|---|---|
+| `MCA` | Montana **and** Mississippi Code Annotated | `MCA § 27-2-204` is Montana's three-part number |
+| `IC` | Indiana **and** Idaho Code | `IC 34-11-2-1` is Indiana's four-part number, `IC 18-4001` Idaho's two-part one |
+| `G.S.` | North Carolina **and** Connecticut General Statutes | `G.S. 1-52` is North Carolina's. `G.S. 52-577` fits both and is refused |
+| `G.L.` | Massachusetts **and** Rhode Island General Laws | `G.L. c. 93A, § 2` can only be Massachusetts, and `G.L. 1956 § 9-1-13` Rhode Island |
+| bare `R.S.` | Louisiana **and** New Jersey Revised Statutes | `R.S. 2C:12-1` is New Jersey's. `R.S. 14:30` fits both and is refused |
 
 <Warning>
   `resolved: false` on one of these is the correct answer, not a gap. A wrong
@@ -84,11 +87,11 @@ Some acronyms belong to two jurisdictions. For those, `resolve` returns
 so there is nothing left to guess:
 
 ```bash
-# resolved: false - MCA is Montana AND Mississippi
---data-urlencode "cite=MCA § 27-2-204"
+# resolved: false - G.S. 52-577 fits North Carolina AND Connecticut
+--data-urlencode "cite=G.S. 52-577"
 
-# resolves - Mont. Code Ann. § 27-2-204
---data-urlencode "cite=MCA § 27-2-204" -d "state=mt"
+# resolves - Conn. Gen. Stat. § 52-577
+--data-urlencode "cite=G.S. 52-577" -d "state=ct"
 ```
 
 The same applies to a form carrying no jurisdiction at all: Virginia's own
@@ -109,7 +112,6 @@ that state none is needed. Those resolve on the set acronym alone:
 | `MCR 3.709` | Michigan Court Rules |
 | `JuCR 7.15` | Washington Juvenile Court Rules |
 | `N.D.R.Civ.P. 64` | North Dakota Rules of Civil Procedure |
-| `M. R. Civ. P. 17` | Montana Rules of Civil Procedure |
 | `Rule 901, SCRE` | South Carolina Rules of Evidence |
 
 Punctuation and case do not matter: `I.I.R. 4`, `IIR 4` and `iir 4` are the same
@@ -118,7 +120,7 @@ citation.
 <Warning>
   Some set acronyms are shared. `CR` is both the Kentucky Civil Rules and the
   Washington Superior Court Civil Rules; `RAP` belongs to Washington, Kentucky
-  and West Virginia; `TCR` to Oregon and West Virginia. These return
+  and West Virginia; `TCR` to Oregon and West Virginia; `M. R. Civ. P.` to Montana and Maine. These return
   `resolved: false` until you pass `state`. The refusal comes from the
   acronym's own ambiguity, even when we hold that rule number for only one
   state. A gap in our coverage never counts as disambiguation.
@@ -126,7 +128,7 @@ citation.
 
 ```bash
 --data-urlencode "cite=CR 56"                 # resolved: false - CR is KY and WA
---data-urlencode "cite=CR 56" -d "state=wa"   # Wash. Super. Ct. Civ. R. 56
+--data-urlencode "cite=CR 56" -d "state=wa"   # Washington Superior Court Civil Rule 56 (SRULES_WA_CR_R56)
 ```
 
 ### Trial-court, professional-conduct and territory forms
@@ -166,6 +168,11 @@ Vermont's court rules resolve in the Judiciary's own forms, `Vt. R. Civ. P. 26` 
   </Step>
 </Steps>
 
+`corpusType` on `resolve` takes `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION` or `STATE_CONSTITUTION`.
+`STATE` covers statutes of every jurisdiction, federal ones included.
+Any other value, such as `USC`, is refused with a `400` that names the accepted ones, and the charge is refunded.
+An unrecognized `state` is a `400` on `resolve` too, where `search` answers `422`.
+
 Scope when a citation form is shared across jurisdictions or corpora, since
 that is when a bare lookup could pick the wrong one:
 
@@ -190,14 +197,14 @@ Four optional fields appear on both `GET` and `POST /us/statutes/resolve` only w
 | `matchLevel` | You cited | `section` is | Companion field |
 |---|---|---|---|
 | absent | one section | exactly that section | none |
-| `container` | a chapter, series, article, part or amendment | the **first** section inside it | `container` |
+| `container` | a chapter, series, article, part or amendment | the **first section in force** inside it (the first of all when none is) | `container` |
 | `multiple` | several sections in one citation | the **first** of them | `citedSections` |
 | `repaired` | a recognised miscite of a code name | the section the repair names | `repair` |
 | `register_reference` | a state register page, issue or filing | the register item, or a rule whose history cites it | `registerReference` |
 
 The companion fields:
 
-- **`container`**: `kind` (`chapter`, `subchapter`, `series`, `article`, `section` for a constitution section made of numbered paragraphs, or `amendment`), `label`, `childCount` (always exact), `children` (`actId`, `citation`, `status`, in document order, starting with the section returned) and `truncated` (true when `children` lists fewer than `childCount`; at most 50 are listed).
+- **`container`**: `kind` (`chapter`, `subchapter`, `series`, `article`, `section` for a constitution section made of numbered paragraphs, or `amendment`), `label`, `childCount` (always exact), `children` (`actId`, `citation`, `status`, in document order) and `truncated` (true when `children` lists fewer than `childCount`; at most 50 are listed).
 - **`citedSections`**: the sections you named, as written. A range such as `1983-1985` is one entry.
 - **`repair`**: `kind` (today only `code_name`), `cited` (the part we corrected), `interpretedAs`, and `alternatives`, the other held sections the same code name could have meant. Empty when the repair was the only reading.
 - **`registerReference`**: see [Register citations](#register-citations).
@@ -249,7 +256,7 @@ The `children` array above is cut to two of the twelve entries for this page; th
 | `N.J.A.C. 8:33E` | `container` | `STATE_NJ_NJAC_T8_C33E_S1_S8_33E_1_1` | Chapter of 31 sections |
 | `85 CSR 20` | `container` | `STATE_WV_CSR_T85_SER20_S1` | Series of 71 sections, `truncated: true` |
 | `Ga. Const. art. X, § I` | `container` | `SCONST_GA_AX.I_SI` | Six paragraphs under one section number |
-| `Iowa Const. amend. 21` | `container` | `SCONST_IA_AV_S3` | Nine sections whose own note credits Amendment 21 |
+| `Iowa Const. amend. 21` | `container` | `SCONST_IA_AV_S4` | Nine sections whose own note credits Amendment 21. `children` starts with `SCONST_IA_AV_S3`, which is repealed, so the first section in force is returned |
 | `N.Y. Jud. Ct. Acts Law § 475` | `repaired` | `STATE_NY_AJUD_A15_S475` | Read as `N.Y. Judiciary Law § 475` |
 | `36 Pa. Bull. 510` | `register_reference` | `SREGISTER_PA_V36_P510` | The register item itself, `registerItemHeld: true` |
 | `17 Ill. Reg. 10414` | `register_reference` | `STATE_IL_IAC_T1_P100_S100_120` | A rule whose history cites the page, `ruleCount: 18` |

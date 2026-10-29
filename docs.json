@@ -125,6 +125,7 @@
               "api-guide/concepts/boolean-search",
               "api-guide/concepts/corpus-types",
               "api-guide/concepts/jurisdictions",
+              "api-guide/concepts/hierarchy",
               "api-guide/concepts/citation-formats",
               "api-guide/concepts/pinpoints",
               "api-guide/concepts/citation-quality",
@@ -155,6 +156,32 @@
             ]
           },
           {
+            "group": "ERROR CODES",
+            "icon": "circle-exclamation",
+            "pages": [
+              "errors/index",
+              "errors/authentication_required",
+              "errors/invalid_api_key",
+              "errors/api_key_expired",
+              "errors/permission_denied",
+              "errors/insufficient_credits",
+              "errors/rate_limited",
+              "errors/daily_cap_exceeded",
+              "errors/validation_error",
+              "errors/invalid_query",
+              "errors/invalid_citation_input",
+              "errors/section_not_found",
+              "errors/resource_not_found",
+              "errors/idempotency_key_reused",
+              "errors/idempotency_in_progress",
+              "errors/idempotency_replay_unavailable",
+              "errors/upstream_timeout",
+              "errors/service_unavailable",
+              "errors/internal_error",
+              "errors/conflict"
+            ]
+          },
+          {
             "group": "GROUNDING AI",
             "icon": "sparkles",
             "pages": [
@@ -168,6 +195,7 @@
               "api-guide/recipes/rag-grounding",
               "api-guide/recipes/statute-chatbot",
               "api-guide/recipes/citation-lookup",
+              "api-guide/recipes/pinpoint-subsection",
               "api-guide/recipes/browse-hierarchy",
               "api-guide/recipes/subject-corpus",
               "api-guide/recipes/compliance-mapping",

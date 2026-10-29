@@ -1,0 +1,45 @@
+---
+title: "Rate limited"
+description: "rate_limited: HTTP 429, retryable."
+---
+
+| | |
+|---|---|
+| Code | `rate_limited` |
+| HTTP status | `429` |
+| Retryable | Yes |
+| Python | `vaquill.RateLimitError` |
+| TypeScript | `RateLimitError` |
+
+## What it means
+
+You exceeded the per-key rate window.
+
+## What to do
+
+Wait for the number of seconds in the `Retry-After` header, which the API also returns as `retryAfterSeconds`, then retry.
+Use exponential backoff if no hint is present.
+The SDKs retry this code automatically.
+
+## Example response
+
+The `detail` text is illustrative.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/rate_limited",
+  "title": "Rate limited",
+  "status": 429,
+  "detail": "Rate limit exceeded",
+  "code": "rate_limited",
+  "retryable": true,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58",
+  "retryAfterSeconds": 12
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `RateLimitError` and the TypeScript SDK raises `RateLimitError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

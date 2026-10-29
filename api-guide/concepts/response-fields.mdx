@@ -40,14 +40,15 @@ These carry a value on every section in every corpus.
 
 ## By corpus type
 
-`o` = expected to carry a value. `-` = not applicable, ignore the null.
+`o` = expected to carry a value where the code records that level. `-` = not applicable, ignore the null.
+What each level is and which jurisdictions name it is on [Container names](/api-guide/concepts/hierarchy).
 
 | Field | USC | CFR | STATE | FEDERAL_REGISTER | EXECUTIVE_ACTION |
 |-------|:---:|:---:|:-----:|:----------------:|:----------------:|
 | `titleNumber` / `titleName` | o | o | o | - | - |
-| `chapter` / `chapterName` | o | - | o | - | - |
+| `chapter` / `chapterName` | o | o | o | - | - |
 | `subchapter` / `subchapterName` | o | - | o | - | - |
-| `part` / `partName` | - | o | - | - | - |
+| `part` / `partName` | o | o | o | - | - |
 | `subpart` / `subpartName` | - | o | - | - | - |
 | `sourceCredit` | o | - | - | - | - |
 | `publicLawCites` | o | - | - | - | - |

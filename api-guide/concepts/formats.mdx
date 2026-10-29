@@ -78,7 +78,7 @@ The choice only changes payload size.
 On `17 U.S.C. § 107`, `format=content` is about 1 KB over the wire instead of
 about 30 KB, for the same price.
 Only USC sections can be split, so on any other corpus `format=content` returns
-no text at all.
+`plain` with a `note` saying why, and `content` is null.
 Check `content` for null and fall back to `plain` if you are not sure which
 corpus you have.
 
@@ -121,14 +121,14 @@ Each node in `subsections` carries its marker and where it sits:
 | `label` | The marker as printed, e.g. `(b)` or `(2)` |
 | `pincite` | The marker path from the section root, e.g. `(b)(2)` |
 | `type` | The drafting level: `subsection`, `paragraph`, `subparagraph`, `clause`, or `subclause`. Use it to render the marker style (letters, numbers, roman). |
-| `citation` | The full pinpoint citation when known, e.g. `42 U.S.C. § 1983(b)(2)` |
+| `citation` | The full pinpoint citation when known, with the edition year the section carries, e.g. `42 U.S.C. § 1981(a) (2026)` |
 | `text` | The node's own text, excluding nested children |
 | `children` | Nested subsections one level deeper (same shape) |
 
 <CodeGroup>
 
 ```bash cURL
-curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body?structured=true" \
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1981/body?structured=true" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
@@ -136,7 +136,7 @@ curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body?s
 import requests
 
 data = requests.get(
-    "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body",
+    "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1981/body",
     headers={"Authorization": "Bearer vq_key_..."},
     params={"structured": "true"},
 ).json()
@@ -154,8 +154,8 @@ walk(data["subsections"] or [])
 <Note>
   `subsections` is derived from the section text by the drafting convention
   (`(a)` subsection, `(1)` paragraph, `(A)` subparagraph, `(i)` clause). It is
-  richest for USC and CFR; a section with no marked subsections returns
-  `subsections: []` with `markdown` equal to the plain text. Use `pincite` or
+  richest for USC and CFR; a section with no marked subsections (42 U.S.C. § 1983 is one
+  paragraph) returns `subsections: []` with `markdown` equal to the plain text. Use `pincite` or
   `citation` to deep-link or quote a specific subsection.
 </Note>
 
@@ -192,9 +192,11 @@ The link is still the correct citation.
 To confirm a section without a browser, use `adoptingCitations`, which lists the register instruments that adopted and amended it (for Texas, citations such as `50 TexReg 8285`), and read the text we captured at `textUrl`.
 
 <Info>
-  The government links (`stateHtmlUrl`, `govInfoHtmlUrl`, `govInfoPdfUrl`) let
-  you deep-link users to authoritative text on the state legislature's site or
-  govinfo.gov. Use them to cite a source in your product.
+  The government links (`stateHtmlUrl`, `govInfoHtmlUrl`, `govInfoPdfUrl`) point at the state
+  legislature's site or govinfo.gov where the publisher offers one, and are null on much of the
+  corpus: on 2026-10-26 none of the U.S. Code, CFR or California, New York or Texas results we
+  sampled carried `govInfoHtmlUrl` or `govInfoPdfUrl`, and only Texas carried `stateHtmlUrl`.
+  `sourceUrl` is the field that is filled whenever we hold an official link, so cite that.
 </Info>
 
 ## Picking the best available format

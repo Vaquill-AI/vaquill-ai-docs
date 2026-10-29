@@ -1,0 +1,45 @@
+---
+title: "Daily cap exceeded"
+description: "daily_cap_exceeded: HTTP 429, not retryable."
+---
+
+| | |
+|---|---|
+| Code | `daily_cap_exceeded` |
+| HTTP status | `429` |
+| Retryable | No |
+| Python | `vaquill.DailyCapExceededError` |
+| TypeScript | `DailyCapExceededError` |
+
+## What it means
+
+The key reached its per-key daily cap.
+The status is `429`, but unlike `rate_limited` a short wait does not help.
+
+## What to do
+
+Retry only after the daily cap resets.
+The SDKs do not retry this code.
+
+## Example response
+
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/daily_cap_exceeded",
+  "title": "Daily cap exceeded",
+  "status": 429,
+  "detail": "Daily cap exceeded",
+  "code": "daily_cap_exceeded",
+  "retryable": false,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58"
+}
+```
+
+## In the SDKs
+
+The Python SDK raises `DailyCapExceededError` and the TypeScript SDK raises `DailyCapExceededError`.
+Both expose `code`, `retryable`, the request id and the retry hint.
+See [Error codes](/errors/index) for the full table and attribute names.

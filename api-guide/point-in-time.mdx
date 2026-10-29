@@ -6,7 +6,7 @@ description: "Retrieve US statutes, regulations and agency guidance as they read
 Ask what a provision said on a date, not just what it says now.
 
 ```bash
-curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T29_C8_S207/body?asOf=2019-06-01" \
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/STATE_ID_IDAPA_16_03_21_010/body?asOf=2026-06-01" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
@@ -19,8 +19,15 @@ before an amendment. Today's text gives the wrong answer to all of these.
 
 ## Every answer says where it came from
 
-The response carries an `asOf` block. Read `source` before you use the text, because the same
-parameter is answered by two different mechanisms and one of them is an estimate.
+The response carries an `asOf` block.
+Read `engine` first, then `source`, because the same parameter is answered by two different mechanisms and one of them is an estimate.
+
+| `engine` | What answered |
+|---|---|
+| `observed_change` | Every corpus that does not hold published editions. The text is rebuilt from change history we observed, and reaches back only as far as capture began for that source. |
+| `stored_edition` | A publisher's own dated edition, held verbatim: `CFR_ANNUAL`, the U.S. Code, the Copyright Compendium and the OFAC FAQs. |
+
+Within `observed_change`, `source` is one of:
 
 | `source` | What you are holding | Charged |
 |---|---|---|
@@ -28,26 +35,36 @@ parameter is answered by two different mechanisms and one of them is an estimate
 | `reconstructed` | Rebuilt from the before-side of the first change we captured after your date. | Yes |
 | `unavailable` | We know it changed but cannot rebuild the earlier text. No text is returned. | No, refunded |
 
-A fourth outcome is not a `source` value at all: `existed: false` means the earliest thing we ever
+Within `stored_edition`, `source` is `published` (an edition we hold answered, verbatim, charged) or `unavailable` (no edition we hold governs your date, no text is returned, refunded).
+`outOfCoverageReason` says why in a sentence, and names the earliest edition we hold when your date predates it.
+The editions are enumerated, not interpolated: a date between two of them, or before the first, is reported out of coverage rather than answered from a neighbouring edition, because the text may have changed in the gap.
+
+A fourth outcome is not a `source` value at all: on `observed_change`, `existed: false` means the earliest thing we ever
 captured for this section is its addition, and that addition postdates your date, so it
 demonstrably did not exist yet. That is a definite answer, so it is charged.
+On `stored_edition` with `source: "unavailable"`, `existed` carries no meaning and is always `false`: read `source` and `outOfCoverageReason`.
 
 | Field | Meaning |
 |---|---|
 | `requested` | The date you asked for, echoed back. |
-| `source` | `live`, `reconstructed` or `unavailable`. |
-| `existed` | False when the section demonstrably did not exist yet on your date. |
-| `basisChangeId` | The change event whose before-side supplied this text. Null when `source` is `live`. |
+| `engine` | `observed_change` or `stored_edition`. |
+| `source` | `live`, `reconstructed`, `published` or `unavailable`. |
+| `existed` | On `observed_change`, false when the section demonstrably did not exist yet on your date. |
+| `basisChangeId` | The change event whose before-side supplied this text. Null unless `source` is `reconstructed`. |
 | `observedFrom` | The earliest change we ever captured for this section. |
-| `isBounded` | Whether the answer is limited by when capture began. Read this first. |
+| `isBounded` | The flag means different things on the two engines. On `observed_change`, true means we observed no change affecting that date, which is not the same as there having been none. On `stored_edition`, true means your date falls inside an edition we hold, so the text is a verified published printing, and false means out of coverage with no text. |
 | `coverage` | The same limit in prose, safe to show a reader verbatim. |
+| `outOfCoverageReason` | `stored_edition` only. Why no text came back, when `source` is `unavailable`. |
+| `resolvedEditionYear`, `scheduledEditionYear`, `editionsObserved` | `CFR_ANNUAL` only. The edition year actually served, the year the revision schedule computed, and the editions held for the section. |
 
-Pass `basisChangeId` to
-[`GET /us/statutes/section/{actId}/changes`](/api-guide/concepts/section-intelligence) to see the
-event the answer rests on.
+The text is in `plain`, as on every body response, and `html` is always null on an `asOf` answer.
+
+To see the event a `reconstructed` answer rests on, read
+[`GET /us/statutes/section/{actId}/changes`](/api-guide/concepts/section-intelligence) with
+`sinceId` set one below `basisChangeId` and `order=asc`.
 
 <Warning>
-  `isBounded: true` means we observed no change affecting that date. It does not mean
+  On `observed_change`, `isBounded: true` means we observed no change affecting that date. It does not mean
   there was none.
 
   It is set when your date predates `observedFrom`, or when we captured no change for that section
@@ -86,6 +103,7 @@ weight the answer carries.
 | Corpus | How point-in-time works |
 |---|---|
 | `CFR_ANNUAL` | 31 GPO annual editions, 1996-2026, all 49 titles. `asOf` resolves to the edition in force. |
+| `USC` | Two editions: the one current through 2025-01-06 (served only for that date) and the current release point, which governs from 2026-09-02. Every date in between, and every earlier date, is out of coverage and returns no text. |
 | `copyright_compendium` | Three dated releases (2014, 2017, 2021). Resolves to the edition the Copyright Office states applied. |
 | `ofac_faq` | 361 prior FAQ versions are separate citable documents from OFAC's own archive, served `actStatus: "superseded"`. |
 
@@ -111,29 +129,50 @@ our own capture history. Expect `isBounded: true` on dates before capture began.
 ## Worked example
 
 ```bash
-# What did the FLSA overtime section say before the 2019 salary-threshold rule?
-curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T29_C8_S207/body?asOf=2019-06-01" \
+# What did this Idaho rule say on 1 June 2026, before the October 2026 refresh amended it?
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/STATE_ID_IDAPA_16_03_21_010/body?asOf=2026-06-01" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
 ```json
 {
-  "actId": "USC_T29_C8_S207",
-  "text": "...",
+  "actId": "STATE_ID_IDAPA_16_03_21_010",
+  "html": null,
+  "plain": "...",
+  "available": true,
   "asOf": {
-    "requested": "2019-06-01",
+    "requested": "2026-06-01",
+    "engine": "observed_change",
     "source": "reconstructed",
     "existed": true,
-    "basisChangeId": 91,
-    "observedFrom": "2026-08-09T04:10:00Z",
+    "basisChangeId": 180183,
+    "observedFrom": "2026-10-26T05:10:38.805852+00:00",
     "isBounded": true,
-    "coverage": "Change capture for this source began 2026-08-09..."
+    "coverage": "Observed changes only: what a refresh of this source detected, from when change capture began for it through today, retained 5 years. ..."
   }
 }
 ```
 
-`isBounded: true` here because 2019 predates `observedFrom`. The text is our best reconstruction,
+`isBounded: true` here because 2026-06-01 predates `observedFrom`. The text is our best reconstruction,
 and a product built on it should say so to its reader.
+
+A U.S. Code date that no held edition governs answers like this instead, with no text and no charge:
+
+```json
+{
+  "actId": "USC_T29_C8_S207",
+  "plain": null,
+  "available": false,
+  "asOf": {
+    "requested": "2019-06-01",
+    "engine": "stored_edition",
+    "source": "unavailable",
+    "existed": false,
+    "isBounded": false,
+    "outOfCoverageReason": "We hold no published edition governing 2019-06-01, so the text in force on that date is not served. The earliest edition we hold is dated 2025-01-06, which is after your date."
+  }
+}
+```
 
 ## Choosing the right tool
 
