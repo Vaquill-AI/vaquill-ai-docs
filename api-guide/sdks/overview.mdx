@@ -15,9 +15,9 @@ Anything an SDK can do, you can also do with plain HTTP.
 | `github.com/Vaquill-AI/vaquill-sdks/go` | [Go](/api-guide/sdks/go) 1.23+ | `go get` (v0.1.0) | [pkg.go.dev](https://pkg.go.dev/github.com/Vaquill-AI/vaquill-sdks/go) | [`go/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/go) |
 | `ai.vaquill:vaquill-sdk` | [Java](/api-guide/sdks/java) 11+ | Not yet published | Not yet published | [`java/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/java) |
 | `ai.vaquill:vaquill-kotlin` | [Kotlin](/api-guide/sdks/kotlin) (JVM 11+) | Not yet published | Not yet published | [`kotlin/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/kotlin) |
-| `langchain-vaquill`, `llama-index-tools-vaquill`, `@vaquill-ai/ai-sdk` | [Framework integrations](/api-guide/sdks/integrations) (LangChain, LlamaIndex, Vercel AI SDK) | Not yet published | Not yet published | [`integrations/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations) |
+| `langchain-vaquill`, `llama-index-tools-vaquill`, `@vaquill-ai/ai-sdk` | [Framework integrations](/api-guide/sdks/integrations) (LangChain, LlamaIndex, Vercel AI SDK) | `pip install langchain-vaquill`, `pip install llama-index-tools-vaquill` (`@vaquill-ai/ai-sdk` not yet published) | LangChain and LlamaIndex published (0.1.0 on PyPI) | [`integrations/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations) |
 
-The Go, Java, Kotlin and integration packages are not on any registry yet. Their pages show the intended coordinates and how to build from source.
+The Java, Kotlin and Vercel AI packages are not on any registry yet. Their pages show the intended coordinates and how to build from source.
 
 All SDKs are MIT licensed.
 The data you retrieve is covered by separate terms. See [Rights and licensing](/api-guide/rights-and-licensing).
@@ -168,7 +168,7 @@ Python uses snake_case names and TypeScript uses camelCase. The SDK maps them to
 
 - SDKs follow semantic versioning. Before 1.0, the API surface may change in minor versions.
 - The SDK major version tracks the major version of the API contract.
-- Python 0.2.1, TypeScript 0.2.1 and Go 0.1.0 are the published versions. Java and Kotlin are at 0.1.0 in source and unpublished.
+- Python 0.2.1, TypeScript 0.2.1, Go 0.1.0, `langchain-vaquill` 0.1.0 and `llama-index-tools-vaquill` 0.1.0 are the published versions. Java, Kotlin and `@vaquill-ai/ai-sdk` are at 0.1.0 in source and unpublished.
 - Python 3.11 and later are supported. Node 20 and later are supported, and the TypeScript client is tested on Node 20, 22 and 24.
 - Breaking changes are listed in the release notes.
 - Report bugs on the issue tracker of the [vaquill-sdks repository](https://github.com/Vaquill-AI/vaquill-sdks/issues). For account or billing questions, email support.
@@ -189,7 +189,7 @@ Python uses snake_case names and TypeScript uses camelCase. The SDK maps them to
     Not yet published. Intended coordinates and build from source: [Java](/api-guide/sdks/java), [Kotlin](/api-guide/sdks/kotlin)
   </Card>
   <Card title="Integrations" icon="plug" href="/api-guide/sdks/integrations">
-    LangChain, LlamaIndex and Vercel AI SDK tools. Not yet published
+    LangChain and LlamaIndex tools (published) and Vercel AI SDK tools (not yet published)
   </Card>
   <Card title="CLI" icon="terminal" href="/api-guide/sdks/cli">
     Search and resolve from the shell

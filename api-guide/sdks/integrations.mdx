@@ -9,14 +9,15 @@ Three packages wrap the SDKs as tools for agent frameworks: LangChain, LlamaInde
 Each tool calls the same Data API endpoints, spends the same credits, and has a spend cap so an agent loop cannot run unchecked.
 
 <Warning>
-  None of the three integration packages is published yet. The install commands below show the intended package names and do not work today.
-  Until a release, install from a checkout of the [`integrations/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations) of the repository.
+  `langchain-vaquill` and `llama-index-tools-vaquill` are published on PyPI (0.1.0).
+  `@vaquill-ai/ai-sdk` is not published yet, so its install command does not work today.
+  Until it is released, install it from a checkout of the [`integrations/vercel-ai` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations/vercel-ai) of the repository.
 </Warning>
 
-| Package | Framework | Intended install | Status |
+| Package | Framework | Install | Status |
 | --- | --- | --- | --- |
-| `langchain-vaquill` | LangChain and LangGraph | `pip install langchain-vaquill` | Not yet published |
-| `llama-index-tools-vaquill` | LlamaIndex | `pip install llama-index-tools-vaquill` | Not yet published |
+| `langchain-vaquill` | LangChain and LangGraph | `pip install langchain-vaquill` | Published (0.1.0 on PyPI) |
+| `llama-index-tools-vaquill` | LlamaIndex | `pip install llama-index-tools-vaquill` | Published (0.1.0 on PyPI) |
 | `@vaquill-ai/ai-sdk` | Vercel AI SDK | `npm install @vaquill-ai/ai-sdk ai zod` | Not yet published |
 
 The Python packages are built on the published [`vaquill`](/api-guide/sdks/python) SDK and need Python 3.11 or newer.
@@ -35,7 +36,7 @@ It gives an agent search, citation resolution, section text, amendment history, 
 
 ### Install
 
-Not yet published. Once released:
+Install:
 
 ```bash
 pip install langchain-vaquill
@@ -116,7 +117,7 @@ You can pass your own `client=` or `async_client=` (a `vaquill.Vaquill` or `vaqu
 
 ### Install
 
-Not yet published. Once released:
+Install:
 
 ```bash
 pip install llama-index-tools-vaquill
