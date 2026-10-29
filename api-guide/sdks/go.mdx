@@ -8,17 +8,12 @@ description: "The Vaquill Go client for the US Data API: quickstart, errors, ret
 The Go client covers all 36 operations of the US Data API and mirrors the behavior of the [Python SDK](/api-guide/sdks/python).
 For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
 
-<Warning>
-  Not yet published. No release of the Go module exists yet, so the install command below does not work today.
-  Until a release is tagged, read the source in the [`go/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/go) of the repository.
-</Warning>
-
 ## Install
 
 Requires Go 1.23 or newer, because the paging iterators use `iter.Seq2`.
 The module lives in the `go/` subdirectory of the repository, so its path ends in `/go` and its release tags are `go/vX.Y.Z`.
 
-Once the first release is tagged, the install command will be:
+Install the latest release:
 
 ```bash
 go get github.com/Vaquill-AI/vaquill-sdks/go

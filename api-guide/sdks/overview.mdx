@@ -10,9 +10,9 @@ Anything an SDK can do, you can also do with plain HTTP.
 | Package | Language | Install | Status | Source |
 | --- | --- | --- | --- | --- |
 | `vaquill` | Python 3.11+ | `pip install vaquill` | Published (0.2.0 on PyPI) | [`Vaquill-AI/vaquill-sdks`, `python/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/python) on GitHub |
-| `@vaquill-ai/sdk` | TypeScript, Node 20+ (built on standard `fetch`; tested on Node 20, 22 and 24) | `npm install @vaquill-ai/sdk` | Published (0.2.0 on npm) | [`Vaquill-AI/vaquill-sdks`, `js/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/js) on GitHub |
+| `@vaquill-ai/sdk` | TypeScript, Node 20+ (built on standard `fetch`; tested on Node 20, 22 and 24) | `npm install @vaquill-ai/sdk` | Published (0.2.1 on npm) | [`Vaquill-AI/vaquill-sdks`, `js/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/js) on GitHub |
 | `vaquill` CLI | Command line | See [CLI](/api-guide/sdks/cli) | Published, inside the Python package | Same repos |
-| `github.com/Vaquill-AI/vaquill-sdks/go` | [Go](/api-guide/sdks/go) 1.23+ | Not yet published | Not yet published | [`go/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/go) |
+| `github.com/Vaquill-AI/vaquill-sdks/go` | [Go](/api-guide/sdks/go) 1.23+ | `go get` (v0.1.0) | [pkg.go.dev](https://pkg.go.dev/github.com/Vaquill-AI/vaquill-sdks/go) | [`go/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/go) |
 | `ai.vaquill:vaquill-sdk` | [Java](/api-guide/sdks/java) 11+ | Not yet published | Not yet published | [`java/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/java) |
 | `ai.vaquill:vaquill-kotlin` | [Kotlin](/api-guide/sdks/kotlin) (JVM 11+) | Not yet published | Not yet published | [`kotlin/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/kotlin) |
 | `langchain-vaquill`, `llama-index-tools-vaquill`, `@vaquill-ai/ai-sdk` | [Framework integrations](/api-guide/sdks/integrations) (LangChain, LlamaIndex, Vercel AI SDK) | Not yet published | Not yet published | [`integrations/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations) |
@@ -168,7 +168,7 @@ Python uses snake_case names and TypeScript uses camelCase. The SDK maps them to
 
 - SDKs follow semantic versioning. Before 1.0, the API surface may change in minor versions.
 - The SDK major version tracks the major version of the API contract.
-- Python 0.2.0 and TypeScript 0.2.0 are the published versions. Go, Java and Kotlin are at 0.1.0 in source and unpublished.
+- Python 0.2.1, TypeScript 0.2.1 and Go 0.1.0 are the published versions. Java and Kotlin are at 0.1.0 in source and unpublished.
 - Python 3.11 and later are supported. Node 20 and later are supported, and the TypeScript client is tested on Node 20, 22 and 24.
 - Breaking changes are listed in the release notes.
 - Report bugs on the issue tracker of the [vaquill-sdks repository](https://github.com/Vaquill-AI/vaquill-sdks/issues). For account or billing questions, email support.
@@ -182,8 +182,11 @@ Python uses snake_case names and TypeScript uses camelCase. The SDK maps them to
   <Card title="TypeScript" icon="js" href="/api-guide/sdks/typescript">
     Install, quickstart and error handling
   </Card>
-  <Card title="Go, Java and Kotlin" icon="code" href="/api-guide/sdks/go">
-    Not yet published. Intended coordinates and build from source: [Go](/api-guide/sdks/go), [Java](/api-guide/sdks/java), [Kotlin](/api-guide/sdks/kotlin)
+  <Card title="Go" icon="code" href="/api-guide/sdks/go">
+    Install with go get, quickstart and error handling
+  </Card>
+  <Card title="Java and Kotlin" icon="code" href="/api-guide/sdks/java">
+    Not yet published. Intended coordinates and build from source: [Java](/api-guide/sdks/java), [Kotlin](/api-guide/sdks/kotlin)
   </Card>
   <Card title="Integrations" icon="plug" href="/api-guide/sdks/integrations">
     LangChain, LlamaIndex and Vercel AI SDK tools. Not yet published

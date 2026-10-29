@@ -46,10 +46,10 @@ Base URL: https://api.vaquill.ai. All paths are prefixed with /api/v1. Authentic
 
 ## API: SDKs
 
-- [SDKs overview](https://www.vaquill.ai/docs/api-guide/sdks/overview): Official Python and TypeScript clients (published) and Go, Java and Kotlin clients plus framework integrations (not yet published) for the US Data API: install status, configuration, retries, idempotency, errors, pagination, batch helpers, spend guard and webhook verification.
+- [SDKs overview](https://www.vaquill.ai/docs/api-guide/sdks/overview): Official Python, TypeScript and Go clients (published) and Java and Kotlin clients plus framework integrations (not yet published) for the US Data API: install status, configuration, retries, idempotency, errors, pagination, batch helpers, spend guard and webhook verification.
 - [Python SDK](https://www.vaquill.ai/docs/api-guide/sdks/python): pip install vaquill. Sync and async clients, resolve and search examples, error handling and raw responses.
 - [TypeScript SDK](https://www.vaquill.ai/docs/api-guide/sdks/typescript): npm install @vaquill-ai/sdk. Node 20 and later, typed methods, async iterators and error handling.
-- [Go SDK](https://www.vaquill.ai/docs/api-guide/sdks/go): Not yet published. The Go client for the US Data API: intended go get path, quickstart, typed errors, retries, spend guard, iterators, batch helpers and webhook verification.
+- [Go SDK](https://www.vaquill.ai/docs/api-guide/sdks/go): The Go client for the US Data API: go get path, quickstart, typed errors, retries, spend guard, iterators, batch helpers and webhook verification.
 - [Java SDK](https://www.vaquill.ai/docs/api-guide/sdks/java): Not yet published. The Java client (ai.vaquill:vaquill-sdk, Java 11+): intended Maven and Gradle coordinates, build from source, quickstart, exceptions, retries, spend guard, paginators, batch helpers and webhooks.
 - [Kotlin SDK](https://www.vaquill.ai/docs/api-guide/sdks/kotlin): Not yet published. The coroutine-based Kotlin client (ai.vaquill:vaquill-kotlin): intended coordinates, local build, suspend functions, Flow pagination, exceptions, spend guard and webhooks.
 - [Framework integrations](https://www.vaquill.ai/docs/api-guide/sdks/integrations): Not yet published. LangChain (langchain-vaquill), LlamaIndex (llama-index-tools-vaquill) and Vercel AI SDK (@vaquill-ai/ai-sdk) tools: cost warnings, spend caps, agent and retriever examples and error handling.
