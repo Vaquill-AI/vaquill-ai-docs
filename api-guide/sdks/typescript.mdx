@@ -50,13 +50,14 @@ Path parameters are positional arguments. Query and body fields keep the camelCa
 
 ## Client options
 
-`new Vaquill({ apiKey, baseURL, timeout, maxRetries, defaultHeaders, fetch, maxCredits })`
+`new Vaquill({ apiKey, baseURL, timeout, maxRetries, defaultHeaders, fetch, maxCredits, idempotencyKeys, logger, logLevel })`
 
 - `apiKey` defaults to `VAQUILL_API_KEY`. Keys that do not start with `vq_key_` are rejected.
 - `baseURL` defaults to `VAQUILL_BASE_URL`, then `https://api.vaquill.ai`.
 - `timeout` is per attempt, in milliseconds (default 60000). `maxRetries` defaults to 2.
 - `fetch` injects a custom implementation, for a proxy or a test double.
 - `maxCredits` is the spend guard, described below. `client.creditsSpent` shows the running total.
+- `logger` is where log lines go: any subset of `debug`, `info`, `warn` and `error`, defaulting to `console`. `logLevel` is the minimum level, default `warn`. `debug` logs each request and response, `info` adds retries, and `warn` reports deprecated endpoints once per method and path. The API key is always redacted.
 - `client.withOptions({ ... })` returns a derived client that shares the key and the spend counter.
 - Every method takes `{ timeout, maxRetries, headers, signal, idempotencyKey }` as its last argument.
 
@@ -88,6 +89,7 @@ Free: `statutes.coverage`, `watches.list`, `create`, `update`, `delete`, `test`,
 
 Pass `maxCredits` to the constructor. Once responses on this client have reported that many credits, charged calls throw `SpendGuardExceededError` before sending anything.
 It checks what is already spent, not the cost of the next call.
+The guard is exact. While `maxCredits` is set, charged calls on the client and its derived clients run one at a time, from the check to the moment their credits are counted, so concurrent calls cannot all pass the check and overshoot the cap. Leave `maxCredits` unset to keep full concurrency.
 
 ```ts
 const client = new Vaquill({ maxCredits: 500 });
@@ -97,6 +99,7 @@ console.log(client.creditsSpent);
 ## Error handling
 
 `VaquillError` is the base. `APIConnectionError` (with `APITimeoutError` and `APIUserAbortError`) means no response arrived.
+`ResponseParseError` is thrown when a success response is not valid JSON. It carries `status`, `requestId` and `bodyPreview` (the first 200 characters of the body).
 `APIStatusError` carries `status`, `requestId`, `code`, `retryable`, `retryAfterSeconds`, `body`, and the legacy `detail` and `errors`.
 
 ```ts
@@ -127,6 +130,7 @@ try {
 
 Subclasses of `APIStatusError`: `BadRequestError`, `AuthenticationError`, `InsufficientCreditsError`, `PermissionDeniedError`, `NotFoundError`, `ConflictError`, `UnprocessableEntityError`, `RateLimitError` (and `DailyCapExceededError`), `InternalServerError`, and `IdempotencyConflictError` with `IdempotencyKeyReusedError`, `IdempotencyInProgressError` and `IdempotencyReplayUnavailableError`.
 The code is checked first, then the status, so an unknown code still gives the status class. Fields the server did not send come back as `null`.
+The message of an `UnprocessableEntityError` (422) ends with the first validation reasons from the response's `errors` list, so the rejected field is in `err.message`.
 
 ## Retries and idempotency
 
@@ -151,6 +155,21 @@ for await (const s of client.statutes.searchAll({ query: "negligence" }, { maxPa
 <Warning>
   Charged endpoints spend credits on every page. Set `maxPages`, `maxItems` or a client `maxCredits`. Without one, an iterator runs until the data ends.
 </Warning>
+
+## Batch helpers
+
+Each helper wraps one batch operation, splits the input at the per-call cap and returns the members of every response as one flat array in input order.
+
+| Helper | Cap per call |
+| --- | --- |
+| `statutes.resolveBatchAll(citations, params?, options?)` | 500 |
+| `statutes.getSectionsAll(actIds, params?, options?)` | 50 |
+| `sessionLaws.getBatchAll(ids, params?, options?)` | 200 |
+
+- `options` takes the usual request options plus `chunkSize`. A value above the cap is clamped to it, so the helper never sends a request the server would refuse.
+- The spend guard is checked before each chunk, and exact repeats in the input are sent once.
+- An empty input sends nothing.
+- All three are charged.
 
 ## Raw responses
 
@@ -188,6 +207,9 @@ const event = await webhooks.unwrap(rawBody, request.headers, process.env.WEBHOO
 
 `verify` and `unwrap` check the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance, accept several `v1` signatures (rotation) and a list of secrets, and compare in constant time.
 A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes.
+From the first release after 0.2.0, a `whsec_` secret that is not valid base64 throws `WebhookVerificationError` (0.2.0 still uses the text as the key).
+Copy a `whsec_` secret exactly: it must be valid base64. The TypeScript client falls back to the UTF-8 bytes of a secret it cannot decode, whereas the Python, Go, Java and Kotlin clients reject one.
+An empty or blank secret (or a bare `whsec_`) throws `WebhookVerificationError`, so an unset environment variable cannot verify a forged event.
 They throw `WebhookVerificationError` on any failure.
 
 <Warning>

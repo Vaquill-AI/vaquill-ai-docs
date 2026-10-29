@@ -106,6 +106,10 @@
               "api-guide/sdks/overview",
               "api-guide/sdks/python",
               "api-guide/sdks/typescript",
+              "api-guide/sdks/go",
+              "api-guide/sdks/java",
+              "api-guide/sdks/kotlin",
+              "api-guide/sdks/integrations",
               "api-guide/sdks/cli"
             ]
           },

@@ -1,0 +1,233 @@
+---
+title: "Java SDK"
+description: "The Vaquill Java client for the US Data API: quickstart, errors, retries, spend guard, pagination and webhooks"
+---
+
+{/* Every sample on this page is copied from java/README.md of vaquill-sdks. */}
+
+The Java client covers all 36 operations of the US Data API and matches the behavior of the [Python SDK](/api-guide/sdks/python).
+It needs Java 11 or newer and has one runtime dependency, Jackson (`jackson-databind`).
+HTTP goes through the JDK `java.net.http.HttpClient`, so you can pass your own configured client.
+Every call has a blocking form, a `...WithResponse` form (status, headers, request id, credits) and a `...Async` form.
+For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
+
+<Warning>
+  Not yet published. The Maven coordinates below are the intended ones, and they do not resolve today.
+  Until the first release, build from the [`java/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/java) of the repository.
+</Warning>
+
+## Install
+
+Once the artifact is released on Maven Central, the coordinates will be as follows.
+
+Maven:
+
+```xml
+<dependency>
+  <groupId>ai.vaquill</groupId>
+  <artifactId>vaquill-sdk</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+Gradle (Kotlin DSL):
+
+```kotlin
+dependencies {
+    implementation("ai.vaquill:vaquill-sdk:0.1.0")
+}
+```
+
+Gradle (Groovy):
+
+```groovy
+dependencies {
+    implementation 'ai.vaquill:vaquill-sdk:0.1.0'
+}
+```
+
+To build from source, check out the repository, change into `java/` and run the build and tests.
+
+```bash
+mvn verify
+```
+
+Source: [`Vaquill-AI/vaquill-sdks`, `java/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/java) on GitHub.
+
+## Quickstart
+
+```java
+import ai.vaquill.sdk.Vaquill;
+import ai.vaquill.sdk.models.StatuteCountRequest;
+
+try (Vaquill client = Vaquill.builder().build()) {   // reads VAQUILL_API_KEY
+    System.out.println(client.credits().balance().getCreditsRemaining());
+    System.out.println(client.statutes().count(StatuteCountRequest.builder().state("ca").build()));
+}
+```
+
+Resources: `client.statutes()`, `client.sessionLaws()`, `client.watches()`, `client.boards()`, `client.credits()`, `client.pricing()`.
+Request bodies are built with `Model.builder()`, and optional query parameters with `...Params.builder()`.
+Responses are plain models. Members this SDK version does not know about are kept in `getAdditionalProperties()` and survive a round trip.
+
+### Client options
+
+| Builder method | Meaning |
+| --- | --- |
+| `apiKey(String)` | Defaults to the `VAQUILL_API_KEY` environment variable. Must start with `vq_key_`. The key is never echoed in an error message or a log line. |
+| `baseUrl(String)` | Defaults to `VAQUILL_BASE_URL`, then `https://api.vaquill.ai`. |
+| `timeout(Duration)` | Per-request timeout. `Duration.ZERO` disables it. |
+| `maxRetries(int)` | Default 2. |
+| `httpClient(HttpClient)` | Bring your own client (proxy, TLS, executor). |
+| `defaultHeader(name, value)` / `defaultHeaders(Map)` | Merged case-insensitively into every request. |
+| `idempotencyKeys(boolean)` | Auto-generate keys for charged POSTs (default on). |
+| `maxCredits(double)` | Spend guard, see below. |
+| `logger(VaquillLogger)` | `VaquillLogger.system()` logs through `System.Logger`. The API key is redacted. |
+
+Per call, pass `RequestOptions` as the last argument: `timeout`, `maxRetries`, `idempotencyKey` and extra `header`s.
+`client.toBuilder()` derives a client that shares the same spend guard.
+The User-Agent is `vaquill-java/<version>`.
+
+### Response metadata
+
+```java
+Response<StatuteCountResponse> r = client.statutes().countWithResponse(request);
+r.getData();              // the model
+r.getStatusCode();
+r.getRequestId();
+r.getCreditsConsumed();   // from the body, falling back to meta.creditsConsumed
+r.isIdempotentReplayed(); // the server replayed a stored answer, nothing was charged
+r.getRateLimit();
+```
+
+### Async
+
+```java
+CompletableFuture<StatuteCountResponse> f = client.statutes().countAsync(request);
+```
+
+Async calls run on an SDK-owned daemon pool and use the same retries and spend guard as blocking calls.
+
+## Errors
+
+Every failure is an unchecked `VaquillException`.
+
+```
+VaquillException
+  ConnectionException, RequestTimeoutException, ResponseParseException
+  SpendGuardExceededException
+  WebhookVerificationException, WebhookPayloadException
+  ApiStatusException            statusCode, code, requestId, retryable, retryAfterSeconds, errors, body, headers
+    BadRequestException (400)
+    AuthenticationException (401)
+    InsufficientCreditsException (402)
+    PermissionDeniedException (403)
+    NotFoundException (404)
+    ConflictException (409)
+      IdempotencyInProgressException, IdempotencyReplayUnavailableException
+    UnprocessableEntityException (422)
+      IdempotencyKeyReusedException
+    RateLimitException (429)
+      DailyCapExceededException
+    InternalServerException (5xx)
+```
+
+`IdempotencyConflict` is a marker interface implemented by the three idempotency exceptions, so a `catch` block can match them with an `instanceof` check.
+The 422 message is `Validation failed: ` followed by the first rejected fields, for example `body: Field required`.
+A 2xx whose body is not the documented JSON raises `ResponseParseException`.
+A `Deprecation` or `Sunset` response header logs one warning per endpoint.
+
+```java
+try {
+    client.statutes().search(req);
+} catch (InsufficientCreditsException e) {
+    // top up
+} catch (RateLimitException e) {
+    Thread.sleep((long) (e.getRetryAfterSeconds() * 1000));
+} catch (ApiStatusException e) {
+    log.error("failed {} request {}", e.getStatusCode(), e.getRequestId());
+}
+```
+
+## Retries and idempotency
+
+- Exponential backoff from 0.5 s doubling to an 8 s cap, plus 0 to 25 percent jitter.
+- `retry-after-ms`, then `Retry-After` (seconds or an HTTP date) are honoured. A wait over 120 s is raised at once instead of slept.
+- Retried: the codes `rate_limited`, `idempotency_in_progress`, `upstream_timeout`, `service_unavailable` and `internal_error`, and otherwise statuses 408, 429 and 5xx. A response that says `retryable: false` is not retried, and neither is 501.
+- Never retried: `insufficient_credits` and `daily_cap_exceeded`.
+- Connect failures are always retried. Any other transport error is retried only for GET and HEAD, or when the request carries an Idempotency-Key, because the server may already have done the work.
+- A 5xx on a charged call is not retried without a key, for the same reason.
+
+The 25 charged operations accept an `Idempotency-Key`.
+The SDK generates one for every charged POST unless you pass your own with `RequestOptions.builder().idempotencyKey("...")`, so a retried call is charged once.
+A key must be 16 to 255 visible ASCII characters. An empty or malformed key is rejected before anything is sent.
+`Response.isIdempotentReplayed()` is true when the server answered from a stored result, and a replay counts as 0 credits against the spend guard.
+
+## Spend guard
+
+```java
+Vaquill client = Vaquill.builder().maxCredits(50).build();
+```
+
+Charged calls are serialised. The guard checks the running total, sends the request and adds the credits actually consumed while holding one lock.
+When the total has reached the cap, the next charged call raises `SpendGuardExceededException` and is never sent, so the cap is exact even with many threads.
+`client.getCreditsSpent()` returns the total. Free endpoints are never blocked.
+
+## Pagination and batch helpers
+
+Every paginated endpoint has an `iter...` method returning a `Paginator<T>`.
+
+```java
+for (StatuteResult hit : client.statutes().iterSearch(request).maxItems(200)) {
+    System.out.println(hit.getActId());
+}
+
+List<StatuteResult> all = client.statutes().iterSearch(request).maxPages(5).toList();
+client.statutes().iterSearch(request).stream().limit(20).forEach(System.out::println);
+client.statutes().iterSearch(request).toListAsync();
+```
+
+<Warning>
+  Charged pages spend credits and count against the spend guard like any other call. Set `maxPages` or `maxItems`.
+</Warning>
+
+- `maxPages(n)` and `maxItems(n)` set limits before iteration starts. Afterwards they throw `IllegalStateException`. `isTruncated()` reports that a limit stopped the walk.
+- `isStuck()` is true when the server repeated a cursor or offset, or returned an empty page claiming more. Iteration stops instead of looping forever.
+- `pages()` iterates page by page.
+- A paginator is single use and not thread safe.
+
+Available: `statutes().iterSearch / iterDivisions / iterSectionChanges`, `sessionLaws().iterSearch / iterList / iterChanges / iterBody`, `watches().iterList / iterChanges`, `boards().iterList`.
+
+Batch helpers split large inputs, de-duplicate in order and suffix the idempotency key per chunk (`key-1`, `key-2`).
+
+| Helper | Chunk size |
+| --- | --- |
+| `statutes().resolveBatchAll(citations)` | 500 |
+| `statutes().getSectionsAll(actIds)` | 50 |
+| `sessionLaws().getBatchAll(ids)` | 200 |
+
+An empty input sends nothing. Each helper has an `...Async` form.
+
+## Webhooks
+
+Deliveries use Standard Webhooks (`webhook-id`, `webhook-timestamp`, `webhook-signature`).
+
+```java
+WebhookEvent event = Webhooks.unwrap(rawBody, headers, System.getenv("VAQUILL_WEBHOOK_SECRET"));
+System.out.println(event.getEvent());
+```
+
+- Pass the raw request body, not re-serialised JSON.
+- `headers` is any `Map<String, ?>`. Names are matched case-insensitively and values may be a string or a list.
+- The secret is the `whsec_` base64 form or a plain string. An empty, blank or `whsec_`-only secret, and invalid base64 after `whsec_`, throw `IllegalArgumentException`, so an unset environment variable can never verify a forged event.
+- Tolerance is 300 seconds either side of now. Use the longer overloads for another tolerance, several secrets (rotation) or the legacy `X-Vaquill-Signature` scheme (off by default, no replay protection).
+- `WebhookVerificationException` means do not trust the delivery. `WebhookPayloadException` means the signature was valid but the body is not an event.
+
+See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
+
+## Versioning
+
+The SDK follows semantic versioning, and the first release is planned as `0.1.0`.
+Releases will be cut by pushing a `java-vX.Y.Z` tag, which signs and publishes to Maven Central.
+The signing and upload steps have not run yet, so the first release is the first time they are exercised.
+The library targets Java 11 (`--release 11`).

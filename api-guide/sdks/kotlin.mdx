@@ -1,0 +1,232 @@
+---
+title: "Kotlin SDK"
+description: "The Vaquill Kotlin client for the US Data API: coroutines, Flow pagination, errors, retries, spend guard and webhooks"
+---
+
+{/* Every sample on this page is copied from kotlin/README.md of vaquill-sdks. */}
+
+The Kotlin client is built for coroutines.
+Every call is a `suspend` function, every paginated endpoint is a `Flow`, and every model is a `kotlinx.serialization` data class.
+It covers all 36 operations of the US Data API.
+It targets JVM 11 and newer, and depends on `kotlinx-serialization-json` and `kotlinx-coroutines-core`.
+Transport is the JDK `java.net.http.HttpClient`, so there is no HTTP engine to choose.
+For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
+
+<Warning>
+  Not yet published. The artifact is not on Maven Central, so the coordinates below do not resolve today.
+  Until the first release, build it locally and use `publishToMavenLocal`.
+</Warning>
+
+## Install
+
+Once the artifact is on Maven Central, the dependency will be:
+
+```kotlin
+dependencies {
+    implementation("ai.vaquill:vaquill-kotlin:0.1.0")
+}
+```
+
+Until then, build it locally from the [`kotlin/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/kotlin) of the repository.
+
+```bash
+./gradlew build
+./gradlew publishToMavenLocal    # local check, no signing, no network upload
+```
+
+Source: [`Vaquill-AI/vaquill-sdks`, `kotlin/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/kotlin) on GitHub.
+
+## Quickstart
+
+```kotlin
+import ai.vaquill.sdk.VaquillClient
+import ai.vaquill.sdk.resources.SearchFilters
+import kotlinx.coroutines.runBlocking
+
+fun main() = runBlocking {
+    // apiKey defaults to the VAQUILL_API_KEY environment variable.
+    VaquillClient { maxCredits = 25.0 }.use { client ->
+        println("balance: ${client.credits.balance()}")
+
+        val hits = client.statutes.search("adverse possession", SearchFilters(state = "tx", limit = 5))
+        hits.results?.forEach { println(it.actId) }
+
+        val section = client.statutes.resolve("42 U.S.C. 1983")
+        println(section)
+    }
+}
+```
+
+Create one client and share it. It is thread safe, and safe to call from many coroutines at once.
+Call `close()` (or use `use {}`) to release its threads.
+
+## Configuration
+
+```kotlin
+val client = VaquillClient {
+    apiKey = "vq_key_..."                 // default: $VAQUILL_API_KEY
+    baseUrl = "https://api.vaquill.ai"    // default: $VAQUILL_BASE_URL, then the production URL
+    timeout = Duration.ofSeconds(30)      // per attempt, default 60 s, Duration.ZERO disables it
+    maxRetries = 2                        // default 2
+    defaultHeader("X-Team", "legal-ops")  // names are matched case-insensitively
+    idempotencyKeys = true                // automatic Idempotency-Key on charged calls
+    maxCredits = 100.0                    // client-side spend cap
+    logger = VaquillLogger.system()       // default; VaquillLogger.NONE silences it
+}
+```
+
+Per-call overrides go in `RequestOptions(timeout, maxRetries, idempotencyKey, headers)`, the last parameter of every method.
+`client.withOptions { ... }` makes a copy that shares the transport and the spend total.
+`Authorization` and `Idempotency-Key` cannot be overridden by default or per-call headers.
+
+`timeout` is the total time for one HTTP attempt, from sending the request until the whole response body has been read.
+Each retry gets a fresh budget. Connecting has its own fixed 5 s limit.
+This is stricter than the Python SDK for very large bodies, so raise `timeout` for them or use `Duration.ZERO`.
+The logger receives every line after API key redaction, and idempotency keys are logged by their first 8 characters only.
+
+Read the status, request id and credits of a call with `withResponse`.
+
+```kotlin
+val r = client.withResponse { statutes.count(state = "wa") }
+println(r.data.count)
+println("${r.statusCode} ${r.requestId} consumed=${r.creditsConsumed} replayed=${r.idempotentReplayed}")
+println(r.rateLimit.remaining)
+```
+
+If the block makes several requests, the last response is reported.
+
+## Errors
+
+Everything the SDK throws extends `VaquillException`.
+
+```text
+VaquillException
+  SpendGuardExceededException         client-side maxCredits reached, nothing was sent
+  ResponseParseException              a 2xx body was not valid JSON or had the wrong shape
+  WebhookVerificationException
+    WebhookPayloadException           signature fine, body not an event
+  ApiConnectionException              no HTTP response
+    ApiTimeoutException
+  ApiStatusException (sealed)         status, code, requestId, retryable, retryAfterSeconds, errors, body, headers
+    BadRequestException               400
+    AuthenticationException           401
+    InsufficientCreditsException      402 or code insufficient_credits (never retried)
+    PermissionDeniedException         403
+    NotFoundException                 404
+    ConflictException                 409
+      IdempotencyInProgressException         (also IdempotencyConflict)
+      IdempotencyReplayUnavailableException  (also IdempotencyConflict)
+    UnprocessableEntityException      422, message appends the first errors[] reasons
+      IdempotencyKeyReusedException          (also IdempotencyConflict)
+    RateLimitException                429
+      DailyCapExceededException              code daily_cap_exceeded (never retried)
+    InternalServerException           5xx
+    UnexpectedStatusException         any other 4xx or 5xx
+```
+
+The class is chosen by the error `code` first, then by status, so an unknown future code still gives the status class.
+
+```kotlin
+try {
+    client.statutes.getSection("TX-PEN-22.01")
+} catch (e: NotFoundException) {
+    println("missing (request ${e.requestId})")
+} catch (e: RateLimitException) {
+    println("retry in ${e.retryAfterSeconds}")
+} catch (e: ApiStatusException) {
+    println("${e.status} ${e.code}: ${e.message}")
+}
+```
+
+## Retries and idempotency
+
+* Up to `maxRetries` (default 2) retries with exponential backoff from 0.5 s to 8 s, scaled down by 0 to 25 percent jitter.
+* `retry-after-ms`, `Retry-After` seconds and `Retry-After` HTTP dates are honoured. A wait longer than 120 s raises the error immediately.
+* Retried: 408, 429, 5xx (except 501) and the codes the server marks retryable. Never retried: `insufficient_credits`, `daily_cap_exceeded` and any response with `retryable: false`.
+* Connect failures never reached the server, so they are always retried.
+* Other transport failures are ambiguous. They are retried only for GET and HEAD, or when the call carries an idempotency key.
+* A 5xx on a charged call is not retried unless the call has an idempotency key, because it may already have been billed.
+
+Charged calls get a fresh UUID `Idempotency-Key` automatically, reused on every retry of that call.
+Pass your own for a retry that spans processes.
+
+```kotlin
+client.statutes.search("trespass", options = RequestOptions(idempotencyKey = "order-7731-search-1"))
+```
+
+A key must be 16 to 255 visible ASCII characters. An empty or invalid key throws `VaquillException` before any request.
+`ApiResponse.idempotentReplayed` is true when the server replayed a stored answer. A replay is not charged again and not counted by the spend guard.
+The batch helpers suffix a caller key with `-1`, `-2` and so on for chunks after the first, because each chunk has a different body.
+
+## Spend guard
+
+`maxCredits` caps what this client, and clients derived from it, will spend.
+Charged calls are serialised by a coroutine `Mutex` while the cap is set, so the check, the call and the accounting are one step and the cap is exact even under heavy concurrency.
+When the cap is reached the call throws `SpendGuardExceededException` and nothing is sent.
+Free calls are never blocked. `client.creditsSpent` shows the running total.
+
+## Pagination and batch helpers
+
+Every paginated endpoint has an `iter...` method returning a `Paginator<T>`, a cold set of `Flow`s.
+
+```kotlin
+val p = client.statutes.iterSearch("easement", SearchFilters(state = "ca"), maxPages = 3)
+p.items().collect { println(it.actId) }        // every item
+p.pages().collect { page -> println(page.size) } // or page by page
+println("${p.truncated} ${p.stuck}")
+```
+
+<Warning>
+  Charged endpoints spend credits on every page. Set `maxPages` or `maxItems` unless you mean to read everything.
+</Warning>
+
+`truncated` is true when a guard cut the result short.
+`stuck` is true when the server repeated the position it was just sent, or answered an empty page with `hasMore: true`. The loop stops instead of paying for the same page forever.
+
+| Method | Pages by |
+| --- | --- |
+| `statutes.iterSearch` | `nextOffset`, else `hasMore` and the row count |
+| `statutes.iterDivisions` | `nextCursor` |
+| `statutes.iterSectionChanges` | `beforeId` (or `sinceId` with `order = "asc"`) |
+| `sessionLaws.iterSearch` | `offset` and `hasMore` |
+| `sessionLaws.iterList` | `nextCursor` |
+| `sessionLaws.iterChanges` | `sinceId` |
+| `sessionLaws.iterBody` | `nextCursor` until `pageEnd` reaches `totalChars` |
+| `watches.iterList`, `watches.iterChanges`, `boards.iterList` | offset or id windows (free) |
+
+Batch helpers de-duplicate, chunk and join the results.
+
+* `statutes.resolveBatchAll(citations)` sends 500 per call.
+* `statutes.getSectionsAll(actIds)` sends 50 per call.
+* `sessionLaws.getBatchAll(ids)` sends 200 per call.
+
+## Webhooks
+
+Verify the raw request body, never re-serialised JSON.
+
+```kotlin
+val event = Webhooks.unwrap(
+    payload = rawBody,                       // String or ByteArray
+    headers = requestHeaders,                // webhook-id, webhook-timestamp, webhook-signature
+    secret = System.getenv("VAQUILL_WEBHOOK_SECRET"),
+)
+println("${event.event} ${event.firedAt} ${event.extra}")
+```
+
+* Standard Webhooks signatures with a `whsec_` base64 secret (or a plain UTF-8 secret), and a timestamp tolerance of 300 s by default.
+* Pass several secrets (`secrets = listOf(new, old)`) to accept both during a rotation.
+* An empty or blank secret, or a `whsec_` secret that is not valid base64, throws `IllegalArgumentException`. A misconfigured environment can never accept a forged event.
+* `Webhooks.verify` checks the signature only. `unwrap` also parses the event.
+* The legacy `X-Vaquill-Signature` header is rejected unless you pass `allowLegacy = true`. It has no replay protection.
+
+See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
+
+## Versioning
+
+An operation is charged when the contract declares the `Idempotency-Key` header on it. That is 25 operations.
+Read the live prices with `client.pricing.get()`, which is free.
+The User-Agent is `vaquill-kotlin/0.1.0 kotlin/<version> java/<version> <os>`.
+A dedicated [Java SDK](/api-guide/sdks/java) also exists. For an endpoint newer than the SDK, use `client.rawRequest(method, path, query, body, charged)`.
+
+The release workflow, which signs the artifacts and uploads them to the Sonatype Central Portal, has never run.
+The first release may need fixes, and a release candidate tag is planned first.

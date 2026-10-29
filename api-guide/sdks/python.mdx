@@ -84,6 +84,7 @@ client.pricing.get()  # free: the live price list
 ```
 
 The guard checks what is already spent before a charged call, not the cost of the next call. `credits_spent` adds each response's `credits_consumed`.
+The guard is exact. While `max_credits` is set, charged calls run one at a time, from the check to the moment their credits are counted, so concurrent threads or tasks cannot all pass the check and overshoot the cap. Without `max_credits`, calls keep full concurrency.
 
 Async is the same with `AsyncVaquill` and `await`.
 
@@ -118,11 +119,13 @@ except vaquill.APIStatusError as err:
     print(err.status_code, err.request_id)
 ```
 
+`ResponseParseError` is raised when a 2xx response is not the JSON the endpoint promises (bad JSON or the wrong shape). It carries `message`, `request_id` and `status_code`.
 Other classes: `APIConnectionError` and `APITimeoutError` (no response arrived), `AuthenticationError`, `PermissionDeniedError`, `NotFoundError`, `BadRequestError`, `UnprocessableEntityError`, `ConflictError`, `DailyCapExceededError` (a `RateLimitError`; retrying cannot succeed until the cap resets), `InternalServerError`, `SpendGuardExceeded` and `WebhookVerificationError`.
 Idempotency failures are `IdempotencyConflictError` with `IdempotencyKeyReusedError`, `IdempotencyInProgressError` and `IdempotencyReplayUnavailableError`.
 
 Each status error also exposes `code`, `retryable` and `retry_after_seconds`, and the legacy `detail` and `errors` members. They are `None` when the server did not send them.
 The code is checked first, then the status, so an unknown code still gives the status class.
+The message of an `UnprocessableEntityError` (422) ends with the first validation reasons from the response's `errors` list, so the rejected field is in `str(err)`.
 
 ## Retries and idempotency
 
@@ -155,8 +158,35 @@ for page in client.statutes.iter_divisions("STATE", state="wa", max_items=100).p
 ```
 
 Iterate the pager for items, call `.pages()` for whole pages and read `.truncated` after iterating.
-Charged helpers: `statutes.iter_search`, `statutes.iter_divisions`, `statutes.iter_section_changes`, `session_laws.iter_search`, `session_laws.iter_list`, `session_laws.iter_changes`.
+Charged helpers: `statutes.iter_search`, `statutes.iter_divisions`, `statutes.iter_section_changes`, `session_laws.iter_search`, `session_laws.iter_list`, `session_laws.iter_changes`, `session_laws.iter_body`.
 Free helpers: `watches.iter_list`, `watches.iter_changes`, `boards.iter_list`.
+
+Two guards stop an iteration that has no `max_pages` or `max_items`.
+`truncated` is `True` whenever a guard left rows unread, including a `max_items` that cut items off the last page.
+`stuck` is `True` when the server returned the offset or cursor it was just sent, or an empty page with `hasMore: true`. The iterator then stops, logs a warning on the `vaquill` logger and does not fetch again, so a misbehaving server cannot burn credits.
+
+## Batch helpers
+
+Each helper wraps one batch operation, splits the input at the per-call cap and returns the members of every response as one flat list in input order.
+
+| Helper | Cap per call | Returns |
+| --- | --- | --- |
+| `client.statutes.resolve_batch_all` | 500 | `results` |
+| `client.statutes.get_sections_all` | 50 | `sections` |
+| `client.session_laws.get_batch_all` | 200 | `laws` |
+
+- The `max_credits` guard is checked before every chunk, so a guard reached part way raises `SpendGuardExceeded` and the remaining chunks are not sent.
+- Exact repeats in the input are sent once.
+- A caller's `idempotency_key` is kept for the first chunk and suffixed with `-<chunk number>` for later ones.
+- An empty input sends nothing and returns `[]`.
+- `get_sections_all` and `get_batch_all` drop ids with no match. Call the single-call method to read `notFound`.
+
+All three are charged. Each exists on `AsyncVaquill` with `await`.
+
+## Argument checks
+
+A path argument that is empty, `.` or `..` raises `ValueError` before any request, because a URL parser would resolve it to another endpoint.
+`extract_citations` costs 0 credits when `resolve=False`.
 
 ## Raw responses
 
@@ -200,7 +230,10 @@ except WebhookVerificationError:
     ...  # respond 400
 ```
 
-`verify_webhook` checks the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance. It accepts several `v1` signatures and a list of secrets, so you can rotate a secret without downtime. A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes. It raises `WebhookVerificationError` on any failure.
+`verify_webhook` checks the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance. It accepts several `v1` signatures and a list of secrets, so you can rotate a secret without downtime. A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes. It raises `WebhookVerificationError` on any signature failure.
+A `whsec_` secret must be valid base64.
+From the first release after 0.2.0, one that is not raises `ValueError` instead of being used as plain text (0.2.0 still uses the text).
+An empty or whitespace-only secret (or `whsec_` with no key) raises `ValueError` in every version, so an unset environment variable cannot verify a forged event.
 
 <Warning>
   `verify_webhook` rejects the old `X-Vaquill-Signature: sha256=<hex>` header unless you pass `allow_legacy=True`. The TypeScript client behaves the same with `allowLegacy: true`.
@@ -212,6 +245,8 @@ See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
 ## Debug logging and custom HTTP client
 
 The client logs through the standard `logging` module under the `vaquill` logger, and logs idempotency keys by their first 8 characters only.
+There is no logging option on the client. Configure the logger as you would any other, for example `logging.getLogger("vaquill").setLevel(logging.DEBUG)`.
+The API key never appears in a log line. A stuck pager and a deprecated endpoint each log a warning on this logger.
 Pass `http_client=` (an `httpx.Client`) to set a proxy or client certificate, or to inject a test double. The SDK does not close a client you pass.
 
 ## Types

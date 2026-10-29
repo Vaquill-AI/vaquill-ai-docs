@@ -1,0 +1,187 @@
+---
+title: "Go SDK"
+description: "The Vaquill Go client for the US Data API: quickstart, errors, retries, spend guard, pagination and webhooks"
+---
+
+{/* Every sample on this page is copied from go/README.md of vaquill-sdks. */}
+
+The Go client covers all 36 operations of the US Data API and mirrors the behavior of the [Python SDK](/api-guide/sdks/python).
+For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
+
+<Warning>
+  Not yet published. No release of the Go module exists yet, so the install command below does not work today.
+  Until a release is tagged, read the source in the [`go/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/go) of the repository.
+</Warning>
+
+## Install
+
+Requires Go 1.23 or newer, because the paging iterators use `iter.Seq2`.
+The module lives in the `go/` subdirectory of the repository, so its path ends in `/go` and its release tags are `go/vX.Y.Z`.
+
+Once the first release is tagged, the install command will be:
+
+```bash
+go get github.com/Vaquill-AI/vaquill-sdks/go
+```
+
+```go
+import vaquill "github.com/Vaquill-AI/vaquill-sdks/go"
+```
+
+Source: [`Vaquill-AI/vaquill-sdks`, `go/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/go) on GitHub.
+
+## Quickstart
+
+```go
+client, err := vaquill.NewClient() // reads VAQUILL_API_KEY
+if err != nil {
+	log.Fatal(err)
+}
+defer client.Close()
+
+res, err := client.Statutes.Resolve(ctx, "42 U.S.C. 1983", nil)
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Printf("%+v\n", res)
+```
+
+Every method takes a `context.Context` first, returns a typed value and an error, and never panics.
+Optional request fields are pointers, so use `vaquill.Ptr("wa")`.
+Fields that accept one value or a list use `vaquill.StringOrList{"wa", "ca"}`.
+
+Client options: `WithAPIKey`, `WithBaseURL`, `WithTimeout` (0 disables), `WithMaxRetries`, `WithHTTPClient`, `WithDefaultHeaders`, `WithUserAgentSuffix`, `WithMaxCredits`, `WithAutoIdempotencyKeys`, `WithLogger`.
+Per-call options: `WithRequestTimeout`, `WithRequestMaxRetries`, `WithIdempotencyKey`, `WithRequestHeader`, `WithResponse`.
+
+Read the status, request id and credits of a call with `WithResponse`.
+
+```go
+var info vaquill.ResponseInfo
+res, err := client.Statutes.Count(ctx, req, vaquill.WithResponse(&info))
+fmt.Println(info.StatusCode, info.RequestID, info.CreditsChargedThisCall(), info.IdempotentReplayed)
+```
+
+`Header`, `Body`, `RateLimit` and `CreditsConsumed` are on the same value.
+`CreditsConsumed` is the top-level `creditsConsumed` of the body.
+When the top level has no number, Go reads `meta.creditsConsumed`, because the watch change diff route reports its charge there.
+`CreditsChargedThisCall` is zero on an idempotent replay and feeds `WithMaxCredits`.
+`client.Raw` sends any request and returns the undecoded body.
+
+## Errors
+
+All SDK errors implement `vaquill.Error`.
+HTTP failures are typed per status and per machine `code`, and every one unwraps to `*vaquill.APIError`, which carries `StatusCode`, `Code`, `RequestID`, `Retryable`, `RetryAfterSeconds`, `Errors`, `Body` and `Headers`.
+
+```go
+var rl *vaquill.RateLimitError
+switch {
+case errors.As(err, &rl):
+	time.Sleep(time.Duration(*rl.RetryAfterSeconds) * time.Second)
+case errors.Is(err, vaquill.ErrInsufficientCredits):
+	// top up
+case errors.Is(err, vaquill.ErrNotFound):
+}
+```
+
+Other types: `ConnectionError`, `TimeoutError`, `ResponseParseError` (a malformed 2xx body), `SpendGuardError`, `ConfigError` and `WebhookVerificationError`.
+A 422 message ends with the first validation reasons from `errors[]`.
+`IdempotencyKeyReused` is also an unprocessable-entity error, and `IdempotencyInProgress` is also a conflict.
+
+## Retries and idempotency
+
+The default is 2 retries with exponential backoff (0.5 s doubling to 8 s) and jitter.
+`Retry-After-Ms` and `Retry-After` are honoured, up to 120 seconds.
+
+- 408, 429 and 5xx are retried, except 501.
+- `insufficient_credits` and `daily_cap_exceeded` are never retried.
+- A transport error that may have reached the server is retried only for GET and HEAD, or when an idempotency key is set.
+- A 5xx on a charged call is not retried without an idempotency key.
+
+Charged POSTs get a generated UUID `Idempotency-Key` unless you pass one.
+
+```go
+client.Statutes.Search(ctx, req, vaquill.WithIdempotencyKey("report-2026-10-29-search"))
+```
+
+Keys must be 16 to 255 visible ASCII characters. An empty or invalid key is rejected before any request.
+`ResponseInfo.IdempotentReplayed` tells you the server replayed a stored response, so nothing new was charged.
+
+## Spend guard
+
+```go
+client, _ := vaquill.NewClient(vaquill.WithMaxCredits(25))
+```
+
+The guard is exact. While a cap is set, charged calls run one at a time, and the credits each response reports are added before the next call is allowed.
+Once the cap is reached, the next charged call fails with `*vaquill.SpendGuardError` without sending a request.
+`client.CreditsSpent()` reads the running total.
+
+## Pagination and batch helpers
+
+Paginated endpoints return a `*Paginator[T]` built on `iter.Seq2`.
+
+```go
+pager, _ := client.Statutes.IterSearch(ctx, &vaquill.StatuteSearchRequest{Query: "negligence"},
+	vaquill.WithMaxPages(3), vaquill.WithMaxItems(100))
+for item, err := range pager.All() {
+	if err != nil {
+		return err
+	}
+	fmt.Println(item.ActID)
+}
+fmt.Println(pager.Truncated(), pager.Stuck())
+```
+
+`Pages()` yields whole pages and `Collect()` returns a slice.
+
+<Warning>
+  Charged endpoints spend credits on every page. Always set `WithMaxPages` or `WithMaxItems`.
+</Warning>
+
+`Truncated` reports that a guard stopped the walk early.
+`Stuck` reports that the server repeated its offset or cursor, or answered an empty page with `hasMore: true`, and the SDK stopped instead of spending on the same page again.
+
+Iterators: `Statutes.IterSearch`, `IterDivisions`, `IterSectionChanges`; `SessionLaws.IterSearch`, `IterList`, `IterBody`, `IterChanges`; `Boards.IterList`; `Watches.IterList`, `IterChanges`.
+
+Batch helpers split large inputs, remove duplicates and derive a per-chunk idempotency key.
+
+| Helper | Items per request |
+| --- | --- |
+| `Statutes.ResolveBatchAll` | 500 |
+| `Statutes.GetSectionsAll` | 50 |
+| `SessionLaws.GetBatchAll` | 200 |
+
+## Webhooks
+
+Deliveries follow the Standard Webhooks scheme. Verify the raw request body, never a re-encoded one.
+
+```go
+ev, err := vaquill.UnwrapWebhook(body, r.Header, "whsec_...")
+if err != nil {
+	http.Error(w, "bad signature", http.StatusBadRequest)
+	return
+}
+```
+
+Secrets are `whsec_` plus base64.
+Pass several secrets to `VerifyWebhookSecrets` or `UnwrapWebhookSecrets` while rotating.
+An empty or blank secret, including a bare `whsec_`, or an empty secret list, returns `ErrEmptyWebhookSecret`. It is a configuration error, not a signature failure.
+A `whsec_` secret whose remainder is not valid base64 returns `ErrInvalidWebhookSecret` instead of using the text as the key. Test both with `errors.Is`.
+The default timestamp tolerance is 5 minutes (`WithWebhookTolerance`).
+`WithLegacySignature` accepts the older `X-Vaquill-Signature` header, which has no replay protection.
+`SignWebhook` produces headers for your own tests.
+
+See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
+
+## Versioning
+
+The SDK follows semantic versioning. `vaquill.Version` is `0.1.0` and requests carry `User-Agent: vaquill-go/0.1.0`.
+While the major version is 0, minor releases may change the API.
+A server `Deprecation` or `Sunset` header makes the client log one warning per route.
+`vaquill.Operations` lists every operation with its method, path and whether it is charged.
+
+Run the tests from a checkout of the repository.
+
+```bash
+go test -race ./...
+```

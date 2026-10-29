@@ -1,0 +1,315 @@
+---
+title: "Framework integrations"
+description: "Vaquill tools for LangChain, LlamaIndex and the Vercel AI SDK: install status, cost controls, errors and examples"
+---
+
+{/* Every sample on this page is copied from the README of the matching package in integrations/ of vaquill-sdks. */}
+
+Three packages wrap the SDKs as tools for agent frameworks: LangChain, LlamaIndex and the Vercel AI SDK.
+Each tool calls the same Data API endpoints, spends the same credits, and has a spend cap so an agent loop cannot run unchecked.
+
+<Warning>
+  None of the three integration packages is published yet. The install commands below show the intended package names and do not work today.
+  Until a release, install from a checkout of the [`integrations/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations) of the repository.
+</Warning>
+
+| Package | Framework | Intended install | Status |
+| --- | --- | --- | --- |
+| `langchain-vaquill` | LangChain and LangGraph | `pip install langchain-vaquill` | Not yet published |
+| `llama-index-tools-vaquill` | LlamaIndex | `pip install llama-index-tools-vaquill` | Not yet published |
+| `@vaquill-ai/ai-sdk` | Vercel AI SDK | `npm install @vaquill-ai/ai-sdk ai zod` | Not yet published |
+
+The Python packages are built on the published [`vaquill`](/api-guide/sdks/python) SDK and need Python 3.11 or newer.
+The Vercel package is built on the published [`@vaquill-ai/sdk`](/api-guide/sdks/typescript) and needs Node 20 or newer.
+Each is MIT licensed.
+
+<Warning>
+  Almost every tool spends credits, and an agent can call tools many times in a loop. Always set a spend cap.
+  Use the integrations on a server only. A `vq_key_` key must never ship to a browser.
+</Warning>
+
+## LangChain
+
+`langchain-vaquill` provides a toolkit, a retriever and LangGraph-compatible tools.
+It gives an agent search, citation resolution, section text, amendment history, cited-by, definitions and session laws.
+
+### Install
+
+Not yet published. Once released:
+
+```bash
+pip install langchain-vaquill
+export VAQUILL_API_KEY="vq_key_..."
+```
+
+For the agent example, also install `langchain-vaquill[agents]` and `langchain-openai`. This needs `langchain` 1.0 or newer, which provides `create_agent`.
+
+### Spend guard
+
+A search costs 4 credits, a section's text 6, a citation resolve 2 and definitions 4.
+Set `max_credits` on the toolkit and the retriever. It is a hard cap: once reached, paid tools return a message telling the model to stop.
+Use `free_only=True` to expose only tools that never spend (`vaquill_credit_balance`, `vaquill_get_pricing`, `vaquill_statutes_coverage`, `vaquill_list_boards`, `vaquill_list_watches` and `vaquill_extract_citations` with its default `resolve=false`).
+Every tool description states what it costs, and `vaquill_get_pricing` returns the live prices.
+
+### Agent
+
+```python
+from langchain_openai import ChatOpenAI
+from langchain.agents import create_agent
+
+from langchain_vaquill import VaquillToolkit
+
+toolkit = VaquillToolkit(max_credits=100)  # reads VAQUILL_API_KEY
+agent = create_agent(ChatOpenAI(model="gpt-4o"), toolkit.get_tools())
+
+result = agent.invoke(
+    {"messages": [("user", "Is California Penal Code 187 in force, and what does it say?")]}
+)
+print(result["messages"][-1].content)
+print("credits spent:", toolkit.credits_spent)
+```
+
+### Tool selection
+
+```python
+VaquillToolkit(tools=["vaquill_search_statutes", "vaquill_get_statute_text"])
+VaquillToolkit(free_only=True)
+VaquillToolkit.available_tool_names()
+```
+
+The default is read-only.
+The watch tools (`vaquill_create_watch`, `vaquill_update_watch`, `vaquill_delete_watch`) change the account and exist only with `include_watch_tools=True`.
+
+### Retriever
+
+```python
+from langchain_vaquill import VaquillRetriever
+
+retriever = VaquillRetriever(
+    k=3,
+    filters={"state": "ca", "corpus_type": ["STATE"], "exclude_repealed": True},
+    max_credits=30,
+)
+docs = retriever.invoke("homicide with malice aforethought")
+docs[0].page_content  # section text
+docs[0].metadata[
+    "citation"
+]  # also: id, jurisdiction, sourceUrl, effectiveDate, lastAmendedDate, currentThrough
+```
+
+`include_body=True` (the default) returns section text and costs about 4 + 6 per row.
+`include_body=False` returns the excerpt for the search price only.
+A call that could push the total past `max_credits` is refused before any request is sent, with `vaquill.SpendGuardExceeded`.
+
+### Errors, retries and idempotency
+
+Tools never raise SDK exceptions or stack traces at the model.
+They raise `ToolException` with an instruction: out of credits (stop), bad key (stop), rate limited (wait, retry once), not found (resolve the citation first), bad arguments (fix and call again), spend cap reached (answer with what you have).
+Anything shaped like an API key or bearer token is removed from messages.
+Retries, backoff and idempotency keys come from the Python SDK underneath, so they behave as described on the [Python SDK](/api-guide/sdks/python) page.
+You can pass your own `client=` or `async_client=` (a `vaquill.Vaquill` or `vaquill.AsyncVaquill`) to tune them.
+
+## LlamaIndex
+
+`llama-index-tools-vaquill` ships two import paths.
+`llama_index.tools.vaquill` has `VaquillToolSpec` for agents, and `llama_index.retrievers.vaquill` has `VaquillRetriever` for query engines and pipelines.
+
+### Install
+
+Not yet published. Once released:
+
+```bash
+pip install llama-index-tools-vaquill
+export VAQUILL_API_KEY="vq_key_..."
+```
+
+### Spend guard
+
+Typical prices: search 4, section metadata 2, section text 6, citation resolve 2, definitions 4, count 1.
+`get_credit_balance` and `extract_citations` with `resolve=False` are free.
+Read the live prices with `client.pricing.get()` (free) before a large job.
+Always set `max_credits` when you hand tools to an agent or a retriever to a pipeline.
+It is a hard cap shared by the sync and async paths: once it is reached no further request is sent.
+One call that is already in flight can still finish, so choose a cap with some headroom.
+
+### Agent
+
+```python
+import asyncio
+
+from llama_index.core.agent.workflow import FunctionAgent
+from llama_index.llms.openai import OpenAI
+from llama_index.tools.vaquill import VaquillToolSpec
+
+tool_spec = VaquillToolSpec(max_credits=50)  # key from VAQUILL_API_KEY
+
+agent = FunctionAgent(
+    tools=tool_spec.to_tool_list(),
+    llm=OpenAI(model="gpt-4.1"),
+    system_prompt=(
+        "You are a legal research assistant. Find the section with search_statutes or "
+        "resolve_citation, then read it with get_section(include_body=true). "
+        "Quote the citation and sourceUrl. Each call costs credits, so avoid repeats."
+    ),
+)
+
+
+async def main() -> None:
+    answer = await agent.run("What does 42 U.S.C. 1983 provide? Quote the first sentence.")
+    print(answer)
+    print("credits spent:", tool_spec.credits_spent)
+
+
+asyncio.run(main())
+```
+
+Each tool has an `_async` twin, and `to_tool_list()` wires both into one `FunctionTool`, so async agents use the async client.
+`create_watch`, `update_watch` and `delete_watch` are not exposed unless you opt in with `VaquillToolSpec(enable_watch_management=True)`.
+
+### Retriever
+
+```python
+from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.retrievers.vaquill import VaquillRetriever
+
+retriever = VaquillRetriever(
+    similarity_top_k=5,
+    filters={"state": "ca", "corpus_type": "STATE"},
+    max_credits=40,
+)
+
+for hit in retriever.retrieve("elements of first degree murder"):
+    print(hit.score, hit.node.metadata["citation"], hit.node.metadata["sourceUrl"])
+    print(hit.node.get_content()[:200])
+
+query_engine = RetrieverQueryEngine.from_args(retriever)  # uses your configured LLM
+```
+
+Each retrieval is one search: 4 credits, plus the text price per row when `include_body=True` (the default). Set `include_body=False` for excerpts at 4 credits.
+Before each request the retriever adds the worst-case cost of that retrieval to what it has spent, and raises `vaquill.SpendGuardExceeded` without sending anything if the total would pass the cap.
+
+### Errors, retries and idempotency
+
+By default a failure comes back as a short string the model can act on, for example `Vaquill error: Out of credits (402). ...`.
+There are no stack traces and the API key is scrubbed from every message.
+Set `raise_on_error=True` to raise `VaquillToolError` instead. Retriever failures always raise `VaquillToolError`.
+`VaquillToolSpec` accepts `client`, `async_client`, `timeout` and `max_retries`. Retries and idempotency are handled by the [Python SDK](/api-guide/sdks/python) underneath.
+
+## Vercel AI SDK
+
+`@vaquill-ai/ai-sdk` gives `generateText`, `streamText` or a `ToolLoopAgent` the ability to search statutes and regulations, read a section, verify a citation and check what changed.
+
+### Install
+
+Not yet published. Once released:
+
+```bash
+npm install @vaquill-ai/ai-sdk ai zod
+export VAQUILL_API_KEY=vq_key_...
+```
+
+`ai` (5.0.15 or newer, 6 or 7) and `zod` (3.25.76 or newer, or 4) are peer dependencies.
+`ai` 7 itself requires Node 22 or newer.
+
+### Spend guard
+
+Only `creditBalance` is free.
+`maxCredits` defaults to 200 credits per process. Set it deliberately, and pair it with a step limit (`stopWhen`) on the AI SDK side.
+The cap is checked before each call against credits already spent, so the last call may take the total slightly past the limit.
+Once the limit is reached, every further paid call returns a `spend_limit` result and sends no request.
+While a cap is set, paid calls run one at a time, so parallel tool calls cannot overshoot it.
+Pass `maxCredits: Infinity` to switch the cap off.
+
+### generateText
+
+```ts
+import { generateText, isStepCount } from "ai";
+import { createVaquillTools } from "@vaquill-ai/ai-sdk";
+
+const { text } = await generateText({
+  model: "anthropic/claude-sonnet-4.5",
+  tools: createVaquillTools({ maxCredits: 50 }),
+  stopWhen: isStepCount(6),
+  prompt: "What is the statute of limitations for medical malpractice in Texas? Cite the section.",
+});
+```
+
+### Agent loop
+
+```ts
+import { ToolLoopAgent, isStepCount } from "ai";
+import { createVaquillTools } from "@vaquill-ai/ai-sdk";
+
+const researcher = new ToolLoopAgent({
+  model: "anthropic/claude-sonnet-4.5",
+  instructions:
+    "You are a legal research assistant. Verify every citation with resolveCitation before relying on it. " +
+    "Quote statute text only from getStatuteSectionText. Never cite a section you did not retrieve. " +
+    "If a tool returns spend_limit, stop and answer from what you have.",
+  tools: createVaquillTools({
+    maxCredits: 100,
+    // Read tools only; leave out the expensive ones if you do not need them.
+    exclude: ["extractCitations", "listDivisions"],
+  }),
+  stopWhen: isStepCount(10),
+});
+
+const { text } = await researcher.generate({
+  prompt: "Compare how California and New York define 'trade secret'.",
+});
+```
+
+Build the tools per request in a route handler so each request gets its own spend cap.
+The `streamText` pattern is the same as `generateText`.
+
+### Options
+
+```ts
+import { Vaquill } from "@vaquill-ai/sdk";
+import { createVaquillTools } from "@vaquill-ai/ai-sdk";
+
+createVaquillTools({
+  apiKey: process.env.VAQUILL_API_KEY, // default: process.env.VAQUILL_API_KEY
+  client: new Vaquill(), // your own configured Vaquill client (base URL, retries, fetch)
+  maxCredits: 100, // hard spend cap, default 200, Infinity to disable
+  include: ["searchStatutes", "resolveCitation"], // only these tool names
+  exclude: ["extractCitations"], // everything except these (applied after include)
+  allowWrites: false, // expose the watch tools, default false
+  maxResultChars: 60_000, // replace results larger than this with a preview, default 60000
+  redact: ["internal-secret"], // extra strings to scrub from error messages
+});
+```
+
+With `allowWrites: true` five watch tools appear: `listWatches`, `createWatch`, `updateWatch`, `deleteWatch` and `testWatch`.
+`createWatch` makes Vaquill email or POST to an address the model chooses, so enable writes only for agents you trust with that, and consider a human approval step.
+
+### Errors, retries and idempotency
+
+A tool never throws for an API problem. Success returns `{ ok: true, data, creditsSpentSoFar }`.
+A failure returns a structured result the model can act on.
+
+```json
+{
+  "ok": false,
+  "error": {
+    "kind": "not_found",
+    "message": "...",
+    "retryable": false,
+    "hint": "Nothing exists at that identifier. Find the right actId ...",
+    "status": 404,
+    "requestId": "req_..."
+  }
+}
+```
+
+`kind` is one of `spend_limit`, `insufficient_credits`, `authentication`, `permission_denied`, `not_found`, `invalid_request`, `rate_limited`, `daily_cap`, `server_error`, `timeout`, `connection`, `bad_response`, `error` or `unexpected`.
+Results carry no stack traces, and anything shaped like an API key is replaced with `[redacted]`.
+Only an abort (the AI SDK's `abortSignal`) is rethrown, so cancelling a request stops the loop.
+A result larger than `maxResultChars` is replaced by `{ ok: true, truncated: true, preview, note }`. Credits are still spent for it, so ask for a `pinpoint` subsection or a narrower search.
+Retries and idempotency come from the [TypeScript SDK](/api-guide/sdks/typescript) underneath.
+
+## Webhooks and versioning
+
+The integrations do not receive webhooks. To verify a law change delivery, use the webhook helpers of the [Python](/api-guide/sdks/python) or [TypeScript](/api-guide/sdks/typescript) SDK.
+Pagination and batch helpers are not exposed as tools, and bulk fetches are deliberately left out. Use the SDK for those.
+Because no integration has been released, there is no stable version yet, and the API may change before the first release.

@@ -1,19 +1,25 @@
 ---
 title: "SDKs overview"
-description: "Official Python and TypeScript clients for the Vaquill Data API"
+description: "Official Python, TypeScript, Go, Java and Kotlin clients and framework integrations for the Vaquill Data API"
 ---
 
 The Vaquill SDKs are typed clients for the US Data API.
 They wrap the same endpoints described in this guide and add retries, typed errors, pagination helpers and credit awareness.
 Anything an SDK can do, you can also do with plain HTTP.
 
-| Package | Language | Install | Source |
-| --- | --- | --- | --- |
-| `vaquill` | Python 3.11+ | `pip install vaquill` | [`Vaquill-AI/vaquill-sdks`, `python/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/python) on GitHub |
-| `@vaquill-ai/sdk` | TypeScript, Node 20+ (built on standard `fetch`; tested on Node 20, 22 and 24) | `npm install @vaquill-ai/sdk` | [`Vaquill-AI/vaquill-sdks`, `js/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/js) on GitHub |
-| `vaquill` CLI | Command line | See [CLI](/api-guide/sdks/cli) | Same repos |
+| Package | Language | Install | Status | Source |
+| --- | --- | --- | --- | --- |
+| `vaquill` | Python 3.11+ | `pip install vaquill` | Published (0.2.0 on PyPI) | [`Vaquill-AI/vaquill-sdks`, `python/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/python) on GitHub |
+| `@vaquill-ai/sdk` | TypeScript, Node 20+ (built on standard `fetch`; tested on Node 20, 22 and 24) | `npm install @vaquill-ai/sdk` | Published (0.2.0 on npm) | [`Vaquill-AI/vaquill-sdks`, `js/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/js) on GitHub |
+| `vaquill` CLI | Command line | See [CLI](/api-guide/sdks/cli) | Published, inside the Python package | Same repos |
+| `github.com/Vaquill-AI/vaquill-sdks/go` | [Go](/api-guide/sdks/go) 1.23+ | Not yet published | Not yet published | [`go/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/go) |
+| `ai.vaquill:vaquill-sdk` | [Java](/api-guide/sdks/java) 11+ | Not yet published | Not yet published | [`java/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/java) |
+| `ai.vaquill:vaquill-kotlin` | [Kotlin](/api-guide/sdks/kotlin) (JVM 11+) | Not yet published | Not yet published | [`kotlin/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/kotlin) |
+| `langchain-vaquill`, `llama-index-tools-vaquill`, `@vaquill-ai/ai-sdk` | [Framework integrations](/api-guide/sdks/integrations) (LangChain, LlamaIndex, Vercel AI SDK) | Not yet published | Not yet published | [`integrations/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations) |
 
-Both SDKs are MIT licensed.
+The Go, Java, Kotlin and integration packages are not on any registry yet. Their pages show the intended coordinates and how to build from source.
+
+All SDKs are MIT licensed.
 The data you retrieve is covered by separate terms. See [Rights and licensing](/api-guide/rights-and-licensing).
 
 <Note>
@@ -92,9 +98,12 @@ Every error derives from `VaquillError`. Status errors carry the HTTP status, th
 | `InternalServerError` | 5xx |
 | `IdempotencyConflictError` | Idempotency failures: `IdempotencyKeyReusedError`, `IdempotencyInProgressError`, `IdempotencyReplayUnavailableError` |
 | `SpendGuardExceeded` (Python), `SpendGuardExceededError` (TypeScript) | The spend guard stopped a charged call before it was sent |
+| `ResponseParseError` | A 2xx response whose body was not the JSON the endpoint promises |
 | `WebhookVerificationError` | A webhook delivery failed verification |
 
-The code is checked first, then the status, so an unknown code still gives the status class. See [Errors](/api-guide/errors) for the wire format.
+The code is checked first, then the status, so an unknown code still gives the status class.
+A 422 message ends with the first validation reasons from the response's `errors` list, so you can read what was rejected without opening the body.
+See [Errors](/api-guide/errors) for the wire format.
 
 ## Pagination
 
@@ -108,10 +117,25 @@ Python `iter_*` helpers and TypeScript `*All` methods hide the offset, cursor an
 
 Listing watches, changes and boards is free.
 
+## Batch helpers
+
+Three helpers wrap the batch endpoints and accept any number of inputs: `resolve_batch_all` / `resolveBatchAll` (500 citations per request), `get_sections_all` / `getSectionsAll` (50 section ids) and `session_laws.get_batch_all` / `sessionLaws.getBatchAll` (200 ids).
+Each splits the input at the per-call cap, sends exact repeats once, returns the members of every response as one flat list in input order, and sends nothing for an empty input.
+The spend guard is checked before every chunk, so a guard reached part way stops the remaining chunks.
+A caller's idempotency key is kept for the first chunk and suffixed with `-<chunk number>` for later ones.
+These helpers are charged per item. The batch helpers are available in the Python, TypeScript, Go, Java and Kotlin clients.
+
 ## Spend guard
 
 Pass `max_credits` (Python) or `maxCredits` (TypeScript) when you create the client. Once responses on that client have reported that many credits, charged calls raise `SpendGuardExceeded` / throw `SpendGuardExceededError` before sending anything.
 It checks what is already spent, not the cost of the next call. `client.credits_spent` / `client.creditsSpent` shows the running total, shared with derived clients.
+While a guard is set, charged calls on the client run one at a time, from the check to the moment their credits are counted, so concurrent calls cannot all pass the check and overshoot the cap. Without a guard, calls keep full concurrency.
+
+## Logging
+
+Python logs through the standard `logging` module under the `vaquill` logger.
+TypeScript takes a `logger` option (any subset of `debug`, `info`, `warn` and `error`, default `console`) and a `logLevel` option (default `warn`).
+The API key is always redacted, and idempotency keys are logged by their first 8 characters only.
 
 ## Raw responses
 
@@ -124,6 +148,9 @@ TypeScript's `rawRequest` returns the parsed value directly.
 ## Webhook verification
 
 Both SDKs verify the raw request body against the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance, accept several signatures and a list of secrets for rotation, and treat a `whsec_` secret as base64.
+A `whsec_` secret must be valid base64. Go, Java and Kotlin reject one that is not.
+Python and TypeScript reject it from the first release after 0.2.0; version 0.2.0 of both still uses the text as the key, so check that your secret is copied in full.
+Every client rejects an empty secret.
 They can also read the legacy `X-Vaquill-Signature: sha256=<hex>` header, but only when you opt in.
 
 <Warning>
@@ -141,6 +168,7 @@ Python uses snake_case names and TypeScript uses camelCase. The SDK maps them to
 
 - SDKs follow semantic versioning. Before 1.0, the API surface may change in minor versions.
 - The SDK major version tracks the major version of the API contract.
+- Python 0.2.0 and TypeScript 0.2.0 are the published versions. Go, Java and Kotlin are at 0.1.0 in source and unpublished.
 - Python 3.11 and later are supported. Node 20 and later are supported, and the TypeScript client is tested on Node 20, 22 and 24.
 - Breaking changes are listed in the release notes.
 - Report bugs on the issue tracker of the [vaquill-sdks repository](https://github.com/Vaquill-AI/vaquill-sdks/issues). For account or billing questions, email support.
@@ -153,6 +181,12 @@ Python uses snake_case names and TypeScript uses camelCase. The SDK maps them to
   </Card>
   <Card title="TypeScript" icon="js" href="/api-guide/sdks/typescript">
     Install, quickstart and error handling
+  </Card>
+  <Card title="Go, Java and Kotlin" icon="code" href="/api-guide/sdks/go">
+    Not yet published. Intended coordinates and build from source: [Go](/api-guide/sdks/go), [Java](/api-guide/sdks/java), [Kotlin](/api-guide/sdks/kotlin)
+  </Card>
+  <Card title="Integrations" icon="plug" href="/api-guide/sdks/integrations">
+    LangChain, LlamaIndex and Vercel AI SDK tools. Not yet published
   </Card>
   <Card title="CLI" icon="terminal" href="/api-guide/sdks/cli">
     Search and resolve from the shell

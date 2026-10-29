@@ -29,7 +29,7 @@ vaquill pricing
 Output is a compact table by default. Add `--json` for the response as JSON on stdout, with the API's camelCase keys, so you can pipe it to `jq`.
 Messages and `credits used: N` go to stderr, and a failure sets a non-zero exit code (see the table below).
 
-`search`, `resolve` and `section` spend credits. `credits`, `pricing`, `coverage` and the `watches` commands are free.
+`search`, `resolve`, `section`, the `statutes` and `session-laws` groups and `watches diff` spend credits. `credits`, `pricing`, `coverage`, `boards` and the other `watches` commands are free.
 Set `--max-credits N` to refuse a charged call once N credits have been used in this run.
 See the [SDKs overview](/api-guide/sdks/overview) for retry and credit behavior, which is the same as the Python client.
 
@@ -49,7 +49,8 @@ It is never stored on disk and never printed: error text and `--debug` logs have
 | `--no-color` | Never use colour. |
 | `--debug` | Log requests to stderr and show a traceback on failure. |
 
-Global options work before or after the command name.
+Global options work before or after the command name, and the last one given wins.
+Run `vaquill COMMAND --help` for the flags of any command.
 
 ## All commands
 
@@ -67,17 +68,55 @@ Global options work before or after the command name.
 | `watches changes WATCH_ID [--limit N] [--since-id N] [--before-id N] [--order asc\|desc]` | Changes a watch recorded | free |
 | `watches deliveries WATCH_ID [--limit N]` | Recent deliveries and delivery health | free |
 | `webhook verify --secret S --id I --timestamp T --signature SIG [--file F] [--tolerance N]` | Verify a Standard Webhooks signature offline | none |
+| `watches update WATCH_ID [--webhook-url U] [--webhook-secret S] [--email E] [--scope JSON]` | Change a watch. Only the options you pass change. | free |
+| `watches test WATCH_ID` | Send a test event to the watch's channel | free |
+| `watches diff WATCH_ID CHANGE_ID` | The before and after text of one change | charged |
+| `boards [--corpus-type T] [--state S] [--limit N] [--offset N]` | The sources a watch can follow | free |
 | `version` | Print the SDK and Python versions | none |
 | `api METHOD PATH [--query K=V ...] [--data JSON] [--limit N] [--charged]` | Call any endpoint and print the JSON | see below |
 
 Prices are not repeated here: run `vaquill pricing` for the live table.
 
+## Command groups
+
+Two groups cover the rest of the API. Every command in them is charged.
+`search`, `resolve`, `section` and `coverage` also exist inside `statutes`.
+
+| Command | What it does |
+| --- | --- |
+| `statutes resolve-batch` | Resolve many citations (charged per citation) |
+| `statutes sections` | Fetch many sections at once (charged per section) |
+| `statutes count [QUERY]` | Count sections in a scope or matching a query |
+| `statutes divisions CORPUS_TYPE [--cursor C]` | Browse one level of a corpus hierarchy |
+| `statutes changes ACT_ID` | List observed changes to a section |
+| `statutes neighbors ACT_ID [--limit N]` | Sections related to a section |
+| `statutes enactments ACT_ID` | The session laws that enacted a section |
+| `statutes rulemaking ACT_ID` | Rulemaking for a section |
+| `statutes part-rulemaking TITLE PART [--years N]` | Rulemaking for a CFR part |
+| `statutes cited-by ACT_ID [--limit N]` | Sections that cite a section |
+| `statutes definitions ACT_ID` | The terms a section defines or uses |
+| `statutes cross-state ACT_ID [--limit N]` | Comparable sections in other states |
+| `statutes extract-citations [TEXT] [--file PATH]` | Find and resolve the citations in a text |
+| `session-laws search QUERY [--offset N]` | Search session laws by topic or wording |
+| `session-laws list JURISDICTION [--cursor C]` | List a state's session laws with filters |
+| `session-laws get ID [--jurisdiction S]` | One session law's record, without text |
+| `session-laws body ID` | One page of a session law's text |
+| `session-laws versions ID` | Every version of a session law |
+| `session-laws batch` | Fetch many session laws at once |
+| `session-laws changes [--since-id N] [--jurisdiction S] [--limit N]` | Changes since a cursor, oldest first |
+
+Each command accepts the same global options.
+The batch commands (`statutes resolve-batch`, `statutes sections`, `session-laws batch`) take their inputs as arguments or with `--file PATH` (one per line, `-` for stdin).
+Run `vaquill statutes --help` or `vaquill session-laws --help` for the full flag list of each.
+
 ## Pages and cost
 
-The CLI never paginates or loops by itself.
+By default the CLI does not paginate or loop.
 `search`, `watches list` and `watches changes` make exactly one request.
 When the server reports more results, a notice on stderr names the flag that continues (`--offset N`, `--before-id N`, `--since-id N`).
 Each continued search call is charged again.
+Add `--all` to `search` to fetch every page, or `--max-pages N` or `--max-items N` (each implies `--all`) to stop early.
+Every page is charged, so set a limit or `--max-credits` before you use `--all`.
 
 ## The `api` command
 
