@@ -1,0 +1,160 @@
+---
+title: "SDKs overview"
+description: "Official Python and TypeScript clients for the Vaquill Data API"
+---
+
+{/* MUST NOT GO LIVE BEFORE THE BACKEND DEPLOY: the new error codes (code, retryable, retryAfterSeconds), the Idempotency-Key header and the Standard Webhooks headers are implemented in the backend working tree but are NOT deployed. These pages describe the SDKs as built, which assumes them. */}
+The Vaquill SDKs are typed clients for the US Data API.
+They wrap the same endpoints described in this guide and add retries, typed errors, pagination helpers and credit awareness.
+Anything an SDK can do, you can also do with plain HTTP.
+
+| Package | Language | Install | Source |
+| --- | --- | --- | --- |
+| `vaquill` | Python 3.11+ | `pip install vaquill` | [`Vaquill-AI/vaquill-sdks`, `python/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/python) on GitHub |
+| `@vaquill/sdk` | TypeScript, Node 20+, Bun, Deno, edge runtimes | `npm install @vaquill/sdk` | [`Vaquill-AI/vaquill-sdks`, `js/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/js) on GitHub |
+| `vaquill` CLI | Command line | See [CLI](/api-guide/sdks/cli) | Same repos |
+
+Both SDKs are MIT licensed.
+The data you retrieve is covered by separate terms. See [Rights and licensing](/api-guide/rights-and-licensing).
+
+<Note>
+  The SDKs cover the US document only. For India, use the separate OpenAPI document directly.
+</Note>
+
+## Authentication
+
+Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Keys start with `vq_key_`.
+
+By default the client reads `VAQUILL_API_KEY` from the environment.
+You can also pass `api_key` (Python) or `apiKey` (TypeScript) explicitly, and an explicit value wins over the environment.
+The client rejects a key that does not start with `vq_key_`, and the key never appears in an error message or a log line.
+
+<Warning>
+  Use the SDKs server-side only. A key shipped in browser code is visible to every visitor. The TypeScript client warns when it sees a browser.
+</Warning>
+
+## Configuration
+
+| Option | Python | TypeScript | Environment variable |
+| --- | --- | --- | --- |
+| API key | `api_key` | `apiKey` | `VAQUILL_API_KEY` |
+| Base URL | `base_url` | `baseURL` | `VAQUILL_BASE_URL` |
+| Timeout | `timeout` (seconds, per attempt) | `timeout` (milliseconds, per attempt) | none |
+| Maximum retries (default 2) | `max_retries` | `maxRetries` | none |
+| Extra headers | `default_headers` | `defaultHeaders` | none |
+| Spend guard | `max_credits` | `maxCredits` | none |
+| Custom HTTP | `http_client` (an `httpx.Client`) | `fetch` | none |
+
+`client.with_options(...)` (Python) and `client.withOptions({ ... })` (TypeScript) return a derived client that shares the key and the spend counter.
+Every method also takes per-call `timeout`, `max_retries` / `maxRetries`, `headers` and `idempotency_key` / `idempotencyKey` options.
+
+## Which calls cost credits
+
+A call is charged when the API declares the `Idempotency-Key` header on its operation. That is 25 of the 36 operations in the US document.
+Both SDKs apply the same rule, and a test in each repo derives the list from the API contract.
+Free calls: `statutes.coverage`, `boards.list`, every watch operation except the change diff (`create`, `list`, `update`, `delete`, `test`, changes and deliveries), `credits.balance` and `pricing.get`.
+Prices are not hard-coded in the SDKs. `client.pricing.get()` is free and returns the live price list.
+Some charged calls return 0 credits (for example a body that is not held), so read the figure from the response.
+
+## Retries and timeouts
+
+The clients retry 408, 429 and 5xx responses, plus 409 only for `idempotency_in_progress`. Connection errors and timeouts are retried when it is safe.
+Backoff starts at 0.5 seconds, doubles to an 8 second cap and is scaled down by 0 to 25 percent jitter. The default is 2 retries; `max_retries=0` / `maxRetries: 0` turns them off.
+`retry-after-ms` wins over `Retry-After`, which wins over the body's `retryAfterSeconds`. A wait above 120 seconds is not retried.
+
+Never retried: a 402 `insufficient_credits`, `daily_cap_exceeded`, any other 4xx, and anything the server marks `retryable: false`.
+
+## Idempotency
+
+Each charged call sends one generated `Idempotency-Key`, reused on every retry of that call. The server replays the stored response instead of charging again, and the response reports `idempotent_replayed` / `idempotentReplayed`.
+Pass `idempotency_key="..."` (Python) or `idempotencyKey: "..."` (TypeScript) to choose your own key.
+
+<Warning>
+  If you turn automatic keys off (`idempotency_keys=False` in Python, `idempotencyKey: false` in TypeScript), a charged call is no longer retried after a timeout, a connection error or a 5xx, because the first attempt may already have been billed. A 429 is still retried, since it is refused before any work.
+  Free `POST`s without a key (`watches.create`, `watches.test`) follow the same rule, so a retry cannot create a second watch.
+</Warning>
+
+## Errors
+
+Every error derives from `VaquillError`. Status errors carry the HTTP status, the request id, the parsed body, and `code`, `retryable` and a retry hint when the server sends them.
+
+| Class | When |
+| --- | --- |
+| `APIConnectionError` | The request never got a response. `APITimeoutError` is a timeout (TypeScript adds `APIUserAbortError`). |
+| `BadRequestError` | 400 |
+| `AuthenticationError` | 401 |
+| `InsufficientCreditsError` | 402. Never retried. |
+| `PermissionDeniedError` | 403 |
+| `NotFoundError` | 404 |
+| `ConflictError` | 409 |
+| `UnprocessableEntityError` | 422 |
+| `RateLimitError` | 429. `DailyCapExceededError` is the per-key daily cap and cannot succeed until it resets. |
+| `InternalServerError` | 5xx |
+| `IdempotencyConflictError` | Idempotency failures: `IdempotencyKeyReusedError`, `IdempotencyInProgressError`, `IdempotencyReplayUnavailableError` |
+| `SpendGuardExceeded` (Python), `SpendGuardExceededError` (TypeScript) | The spend guard stopped a charged call before it was sent |
+| `WebhookVerificationError` | A webhook delivery failed verification |
+
+The code is checked first, then the status, so an unknown code still gives the status class. See [Errors](/api-guide/errors) for the wire format.
+
+## Pagination
+
+Python `iter_*` helpers and TypeScript `*All` methods hide the offset, cursor and `sinceId`/`beforeId` styles behind one iterator, with a way to read whole pages.
+
+<Warning>
+  On a charged endpoint every page spends credits. Iterating a whole result set can cost far more than one call.
+  Set `max_pages` / `maxPages` or `max_items` / `maxItems`, or use the spend guard. Without a limit a TypeScript iterator runs until the data ends.
+  The Python pager reports `truncated` when its guard stopped it with more data available.
+</Warning>
+
+Listing watches, changes and boards is free.
+
+## Spend guard
+
+Pass `max_credits` (Python) or `maxCredits` (TypeScript) when you create the client. Once responses on that client have reported that many credits, charged calls raise `SpendGuardExceeded` / throw `SpendGuardExceededError` before sending anything.
+It checks what is already spent, not the cost of the next call. `client.credits_spent` / `client.creditsSpent` shows the running total, shared with derived clients.
+
+## Raw responses
+
+Python: `client.with_raw_response.request(...)` returns the parsed body with `request_id`, `rate_limit` and `credits_charged_this_call`.
+TypeScript: `.withResponse()` on any call returns `{ data, response, meta }`.
+Both clients also have `raw_request` / `rawRequest` for endpoints newer than the SDK.
+
+## Webhook verification
+
+Both SDKs verify the raw request body against the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance, accept several signatures and a list of secrets for rotation, and treat a `whsec_` secret as base64.
+They also read the legacy `X-Vaquill-Signature: sha256=<hex>` header.
+
+<Warning>
+  The legacy header signs only the body, so it has no replay protection: a captured delivery verifies forever. TypeScript accepts it only with `allowLegacy: true`. Python accepts it unless you pass `allow_legacy=False`, so pass that.
+</Warning>
+
+## Types
+
+Python responses are Pydantic v2 models and the package ships `py.typed`. TypeScript types are generated from the OpenAPI document.
+Unknown enum values and extra response fields do not raise, so a new corpus type or field will not break an older SDK.
+Python uses snake_case names and TypeScript uses camelCase. The SDK maps them to the wire names for you.
+
+## Versioning and support
+
+- SDKs follow semantic versioning. Versions below 1.0 may change between minor releases.
+- The SDK major version tracks the major version of the API contract.
+- Python 3.11 and later are supported. Node 20 and later are supported.
+- Each major version ships with a migration guide.
+- Report bugs on the issue tracker of the [vaquill-sdks repository](https://github.com/Vaquill-AI/vaquill-sdks/issues). For account or billing questions, email support.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Python" icon="python" href="/api-guide/sdks/python">
+    Install, quickstart, async and error handling
+  </Card>
+  <Card title="TypeScript" icon="js" href="/api-guide/sdks/typescript">
+    Install, quickstart and error handling
+  </Card>
+  <Card title="CLI" icon="terminal" href="/api-guide/sdks/cli">
+    Search and resolve from the shell
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions">
+    Every endpoint and schema
+  </Card>
+</CardGroup>

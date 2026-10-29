@@ -1,0 +1,218 @@
+---
+title: "Python SDK"
+description: "Install the Vaquill Python client, resolve citations, search statutes and handle errors"
+---
+
+{/* MUST NOT GO LIVE BEFORE THE BACKEND DEPLOY: the new error codes (code, retryable, retryAfterSeconds), the Idempotency-Key header and the Standard Webhooks headers are implemented in the backend working tree but are NOT deployed. This page describes the SDK as built, which assumes them. */}
+{/* Every sample on this page is copied from the README, docs/OPERATIONS.md or examples/ of vaquill-python. The test suite runs the three examples against a fake server. */}
+
+The Python client needs Python 3.11 or later. It depends on `httpx` and `pydantic`.
+It has a sync client (`Vaquill`) and an async client (`AsyncVaquill`) with the same methods.
+For the options shared with the TypeScript client, see the [SDKs overview](/api-guide/sdks/overview).
+
+<Warning>
+  Use the SDK on a server only. An API key (`vq_key_...`) must never ship to a browser.
+</Warning>
+
+## Install
+
+```bash
+pip install vaquill
+```
+
+Source: [`Vaquill-AI/vaquill-sdks`, `python/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/python) on GitHub.
+
+## Quickstart
+
+Resolve a citation, then read the section text.
+
+```python
+from vaquill import Vaquill
+
+client = Vaquill()  # reads VAQUILL_API_KEY; VAQUILL_BASE_URL overrides the host
+
+# 2 credits. Even an unresolved citation is charged: the answer is what you pay for.
+result = client.statutes.resolve("42 U.S.C. 1983")
+if result.resolved and result.section:
+    body = client.statutes.get_section_body(result.section.act_id)  # 6 credits
+    print(body.plain)
+```
+
+An unresolved citation is a normal 200 response, not an exception. Check `result.resolved` before you rely on it. See [Citation quality](/api-guide/concepts/citation-quality).
+
+Search statutes.
+
+```python
+hits = client.statutes.search(
+    "statute of limitations for medical malpractice", state="ca"
+)  # 4 credits
+for hit in hits.results:
+    print(hit.citation, hit.section_title)
+print(hits.credits_consumed, client.credits_spent)
+```
+
+Required arguments come first and may be positional. Optional ones are keyword-only `snake_case` and are sent to the API as camelCase.
+Every method also accepts `timeout`, `max_retries`, `idempotency_key` and `headers` as keyword arguments.
+
+## Namespaces
+
+| Namespace | What it does |
+| --- | --- |
+| `client.statutes` | search, resolve, sections and their text, browse, changes, enactments, rulemaking, cross-references, citation extraction |
+| `client.session_laws` | acts as enacted: search, list, record, text, versions, changes |
+| `client.watches` | law-change alerts by webhook or email |
+| `client.boards` | the sources a watch can follow |
+| `client.credits` | `balance()` |
+| `client.pricing` | `get()`, the credit price of every endpoint |
+
+The SDK covers 36 operations. Each method is the `operationId` with the namespace noun removed, so `search_statutes` is `statutes.search` and `get_session_law_body` is `session_laws.get_body`.
+
+## Which calls cost credits
+
+A call is charged when the API declares the `Idempotency-Key` header on its operation. That is 25 of the 36 operations.
+Free: `statutes.coverage`, `boards.list`, every watch operation except `watches.change_diff` (`create`, `list`, `update`, `delete`, `test`, `changes`, `deliveries`), `credits.balance` and `pricing.get`.
+Prices are not hard-coded in the SDK. `client.pricing.get()` is free and returns the live price list.
+Some charged calls return `credits_consumed` of 0 (for example a body that is not held), so read the figure from the response.
+
+## Credits and the spend guard
+
+```python
+client = Vaquill(
+    max_credits=500
+)  # charged calls raise SpendGuardExceeded once 500 credits are used
+client.credits_spent  # running total across this client and any with_options() copy
+client.pricing.get()  # free: the live price list
+```
+
+The guard checks what is already spent before a charged call, not the cost of the next call. `credits_spent` adds each response's `credits_consumed`.
+
+Async is the same with `AsyncVaquill` and `await`.
+
+```python
+import asyncio
+from vaquill import AsyncVaquill
+
+
+async def main() -> None:
+    async with AsyncVaquill() as client:
+        balance = await client.credits.balance()
+        print(balance.credits_remaining)
+
+
+asyncio.run(main())
+```
+
+## Error handling
+
+Every failure is a `VaquillError`. Status errors carry `status_code`, `request_id` and the parsed body.
+
+```python
+import vaquill
+
+try:
+    client.statutes.resolve("42 U.S.C. 1983")
+except vaquill.InsufficientCreditsError:
+    ...  # never retried; top up credits
+except vaquill.RateLimitError as err:
+    print(err.retry_after_seconds)  # the client already retried with backoff
+except vaquill.APIStatusError as err:
+    print(err.status_code, err.request_id)
+```
+
+Other classes: `APIConnectionError` and `APITimeoutError` (no response arrived), `AuthenticationError`, `PermissionDeniedError`, `NotFoundError`, `BadRequestError`, `UnprocessableEntityError`, `ConflictError`, `DailyCapExceededError` (a `RateLimitError`; retrying cannot succeed until the cap resets), `InternalServerError`, `SpendGuardExceeded` and `WebhookVerificationError`.
+Idempotency failures are `IdempotencyConflictError` with `IdempotencyKeyReusedError`, `IdempotencyInProgressError` and `IdempotencyReplayUnavailableError`.
+
+Each status error also exposes `code`, `retryable` and `retry_after_seconds`, and the legacy `detail` and `errors` members. They are `None` when the server did not send them.
+The code is checked first, then the status, so an unknown code still gives the status class.
+
+## Retries and idempotency
+
+- Retried: 408, 429 and 5xx, plus 409 only for `idempotency_in_progress`. Connection errors and timeouts are retried when it is safe.
+- Backoff starts at 0.5 s, doubles to an 8 s cap and is scaled down by 0 to 25 percent jitter. `retry-after-ms` wins over `Retry-After`, which wins over the body's `retryAfterSeconds`. A wait above 120 s is not retried. The default is 2 retries; `max_retries=0` turns them off.
+- Never retried: `insufficient_credits` (402), `daily_cap_exceeded`, any other 4xx, and anything the server marks `retryable: false`.
+- Each charged call sends one generated `Idempotency-Key`, reused on every retry of that call, so an ambiguous failure cannot charge twice. Pass `idempotency_key="..."` (16 to 255 visible ASCII characters) to supply your own.
+- With `idempotency_keys=False` on the client, or `with_options(idempotency_keys=False)`, charged calls are not retried after a timeout, connection error or 5xx, because they could charge twice. A 429 is still retried, since it is refused before any work.
+- Free `POST`s without a key (`watches.create`, `watches.test`) follow the same rule, so a retry cannot create a second watch.
+- Every top-level response has `credits_consumed`, `request_id` and `idempotent_replayed`. A replayed response was stored and nothing new was charged.
+
+## Pagination
+
+`iter_*` helpers hide the offset, cursor and `sinceId`/`beforeId` styles behind one iterator.
+
+<Warning>
+  On a charged endpoint every page spends credits. Iterating a whole result set can cost far more than one call, so always set `max_pages` or `max_items`.
+</Warning>
+
+```python
+pager = client.statutes.iter_search(
+    "negligence", state="ny", limit=10, max_pages=3
+)  # at most 12 credits
+for hit in pager:
+    print(hit.citation)
+print(pager.truncated)  # True when the guard stopped it with more available
+
+for page in client.statutes.iter_divisions("STATE", state="wa", max_items=100).pages():
+    ...  # whole pages, to control cost yourself
+```
+
+Iterate the pager for items, call `.pages()` for whole pages and read `.truncated` after iterating.
+Charged helpers: `statutes.iter_search`, `statutes.iter_divisions`, `statutes.iter_section_changes`, `session_laws.iter_search`, `session_laws.iter_list`, `session_laws.iter_changes`.
+Free helpers: `watches.iter_list`, `watches.iter_changes`, `boards.iter_list`.
+
+## Raw responses
+
+```python
+raw = client.with_raw_response.request(
+    "GET",
+    "/api/v1/us/statutes/resolve",
+    cast_to=dict,
+    params={"cite": "42 U.S.C. 1983"},
+    charged=True,
+)
+raw.request_id, raw.rate_limit.remaining, raw.credits_charged_this_call, raw.parse()
+```
+
+`client.raw_request(method, path, ...)` reaches endpoints newer than this SDK and returns plain JSON.
+
+## Alerts and webhook verification
+
+Create a law change alert. Watches are free.
+
+```python
+created = client.watches.create(
+    "state",
+    state="wa",
+    webhook_url="https://example.com/hooks/law-changes",
+    webhook_secret=SECRET,
+)
+print(f"watching: {created.data.id}")
+```
+
+Verify the signature on the raw request body, never on re-serialised JSON.
+
+```python
+from vaquill import verify_webhook, WebhookVerificationError
+
+try:
+    event = verify_webhook(raw_body, request_headers, WEBHOOK_SECRET, allow_legacy=False)
+except WebhookVerificationError:
+    ...  # respond 400
+```
+
+`verify_webhook` checks the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance. It accepts several `v1` signatures and a list of secrets, so you can rotate a secret without downtime. A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes. It raises `WebhookVerificationError` on any failure.
+
+<Warning>
+  `allow_legacy` defaults to `True` in Python. It makes `verify_webhook` accept the old `X-Vaquill-Signature: sha256=<hex>` header when the Standard Webhooks headers are absent.
+  That header signs only the body, so it has no replay protection: a captured delivery verifies forever. Pass `allow_legacy=False` unless you still receive legacy deliveries.
+</Warning>
+
+See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
+
+## Debug logging and custom HTTP client
+
+The client logs through the standard `logging` module under the `vaquill` logger, and logs idempotency keys by their first 8 characters only.
+Pass `http_client=` (an `httpx.Client`) to set a proxy or client certificate, or to inject a test double. The SDK does not close a client you pass.
+
+## Types
+
+Responses are Pydantic v2 models in `vaquill.types`, generated from the API contract. Unknown fields are kept and unknown enum values never raise.

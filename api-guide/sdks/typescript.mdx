@@ -1,0 +1,197 @@
+---
+title: "TypeScript SDK"
+description: "Install the Vaquill TypeScript client, resolve citations, search statutes and handle errors"
+---
+
+{/* MUST NOT GO LIVE BEFORE THE BACKEND DEPLOY: the new error codes (code, retryable, retryAfterSeconds), the Idempotency-Key header and the Standard Webhooks headers are implemented in the backend working tree but are NOT deployed. This page describes the SDK as built, which assumes them. */}
+{/* Samples are copied from the README of vaquill-js, apart from the resolve and watch samples, which use the argument shapes its resource tests execute (statutes.resolve({ cite }), watches.create({ corpusType, state, channel, webhookUrl })). */}
+
+The TypeScript client runs on Node 20 or later, Bun, Deno and edge runtimes. It uses the platform `fetch` and has no runtime dependencies.
+For the options shared with the Python client, see the [SDKs overview](/api-guide/sdks/overview).
+
+<Warning>
+  Use the SDK on a server only. An API key in browser code is readable by anyone, and the client warns when it sees a browser.
+</Warning>
+
+## Install
+
+```bash
+npm install @vaquill/sdk
+```
+
+Source: [`Vaquill-AI/vaquill-sdks`, `js/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/js) on GitHub.
+
+## Quickstart
+
+```ts
+import { Vaquill } from "@vaquill/sdk";
+
+const client = new Vaquill(); // reads VAQUILL_API_KEY (must start with vq_key_)
+
+const res = await client.statutes.search({ query: "assault with a deadly weapon", state: "tx" });
+console.log(res.results?.length, res.creditsConsumed);
+
+const { data, meta } = await client.statutes.getSection("TX_PE_22.01").withResponse();
+console.log(meta.requestId, meta.creditsConsumed, meta.rateLimit.remainingDay);
+```
+
+Resolve a citation, then read the section text.
+
+```ts
+const result = await client.statutes.resolve({ cite: "42 U.S.C. 1983" });
+if (result.resolved && result.section) {
+  const body = await client.statutes.getSectionBody(result.section.actId);
+  console.log(body.plain);
+}
+```
+
+An unresolved citation is a normal 200 response, not an error. Check `result.resolved` before you rely on it. See [Citation quality](/api-guide/concepts/citation-quality).
+
+Path parameters are positional arguments. Query and body fields keep the camelCase wire names.
+
+## Client options
+
+`new Vaquill({ apiKey, baseURL, timeout, maxRetries, defaultHeaders, fetch, maxCredits })`
+
+- `apiKey` defaults to `VAQUILL_API_KEY`. Keys that do not start with `vq_key_` are rejected.
+- `baseURL` defaults to `VAQUILL_BASE_URL`, then `https://api.vaquill.ai`.
+- `timeout` is per attempt, in milliseconds (default 60000). `maxRetries` defaults to 2.
+- `fetch` injects a custom implementation, for a proxy or a test double.
+- `maxCredits` is the spend guard, described below. `client.creditsSpent` shows the running total.
+- `client.withOptions({ ... })` returns a derived client that shares the key and the spend counter.
+- Every method takes `{ timeout, maxRetries, headers, signal, idempotencyKey }` as its last argument.
+
+The key is held in a private field. It does not appear in `JSON.stringify`, `util.inspect`, `String(client)` or any error.
+
+## Namespaces
+
+| Namespace | Methods |
+| --- | --- |
+| `statutes` | `search`, `searchAll`, `getSection`, `getSectionBody`, `getSectionNeighbors`, `getSections`, `count`, `coverage`, `listDivisions`, `listDivisionsAll`, `getSectionChanges`, `getSectionChangesAll`, `getSectionEnactments`, `getSectionRulemaking`, `getPartRulemaking`, `getSectionCitedBy`, `getSectionDefinitions`, `getSectionCrossState`, `resolve`, `resolveBatch`, `extractCitations` |
+| `sessionLaws` | `search`, `searchAll`, `list`, `listAll`, `get`, `getBody`, `getVersions`, `getChanges`, `getChangesAll`, `getBatch` |
+| `watches` | `list`, `listAll`, `create`, `update`, `delete`, `test`, `listChanges`, `listChangesAll`, `getChangeDiff`, `listDeliveries` |
+| `boards` | `list`, `listAll` |
+| `credits` | `balance` |
+| `pricing` | `get` |
+
+Each method maps to one `operationId`, so `search_statutes` is `statutes.search` and `get_section_body` is `statutes.getSectionBody`.
+
+## Which calls cost credits
+
+A method is charged when the API declares the `Idempotency-Key` header on its operation. That is 25 operations:
+`statutes.search`, `getSection`, `getSectionBody`, `getSectionNeighbors`, `getSections`, `count`, `listDivisions`, `getSectionChanges`, `getSectionEnactments`, `getSectionRulemaking`, `getPartRulemaking`, `getSectionCitedBy`, `getSectionDefinitions`, `getSectionCrossState`, `resolve`, `resolveBatch`, `extractCitations`; `sessionLaws.search`, `list`, `get`, `getBody`, `getVersions`, `getChanges`, `getBatch`; and `watches.getChangeDiff`.
+The `*All` iterators call these and spend per page.
+
+Free: `statutes.coverage`, `watches.list`, `create`, `update`, `delete`, `test`, `listChanges`, `listDeliveries`, `boards.list`, `credits.balance` and `pricing.get`. Watches other than the change diff are free.
+`client.pricing.get()` returns the live price list.
+
+## Spend guard
+
+Pass `maxCredits` to the constructor. Once responses on this client have reported that many credits, charged calls throw `SpendGuardExceededError` before sending anything.
+It checks what is already spent, not the cost of the next call.
+
+```ts
+const client = new Vaquill({ maxCredits: 500 });
+console.log(client.creditsSpent);
+```
+
+## Error handling
+
+`VaquillError` is the base. `APIConnectionError` (with `APITimeoutError` and `APIUserAbortError`) means no response arrived.
+`APIStatusError` carries `status`, `requestId`, `code`, `retryable`, `retryAfterSeconds`, `body`, and the legacy `detail` and `errors`.
+
+```ts
+import {
+  Vaquill,
+  InsufficientCreditsError,
+  RateLimitError,
+  APIStatusError,
+} from "@vaquill/sdk";
+
+const client = new Vaquill();
+
+try {
+  await client.statutes.resolve({ cite: "42 U.S.C. 1983" });
+} catch (err) {
+  if (err instanceof InsufficientCreditsError) {
+    // 402. Never retried. Top up, then call again.
+    console.error("out of credits", err.status, err.requestId);
+  } else if (err instanceof RateLimitError) {
+    console.error("rate limited, retry after", err.retryAfterSeconds);
+  } else if (err instanceof APIStatusError) {
+    console.error(err.status, err.requestId, err.code, err.body);
+  } else {
+    throw err;
+  }
+}
+```
+
+Subclasses of `APIStatusError`: `BadRequestError`, `AuthenticationError`, `InsufficientCreditsError`, `PermissionDeniedError`, `NotFoundError`, `ConflictError`, `UnprocessableEntityError`, `RateLimitError` (and `DailyCapExceededError`), `InternalServerError`, and `IdempotencyConflictError` with `IdempotencyKeyReusedError`, `IdempotencyInProgressError` and `IdempotencyReplayUnavailableError`.
+The code is checked first, then the status, so an unknown code still gives the status class. Fields the server did not send come back as `null`.
+
+## Retries and idempotency
+
+- Retried: 408, 429 and 5xx, plus 409 only for `idempotency_in_progress`. Connection errors and timeouts are retried when it is safe.
+- Backoff is 0.5 s doubling to an 8 s cap, scaled down by 0 to 25 percent jitter. `retry-after-ms` wins over `Retry-After` (seconds or date), which wins over the body's `retryAfterSeconds`. A wait above 120 s is not retried.
+- Never retried: `insufficient_credits` (402), `daily_cap_exceeded`, any 4xx other than the above, and anything the server marks `retryable: false`.
+- Each charged call gets one generated `Idempotency-Key`, reused on every retry of that call. Pass `idempotencyKey: "..."` to choose your own.
+- With `idempotencyKey: false` a charged call is not retried after a timeout, connection error or 5xx, because it could charge twice. A 429 `rate_limited` is still retried, since it is refused before any work.
+- Free `POST`s without a key (`watches.create`, `watches.test`) follow the same rule, so a retry cannot create a second watch.
+
+## Pagination
+
+The `*All` methods return an async iterable of items, with `.pages()` for whole pages and `.toArray()`.
+They hide offset with `nextOffset`, `cursor` with `nextCursor`, and `sinceId` / `beforeId` paging.
+
+```ts
+for await (const s of client.statutes.searchAll({ query: "negligence" }, { maxPages: 3, maxItems: 50 })) {
+  console.log(s);
+}
+```
+
+<Warning>
+  Charged endpoints spend credits on every page. Set `maxPages`, `maxItems` or a client `maxCredits`. Without one, an iterator runs until the data ends.
+</Warning>
+
+## Raw responses
+
+`.withResponse()` returns the parsed `data`, the raw `response` and a `meta` object with `status`, `headers`, `requestId`, `creditsConsumed`, `idempotentReplayed`, `rateLimit` and `retries`.
+
+```ts
+const { data, meta } = await client.statutes.getSection("TX_PE_22.01").withResponse();
+console.log(meta.requestId, meta.creditsConsumed, meta.rateLimit.remainingDay);
+```
+
+`client.rawRequest(method, path, { query, body, charged })` reaches endpoints newer than this SDK.
+
+## Alerts and webhook verification
+
+Create a law change alert. Watches are free.
+
+```ts
+const created = await client.watches.create({
+  corpusType: "state",
+  state: "wa",
+  channel: "webhook",
+  webhookUrl: "https://example.com/hooks/law-changes",
+});
+console.log(created.data.id);
+```
+
+Verify the signature on the raw request body, never on re-serialised JSON.
+
+```ts
+import { webhooks } from "@vaquill/sdk";
+
+const event = await webhooks.unwrap(rawBody, request.headers, process.env.WEBHOOK_SECRET!);
+```
+
+`verify` and `unwrap` check the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance, accept several `v1` signatures (rotation) and a list of secrets, and compare in constant time.
+A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes.
+They throw `WebhookVerificationError` on any failure.
+
+<Warning>
+  `{ allowLegacy: true }` also accepts the old `X-Vaquill-Signature: sha256=<hex>` header when the Standard Webhooks headers are absent. That header signs only the body, so it has no replay protection: a captured delivery verifies forever. It is off by default.
+</Warning>
+
+See [Alerts](/api-guide/alerts) for the payload and delivery behavior.

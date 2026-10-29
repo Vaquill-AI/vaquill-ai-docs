@@ -100,6 +100,16 @@
             ]
           },
           {
+            "group": "SDKS",
+            "icon": "code",
+            "pages": [
+              "api-guide/sdks/overview",
+              "api-guide/sdks/python",
+              "api-guide/sdks/typescript",
+              "api-guide/sdks/cli"
+            ]
+          },
+          {
             "group": "BULK, SQL & RIGHTS",
             "icon": "server",
             "pages": [
