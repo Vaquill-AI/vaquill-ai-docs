@@ -16,7 +16,7 @@ For the options shared with the Python client, see the [SDKs overview](/api-guid
 ## Install
 
 ```bash
-npm install @vaquill/sdk
+npm install @vaquill-ai/sdk
 ```
 
 Source: [`Vaquill-AI/vaquill-sdks`, `js/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/js) on GitHub.
@@ -24,7 +24,7 @@ Source: [`Vaquill-AI/vaquill-sdks`, `js/`](https://github.com/Vaquill-AI/vaquill
 ## Quickstart
 
 ```ts
-import { Vaquill } from "@vaquill/sdk";
+import { Vaquill } from "@vaquill-ai/sdk";
 
 const client = new Vaquill(); // reads VAQUILL_API_KEY (must start with vq_key_)
 
@@ -106,7 +106,7 @@ import {
   InsufficientCreditsError,
   RateLimitError,
   APIStatusError,
-} from "@vaquill/sdk";
+} from "@vaquill-ai/sdk";
 
 const client = new Vaquill();
 
@@ -181,7 +181,7 @@ console.log(created.data.id);
 Verify the signature on the raw request body, never on re-serialised JSON.
 
 ```ts
-import { webhooks } from "@vaquill/sdk";
+import { webhooks } from "@vaquill-ai/sdk";
 
 const event = await webhooks.unwrap(rawBody, request.headers, process.env.WEBHOOK_SECRET!);
 ```
