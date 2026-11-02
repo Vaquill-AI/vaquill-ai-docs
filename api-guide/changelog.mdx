@@ -6,6 +6,36 @@ description: "Updates and additions to the Vaquill Developer API"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-11-01" description="Legal translation: language list and page balance">
+  ## New: legal translation (preview)
+
+  Translate legal text between English and the 22 Eighth Schedule languages. The first two routes are live and free.
+
+  - **`GET /translation/languages`:** every language you can translate from and to, with script direction.
+  - **`GET /translation/balance`:** your translation and OCR page balances.
+  - **Billed in pages, not credits.** One page is 2,000 characters of text, or one page of a document. Pages are a separate pool from API credits and are pooled at the organization.
+  - **No free tier on the API.** Any non-empty text costs at least 1 page. A scanned document spends from both the translation and OCR pools.
+  - **New scopes:** `translate:read` and `translate:write`. A wildcard `*` key does not grant them, so grant them by name.
+  - **Coming:** text, file and document translation routes.
+
+  See [Legal translation](/api-guide/translation).
+</Update>
+
+<Update label="2026-10-30" description="State regulation browse: umbrella, agency, program and subpart">
+  ## New: state regulation browse levels
+
+  `GET /us/statutes/divisions` lists the agency level that some state regulation codes print above their chapters.
+
+  - **New filters:** `umbrella`, `agency` and `program`, for state regulations only. Each needs `code`.
+  - **New node kinds:** `umbrella`, `agency`, `program` and `subpart`, which you pass back as the filter of the same name.
+  - **Maine** groups agencies under a department umbrella (`10` is Health and Human Services, with agency `144` under it). **Virginia** and **Wyoming** list agencies, and Wyoming also lists a program between the agency and its chapters.
+  - **`subpart`** now also drills into Louisiana and Mississippi regulation codes, with `code` and the `part` it sits in.
+  - **Repeated chapter numbers open the right chapter.** Naming the agency (and the program in Wyoming) lists one chapter, so these codes no longer answer a repeated chapter number as a pooled list with a `note`.
+  - **Pricing is unchanged.** 1 credit per level that returns rows.
+
+  See [Browse the statute hierarchy](/api-guide/recipes/browse-hierarchy#state-regulations-umbrella-agency-and-program) for a worked Maine example.
+</Update>
+
 <Update label="2026-10-29" description="Official Python and TypeScript SDKs">
   ## New: official Python and TypeScript SDKs
 

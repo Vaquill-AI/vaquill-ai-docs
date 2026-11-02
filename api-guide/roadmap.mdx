@@ -83,7 +83,7 @@ These bodies are not in it yet.
 |---|---|
 | DOL OALJ, ARB and BRB | Decisions of the Office of Administrative Law Judges, the Administrative Review Board and the Benefits Review Board. See below. |
 | FDIC, OCC and Federal Reserve | Enforcement actions and consent orders. Extends the guidance from these agencies already in the corpus. |
-| SEC ALJ initial decisions | The initial-decision layer beneath the Commission opinions already served. |
+| SEC ALJ initial decisions | A separate series from the Commission opinions already served, which the current SEC source does not carry. |
 
 The DOL bodies span an 80+ case-type taxonomy: SOX, AIR21, STAA, ERA, OSH, OFCCP, LCA, black lung and longshore, among others.
 
@@ -112,6 +112,12 @@ No documents from these agencies are in the corpus today.
 
 Covered agencies include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
 Their per-source detail is in [Agency guidance coverage](/api-guide/coverage/agency-guidance).
+
+## Pending federal legislation
+
+Congressional bills (introduced, pending, reported or enrolled, with their status) are not held today, and no date is set for them.
+A bill corpus is planned as an opt-in token, `corpusType=FEDERAL_BILL`: proposed text only, labelled proposed, never law and never part of an unscoped search. The token is registered but returns no results today.
+The enacted text of a bill that became law is served under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, under `corpusType=USC`.
 
 ## Under evaluation
 

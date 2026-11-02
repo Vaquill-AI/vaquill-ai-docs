@@ -1,0 +1,244 @@
+---
+title: "Legal translation"
+description: "Translate legal text and documents between English and the 22 Eighth Schedule languages. Billed in pages, from a pool of its own."
+---
+
+The translation API translates legal text and documents between English and the 22 languages of the Eighth Schedule to the Constitution of India.
+These are the languages Indian courts and governments work in.
+It is built for legal material, so statutory phrasing, citations and numbering survive the translation.
+
+Translation is a separate product from the primary-law endpoints.
+It has its own scopes, its own balance and its own billing unit.
+Read the sections below in order before you send your first charged request.
+
+## What is live today
+
+| Route | What it does | Cost |
+| --- | --- | --- |
+| `GET /api/v1/translation/languages` | Lists every language you can translate from and to | Free |
+| `GET /api/v1/translation/balance` | Reports your translation and OCR page balances | Free |
+| `GET /api/v1/translation/packs` | Lists the page packs on sale and their INR prices | Free |
+
+Text translation, file translation and document jobs are coming.
+Their request and response shapes are not published yet, so this page does not document them.
+The sections on billing below already apply to them.
+
+## Authentication
+
+Send your API key as a bearer token, the same as every other Vaquill endpoint.
+
+```bash
+Authorization: Bearer vq_key_your_api_key_here
+```
+
+Translation uses two scopes:
+
+| Scope | Grants |
+| --- | --- |
+| `translate:read` | The language list, the page balance and reading the status or result of a job |
+| `translate:write` | Starting a translation, which spends pages. Implies `translate:read` |
+
+<Warning>
+  A wildcard `*` key does not grant translation scopes.
+  Translation spends pages that are paid for separately from credits, so a key issued before this product existed cannot spend them by accident.
+  Grant `translate:read` and `translate:write` to the key by name.
+</Warning>
+
+A key without the scope receives a `403` that names the scope it is missing.
+
+## Pages, not characters or tokens
+
+Translation is billed in pages.
+Nothing is counted in tokens.
+
+- **Text:** one page is 2,000 characters. A request is charged `ceil(characters / 2000)` pages.
+- **Documents:** one page of the document is one page.
+
+| Characters of text | Pages |
+| --- | --- |
+| 1 to 2,000 | 1 |
+| 2,001 to 4,000 | 2 |
+| 50,000 | 25 |
+
+<Warning>
+  There is no free floor on size.
+  Any non-empty text costs at least 1 page, even ten characters.
+  This differs from the dashboard, which does not charge for very short text.
+  Empty or whitespace-only text is refused with a `422` and costs nothing.
+</Warning>
+
+Your account's monthly free page allowance does apply to API calls.
+Pages are pooled per account, not per credential, and a charge spends free pages before paid ones.
+So the `free` figure on your balance is usually not 0, and the first few pages of a month may cost you nothing.
+Budget from `pagesRemaining`, which is `free` plus `paid`.
+
+## What a page costs
+
+Pages are bought in packs, priced in Indian rupees with GST, and the pack list is live:
+
+```bash
+curl https://api.vaquill.ai/api/v1/translation/packs \
+  -H "Authorization: Bearer $VAQUILL_API_KEY"
+```
+
+```json
+{
+  "packs": [
+    {
+      "packId": "pack_100",
+      "type": "translation",
+      "pages": 100,
+      "priceInr": 117882,
+      "baseInr": 99900,
+      "gstInr": 17982,
+      "pricePerPageInr": 11.79
+    }
+  ],
+  "currency": "INR",
+  "gstRate": 18
+}
+```
+
+`priceInr`, `baseInr` and `gstInr` are in **paise** (1/100 of a rupee), the unit the payment is charged in.
+`priceInr` is GST-inclusive and is what you pay.
+`pricePerPageInr` is in rupees and is a display figure.
+
+This route is free and needs `translate:read`.
+Larger packs are cheaper per page, and both pools have their own packs.
+Read the list rather than hardcoding a price.
+
+<Note>
+  Translation pages are sold in INR only.
+  They are not bought with API credits and there is no USD price for a page.
+  The pricing matrix at `GET /api/v1/api-credits/pricing` lists the translation routes with `unit: "page"` and a `usdCost` of `0`.
+  That `0` means "not priced in dollars", not "free": the `credits` figure on those rows counts pages, and one page is what the call spends.
+</Note>
+
+## Two pools, and which one this API spends
+
+Your balance holds two separate pools of pages.
+
+- **`translation`** pays for translating text, and is the only pool these endpoints spend.
+- **`ocr`** pays for standalone text extraction, which this API surface does not currently expose.
+
+Translating a document spends translation pages only, whether or not it is a scan.
+Reading a scanned page is included in the document price: you are not charged OCR pages for it.
+Budget from the `translation` pool.
+
+The `ocr` figure is reported so it is visible to an account that holds OCR pages, not because a translation call will draw on it.
+
+Pages are also separate from API credits.
+`GET /api/v1/credits/balance` reports credits and says nothing about pages.
+`GET /api/v1/translation/balance` reports pages and says nothing about credits.
+Neither pays for the other.
+
+## Pages are pooled at the organization
+
+If your key belongs to an organization, the balance is the organization's pooled balance, not a personal one.
+Every member spends from the same pool, so a colleague's large job changes the number you see.
+
+## List the languages
+
+Read the list instead of hard-coding it.
+A language code you invent is refused with a `422` before any page is charged, and the error names what is supported.
+Regional tags are narrowed to the language, so `hi-IN` is read as `hi`.
+
+```bash
+curl https://api.vaquill.ai/api/v1/translation/languages \
+  -H "Authorization: Bearer $VAQUILL_API_KEY"
+```
+
+```json
+{
+  "languages": [
+    { "code": "auto", "name": "Auto-detect", "nativeName": "Auto-detect", "direction": "ltr", "source": true, "target": false },
+    { "code": "en", "name": "English", "nativeName": "English", "direction": "ltr", "source": true, "target": true },
+    { "code": "hi", "name": "Hindi", "nativeName": "हिन्दी", "direction": "ltr", "source": true, "target": true },
+    { "code": "ur", "name": "Urdu", "nativeName": "اردو", "direction": "rtl", "source": true, "target": true }
+  ],
+  "count": 24
+}
+```
+
+The list is abbreviated here.
+The live response holds all 24 entries: `auto`, English and the 22 scheduled languages.
+
+- `auto` is a source only. Sending it as the target language is a `422`.
+- `direction` is `rtl` for Urdu, Sindhi and Kashmiri. Honour it when you display translated output.
+- This route is free and rate limited like every key-authenticated route.
+
+## Check your balance
+
+```bash
+curl https://api.vaquill.ai/api/v1/translation/balance \
+  -H "Authorization: Bearer $VAQUILL_API_KEY"
+```
+
+```json
+{
+  "translation": {
+    "pagesRemaining": 1490,
+    "free": 10,
+    "paid": 1480,
+    "totalPurchased": 2000,
+    "totalConsumed": 520
+  },
+  "ocr": {
+    "pagesRemaining": 320,
+    "free": 10,
+    "paid": 310,
+    "totalPurchased": 500,
+    "totalConsumed": 190
+  },
+  "pagesArePhysical": true,
+  "asOf": "2026-11-01T12:34:56Z"
+}
+```
+
+This route is free, so you can poll it to drive alerting or a pre-flight check.
+It still answers when the balance is zero.
+
+Budget from `pagesRemaining`, which is `free` plus `paid`.
+A charge spends `free` first, so a job can run while `paid` stays untouched.
+
+## Retries and `Idempotency-Key`
+
+Routes that charge pages accept an `Idempotency-Key` header.
+Send a fresh unique value for each logical request and reuse it on a retry.
+A retry with the same key returns the original response and does not charge again.
+
+```bash
+-H "Idempotency-Key: $(uuidgen)"
+```
+
+## When you run out of pages
+
+A request your balance cannot cover returns `402`.
+Nothing is translated and nothing is charged.
+
+```json
+{
+  "detail": {
+    "code": "INSUFFICIENT_TRANSLATION_PAGES",
+    "message": "Insufficient translation pages. Need 3, have 1.",
+    "pagesNeeded": 3,
+    "pagesAvailable": 1,
+    "shortfall": 2
+  }
+}
+```
+
+- `pagesNeeded` is what the request costs.
+- `pagesAvailable` is what the pool holds.
+- `shortfall` is how many pages you are short.
+
+If a charged translation fails or comes back empty, the pages are refunded.
+You are not billed for a translation you did not receive.
+
+## Coming next
+
+- Translate a block of text, up to 50,000 characters per request.
+- Translate an uploaded file.
+- Start a document job, poll its status and fetch the translated content.
+
+Watch the [changelog](/api-guide/changelog) for the routes as they ship.

@@ -75,6 +75,10 @@ Constitution, the Sentencing Guidelines, tax treaties and GovInfo statute compil
 
 **[Full federal table with per-corpus scope limits →](/api-guide/coverage/federal)**
 
+Congressional bills (introduced, pending, reported or enrolled, with their status) are not held.
+A bill corpus is planned as an opt-in token, `corpusType=FEDERAL_BILL`: proposed text only, labelled proposed, never law and never part of an unscoped search, with no date set. The token is registered but returns no results today.
+The enacted text of a bill that became law is served as a public law under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, as a section of `corpusType=USC`.
+
 Agency guidance is the one corpus with a registry behind it: **53 named sources across 26
 agencies** behind the single `corpusType=AGENCY_GUIDANCE` token, each narrowable with `source`.
 **[Source registry →](/api-guide/coverage/agency-guidance)**

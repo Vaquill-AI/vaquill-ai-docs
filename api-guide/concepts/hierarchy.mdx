@@ -58,7 +58,10 @@ So never assume a level exists, and never assume where it sits: read the respons
 | Chapter | `chapter` | `chapter` | `chapter`, `chapterName` | 42 U.S.C. Chapter 21, CIVIL RIGHTS |
 | Subchapter | `subchapter` | `subchapter` | `subchapter`, `subchapterName` | 42 U.S.C. Subchapter I, GENERALLY |
 | Part | `part` | `part` | `part`, `partName` | 17 C.F.R. Part 240. Cal. Civ. Code Part 4 |
-| Subpart | `subpart` | `subpart` | `subpart`, `subpartName` | 17 C.F.R. Subpart A |
+| Subpart | `subpart` | `subpart` | `subpart`, `subpartName` | 17 C.F.R. Subpart A. Louisiana and Mississippi regulation codes (needs `code` and the `part` it sits in) |
+| Umbrella | `umbrella` | `umbrella` | none, read the breadcrumb | State regulations only. Maine groups agencies under a department, such as `10`, Health and Human Services |
+| Agency | `agency` | `agency` | none, read the breadcrumb | State regulations only. Maine agency `144`, a Virginia agency, a Wyoming agency |
+| Program | `program` | `program` | none, read the breadcrumb | State regulations only. Wyoming prints a program between an agency and its chapters |
 | Subject group | `subject_group` in `breadcrumb`, `subjectGroup` in `/divisions` | `subjectGroup` | none, read the breadcrumb | CFR only. A heading with no number |
 | Article | `article` | `article` | `articleNumber`, `articleName` | N.Y. Gen. Bus. Law Article 22-A. 6 Del. C. Article 2, Sales. A constitution's Article III |
 | Act | `act` | `act` | none, read the breadcrumb | Illinois 225 ILCS acts. New York's `Act GBS` |
@@ -233,6 +236,10 @@ Some codes reuse a number at the same level in many places: California's Civil C
 A listing that is asked only for `chapter=2` therefore cannot tell them apart.
 It answers `kind: section` nodes for every chapter that carries that number, flat, with a `note` saying so, and never merges them into one.
 Pass each ancestor the listing returned (`code`, `division`, `part`, `title`, `chapter`) to list one of them.
+
+State regulations that print the agency above their chapters do not pool.
+Maine, Virginia and Wyoming list `umbrella`, `agency` and `program` nodes, and naming the agency (and the program in Wyoming) opens the right chapter, so a chapter number that repeats under several agencies is no longer answered as one flat list with a `note`.
+See [Browse the statute hierarchy](/api-guide/recipes/browse-hierarchy#state-regulations-umbrella-agency-and-program) for a worked Maine example.
 
 ## Three more things you will meet
 

@@ -31,8 +31,12 @@ data by chapter.
 
 ## Scope limits by corpus
 
-Read the entry for any corpus you are about to rely on. Each one lists what is deliberately
-not held.
+Read the entry for any corpus you are about to rely on. Each one lists what is held and what is
+not.
+
+Congressional bills (introduced, pending, reported or enrolled, with their status) are not held.
+A bill corpus is planned as an opt-in token, `corpusType=FEDERAL_BILL`: proposed text only, labelled proposed, never law and never part of an unscoped search, with no date set. The token is registered but returns no results today.
+The enacted text of a bill that became law is served as a public law under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, as a section of `corpusType=USC`.
 
 <AccordionGroup>
 
@@ -86,15 +90,14 @@ not held.
   See [Point-in-time law](/api-guide/point-in-time) for when each applies.
 </Accordion>
 
-<Accordion title="Federal Register notices: a curated 2.7% slice, not the notice series">
+<Accordion title="Federal Register notices: notices that act on a rulemaking">
   **Held:** notices that act on a rulemaking, which is withdrawing a proposed rule, extending or
   reopening a comment period, publishing significant agency guidance, and announcing negotiated
-  rulemaking. That is 20,642 of the 768,338 notices published in the period (measured 2026-10-13), about 2.7%. Every
-  notice is admitted by one of those four rules. `frNoticeClass` records which, but it is ingest-side metadata and is not currently returned by the API.
+  rulemaking. The coverage endpoint reports the current count (20,642 notices in the table above).
 
   **Not held:** Paperwork Reduction Act information collections, meeting notices, permits and
-  applications, antidumping proceedings, Privacy Act system-of-records notices, and the
-  unclassified remainder. This token is not complete notice coverage.
+  applications, antidumping proceedings, Privacy Act system-of-records notices, and other notices
+  that do not act on a rulemaking. This token is not complete notice coverage.
 
   Notices carry an empty CFR cross-reference graph (`crossReferencesCfr` at 0%, and the ingest-side `frTopics` likewise,
   `frRegulationIdNumbers` at 2%, against 100% and 94% on rules), so a notice is not reachable by a
@@ -140,10 +143,10 @@ not held.
     (its PDF contains only the caption and no body under two independent extractors) and
     `321 NLRB 10` (a file no OCR engine will accept). Neither is a
     coverage decision, and both are re-tried if the Board re-issues the file.
-  - OLC opinions issued in 2021 and later are not included. They have not appeared in a bound
-    volume, and the Department's slip-opinion listing cannot be paginated.
-  - SEC ALJ initial decisions are not held, and neither are BIA reporter volumes 1 to 7,
-    which EOIR does not publish.
+  - OLC coverage runs through bound volume 44 (2020). Opinions issued from 2021 are not yet
+    included. `sourceScopeNotes` on the coverage endpoint states this span.
+  - SEC ALJ initial decisions are a separate series that this source does not carry. BIA
+    coverage is I&N Dec. volume 8 onward, which is where EOIR's published precedent page begins.
 </Accordion>
 
 <Accordion title="US tax treaties: about 60% of the Senate record has no instrument text">

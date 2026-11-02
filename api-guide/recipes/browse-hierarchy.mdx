@@ -30,7 +30,8 @@ A code does not have a fixed number of levels, so read `level` and each node's `
 | `corpusType=USC&titleNumber=42&chapter=21&subchapter=I` | the `sections` in Subchapter I (leaf) |
 | `corpusType=USC&titleNumber=18` | the `parts` of Title 18, which sit above its chapters |
 | `corpusType=USC&titleNumber=8&chapter=12&subchapter=II` | the `parts` of Subchapter II, which sit below the chapter in this title |
-| `corpusType=CFR&titleNumber=17` | the `parts` in Title 17 |
+| `corpusType=CFR&titleNumber=17` | the `chapters` in Title 17 (Chapter I and Chapter II, each an agency) |
+| `corpusType=CFR&titleNumber=17&chapter=II` | the `parts` in Chapter II of Title 17 |
 | `corpusType=CFR&titleNumber=17&part=240` | the `subparts` and `subjectGroups` of Part 240 (a part with neither lists its sections) |
 | `corpusType=CFR&titleNumber=17&part=240&subpart=A` | the subject groups of Subpart A |
 | `corpusType=STATE&state=tx` | the state's `codes` |
@@ -41,6 +42,9 @@ A code does not have a fixed number of levels, so read `level` and each node's `
 | `corpusType=STATE&state=ny&code=ny_jud&article=2` | the `sections` in a New York article (New York is divided by article, not chapter) |
 | `corpusType=STATE&state=de&code=de_6&article=2` | the `parts` of UCC Article 2 in Delaware Title 6, which sits outside any chapter |
 | `corpusType=REGULATION&state=ny&code=ny_10&chapter=I` | the `parts` in Chapter I of 10 NYCRR |
+| `corpusType=REGULATION&state=me&code=<code>` | Maine's `umbrellas`, one per department |
+| `corpusType=REGULATION&state=me&code=<code>&umbrella=10` | the `agencies` under umbrella `10` (Health and Human Services) |
+| `corpusType=REGULATION&state=me&code=<code>&umbrella=10&agency=144` | the `chapters` of agency `144`, the right ones even though a chapter number repeats under other agencies |
 | `corpusType=CONSTITUTION` | the `articles` and amendments of the US Constitution |
 | `corpusType=CONSTITUTION&article=Amendment XIV` | the `sections` of the Fourteenth Amendment (leaf) |
 | `corpusType=STATE_CONSTITUTION&state=nm` | the `articles` of the New Mexico Constitution |
@@ -63,16 +67,19 @@ Each is passed back the way the listing returned it, with the `identifier` of a 
 | `division` | a division | U.S. Code, as in Title 54 (needs `titleNumber`), and state or regulation codes such as California's (needs `code`) |
 | `subdivision` | a subdivision | U.S. Code only, Title 54; needs the `division` it belongs to |
 | `part` | a part | CFR, U.S. Code, and state codes or rule sets wherever a listing returned `kind: part`; on a state code or rule set it needs `code` |
-| `subpart` | a subpart | U.S. Code (needs `part` and `titleNumber`) and CFR (needs `titleNumber` and `part`) |
+| `subpart` | a subpart | U.S. Code (needs `part` and `titleNumber`), CFR (needs `titleNumber` and `part`) and Louisiana and Mississippi regulation codes (needs `code` and the `part` it sits in) |
 | `subjectGroup` | a subject group | CFR only; needs `titleNumber` and `part`, and the `subpart` when the group sits inside one |
 | `subchapter` | a subchapter | U.S. Code (needs `titleNumber` and `chapter`) and state codes or rule sets (needs `code`) |
 | `act` | an act | State codes and court rules only, such as an Illinois act inside an ILCS chapter; needs `code` |
+| `umbrella` | an umbrella | State regulations only (Maine groups agencies under a department umbrella); needs `code` |
+| `agency` | an agency | State regulations only (Maine, Virginia, Wyoming); needs `code`. Name it to open the right chapter, because a chapter number repeats under different agencies |
+| `program` | a program | State regulations only (Wyoming prints a program between an agency and its chapters); needs `code` |
 
 `excludeRepealed` and `actStatus` narrow any listing by section status, the way they do on search.
 
 The number of levels between a code and its sections is not fixed: a code lists whatever its own structure has (titles, then chapters, then subchapters, or only articles), and `level` says what a listing holds. Follow every node you are given, by the filter its `kind` names, until `level` is `sections`; never hard-code the depth.
 
-Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back, verbatim, as the filter its `kind` names (`title` as `titleNumber` on the U.S. Code and CFR and as `title` inside a state code, and likewise `subtitle`, `division`, `chapter`, `subchapter`, `part`, `subpart`, `subjectGroup`, `article`, `act` or `code`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
+Interior nodes carry a `sectionCount` and `isLeaf: false`; drill into one by passing its `identifier` back, verbatim, as the filter its `kind` names (`title` as `titleNumber` on the U.S. Code and CFR and as `title` inside a state code, and likewise `subtitle`, `division`, `chapter`, `subchapter`, `part`, `subpart`, `subjectGroup`, `article`, `act` or `code`, and on state regulations `umbrella`, `agency` or `program`). Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids). Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
 
 <Note>
   Federal rules are published twice, by the Judicial Conference at uscourts.gov (`frcp`, `fre`, ...) and as an appendix to the U.S. Code (`uscapp_t28a_fre`, ...).
@@ -139,6 +146,37 @@ A trimmed response (captured 2026-10-26, two of the chapters shown; names are pr
 `name` is `null` when the publisher prints no heading for that container.
 See [Container names](/api-guide/concepts/hierarchy) for what each level is called and which jurisdictions name which levels.
 
+## State regulations: umbrella, agency and program
+
+Some state regulation codes print the issuing body above their chapters, and a chapter number repeats under different bodies.
+Naming the body opens the right chapter, so these codes no longer answer a repeated chapter number as one pooled list with a `note`.
+
+- **Maine** groups agencies under a department umbrella, then lists the agency's chapters.
+- **Virginia** lists agencies, inside a title.
+- **Wyoming** lists agencies, then a program between the agency and its chapters. Chapter `1` repeats under every program, so pass the `program` too.
+- **Louisiana and Mississippi** list `subpart` nodes inside a part. Pass the `part` and the `subpart` with `code`.
+
+Walk Maine one level at a time, passing each `identifier` back as the filter its `kind` names.
+Take `code` from the `codes` listing of `corpusType=REGULATION&state=me`.
+
+```bash
+# 1. The root of the code lists its umbrellas (kind: umbrella)
+curl -H "Authorization: Bearer vq_key_..." \
+  "https://api.vaquill.ai/api/v1/us/statutes/divisions?corpusType=REGULATION&state=me&code=CODE"
+
+# 2. umbrella=10 (Health and Human Services) lists its agencies (kind: agency)
+curl -H "Authorization: Bearer vq_key_..." \
+  "https://api.vaquill.ai/api/v1/us/statutes/divisions?corpusType=REGULATION&state=me&code=CODE&umbrella=10"
+
+# 3. Adding agency=144 lists the chapters of that agency (kind: chapter)
+curl -H "Authorization: Bearer vq_key_..." \
+  "https://api.vaquill.ai/api/v1/us/statutes/divisions?corpusType=REGULATION&state=me&code=CODE&umbrella=10&agency=144"
+```
+
+Each call costs 1 credit, and a level that turns out to be empty costs nothing.
+Keep the filters you already passed at every step.
+The walk helper below needs no change for these codes, because its `FILTER` map already carries `umbrella`, `agency` and `program`.
+
 ## Walk a whole title
 
 Drill from a title down until a node is a leaf. A leaf carries the `actId` you use to fetch metadata or full text.
@@ -155,7 +193,8 @@ HEADERS = {"Authorization": "Bearer vq_key_..."}
 FILTER = {"title": "titleNumber", "chapter": "chapter", "subchapter": "subchapter",
           "part": "part", "subpart": "subpart", "subjectGroup": "subjectGroup",
           "subtitle": "subtitle", "division": "division", "subdivision": "subdivision",
-          "article": "article", "act": "act", "code": "code"}
+          "article": "article", "act": "act", "code": "code",
+          "umbrella": "umbrella", "agency": "agency", "program": "program"}
 
 
 def children(**scope) -> list[dict]:
