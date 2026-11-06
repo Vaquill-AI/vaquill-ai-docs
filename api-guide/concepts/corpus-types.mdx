@@ -1,6 +1,6 @@
 ---
 title: "Corpus types"
-description: "The 22 corpusType tokens, how they scope a search, and how source narrows one further"
+description: "The 23 corpusType tokens, how they scope a search, and how source narrows one further"
 ---
 
 `corpusType` chooses which body of law a search runs against. It is the most important filter in
@@ -45,7 +45,7 @@ scope it. For how much data sits behind each one and what is deliberately exclud
   token returns a `422`.
 </Note>
 
-## The 22 tokens
+## The 23 tokens
 
 Sizes are distinct sections, measured 2026-10-13 from `GET /us/statutes/coverage`. Call `GET /us/statutes/coverage` for a live figure and
 for which tokens have data in which jurisdiction.
@@ -67,11 +67,23 @@ kept only so a past date can be answered from a printed edition. It is not a tok
 | `EXECUTIVE_ACTION` | Presidential documents: executive orders, proclamations, memoranda | 3,674 |
 | `AGENCY_GUIDANCE` | Sub-regulatory guidance from 53 named sources across 26 agencies | 96,966 |
 | `AGENCY_ADJUDICATION` | Federal matters decided by an agency, seven bodies | 100,920 |
-| `US_TAX_TREATY` | Bilateral income tax treaties, Treasury explanations, the Senate treaty record | 1,665 |
+| `US_TAX_TREATY` | Bilateral income tax treaties and their Treasury technical explanations, from the IRS | 173 |
+| `US_TREATY` | The Senate treaty record: treaties considered since 1949, resolutions of advice and consent, Treaty Document transmittals | 1,492 |
 | `SENTENCING_GUIDELINES` | US Sentencing Guidelines, current sections plus former text in Appendix B | 1,281 |
 | `FEDERAL_RULES` | Federal Rules of Civil, Criminal, Appellate and Bankruptcy Procedure, Evidence, and Supreme Court Rules | 1,130 |
+| `FEDERAL_RULES_ANNUAL` | **Past texts** of the national Federal Rules, from GPO's annual US Code appendix editions. Opt in only | 1,125 |
+| `FEDERAL_RULES_PROPOSED` | **Pending amendments** to the national Federal Rules, a proposal and not law. Opt in only | 49 |
 | `FEDERAL_LOCAL_RULES` | A federal court's **own** rules: the courts of appeals, habeas rules, national courts and 32 district-court rule sets | 6,234 |
 | `CONSTITUTION` | US Constitution, Articles and Amendments | 74 |
+
+### `FEDERAL_RULES_ANNUAL` and `FEDERAL_RULES_PROPOSED` in particular
+
+Both tokens sit beside `FEDERAL_RULES` and share its citations, so neither is part of an unscoped search.
+Name the token to read them.
+Neither is watchable: a stage change in a pending amendment is announced on the rule's own watch (see [alerts](/api-guide/alerts#pending-federal-rules-amendments)).
+
+- `FEDERAL_RULES_ANNUAL` holds 1,125 superseded texts of 510 Federal Rules. The `actId` is the current rule's `actId` plus `_E` and the year, such as `{actId}_E2015`. It is superseded text by construction, so read `goodLawStatus` and use `FEDERAL_RULES` for the rule in force. To ask what a rule said on a date, pass `asOf` with the current `actId` (see [Point-in-time law](/api-guide/point-in-time)).
+- `FEDERAL_RULES_PROPOSED` holds 49 pending or proposed amendment documents on 36 current rules. The `actId` is the current rule's `actId` plus `_P` and the cycle year. Every row has `actStatus: "proposed"`. It is a proposal, not law, until its effective date. The rule in force lists its pending amendments in `pendingAmendments` (see [Federal coverage](/api-guide/coverage/federal)).
 
 ### State-scoped
 
@@ -143,6 +155,8 @@ different question.
 | An act that was never codified | `STATUTE_COMPILATION` | `USC`, which has no address for it |
 | A regulation as it reads **now** | `CFR` | `CFR_ANNUAL`, which is a past published edition |
 | What a regulation said in 2004 | `CFR_ANNUAL` | `CFR` with `asOf`, which reconstructs rather than reproduces |
+| A Federal Rule as it reads **now** | `FEDERAL_RULES` | `FEDERAL_RULES_ANNUAL`, which is a past text, or `FEDERAL_RULES_PROPOSED`, which is a proposal |
+| A Federal Rule on a past date | `asOf` on `/section/{actId}/body` with the current `actId` | Searching `FEDERAL_RULES_ANNUAL` for the date |
 | What an agency **thinks** a rule means | `AGENCY_GUIDANCE` | `AGENCY_ADJUDICATION`, which is decided agency matters |
 | How an agency **decided** a case | `AGENCY_ADJUDICATION` | `AGENCY_GUIDANCE` |
 
@@ -154,7 +168,7 @@ historical records, not statements of current law.
 
 ## Filtering to one named source
 
-`AGENCY_GUIDANCE`, `AGENCY_ADJUDICATION`, `FEDERAL_RULES`, `CFR`, `US_TAX_TREATY` and
+`AGENCY_GUIDANCE`, `AGENCY_ADJUDICATION`, `FEDERAL_RULES`, `CFR`, `US_TAX_TREATY`, `US_TREATY` and
 `STATE_AGENCY_GUIDANCE` each fold several independently filterable bodies into one token. Every
 result carries a `source` field naming which one it came from; pass that value back as the `source`
 filter to scope to it.
@@ -173,7 +187,8 @@ itself is the authoritative list.
 | `CFR` | `far` (48 C.F.R. ch. 1), `dfars` (ch. 2). Every other CFR result has a null `source`. |
 | `AGENCY_GUIDANCE` | 53 codes. See the [source registry](/api-guide/coverage/agency-guidance). |
 | `AGENCY_ADJUDICATION` | 7 bodies. See [Federal coverage](/api-guide/coverage/federal). |
-| `US_TAX_TREATY` | `us_tax_treaty`, `us_tax_treaty_technical_explanation`, `senate_treaty`, `senate_treaty_resolution`, `senate_treaty_document` |
+| `US_TAX_TREATY` | `us_tax_treaty`, `us_tax_treaty_technical_explanation` |
+| `US_TREATY` | `us_treaty`, `senate_treaty`, `senate_treaty_resolution`, `senate_treaty_document`, `senate_executive_report` |
 | `STATE_AGENCY_GUIDANCE` | `state_insurance_bulletin`, `state_financial_bulletin` |
 | `STATE_AG_OPINION` | `state_ag_opinion` |
 

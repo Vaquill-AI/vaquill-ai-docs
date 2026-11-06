@@ -487,6 +487,35 @@ if diff["hasBefore"] and diff["hasAfter"]:
   A small number of sources (`corpusType=cfr`, and any change from before this feature shipped) report real `added`/`amended`/`removed` events but never a diff. `hasDiff` stays `false` for them by design. Everything else, including every state corpus, reports a real diff for every `amended` change.
 </Warning>
 
+## Pending Federal Rules amendments
+
+A watch on a Federal Rule (`corpusType=federal_rules`) also fires when a pending amendment to that rule moves a stage.
+The rule's own text has not changed on that day, so read these events differently from an ordinary change.
+
+```json
+{
+  "changeKind": "amended",
+  "actId": "FRULES_FRCP_R26",
+  "lifecycleStage": "adopted_by_supreme_court",
+  "relatedActId": "FRULES_FRCP_R26_P2027"
+}
+```
+
+The values are placeholders that show the shape, not a recorded event.
+
+| Field | Meaning |
+|---|---|
+| `changeKind` | `amended`. The enum is unchanged: `added`, `amended` or `removed` |
+| `actId` | The rule in force, the one you watch |
+| `lifecycleStage` | `published_for_comment`, `approved_by_standing_committee`, `approved_by_judicial_conference`, `transmitted_to_supreme_court`, `adopted_by_supreme_court`, `transmitted_to_congress`, `in_force` or `withdrawn` |
+| `relatedActId` | The `actId` of the proposed amendment (a `_P` document). Fetch it for the proposed text |
+
+`lifecycleStage` and `relatedActId` are present only on these events, in the change feed, in `changes[]` of a `board.updated` webhook and on a section's change history.
+A lifecycle event is not counted in `sectionsAmended`, because the rule's text did not change.
+Pending amendments are re-read weekly.
+`FEDERAL_RULES_ANNUAL` and `FEDERAL_RULES_PROPOSED` have no boards of their own: watch the rule.
+See [Federal coverage](/api-guide/coverage/federal).
+
 ## Related
 
 <CardGroup cols={2}>

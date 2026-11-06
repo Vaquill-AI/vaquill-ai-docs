@@ -18,7 +18,7 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
 
 <CardGroup cols={3}>
   <Card title="Federal" href="/api-guide/coverage/federal">
-    **1.5M+ sections**, 15 corpora. US Code, CFR, Statutes at Large, Federal Register,
+    **1.5M+ sections**, 16 corpora. US Code, CFR, Statutes at Large, Federal Register,
     adjudications, federal local court rules, and per-corpus scope limits.
   </Card>
   <Card title="States and territories" href="/api-guide/coverage/states">
@@ -49,7 +49,7 @@ on **2026-10-26**, except the state court rules and state constitutions rows, wh
 | State registers (notices, not codified law) | 24 | 153,269 | `STATE_REGISTER` |
 | State agency guidance | 49 | 13,382 | `STATE_AGENCY_GUIDANCE` |
 | State AG opinions | 45 | 109,398 | `STATE_AG_OPINION` |
-| Federal, 15 corpora | Federal | 1,528,990 | See [Federal](/api-guide/coverage/federal) |
+| Federal, 16 corpora | Federal | 1,528,990 | See [Federal](/api-guide/coverage/federal) |
 
 State session laws are held apart from the table above and served by their own endpoints: 321,628 laws across 52 jurisdictions, sessions 1975 to 2026.
 See [State Session Laws](/api-guide/session-laws).
@@ -67,11 +67,11 @@ Every section is indexed for hybrid semantic and keyword search, and mirrored in
 
 ## Federal
 
-Federal law is split into 15 corpus types: the US Code and the Statutes at Large, the CFR (as a
+Federal law is split into 16 corpus types: the US Code and the Statutes at Large, the CFR (as a
 live compilation and as 31 published annual editions), Federal Register rules and a curated slice
 of its notices, Executive Orders, agency guidance from 53 named sources, seven bodies of
 administrative adjudication, the Federal Rules, the local rules of 52 federal courts, the
-Constitution, the Sentencing Guidelines, tax treaties with the Senate treaty record, and GovInfo
+Constitution, the Sentencing Guidelines, US income tax treaties, the Senate treaty record, and GovInfo
 statute compilations.
 
 **[Full federal table with per-corpus scope limits →](/api-guide/coverage/federal)**

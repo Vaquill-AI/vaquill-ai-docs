@@ -405,6 +405,30 @@ When a citation names no code section but does name a state session law (`CHAPTE
 There is no extra charge.
 To read the law, send its `sessionLawId` or the citation itself to [`GET /us/session-laws/{sessionLawId}`](/api-guide/session-laws#finding-a-law).
 
+## Treaty citations
+
+A treaty citation is recognised as a treaty. It is never read as a U.S. Code section or a Public Law.
+
+| Form | Example |
+|---|---|
+| Senate Treaty Document | `S. Treaty Doc. No. 98-9`, `Treaty Doc. 105-1A` |
+| Senate Executive Report | `S. Exec. Rep. No. 102-23` |
+| United States Treaties | `20 U.S.T. 361` |
+| Treaties and Other International Acts Series | `T.I.A.S. No. 6638` |
+| Treaty Series, Executive Agreement Series | `T.S. No. 993`, `E.A.S. No. 12` |
+| Bevans | `1 Bevans 631` |
+| United Nations Treaty Series | `658 U.N.T.S. 163` |
+| League of Nations Treaty Series | `137 L.N.T.S. 11` |
+
+An article pinpoint written before the series cite, as in `Hague Service Convention art. 1, Nov. 15, 1965, 20 U.S.T. 361, T.I.A.S. No. 6638`, is read as the pinpoint.
+
+- **Resolves today:** a Senate Treaty Document citation answers the Senate record we hold for that treaty, the Treaty Document text when the treaty went to the Senate from 1995 on, otherwise the ratification record.
+- **Returns `not_held`:** every series cite above, and a Senate Executive Report. The response carries `resolved: false`, `missReason: "not_held"` and a `missReasonHint` that says the form was recognised and what treaty material we do hold: the Senate ratification record, Treaty Document text from 1995 on, and the IRS income tax treaties. A series cite is no longer answered with `ambiguous_jurisdiction` or a hint to cite a U.S. Code section or Public Law.
+- **Statutes at Large pages:** a cite such as `49 Stat. 3000` still resolves to the session law printed there when we hold one. In volumes 1 to 64 a page can instead be a treaty, so a miss on one of those volumes says so. Treaty text printed in the Statutes at Large, U.S.T., T.I.A.S. and Bevans is not held.
+
+To find an instrument by topic or party, search `corpusType=US_TREATY`, or `US_TAX_TREATY` for the IRS income tax treaties.
+See [Federal coverage](/api-guide/coverage/federal) for what each holds.
+
 ## When something does not resolve
 
 <Steps>

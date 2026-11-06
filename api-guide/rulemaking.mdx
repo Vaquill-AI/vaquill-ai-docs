@@ -20,7 +20,7 @@ The Rulemaking API serves those sources side by side, so one call by RIN answers
 | GAO | Major rule reports, a partial listing (see [Known gaps](#known-gaps)) |
 | Federal Register, CFR, USC | Cross-links to documents, CFR parts and public laws, each with the basis and quality of the link |
 
-There are no comment texts, no attachments and no commenter data.
+There are no Regulations.gov comment texts, no attachments and no commenter data. The Rules Committee records below withhold the text of public comments and suggestions too.
 Regulations.gov keeps no history, so dockets and documents are the current state, with the time we last saw them in `asOf`.
 
 ## Endpoints
@@ -199,6 +199,59 @@ Each entry in `sources` has `name`, `rowCounts`, `latestChange`, `lastRefreshAt`
 `status` is `ok`, `stale` or `unmeasured`.
 `unmeasured` means we have not measured that source, not that it is clean.
 `agendaEditions` lists the Unified Agenda editions held, and `limitations` names what is not included.
+
+## Rules Committee records
+
+<Note>
+  The committee records store is still loading. A record you cannot find may not be loaded yet, so a missing record is not proof that none exists.
+</Note>
+
+Two metered routes serve the records of the Judicial Conference Rules Committees (Standing, Appellate, Bankruptcy, Civil, Criminal and Evidence), taken from uscourts.gov: meeting minutes, agenda books, committee reports, rules packages, preliminary drafts, public comments and rules suggestions.
+Both use the same `research:read` scope as the rest of this API.
+
+| Endpoint | What it returns | Credits |
+|---|---|---:|
+| `GET /us/rulemaking/committee-records/list` | Records, most recent first, filtered | 1 per page |
+| `GET /us/rulemaking/committee-records/{recordId}` | One record, its dockets and rule links, and a window of page text | 2 |
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/rulemaking/committee-records/list?committee=Civil&ruleSet=FRCP&rule=26&limit=20" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+| Parameter | Meaning |
+|---|---|
+| `committee` | `Standing`, `Appellate`, `Bankruptcy`, `Civil`, `Criminal`, `Evidence` or `General` |
+| `docType` | One of `meeting_minutes`, `agenda_books`, `committee_reports`, `rules_packages`, `preliminary_drafts`, `superseded_pamphlets`, `rules_comments`, `rules_suggestions`, `fjc_studies`, `past_members`, `special_projects`, `style_resources`, `transcripts_testimony`, `rules_comments_archive` |
+| `year` | Year of the record |
+| `ruleSet` | `FRCP`, `FRAP`, `FRBP`, `FRCRP` or `FRE`: records that discuss a rule of this set |
+| `rule` | A rule number such as `26`. Needs `ruleSet`, because five rule sets each have a Rule 5. Without it the call answers `422` before any charge |
+| `docketId` | A comment docket, for example one from [Dockets and documents](#dockets-and-documents) |
+| `limit`, `cursor` | Page size 1 to 100 (default 50) and the `nextCursor` of the previous page. A cursor is bound to the filters that produced it |
+
+A list entry has `recordId` (`rcr_` and 24 hex characters), `committee`, `docType`, `title`, `meetingDate`, `publishedDate` (each with a precision field), `year`, `sourceUrl`, `itemUrl`, `filename`, `textWithheld`, `sha256`, `bytes`, `pageCount`, `textStatus`, `textQuality`, `withdrawn` and `asOf`.
+Page text is not in the list.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/rulemaking/committee-records/rcr_0123456789abcdef01234567?pageFrom=1&pageLimit=50" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+The single record adds `dockets` (the comment dockets it is linked to), `rules` (the Federal Rules it discusses, with `actId` and `mentionCount`) and `pages`.
+Every docket and rule link carries the `method` and `confidence` of the link, so treat a low-confidence link as a candidate.
+`pageFrom` starts the window at a page and `pageLimit` is 1 to 200 pages (default 50).
+`nextPage` continues the window, and is `null` on the last one.
+One call is one charge whatever the window.
+An unknown record answers `404` and is refunded, and a `503` from the rulemaking database is refunded.
+
+A scanned page has `quality: needs_ocr`, `textAvailable: false` and `text: null`.
+`textStatus` and `textNotice` say so for the record, so empty text is never a blank page.
+
+### Withheld text
+
+Public comments (`rules_comments`, and the archived comment compilations in `rules_comments_archive`) and rules suggestions (`rules_suggestions`) name private individuals.
+For these three types `title`, `filename` and all page text are `null`, `textWithheld` is `true`, and `textNotice` says why.
+The record, its date, its dockets and its rule links are served, and `sourceUrl` points at the original on uscourts.gov.
 
 ## Connect to the rest of the API
 

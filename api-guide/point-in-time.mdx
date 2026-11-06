@@ -104,6 +104,7 @@ weight the answer carries.
 |---|---|
 | `CFR_ANNUAL` | 31 GPO annual editions, 1996-2026, all 49 titles. `asOf` resolves to the edition in force. |
 | `USC` | Two editions: the one current through 2025-01-06 (served only for that date) and the current release point, which governs from 2026-09-02. Every date in between, and every earlier date, is out of coverage and returns no text. |
+| `FEDERAL_RULES` | 1,125 superseded texts of 510 Federal Rules, each its own `FEDERAL_RULES_ANNUAL` document (`{current actId}_E{year}`) built from GPO's annual US Code appendix editions. Pass the rule's current `actId` and `asOf` resolves to the text in force. The record begins 1998-01-26. |
 | `copyright_compendium` | Three dated releases (2014, 2017, 2021). Resolves to the edition the Copyright Office states applied. |
 | `ofac_faq` | 361 prior FAQ versions are separate citable documents from OFAC's own archive, served `actStatus: "superseded"`. |
 
@@ -112,6 +113,13 @@ range: a version observed in 1998, 1999 and 2003 lists exactly those years, and 
 unobserved gap returns `asOf.isBounded: false` rather than the nearest year held. Second, a
 citation year is the volume's own `<REVISED>` year, which can differ from the folder GPO filed it
 under, because GPO reprints unchanged volumes forward without re-dating them.
+
+On a Federal Rule, a date before 1998-01-26 returns the earliest text we hold with `asOf.isBounded: true`, which is not the text in force on that date.
+A date before the rule existed answers that it did not exist.
+So does a date after a rule was deleted and before its number was reused: Criminal Rule 59 answers that it did not exist between 2002-12-01 and 2005-12-01.
+When a later edition corrected a misprint without a new amendment, the corrected printing is served for every date that amendment governs.
+Editions were not published for every year, so a text in force only between two editions we hold can be missing.
+Past texts are also citable on their own under `corpusType=FEDERAL_RULES_ANNUAL`, which is opt-in and never part of an unscoped search.
 
 ### Where history is a separate document rather than a date
 

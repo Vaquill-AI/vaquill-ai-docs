@@ -6,6 +6,88 @@ description: "Updates and additions to the Vaquill Developer API"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
+<Update label="2026-11-06" description="Rules Committee records">
+  ## New: Rules Committee records
+
+  Two metered routes under `/us/rulemaking/committee-records/` serve the records of the Judicial Conference Rules Committees from uscourts.gov: meeting minutes, agenda books, committee reports, rules packages, preliminary drafts, public comments and rules suggestions.
+
+  - **Endpoints:** `GET /us/rulemaking/committee-records/list` (1 credit per page) and `GET /us/rulemaking/committee-records/{recordId}` (2 credits, with a window of page text).
+  - **Filters:** `committee`, `docType`, `year`, `ruleSet`, `rule` (needs `ruleSet`) and `docketId`.
+  - **Links:** each record names the comment dockets and the Federal Rules it is linked to, with the `method` and `confidence` of every link.
+  - **Withheld text:** for public comments and rules suggestions, `title`, `filename` and page text are `null` and `textWithheld` is `true`, because they name private individuals. The record, its date, its dockets and its rule links are served, and `sourceUrl` points at the original.
+  - **Still loading:** the store is not complete yet. Treat a missing record as not loaded yet, not as proof that none exists.
+
+  See [US Rulemaking](/api-guide/rulemaking#rules-committee-records).
+</Update>
+
+<Update label="2026-11-06" description="Law change alerts for pending Federal Rules amendments">
+  ## New: lifecycle events on Federal Rules watches
+
+  A watch on a Federal Rule now fires when a pending amendment to that rule moves a stage, even though the rule's own text has not changed.
+
+  - **New optional keys:** `lifecycleStage` and `relatedActId` on a change in the change feed (`GET /watches/{watchId}/changes`), on `changes[]` in a `board.updated` webhook, and on `GET /us/statutes/section/{actId}/changes`. They are present only on lifecycle events.
+  - **What fires:** `changeKind` is `amended`, `lifecycleStage` is one of `published_for_comment`, `approved_by_standing_committee`, `approved_by_judicial_conference`, `transmitted_to_supreme_court`, `adopted_by_supreme_court`, `transmitted_to_congress`, `in_force` or `withdrawn`, and `relatedActId` is the `actId` of the proposed amendment (a `_P` document).
+  - **Counts:** a lifecycle event is not counted in `sectionsAmended`.
+  - **Unchanged:** the `changeKind` enum is still `added`, `amended` and `removed`. Branch on `lifecycleStage` to tell a stage move from a text change.
+  - **Refresh:** pending amendments are re-read weekly.
+
+  See [Law change alerts](/api-guide/alerts#pending-federal-rules-amendments) and [pending amendments](/api-guide/coverage/federal).
+</Update>
+
+<Update label="2026-11-06" description="Past texts and pending amendments of the Federal Rules">
+  ## New: `FEDERAL_RULES_ANNUAL` and `FEDERAL_RULES_PROPOSED`
+
+  Two opt-in tokens hold the Federal Rules' past texts and their pending amendments. Neither is part of an unscoped search, and neither is watchable.
+
+  - **New token `FEDERAL_RULES_ANNUAL`:** 1,125 superseded texts of 510 Federal Rules, taken from the GPO annual editions of the US Code appendices. The `actId` is the current rule's `actId` plus `_E` and the year, for example `{actId}_E2015`. Read `goodLawStatus` and use `FEDERAL_RULES` for the rule in force.
+  - **`asOf` on a Federal Rule:** `GET /us/statutes/section/{actId}/body?asOf=YYYY-MM-DD` with the current `actId` now answers from these texts. The record begins 1998-01-26. A date before that returns the earliest text we hold with `asOf.isBounded: true`, not the text in force on that date.
+  - **New token `FEDERAL_RULES_PROPOSED`:** 49 pending or proposed amendment documents on 36 current rules. The `actId` is the current rule's `actId` plus `_P` and the cycle year. A proposal is not law: `actStatus` is `proposed`.
+  - **New `pendingAmendments` on a rule:** a statute result for a Federal Rule lists its pending amendments with `id`, `status`, `cycle`, `effectiveDate`, `commentPeriodEnd`, `sourceUrl`, `textComplete` and `commentDocketIds`. It is absent on every other section and on a rule with nothing pending.
+  - **Refresh:** pending amendments are re-read weekly.
+
+  See [Corpus types](/api-guide/concepts/corpus-types), [Point-in-time law](/api-guide/point-in-time) and [Federal coverage](/api-guide/coverage/federal).
+</Update>
+
+<Update label="2026-11-06" description="Committee notes split per amendment, with the 1937 printed note">
+  ## New: `committeeNotes` and `committeeNote1937Print` on Federal Rules
+
+  `GET /us/statutes/section/{actId}/body` on a Federal Rule now returns its Committee Note one amendment at a time, and for the Civil Rules it adds the original 1937 note as Congress printed it.
+
+  - **`committeeNotes`:** a list in print order. Each entry has `year`, `kind`, `heading`, `text`, `effectiveDate` and `subdivisionsDiscussed`. The entries rebuild `notes` exactly, and `notes` is unchanged.
+  - **`committeeNote1937Print`:** the Advisory Committee note of a Federal Rule of Civil Procedure as printed in H.R. Doc. No. 588, 75th Cong., 3d Sess. (1938), with a `verdict` against the compiled 1937 note in `notes`: `agrees`, `differs`, `print_only` or `none_printed`.
+  - **What the print holds:** 81 Civil Rules. 70 agree, 7 differ (Rules 16, 22, 52, 53, 57, 59 and 86), 3 have no printed note (Rules 29, 66 and 85) and 1 is print-only (Rule 84).
+  - **Text status:** `printTextStatus` is `verified` only when the print agrees with the compiled note. Every other print text is `unverified_ocr`: quote the scanned page, not the string. The field also carries page numbers, the source PDF URL and its sha256, and the OCR method and mean confidence.
+  - **Rules 72 to 76:** the 1937 rules of those numbers governed appeals and were abrogated in 1968, and the numbers were reused in 1983. Their 1937 notes are not attached to today's Rules 72 to 76.
+  - **`format=operative`:** both fields are dropped, like `notes`. A null there means not sent.
+
+  See [Federal coverage](/api-guide/coverage/federal).
+</Update>
+
+<Update label="2026-11-06" description="Corrected text for 114 Federal Rules">
+  ## Fix: corrected text for 114 Federal Rules
+
+  The Civil, Criminal, Evidence, Appellate and Bankruptcy Rules and the Supreme Court Rules now serve corrected text for 114 rules.
+
+  - **Removed from rule bodies:** footnote text and reference digits that had leaked in, running heads, and broken line-end hyphens (`thirdparty` is now `third-party`).
+  - **Restored:** printed errata, and em dashes that had been joined with a space.
+  - **Supreme Court Rules:** 35 rules read `fled` and `offcial` for `filed` and `official` because of a dropped ligature. They now read correctly.
+  - **`actStatus` of dead rules:** the US Code appendix copies of Civil Rules 74, 75, 76 and 84, Appellate Rules 3.1, 5.1 and 35 and Criminal Rule 54 reported `in_force`, so `excludeRepealed=true` still returned them. Abrogated rules now report `repealed` on both copies. Appellate Rule 35 and Criminal Rules 22 and 54 were transferred, not abrogated, and now report `transferred` on both copies. `excludeRepealed=true` drops both values.
+  - **No change events:** the rules themselves did not change, so no change events were emitted and a watch did not fire.
+</Update>
+
+<Update label="2026-11-06" description="US_TREATY corpus type and treaty citations">
+  ## New: `US_TREATY` corpus type and treaty citations
+
+  The Senate treaty record has its own `corpusType`, and treaty citations are now recognised as treaties.
+
+  - **New token `US_TREATY`:** the Senate record for 782 treaties considered since 1949 (`senate_treaty`, `senate_treaty_resolution`, `senate_treaty_document`), 1,492 documents. Treaty Document text runs from 1995 (the 104th Congress) on. The `us_treaty` and `senate_executive_report` sources belong to the token but have no documents yet.
+  - **Behaviour change for `US_TAX_TREATY`:** the token now holds only the IRS income tax treaties and their Treasury technical explanations (`us_tax_treaty`, `us_tax_treaty_technical_explanation`, 173 documents). The Senate record moved to `US_TREATY`, so an existing `corpusType: "US_TAX_TREATY"` filter no longer returns it. To keep the old result set, send both: `corpusType` accepts a list, as in `["US_TAX_TREATY", "US_TREATY"]`.
+  - **Treaty citations:** `S. Treaty Doc. No. 98-9` resolves to the Senate record we hold. `20 U.S.T. 361`, `T.I.A.S. No. 6638`, `T.S. No. 993`, `E.A.S. No. 12`, `1 Bevans 631` and `658 U.N.T.S. 163` are recognised and return `missReason: "not_held"` with a `missReasonHint` that says what treaty material we hold. They no longer come back as `ambiguous_jurisdiction` or with a hint to cite a U.S. Code section or Public Law. A miss on a Statutes at Large page in volumes 1 to 64 now says the page may be a treaty.
+  - **Label fix:** the tax treaty source name no longer says "Income and Estate". We hold income tax treaties only.
+
+  See [Federal coverage](/api-guide/coverage/federal) and [treaty citations](/api-guide/concepts/citation-formats#treaty-citations).
+</Update>
+
 <Update label="2026-11-03" description="US Rulemaking API">
   ## New: US Rulemaking API
 
