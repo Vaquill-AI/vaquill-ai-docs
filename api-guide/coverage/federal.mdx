@@ -150,37 +150,13 @@ The enacted text of a bill that became law is served as a public law under `corp
     coverage is I&N Dec. volume 8 onward, which is where EOIR's published precedent page begins.
 </Accordion>
 
-<Accordion title="US tax treaties: the IRS mirror, income tax only">
-  `corpusType=US_TAX_TREATY`, 173 documents and 13,081 retrieval passages, from the IRS tax treaty
-  pages (`us_tax_treaty`, 102, and `us_tax_treaty_technical_explanation`, 71): 71 bilateral income
-  tax conventions for 68 countries, 71 Treasury Technical Explanations, 23 protocols, 6 exchanges
-  of notes, 1 memorandum of understanding, 1 negotiation statement. A protocol is served as its own
-  document rather than folded into the convention it amends, because a protocol is what moves
-  withholding rates, limitation-on-benefits articles and entry-into-force dates. Income tax
-  treaties only: there are no estate or gift tax treaties. Termination is not tracked, so
-  `goodLawStatus` is `unknown` on every record.
-
-  The Senate treaty record used to be part of this token. It now has its own, `US_TREATY`.
-</Accordion>
-
-<Accordion title="The Senate treaty record: about 60% has no instrument text">
-  `corpusType=US_TREATY`, 1,492 documents and 6,918 retrieval passages. It covers the 782 treaties
-  the Senate has considered since 1949, tax and non-tax alike. `senate_treaty` (782) carries
-  title, parties, subject index and dated procedural history; `senate_treaty_resolution` (407) is
-  the resolution of advice and consent, where the reservations, understandings and declarations
-  that narrow a treaty's effect in US law live; `senate_treaty_document` (303) is the President's
-  transmittal message, from GPO, for treaties sent to the Senate from 1995 (the 104th Congress)
-  on. Those 303 are 285 numbered Treaty Documents and 18 Serial Set packages.
-
-  Three limits apply. About 60% of the record is metadata with no instrument text from either
-  publisher, and `source` says which records those are. Termination is not tracked, because no
-  source held states it, so `goodLawStatus` is `unknown` on every record. And the official US
-  treaty series are not held yet: treaty text from the Statutes at Large (before 1950), United
-  States Treaties (U.S.T., 1950 to 1984) and T.I.A.S. (after 1984) is not served, so a citation
-  such as `20 U.S.T. 361` or `T.I.A.S. No. 6638` is recognised but returns `missReason:
-  "not_held"`. Two further categories belong to the token but have no documents yet: official
-  treaty text (`us_treaty`) and Senate Executive Reports (`senate_executive_report`). See
-  [treaty citations](/api-guide/concepts/citation-formats#treaty-citations).
+<Accordion title="Treaties: two tokens, US_TAX_TREATY and US_TREATY">
+  Treaty material sits behind two tokens. `corpusType=US_TAX_TREATY` holds the IRS income tax
+  treaties: 173 documents and 13,081 retrieval passages, with 71 bilateral conventions for 68
+  countries and their 71 Treasury Technical Explanations. `corpusType=US_TREATY` holds the Senate
+  treaty record: 1,492 documents and 6,918 retrieval passages, covering the 782 treaties the Senate
+  has considered since 1949. About 60% of the Senate record has no instrument text. Sources,
+  citations and limits are on the [treaty coverage page](/api-guide/coverage/treaties).
 </Accordion>
 
 <Accordion title="Federal Rules of Procedure: committee notes, past texts and pending amendments">

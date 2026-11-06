@@ -1,0 +1,375 @@
+---
+title: "Error codes"
+description: "Every machine-readable error code the Data API returns, with what to do about each."
+---
+
+Errors from the Data API carry a stable `code` beside the legacy `detail` member.
+Branch on `code` in your own handling, and fall back to the HTTP status when `code` is absent.
+The set of codes is open, so treat an unknown value as its HTTP status class.
+
+The `type` member of every error body is a URL of the form `https://www.vaquill.ai/docs/errors/{code}`.
+Opening that URL in a browser lands on this page, at the section for that code.
+For the legacy status table and the `detail` and `errors` shapes, see [Errors](/api-guide/errors).
+
+## Body fields
+
+| Field | Meaning |
+|---|---|
+| `type` | URL naming the error kind. |
+| `title` | Short human title for the code. |
+| `status` | The HTTP status. |
+| `detail` | The legacy message, unchanged. |
+| `code` | The stable machine code. |
+| `retryable` | Whether the same request may succeed if you send it again. |
+| `requestId` | Id of the request. Quote it to support. |
+| `retryAfterSeconds` | Seconds to wait. Present only on a `429` or `503` that carries a `Retry-After` header. |
+
+## Example response
+
+Every error body has this shape.
+The `detail` text is illustrative and can differ by endpoint.
+`retryAfterSeconds` appears only on a `429` or `503` that carries a `Retry-After` header.
+A few codes add members of their own, which their sections name.
+
+```json
+{
+  "type": "https://www.vaquill.ai/docs/errors/rate_limited",
+  "title": "Rate limited",
+  "status": 429,
+  "detail": "Rate limit exceeded",
+  "code": "rate_limited",
+  "retryable": true,
+  "requestId": "3f2b8c1e-5a7d-4e9b-9c34-0d6a1b2f7e58",
+  "retryAfterSeconds": 12
+}
+```
+
+## All codes
+
+| Code | Status | Retryable | Title |
+|---|---|---|---|
+| [`authentication_required`](#authentication_required) | 401 | No | Authentication required |
+| [`invalid_api_key`](#invalid_api_key) | 401 | No | Invalid API key |
+| [`api_key_expired`](#api_key_expired) | 401 | No | API key expired |
+| [`permission_denied`](#permission_denied) | 403 | No | Permission denied |
+| [`insufficient_credits`](#insufficient_credits) | 402 | No | Insufficient credits |
+| [`rate_limited`](#rate_limited) | 429 | Yes | Rate limited |
+| [`daily_cap_exceeded`](#daily_cap_exceeded) | 429 | No | Daily cap exceeded |
+| [`validation_error`](#validation_error) | 422 | No | Validation error |
+| [`invalid_query`](#invalid_query) | 422 | No | Invalid query |
+| [`invalid_citation_input`](#invalid_citation_input) | 422 | No | Invalid citation input |
+| [`section_not_found`](#section_not_found) | 404 | No | Section not found |
+| [`resource_not_found`](#resource_not_found) | 404 | No | Resource not found |
+| [`idempotency_key_reused`](#idempotency_key_reused) | 422 | No | Idempotency key reused |
+| [`idempotency_in_progress`](#idempotency_in_progress) | 409 | Yes | Idempotency request in progress |
+| [`idempotency_replay_unavailable`](#idempotency_replay_unavailable) | 409 | No | Idempotent replay unavailable |
+| [`upstream_timeout`](#upstream_timeout) | 503 | Yes | Upstream timeout |
+| [`service_unavailable`](#service_unavailable) | 503 | Yes | Service unavailable |
+| [`internal_error`](#internal_error) | 500 | Yes | Internal error |
+| [`conflict`](#conflict) | 409 | No | Conflict |
+
+## Codes by kind
+
+Each section below is named for its code, so the `type` URL of an error body opens straight to it.
+Every code is exposed in both SDKs with `code`, `retryable`, the request id and the retry hint, as the SDK section further down describes.
+
+### Authentication and permission
+
+<a id="authentication_required"></a>
+#### authentication_required
+
+Status `401`. Retryable: No. Python `vaquill.AuthenticationError`. TypeScript `AuthenticationError`.
+
+**What it means.**
+The request carried no credential.
+
+**What to do.**
+Send your key in the `Authorization: Bearer vq_key_...` header.
+See [Authentication](/api-guide/authentication) for the header format and key rotation.
+Do not retry the same request without a key.
+
+<a id="invalid_api_key"></a>
+#### invalid_api_key
+
+Status `401`. Retryable: No. Python `vaquill.AuthenticationError`. TypeScript `AuthenticationError`.
+
+**What it means.**
+The key is malformed, unknown or revoked.
+This is also the default code for any `401` that the API could not classify more precisely.
+
+**What to do.**
+Check that the key starts with `vq_key_` and was copied whole.
+Create a new key in the developer dashboard if the old one was revoked.
+Do not retry with the same key.
+
+<a id="api_key_expired"></a>
+#### api_key_expired
+
+Status `401`. Retryable: No. Python `vaquill.AuthenticationError`. TypeScript `AuthenticationError`.
+
+**What it means.**
+The key is past its expiry date.
+
+**What to do.**
+Create a new key and replace the expired one.
+Do not retry with the same key.
+
+<a id="permission_denied"></a>
+#### permission_denied
+
+Status `403`. Retryable: No. Python `vaquill.PermissionDeniedError`. TypeScript `PermissionDeniedError`.
+
+**What it means.**
+The key is valid, but your plan, the key's scope or the requested jurisdiction does not allow this call.
+For example, webhook delivery on a watch requires the Business plan.
+
+**What to do.**
+Read `detail` to see which of plan, scope or jurisdiction applies.
+Use a different channel or jurisdiction, or upgrade the plan.
+Retrying the same request cannot succeed.
+
+### Credits and limits
+
+<a id="insufficient_credits"></a>
+#### insufficient_credits
+
+Status `402`. Retryable: No. Python `vaquill.InsufficientCreditsError`. TypeScript `InsufficientCreditsError`.
+
+**What it means.**
+Your credit balance is too low to pay for this call.
+
+**What to do.**
+Top up your credits, then send the request again.
+`GET /credits/balance` is free and shows what you hold.
+Never retry before topping up.
+The SDKs do not retry this code.
+
+<a id="rate_limited"></a>
+#### rate_limited
+
+Status `429`. Retryable: Yes. Python `vaquill.RateLimitError`. TypeScript `RateLimitError`.
+
+**What it means.**
+You exceeded the per-key rate window.
+
+**What to do.**
+Wait for the number of seconds in the `Retry-After` header, which the API also returns as `retryAfterSeconds`, then retry.
+Use exponential backoff if no hint is present.
+The SDKs retry this code automatically.
+
+<a id="daily_cap_exceeded"></a>
+#### daily_cap_exceeded
+
+Status `429`. Retryable: No. Python `vaquill.DailyCapExceededError`. TypeScript `DailyCapExceededError`.
+
+**What it means.**
+The key reached its per-key daily cap.
+The status is `429`, but unlike `rate_limited` a short wait does not help.
+
+**What to do.**
+Retry only after the daily cap resets.
+The SDKs do not retry this code.
+
+### Request validation
+
+<a id="validation_error"></a>
+#### validation_error
+
+Status `422`. Retryable: No. Python `vaquill.UnprocessableEntityError`. TypeScript `UnprocessableEntityError`.
+
+**What it means.**
+The request body or parameters failed schema validation.
+This is the default code for a `4xx` that the API could not classify more precisely.
+The body also carries the legacy `errors` array, a field-level list.
+
+**What to do.**
+Read the `errors` array: each entry has `loc` (where), `msg` (why) and `type`.
+Fix the listed fields and send the request again.
+See [Errors](/api-guide/errors) for the legacy `errors` shape.
+
+<a id="invalid_query"></a>
+#### invalid_query
+
+Status `422`. Retryable: No. Python `vaquill.UnprocessableEntityError`. TypeScript `UnprocessableEntityError`.
+
+**What it means.**
+A Boolean query or a filter was refused before any charge.
+
+**What to do.**
+Read `detail` for the reason, such as a malformed expression.
+See [Boolean Search](/api-guide/concepts/boolean-search#errors) for the grammar and its error messages.
+Rejected requests are not charged.
+
+<a id="invalid_citation_input"></a>
+#### invalid_citation_input
+
+Status `422`. Retryable: No. Python `vaquill.UnprocessableEntityError`. TypeScript `UnprocessableEntityError`.
+
+**What it means.**
+The request itself is malformed.
+This is not the same as a citation that parsed but did not resolve.
+
+**What to do.**
+Fix the request as `detail` describes.
+Send the citation as a string in the field the endpoint documents.
+
+### Not found
+
+<a id="section_not_found"></a>
+#### section_not_found
+
+Status `404`. Retryable: No. Python `vaquill.NotFoundError`. TypeScript `NotFoundError`.
+
+**What it means.**
+No section matches the identifier you sent.
+The body keeps the legacy members `reason` and `didYouMean` beside the standard ones, and they carry the values the lookup produced.
+
+**What to do.**
+Read `reason` to see why the lookup failed.
+Try the candidates in `didYouMean` when present.
+Use search or the hierarchy browse to find the correct identifier.
+
+<a id="resource_not_found"></a>
+#### resource_not_found
+
+Status `404`. Retryable: No. Python `vaquill.NotFoundError`. TypeScript `NotFoundError`.
+
+**What it means.**
+A watch, board, delivery or change with that id does not exist for your account.
+
+**What to do.**
+Check the id and that it belongs to your key's account.
+List the resource first to get valid ids.
+
+### Idempotency and conflict
+
+<a id="idempotency_key_reused"></a>
+#### idempotency_key_reused
+
+Status `422`. Retryable: No. Python `vaquill.IdempotencyKeyReusedError`. TypeScript `IdempotencyKeyReusedError`.
+
+**What it means.**
+You sent an `Idempotency-Key` that was already used with a different request.
+
+**What to do.**
+Use a fresh key for each distinct request.
+Reuse a key only when you resend the identical request.
+
+<a id="idempotency_in_progress"></a>
+#### idempotency_in_progress
+
+Status `409`. Retryable: Yes. Python `vaquill.IdempotencyInProgressError`. TypeScript `IdempotencyInProgressError`.
+
+**What it means.**
+The original request with this `Idempotency-Key` is still running.
+
+**What to do.**
+Wait briefly and resend the same request with the same key.
+The SDKs retry this code automatically.
+
+<a id="idempotency_replay_unavailable"></a>
+#### idempotency_replay_unavailable
+
+Status `409`. Retryable: No. Python `vaquill.IdempotencyReplayUnavailableError`. TypeScript `IdempotencyReplayUnavailableError`.
+
+**What it means.**
+The original request completed, but its response was too large to replay.
+The call was not charged again.
+
+**What to do.**
+Check your balance with `GET /credits/balance` before deciding to repeat the call.
+If you need the data again, send a new request with a new key.
+
+<a id="conflict"></a>
+#### conflict
+
+Status `409`. Retryable: No. Python `vaquill.ConflictError`. TypeScript `ConflictError`.
+
+**What it means.**
+The request conflicts with the current state of a resource and no more specific code applies.
+For example, you already hold the watch you tried to create.
+
+**What to do.**
+Read `detail` for the conflicting state.
+Fetch the existing resource instead of creating it again.
+
+### Server and upstream
+
+<a id="upstream_timeout"></a>
+#### upstream_timeout
+
+Status `503`. Retryable: Yes. Python `vaquill.InternalServerError`. TypeScript `InternalServerError`.
+
+**What it means.**
+A service the API depends on did not answer in time.
+The call is refunded.
+
+**What to do.**
+Retry with exponential backoff.
+Honour `Retry-After` when it is present.
+The SDKs retry this code automatically.
+
+<a id="service_unavailable"></a>
+#### service_unavailable
+
+Status `503`. Retryable: Yes. Python `vaquill.InternalServerError`. TypeScript `InternalServerError`.
+
+**What it means.**
+A dependency of the API is down.
+The call is refunded.
+
+**What to do.**
+Retry with exponential backoff.
+Honour `Retry-After` when it is present.
+The SDKs retry this code automatically.
+
+<a id="internal_error"></a>
+#### internal_error
+
+Status `500`. Retryable: Yes. Python `vaquill.InternalServerError`. TypeScript `InternalServerError`.
+
+**What it means.**
+The API failed in a way it did not anticipate.
+The call is refunded.
+
+**What to do.**
+Retry with exponential backoff.
+If it persists, [contact support](mailto:contact@vaquill.ai) and include the `requestId`.
+The SDKs retry this code automatically.
+
+## How the SDKs expose them
+
+Both SDKs read the same body and map it to an exception class.
+They pick the class from `code` first and from the HTTP status second, so an unknown code still raises the right status class.
+
+| Information | Python (`vaquill`) | TypeScript |
+|---|---|---|
+| Base for HTTP errors | `APIStatusError` | `APIStatusError` |
+| HTTP status | `status_code` or `status` | `status` |
+| Machine code | `code` | `code` |
+| Retryable hint | `retryable` | `retryable` |
+| Wait hint | `retry_after_seconds` | `retryAfterSeconds` |
+| Request id | `request_id` | `requestId` |
+| Legacy members | `detail`, `errors` | `detail`, `errors` |
+
+`code` and `retryable` are `None` in Python and `null` in TypeScript when the server did not send them.
+
+### Class by code
+
+| Code | Python and TypeScript class |
+|---|---|
+| `insufficient_credits` | `InsufficientCreditsError` |
+| `daily_cap_exceeded` | `DailyCapExceededError` (a `RateLimitError`) |
+| `idempotency_key_reused` | `IdempotencyKeyReusedError` |
+| `idempotency_in_progress` | `IdempotencyInProgressError` |
+| `idempotency_replay_unavailable` | `IdempotencyReplayUnavailableError` |
+
+Every other code maps by status: `401` to `AuthenticationError`, `403` to `PermissionDeniedError`, `404` to `NotFoundError`, `409` to `ConflictError`, `422` to `UnprocessableEntityError`, `429` to `RateLimitError`, and `5xx` to `InternalServerError`.
+The three idempotency classes share the base class `IdempotencyConflictError`.
+
+### Automatic retries
+
+The SDKs retry `rate_limited`, `idempotency_in_progress`, `upstream_timeout`, `service_unavailable` and `internal_error`.
+They never retry `insufficient_credits` or `daily_cap_exceeded`.
+
+See the [Python SDK](/api-guide/sdks/python) and the [TypeScript SDK](/api-guide/sdks/typescript) pages for client setup.

@@ -76,6 +76,7 @@
               "api-guide/coverage/federal",
               "api-guide/coverage/states",
               "api-guide/coverage/agency-guidance",
+              "api-guide/coverage/treaties",
               "api-guide/coverage/india",
               "api-guide/session-laws",
               "api-guide/rulemaking",
@@ -105,11 +106,17 @@
             "icon": "code",
             "pages": [
               "api-guide/sdks/overview",
-              "api-guide/sdks/python",
-              "api-guide/sdks/typescript",
-              "api-guide/sdks/go",
-              "api-guide/sdks/java",
-              "api-guide/sdks/kotlin",
+              {
+                "group": "Languages",
+                "expanded": false,
+                "pages": [
+                  "api-guide/sdks/python",
+                  "api-guide/sdks/typescript",
+                  "api-guide/sdks/go",
+                  "api-guide/sdks/java",
+                  "api-guide/sdks/kotlin"
+                ]
+              },
               "api-guide/sdks/integrations",
               "api-guide/sdks/cli"
             ]
@@ -164,26 +171,7 @@
             "group": "ERROR CODES",
             "icon": "circle-exclamation",
             "pages": [
-              "errors/index",
-              "errors/authentication_required",
-              "errors/invalid_api_key",
-              "errors/api_key_expired",
-              "errors/permission_denied",
-              "errors/insufficient_credits",
-              "errors/rate_limited",
-              "errors/daily_cap_exceeded",
-              "errors/validation_error",
-              "errors/invalid_query",
-              "errors/invalid_citation_input",
-              "errors/section_not_found",
-              "errors/resource_not_found",
-              "errors/idempotency_key_reused",
-              "errors/idempotency_in_progress",
-              "errors/idempotency_replay_unavailable",
-              "errors/upstream_timeout",
-              "errors/service_unavailable",
-              "errors/internal_error",
-              "errors/conflict"
+              "errors/codes"
             ]
           },
           {
@@ -580,6 +568,82 @@
     {
       "source": "/errors",
       "destination": "/api-guide/errors"
+    },
+    {
+      "source": "/errors/api_key_expired",
+      "destination": "/errors/codes#api_key_expired"
+    },
+    {
+      "source": "/errors/authentication_required",
+      "destination": "/errors/codes#authentication_required"
+    },
+    {
+      "source": "/errors/conflict",
+      "destination": "/errors/codes#conflict"
+    },
+    {
+      "source": "/errors/daily_cap_exceeded",
+      "destination": "/errors/codes#daily_cap_exceeded"
+    },
+    {
+      "source": "/errors/idempotency_in_progress",
+      "destination": "/errors/codes#idempotency_in_progress"
+    },
+    {
+      "source": "/errors/idempotency_key_reused",
+      "destination": "/errors/codes#idempotency_key_reused"
+    },
+    {
+      "source": "/errors/idempotency_replay_unavailable",
+      "destination": "/errors/codes#idempotency_replay_unavailable"
+    },
+    {
+      "source": "/errors/insufficient_credits",
+      "destination": "/errors/codes#insufficient_credits"
+    },
+    {
+      "source": "/errors/internal_error",
+      "destination": "/errors/codes#internal_error"
+    },
+    {
+      "source": "/errors/invalid_api_key",
+      "destination": "/errors/codes#invalid_api_key"
+    },
+    {
+      "source": "/errors/invalid_citation_input",
+      "destination": "/errors/codes#invalid_citation_input"
+    },
+    {
+      "source": "/errors/invalid_query",
+      "destination": "/errors/codes#invalid_query"
+    },
+    {
+      "source": "/errors/permission_denied",
+      "destination": "/errors/codes#permission_denied"
+    },
+    {
+      "source": "/errors/rate_limited",
+      "destination": "/errors/codes#rate_limited"
+    },
+    {
+      "source": "/errors/resource_not_found",
+      "destination": "/errors/codes#resource_not_found"
+    },
+    {
+      "source": "/errors/section_not_found",
+      "destination": "/errors/codes#section_not_found"
+    },
+    {
+      "source": "/errors/service_unavailable",
+      "destination": "/errors/codes#service_unavailable"
+    },
+    {
+      "source": "/errors/upstream_timeout",
+      "destination": "/errors/codes#upstream_timeout"
+    },
+    {
+      "source": "/errors/validation_error",
+      "destination": "/errors/codes#validation_error"
     },
     {
       "source": "/coverage",

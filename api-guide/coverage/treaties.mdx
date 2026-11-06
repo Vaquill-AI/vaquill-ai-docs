@@ -1,0 +1,106 @@
+---
+title: "Treaty coverage"
+description: "The two treaty corpus tokens: US_TAX_TREATY for IRS income tax treaties, US_TREATY for the Senate treaty record"
+---
+
+Treaty material sits behind two `corpusType` tokens.
+`US_TAX_TREATY` holds the IRS income tax treaties.
+`US_TREATY` holds the Senate treaty record.
+They were split on 2026-11-06, so a search for one never returns the other.
+
+## What the two tokens hold
+
+| Token | Documents | Retrieval passages |
+|---|---:|---:|
+| `US_TAX_TREATY` | 173 | 13,081 |
+| `US_TREATY` | 1,492 | 6,918 |
+
+Counts measured 2026-11-06.
+A document is one citable item.
+A retrieval passage is one searchable chunk of it.
+
+<Note>
+  `GET /us/statutes/coverage` reports `sectionCount` 1,665 for `US_TAX_TREATY` and 1,492 for `US_TREATY`.
+  The endpoint counts sections, not documents.
+  The 173 documents of `US_TAX_TREATY` are counted there as 1,665 sections.
+  Both numbers are correct.
+</Note>
+
+### Sources
+
+Narrow either token to one body of material with `source`.
+
+| Token | `source` | Documents | What it is |
+|---|---|---:|---|
+| `US_TAX_TREATY` | `us_tax_treaty` | 102 | Bilateral income tax conventions, protocols, exchanges of notes, the memorandum of understanding and the negotiation statement |
+| `US_TAX_TREATY` | `us_tax_treaty_technical_explanation` | 71 | Treasury Technical Explanations |
+| `US_TREATY` | `senate_treaty` | 782 | One record for each treaty the Senate has considered since 1949, tax and non-tax: title, parties, subject index and dated procedural history |
+| `US_TREATY` | `senate_treaty_resolution` | 407 | The resolution of advice and consent, where the reservations, understandings and declarations live |
+| `US_TREATY` | `senate_treaty_document` | 303 | The President's transmittal text, for treaties sent to the Senate from 1995 (the 104th Congress) on |
+
+The 102 documents of `us_tax_treaty` are 71 bilateral income tax conventions for 68 countries, 23 protocols, 6 exchanges of notes, 1 memorandum of understanding and 1 negotiation statement.
+A protocol is served as its own document rather than folded into the convention it amends.
+That keeps each protocol searchable on its own terms, such as a change to a withholding rate, a limitation-on-benefits article or an entry-into-force date.
+The 303 documents of `senate_treaty_document` are 285 numbered Treaty Documents and 18 Serial Set packages.
+
+### Where the text comes from
+
+| Source | Origin |
+|---|---|
+| `us_tax_treaty`, `us_tax_treaty_technical_explanation` | The IRS tax treaty pages |
+| `senate_treaty`, `senate_treaty_resolution` | The Senate treaty record |
+| `senate_treaty_document` | GPO, the Government Publishing Office |
+
+## Searching and filtering
+
+Both tokens use the same search route, `POST /us/statutes/search`, and the same `corpusType` and `source` filters described in [Corpus types](/api-guide/concepts/corpus-types).
+
+Find a withholding rule in an IRS income tax treaty:
+
+```json
+{ "query": "dividends withholding rate limitation on benefits", "corpusType": "US_TAX_TREATY" }
+```
+
+Read the Treasury's explanation of a treaty instead of the treaty itself:
+
+```json
+{ "query": "Technical Explanation permanent establishment", "corpusType": "US_TAX_TREATY", "source": "us_tax_treaty_technical_explanation" }
+```
+
+Find the reservations and understandings the Senate attached to its consent:
+
+```json
+{ "query": "understanding declaration extradition", "corpusType": "US_TREATY", "source": "senate_treaty_resolution" }
+```
+
+`corpusType` also accepts a list, so one call can search both tokens:
+
+```json
+{ "query": "double taxation relief", "corpusType": ["US_TAX_TREATY", "US_TREATY"] }
+```
+
+## Citations
+
+A treaty citation is always recognized as a treaty.
+It is never read as a U.S. Code section or a Public Law.
+The full list of accepted forms is in [Treaty citations](/api-guide/concepts/citation-formats#treaty-citations).
+
+| Citation | Result |
+|---|---|
+| Senate Treaty Document, such as `S. Treaty Doc. No. 98-9` | Resolves to the Senate record for that treaty: the Treaty Document text when the treaty went to the Senate from 1995 on, otherwise the ratification record |
+| U.S.T., T.I.A.S., T.S., E.A.S., Bevans, U.N.T.S., L.N.T.S., such as `20 U.S.T. 361` or `T.I.A.S. No. 6638` | `resolved: false`, `missReason: "not_held"`, with a `missReasonHint` |
+| Senate Executive Report, such as `S. Exec. Rep. No. 102-23` | `resolved: false`, `missReason: "not_held"`, with a `missReasonHint` |
+| Statutes at Large pages in volumes 1 to 64 | Resolves to the session law printed there when we hold one. A miss says the page may be a treaty |
+
+The `missReasonHint` states that the form was recognized and lists the treaty material we do hold: the Senate ratification record, Treaty Document text from 1995 on, and the IRS income tax treaties.
+
+## Limits
+
+- About 60% of the Senate record is metadata with no instrument text. `source` tells you which records those are.
+- `goodLawStatus` is `unknown` on every treaty record. No source we hold states termination.
+- Treaty text printed in the Statutes at Large, U.S.T., T.I.A.S. and Bevans is not held.
+- Senate Executive Reports are not held.
+- The categories `us_treaty` and `senate_executive_report` exist on the `US_TREATY` token and hold no documents.
+- `US_TAX_TREATY` covers income tax only. There are no estate or gift tax treaties.
+
+For the other federal tokens, see [Federal coverage](/api-guide/coverage/federal).

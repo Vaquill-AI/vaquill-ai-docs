@@ -13,7 +13,7 @@ Seven endpoints serve them.
 | [`GET /us/session-laws/list`](/api-reference/us-session-laws/list-a-states-session-laws) | One state's session laws, filtered and paged | 1 per page |
 | [`POST /us/session-laws/search`](/api-reference/us-session-laws/search-the-text-of-state-session-laws) | Find laws by what they say: a question, a title, a quoted phrase, a citation or a bill number. See [Searching the text](#searching-the-text) | 4 per page |
 | [`GET /us/session-laws/{sessionLawId}`](/api-reference/us-session-laws/get-a-state-session-law-by-id-or-by-citation) | One law: identity, dates, outcome, sources, code sections affected | 2 |
-| [`GET /us/session-laws/{sessionLawId}/body`](/api-reference/us-session-laws/get-a-state-session-laws-text) | The law's text, paged | 6 per page |
+| [`GET /us/session-laws/{sessionLawId}/body`](/api-reference/us-session-laws/get-a-state-session-laws-text-current-or-a-past-version) | The law's text, paged | 6 per page |
 | [`POST /us/session-laws/batch`](/api-reference/us-session-laws/get-many-state-session-laws-at-once-by-id-or-citation) | Up to 50 laws by id or citation, optionally with each one's first page of text | 2 per law served, +6 per text page |
 | [`GET /us/session-laws/changes`](/api-reference/us-session-laws/feed-of-changes-to-the-session-law-registry) | What changed in the registry since your cursor | 1 per page |
 | [`GET /us/statutes/section/{actId}/enactments`](/api-reference/us-statutes/which-acts-a-state-publisher-lists-against-this-section) | The session laws a publisher lists against one code section | 1 |
