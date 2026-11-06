@@ -78,6 +78,7 @@
               "api-guide/coverage/agency-guidance",
               "api-guide/coverage/india",
               "api-guide/session-laws",
+              "api-guide/rulemaking",
               "api-guide/roadmap",
               "api-guide/changelog"
             ]
@@ -97,13 +98,6 @@
               "api-guide/quickstart",
               "api-guide/authentication",
               "api-guide/data-privacy"
-            ]
-          },
-          {
-            "group": "TRANSLATION",
-            "icon": "language",
-            "pages": [
-              "api-guide/translation"
             ]
           },
           {
@@ -574,6 +568,10 @@
     },
     {
       "source": "/guides/tools/translation",
+      "destination": "/api-guide/overview"
+    },
+    {
+      "source": "/api-guide/translation",
       "destination": "/api-guide/overview"
     },
     {

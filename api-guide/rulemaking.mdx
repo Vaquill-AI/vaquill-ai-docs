@@ -1,0 +1,217 @@
+---
+title: "US Rulemaking"
+description: "Regulations.gov dockets and documents, Unified Agenda history, OIRA review and CRA links, tied together by the Regulation Identifier Number"
+---
+
+A rule does not live in one place.
+The agency lists it on the Unified Agenda, OIRA reviews it under Executive Order 12866, Regulations.gov collects the docket and the comments, the Federal Register prints the proposal and the final rule, and the CFR codifies the result.
+The Regulation Identifier Number (RIN, for example `2060-AV16`) is the thread that ties them together.
+
+The Rulemaking API serves those sources side by side, so one call by RIN answers "where is this rule, and what is it linked to".
+
+## What is covered
+
+| Source | What you get |
+|---|---|
+| Regulations.gov | Dockets and document metadata: agency, type, title, RIN, comment periods, Federal Register document numbers |
+| Unified Agenda | One entry per edition that carried a RIN, from Fall 1995 onward, with the stage, priority and timetable the agency printed |
+| OIRA EO 12866 review | Each review with its dates, decision, and the Federal Register document it cleared |
+| Congress.gov | Congressional Review Act disapproval resolutions and rule submissions |
+| GAO | Major rule reports, a partial listing (see [Known gaps](#known-gaps)) |
+| Federal Register, CFR, USC | Cross-links to documents, CFR parts and public laws, each with the basis and quality of the link |
+
+There are no comment texts, no attachments and no commenter data.
+Regulations.gov keeps no history, so dockets and documents are the current state, with the time we last saw them in `asOf`.
+
+## Endpoints
+
+Six `GET` routes under `/api/v1/us/rulemaking/`.
+Calls are authenticated with an API key that has the `research:read` scope, as in [Authentication](/api-guide/authentication).
+
+| Endpoint | What it returns | Credits |
+|---|---|---:|
+| `GET /us/rulemaking/dockets/{docketId}` | One docket, with document counts by type and the comment count when measured | 2 |
+| `GET /us/rulemaking/dockets/list` | Dockets, most recently modified first, filtered | 1 per page |
+| `GET /us/rulemaking/dockets/{docketId}/documents` | The documents of one docket in posting order | 1 per page |
+| `GET /us/rulemaking/rins/{rin}` | Everything held for one RIN, with the quality of every link | 3 |
+| `GET /us/rulemaking/rins/{rin}/agenda` | Unified Agenda history of one RIN, newest edition first | 1 per page |
+| `GET /us/rulemaking/coverage` | What is held, per source, and how fresh it is | Free |
+
+A page is one charge, and an empty page is still charged because it is an answer.
+A docket or RIN we hold nothing for answers `404`, and a `503` from the rulemaking database is refunded.
+A malformed RIN or a bad cursor answers `422` before any charge.
+See [Errors](/api-guide/errors).
+
+## Look up a RIN
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/rulemaking/rins/2060-AV16" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+The RIN is `NNNN-AANN`, and lower case is accepted.
+The response is abridged here:
+
+```json
+{
+  "rin": "2060-AV16",
+  "title": "...",
+  "status": "linked",
+  "stage": "Final Rule Stage",
+  "isUmbrella": false,
+  "agenda": {
+    "editions": 12,
+    "firstEdition": "201710",
+    "lastEdition": "202510",
+    "latest": { "editionId": "202510", "stage": "...", "priority": "...", "agencyAcronym": "EPA" }
+  },
+  "reviews": [
+    {
+      "reviewKey": "...",
+      "dateReceived": "...",
+      "dateCompleted": "...",
+      "decision": "...",
+      "economicallySignificant": true,
+      "status": "concluded",
+      "linkStatus": "linked",
+      "frCitation": "..."
+    }
+  ],
+  "dockets": [
+    {
+      "docketId": "EPA-HQ-OAR-2021-0208",
+      "documentCount": 0,
+      "openDocumentCount": 0,
+      "commentCount": null,
+      "sourceUrl": "https://www.regulations.gov/docket/EPA-HQ-OAR-2021-0208"
+    }
+  ],
+  "federalRegister": [
+    { "documentNumber": "2021-03456", "role": "proposed", "basis": "...", "quality": "verified" }
+  ],
+  "cfrParts": [{ "cfrTitle": 40, "cfrPart": "60", "basis": "...", "quality": "verified" }],
+  "publicLaws": [],
+  "craDisapprovals": [],
+  "relatedRins": [],
+  "coverage": [{ "source": "...", "held": true, "note": null }],
+  "asOf": "2026-11-03T05:00:00Z",
+  "creditsConsumed": 3,
+  "processingTimeMs": 41.2
+}
+```
+
+The values above are placeholders that show the shape, not a recorded answer.
+
+| Field | Meaning |
+|---|---|
+| `status` | How the RIN's Federal Register documents pair up: `linked` (a proposed and a final rule are paired), `final_only`, `pending`, `corrections_only`, `partial`, `ambiguous`, or `null` when no pairing is held |
+| `isUmbrella` | An umbrella RIN covers many unrelated documents. No proposal-to-final pairing is claimed for it |
+| `agenda` | Edition count, first and last edition, and the newest entry (`latest`) |
+| `reviews[].decision` | OIRA's decision as printed |
+| `reviews[].linkStatus` | `linked`, `ambiguous`, `umbrella_rin`, `no_candidate`, `no_fr_for_rin`, `pending` or `not_applicable`. `frActId` and `frCitation` are set only when it is `linked` |
+| `dockets[].openDocumentCount` | Documents of that docket currently open for comment |
+| `federalRegister[].role` | `proposed`, `final`, `correction`, `extension` or `other` |
+| `coverage` | Per source, whether we hold anything for this RIN and why not |
+
+### Confidence labels
+
+Every cross-link carries a `basis`, which says how the link was made, and a `quality`:
+
+| `quality` | Meaning |
+|---|---|
+| `verified` | The link rests on an identifier the sources share |
+| `candidate` | A plausible link that is not confirmed. Check it before you rely on it |
+| `ambiguous` | We could not make the link with confidence, so we name no pick |
+
+Never treat `candidate` as `verified`.
+An `ambiguous` link carries no `actId`, and an umbrella RIN claims no pairing at all.
+
+## Unified Agenda history
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/rulemaking/rins/2060-AV16/agenda?from=202310&limit=5" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+`from` and `to` are edition ids (`YYYYMM`, for example `202510`), and `from` must not be after `to`.
+`limit` is 1 to 100, default 25.
+Each entry in `editions` has `editionId`, `season`, `year`, `runDate`, `title`, `abstract`, `stage`, `rinStatus`, `priority`, `major`, the agency fields, `furtherInfoUrl` (served only when it is an official `.gov` or `.mil` link), `publicCommentUrl`, and a `timetable`.
+Each `timetable` action has `action`, `dateRaw`, `dateValue`, `datePrecision` and, when the agency printed one, `frCitation`.
+
+## Dockets and documents
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/rulemaking/dockets/EPA-HQ-OAR-2021-0208" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+A docket has `docketId`, `agencyId`, `docketType` (`Rulemaking` or `Nonrulemaking`), `title`, `abstract`, `rin`, `rinSource`, `spineRin`, `lastModifiedAt`, `modifyDate`, `documentCount`, `documentTypeCounts`, `commentCount`, `commentCountAsOf` and `sourceUrl`.
+
+`rin` is the RIN the agency entered on the docket when there is one.
+When the agency entered none, it is the single RIN our rulemaking spine holds as verified for the docket, and `rinSource` says which: `regulations_gov` for the agency's own entry, `spine` for one derived from the spine.
+`rin` and `rinSource` are both null when neither exists, or when the spine names several RINs for the docket, because no pick is made between them.
+`spineRin` is set only when the spine holds a verified RIN that differs from the agency's, and `rin` then stays the agency's value.
+`modifyDate` is a second modification date and is null when none was recorded; `lastModifiedAt` is the field the `modifiedSince` and `modifiedUntil` window reads.
+
+List dockets with filters:
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/rulemaking/dockets/list?agencyId=EPA&hasRin=true&limit=20" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+| Parameter | Meaning |
+|---|---|
+| `agencyId` | Regulations.gov agency id, for example `EPA` |
+| `docketType` | `Rulemaking` or `Nonrulemaking` |
+| `rin` | One normalized RIN, for example `2060-AV16` |
+| `hasRin` | `true` for dockets that carry a RIN, whether the agency entered it or the spine supplies it (see `rinSource`), `false` for those that do not |
+| `modifiedSince`, `modifiedUntil` | Window on the publisher's last modified time. `modifiedSince` must be before `modifiedUntil` |
+| `limit`, `cursor` | Page size 1 to 100 (default 50) and the cursor of the previous page |
+
+The documents of one docket:
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/rulemaking/dockets/EPA-HQ-OAR-2021-0208/documents?openForComment=true" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+Filters are `documentType`, `openForComment`, `postedFrom` and `postedTo`.
+Each document has `documentId`, `documentType`, `subtype`, `title`, `postedAt`, `commentStartAt`, `commentEndAt`, `openForComment`, `withinCommentPeriod`, `allowLateComments`, `withdrawn`, `cfrPart`, `frPages`, `commentCount` and `sourceUrl`.
+`frDocNum` is the Federal Register document number as Regulations.gov prints it, and `frDocNumNorm` is the same number in the form used to join to the Federal Register (`2021-03456`).
+
+## Paging
+
+The list routes return `nextCursor`, which is `null` on the last page.
+Pass it back as `cursor` with the same filters.
+A cursor is bound to the filters that produced it, and a cursor used with other filters answers `422` without a charge.
+See [Pagination](/api-guide/pagination).
+
+## Coverage
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/rulemaking/coverage" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+This call is free.
+Each entry in `sources` has `name`, `rowCounts`, `latestChange`, `lastRefreshAt`, `measuredAt`, `status` and `limitations`.
+`status` is `ok`, `stale` or `unmeasured`.
+`unmeasured` means we have not measured that source, not that it is clean.
+`agendaEditions` lists the Unified Agenda editions held, and `limitations` names what is not included.
+
+## Connect to the rest of the API
+
+- **Federal Register.** `federalRegister[].actId` and `reviews[].frActId` point at the Federal Register document in the corpus. The document number is `frDocNumNorm` on a docket document. See [Federal coverage](/api-guide/coverage/federal) for what the Federal Register corpus holds.
+- **CFR.** `cfrParts` gives the CFR title and part a rulemaking amends. Browse the part with the [statute hierarchy](/api-guide/concepts/hierarchy) and read the section text from `/us/statutes`.
+- **US Code.** `publicLaws` and `craDisapprovals` link a rule to the public law behind it or to a Congressional Review Act resolution against it. Resolve a public law or section with [citation formats](/api-guide/concepts/citation-formats).
+- **Law change alerts.** To be told when the CFR text changes, use [alerts](/api-guide/alerts).
+
+## Known gaps
+
+- **Few dockets carry a RIN.** `hasRin=true` returns a little over 1,200 dockets today, and most of those carry a RIN derived from our rulemaking spine rather than one the agency entered (`rinSource` is `spine`, not `regulations_gov`). A docket with no RIN, entered or derived, cannot be found by RIN, so absence of a docket on a RIN page is not proof that none exists.
+- **Comment counts are mostly absent.** `commentCount` is `null` for most dockets and documents. `null` means not measured, never zero. `commentCountAsOf` says when a count was taken.
+- **GAO listing is partial.** The GAO major rule report listing does not cover every report.
+- **Not every rule is reviewed by OIRA**, and Unified Agenda entries exist only for the editions the agency published.
+- **Current state only.** Regulations.gov keeps no history, so a docket shows what it is now.
+- **Link quality varies.** Use `quality` and `linkStatus` as described above, and call [`/coverage`](#coverage) to see what is held and how fresh it is.

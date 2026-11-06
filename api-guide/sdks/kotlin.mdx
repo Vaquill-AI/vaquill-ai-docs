@@ -7,7 +7,7 @@ description: "The Vaquill Kotlin client for the US Data API: coroutines, Flow pa
 
 The Kotlin client is built for coroutines.
 Every call is a `suspend` function, every paginated endpoint is a `Flow`, and every model is a `kotlinx.serialization` data class.
-It covers all 36 operations of the US Data API.
+It covers all 42 operations of the US Data API.
 It targets JVM 11 and newer, and depends on `kotlinx-serialization-json` and `kotlinx-coroutines-core`.
 Transport is the JDK `java.net.http.HttpClient`, so there is no HTTP engine to choose.
 For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
@@ -223,7 +223,7 @@ See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
 
 ## Versioning
 
-An operation is charged when the contract declares the `Idempotency-Key` header on it. That is 25 operations.
+An operation is charged when the contract declares the `Idempotency-Key` header on it. That is 30 operations.
 Read the live prices with `client.pricing.get()`, which is free.
 The User-Agent is `vaquill-kotlin/0.1.0 kotlin/<version> java/<version> <os>`.
 A dedicated [Java SDK](/api-guide/sdks/java) also exists. For an endpoint newer than the SDK, use `client.rawRequest(method, path, query, body, charged)`.

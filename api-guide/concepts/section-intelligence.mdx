@@ -66,7 +66,8 @@ cross-references the one you asked about.
 
 | Parameter | Default | Notes |
 |---|---|---|
-| `limit` | 25 | Max 100. `truncated` is true when more exist. |
+| `limit` | 25 | Page size. Max 100. |
+| `offset` | 0 | Rows to skip, max 5,000. Pass the previous response's `nextOffset` to read the next page. |
 
 A section lookup already tells you what a section cites.
 This route goes the other direction, which you cannot get by reading the
@@ -81,6 +82,12 @@ curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/cited-
 Results are one row per citing section, in statutory order, never one row per
 matching chunk.
 `total` is the size of `citers` on this page, not a corpus-wide count.
+`truncated` and `hasMore` are true when another page follows, and `nextOffset` is the `offset` that resumes after this one (null on the last page).
+`totalCiters` is the number of distinct citing sections, and it is the whole count only when `totalCitersIsLowerBound` is false.
+When it is true the count stopped at a ceiling and more exist.
+`verifiedCiters` is how many of the leading rows had their own text read and confirmed to name this section.
+They always come first, so the first `verifiedCiters` rows across all pages are confirmed and the rest are listed in the cross-reference index only.
+A page past the end is empty and not charged.
 
 **Scope: USC and CFR.**
 State codes and Federal Register rules carry no section-level cross-reference

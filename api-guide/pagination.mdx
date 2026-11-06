@@ -18,11 +18,14 @@ Use it for change history, where new rows land while you page and an offset woul
 | `GET /watches` | offset | 100 | 200 |
 | `GET /watches/{id}/changes` | cursor, in `meta.cursor` | 50 | 200 |
 | `GET /us/statutes/section/{actId}/changes` | cursor, top-level `cursor` | 50 | 200 |
-| `GET /us/statutes/section/{actId}/cited-by` | `limit` only | 25 | 100 |
+| `GET /us/statutes/section/{actId}/cited-by` | offset, `offset` 0 to 5,000, resume with `nextOffset` | 25 | 100 |
 | `GET /us/statutes/section/{actId}/cross-state` | `limit` only | 5 | 25 |
 | `GET /us/statutes/section/{actId}/related` | `limit` only | 3 | 10 |
 
-The last three take a `limit` and nothing else.
+`cited-by` pages on `offset`: pass the previous response's `nextOffset` as `offset` while `hasMore` is true.
+Its response also carries `totalCiters`, `totalCitersIsLowerBound` (true when the count stopped at a ceiling and more exist) and `verifiedCiters`, how many of the leading rows had their text confirmed to name the section.
+A page past the end is empty and not charged.
+`cross-state` and `related` take a `limit` and nothing else.
 They return the top N by relevance, and there is no page two, so raise `limit` to its maximum if you want the whole set.
 `GET /watches/{id}/deliveries` behaves the same way, with a `limit` of 50 by default and 200 at most.
 
@@ -158,7 +161,7 @@ In practice one page is always enough there, because the watch cap is 3 outside 
 
 `GET /boards` needs more care.
 Its `limit` defaults to 500 and 500 is also the maximum, so a client that never passes `offset` silently truncates once the registry passes 500 boards.
-There were 313 boards on 2026-10-26, so the default still covers the whole registry, but nothing guarantees it will stay that way.
+There were 312 boards on 2026-11-04, so the default still covers the whole registry, but nothing guarantees it will stay that way.
 Read `total` and page on `offset` instead of trusting one call.
 
 ```python Python

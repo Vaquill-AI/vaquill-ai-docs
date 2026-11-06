@@ -64,12 +64,12 @@ Every method also accepts `timeout`, `max_retries`, `idempotency_key` and `heade
 | `client.credits` | `balance()` |
 | `client.pricing` | `get()`, the credit price of every endpoint |
 
-The SDK covers 36 operations. Each method is the `operationId` with the namespace noun removed, so `search_statutes` is `statutes.search` and `get_session_law_body` is `session_laws.get_body`.
+The SDK covers 42 operations. Each method is the `operationId` with the namespace noun removed, so `search_statutes` is `statutes.search` and `get_session_law_body` is `session_laws.get_body`.
 
 ## Which calls cost credits
 
-A call is charged when the API declares the `Idempotency-Key` header on its operation. That is 25 of the 36 operations.
-Free: `statutes.coverage`, `boards.list`, every watch operation except `watches.change_diff` (`create`, `list`, `update`, `delete`, `test`, `changes`, `deliveries`), `credits.balance` and `pricing.get`.
+A call is charged when the API declares the `Idempotency-Key` header on its operation. That is 30 of the 42 operations.
+Free: `statutes.coverage`, `boards.list`, every watch operation except `watches.change_diff` (`create`, `list`, `update`, `delete`, `test`, `changes`, `deliveries`), `credits.balance`, `pricing.get` and the rulemaking coverage read.
 Prices are not hard-coded in the SDK. `client.pricing.get()` is free and returns the live price list.
 Some charged calls return `credits_consumed` of 0 (for example a body that is not held), so read the figure from the response.
 

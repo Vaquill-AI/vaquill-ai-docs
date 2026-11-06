@@ -6,19 +6,16 @@ description: "Updates and additions to the Vaquill Developer API"
 Updates to the Vaquill Developer API: new endpoints, new corpora, and behavior changes.
 For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/jurisdictions).
 
-<Update label="2026-11-01" description="Legal translation: language list and page balance">
-  ## New: legal translation (preview)
+<Update label="2026-11-03" description="US Rulemaking API">
+  ## New: US Rulemaking API
 
-  Translate legal text between English and the 22 Eighth Schedule languages. The first two routes are live and free.
+  Six `GET` routes under `/us/rulemaking/` serve Regulations.gov dockets and documents, Unified Agenda history, OIRA review and Congressional Review Act links, tied together by the RIN.
 
-  - **`GET /translation/languages`:** every language you can translate from and to, with script direction.
-  - **`GET /translation/balance`:** your translation and OCR page balances.
-  - **Billed in pages, not credits.** One page is 2,000 characters of text, or one page of a document. Pages are a separate pool from API credits and are pooled at the organization.
-  - **No free tier on the API.** Any non-empty text costs at least 1 page. A scanned document spends from both the translation and OCR pools.
-  - **New scopes:** `translate:read` and `translate:write`. A wildcard `*` key does not grant them, so grant them by name.
-  - **Coming:** text, file and document translation routes.
+  - **Endpoints:** `GET /us/rulemaking/dockets/{docketId}` (2 credits), `GET /us/rulemaking/dockets/list` (1 per page), `GET /us/rulemaking/dockets/{docketId}/documents` (1 per page), `GET /us/rulemaking/rins/{rin}` (3), `GET /us/rulemaking/rins/{rin}/agenda` (1 per page) and `GET /us/rulemaking/coverage` (free).
+  - **Link quality:** every cross-link to the Federal Register, the CFR, public laws and related RINs carries a `quality` of `verified`, `candidate` or `ambiguous`.
+  - **Known gaps:** few dockets carry a RIN, comment counts are mostly `null` (not measured), and the GAO listing is partial.
 
-  See [Legal translation](/api-guide/translation).
+  See [US Rulemaking](/api-guide/rulemaking).
 </Update>
 
 <Update label="2026-10-30" description="State regulation browse: umbrella, agency, program and subpart">
@@ -431,6 +428,26 @@ For live coverage counts, call [`GET /statutes/coverage`](/api-guide/concepts/ju
 
   Corpus-wide this takes coverage to **5,095,028 sections** across 53 jurisdictions, indexed as
   **19,288,724** retrieval passages.
+</Update>
+
+<Update label="2026-09-12" description="STATE_AG_OPINION adds Ohio: 1,406 opinions, 1993 to 2026">
+  ## `STATE_AG_OPINION`: Ohio
+
+  **Ohio, 1,406 opinions, 1993 to 2026**, is live under `corpusType=STATE_AG_OPINION` with `state=oh`.
+  The count is the total the Attorney General's own index prints, and every one of those opinions is held.
+
+  Three limits, each recorded on [state coverage](/api-guide/coverage/states#state-attorney-general-opinions):
+
+  - **The modern era only.** Ohio's archive reaches back to 1846.
+    The 33,659 opinions of 1920 to 1992 are book scans the state does publish, and they are not yet held.
+  - **No issue date.** Ohio prints a year for each opinion and no day, so these carry a `year` and do not answer an `asOf` query.
+  - **1846 to 1919 is not held.** That era is 73 bound year-volumes whose opinions the state says were not numbered, or not numbered sequentially, so there is no citable identifier for them.
+
+  Opinions are served `goodLawStatus: "unknown"`, as the whole corpus is.
+  Ohio also publishes a list of overruled opinions.
+  We have measured it, and it names 47 of the 1,406 opinions held, of which 20 are dead.
+  That list is not yet applied to `goodLawStatus`.
+  See [status and currency](/api-guide/concepts/status-and-currency).
 </Update>
 
 <Update label="2026-09-11" description="STATE_AG_OPINION reaches 34 jurisdictions and 68,874 opinions: seven more states, plus corrected agency-guidance and federal counts">

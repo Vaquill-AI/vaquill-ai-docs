@@ -113,12 +113,14 @@ An id never changes once issued.
 It is matched against the citation the publisher prints and the law's bill number:
 
 ```bash
-curl "https://api.vaquill.ai/api/v1/us/session-laws/S.F.No.%201552" \
+curl "https://api.vaquill.ai/api/v1/us/session-laws/Act%202025-127?jurisdiction=al" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
 A citation costs 2 credits on top of the route's 2, charged whether or not it resolves.
 The response says what matched in `resolvedFrom`.
+Pass `jurisdiction` (a two-letter state code) when the citation does not name its state, as `Act 2025-127` does not.
+A bare bill number such as `S.F.No. 1552` is reused across sessions, so it usually names more than one law and is not a good lookup key; use the law's id, or a citation that names its year and number.
 A citation naming more than one law is a `404` with `reason: ambiguous_citation`, every candidate in `didYouMean` and the conventional reading in `defaultSessionLawId`.
 
 **By state and date.** `GET /us/session-laws/list` takes a required `jurisdiction` and these filters:
@@ -183,50 +185,43 @@ curl -X POST "https://api.vaquill.ai/api/v1/us/session-laws/search" \
   },
   "results": [
     {
-      "sessionLawId": "SSL_AL_2025R_G_Y2025_C2025-127",
+      "sessionLawId": "SSL_AL_2025R_G_Y2025_C2025-266",
       "jurisdiction": "al",
       "session": "2025R",
       "series": "general",
       "instrumentType": "act",
-      "citation": "Act 2025-127",
-      "title": "Relating to Houston County; to authorize the sheriff to establish procedures for using a credit card or debit card to make purchases.",
-      "approvedDate": "2025-04-15",
+      "citation": "ACT NUMBER 2025 - 266",
+      "title": "Relating to Jackson County; to authorize the sheriff to establish procedures for using a credit card or debit card to make purchases pursuant to procedures provided for in this act.",
+      "approvedDate": "2025-05-05",
       "enactmentOutcome": "signed",
+      "billNumbers": ["S - 326"],
+      "amendedSections": [],
       "matchType": "text",
-      "matchedBy": [
-        "title",
-        "text"
-      ],
+      "matchedBy": ["title", "text"],
       "passage": {
         "seq": 0,
         "ownStart": 0,
-        "ownEnd": 1820,
+        "ownEnd": 3861,
         "pageStart": null,
-        "heading": "Section 1.",
-        "snippet": "Section 1. The sheriff of Houston County may establish procedures for using a credit card…",
-        "highlights": [
-          [
-            15,
-            22
-          ],
-          [
-            85,
-            89
-          ]
-        ],
-        "bodyHref": "https://api.vaquill.ai/api/v1/us/session-laws/SSL_AL_2025R_G_Y2025_C2025-127/body?startChar=0"
+        "heading": null,
+        "snippet": "…The sheriff shall select a credit card or debit card provider or providers taking into consideration each of the following…",
+        "highlights": [[42, 49], [72, 76]],
+        "bodyHref": "https://api.vaquill.ai/api/v1/us/session-laws/SSL_AL_2025R_G_Y2025_C2025-266/body?startChar=0"
       },
-      "href": "https://api.vaquill.ai/api/v1/us/session-laws/SSL_AL_2025R_G_Y2025_C2025-127"
+      "href": "https://api.vaquill.ai/api/v1/us/session-laws/SSL_AL_2025R_G_Y2025_C2025-266"
     }
   ],
-  "count": 1,
+  "count": 5,
   "offset": 0,
   "limit": 5,
-  "hasMore": false,
+  "hasMore": true,
   "creditsConsumed": 4,
-  "processingTimeMs": 38.6
+  "processingTimeMs": 1756.6
 }
 ```
+
+This example is abridged and illustrative: `count` is 5 and `hasMore` is true, so `results` holds five laws and only the first is shown, with its `snippet` and `highlights` shortened.
+The laws, their order and the counts change as new laws are added.
 
 It costs 4 credits per page, and each page is a new search.
 An empty result is an answer ("nothing matches") and is charged.

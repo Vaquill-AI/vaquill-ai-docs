@@ -38,14 +38,14 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
 
 This is the only table on the page with exact counts, so each fact has a single number. The
 statutes, regulations, court rules, constitutions and registers, agency guidance and AG opinion rows were measured **2026-10-26**, and the federal row
-on **2026-10-26**. The endpoint above is live.
+on **2026-10-26**, except the state court rules and state constitutions rows, which were re-measured **2026-11-04**. The endpoint above is live.
 
 | Corpus | Jurisdictions | Sections | `corpusType` |
 |---|---|---:|---|
 | State statutes | 56 | 2,092,582 | `STATE` |
 | State regulations | 56 | 1,497,346 | `REGULATION` |
-| State court rules | 56 | 69,998 | `STATE_RULES` |
-| State constitutions | 53 | 13,126 | `STATE_CONSTITUTION` |
+| State court rules | 56 | 69,935 | `STATE_RULES` |
+| State constitutions | 53 | 13,059 | `STATE_CONSTITUTION` |
 | State registers (notices, not codified law) | 24 | 153,269 | `STATE_REGISTER` |
 | State agency guidance | 49 | 13,382 | `STATE_AGENCY_GUIDANCE` |
 | State AG opinions | 45 | 109,398 | `STATE_AG_OPINION` |
@@ -71,7 +71,8 @@ Federal law is split into 15 corpus types: the US Code and the Statutes at Large
 live compilation and as 31 published annual editions), Federal Register rules and a curated slice
 of its notices, Executive Orders, agency guidance from 53 named sources, seven bodies of
 administrative adjudication, the Federal Rules, the local rules of 52 federal courts, the
-Constitution, the Sentencing Guidelines, tax treaties and GovInfo statute compilations.
+Constitution, the Sentencing Guidelines, tax treaties with the Senate treaty record, and GovInfo
+statute compilations.
 
 **[Full federal table with per-corpus scope limits →](/api-guide/coverage/federal)**
 
@@ -233,6 +234,12 @@ or none are listed is not something the archive answers.
 Kentucky's earlier opinions were never published online, and the Attorney General's office supplies
 them by phone or mail on request, so we do not hold them.
 
+**Louisiana, 3,720 opinions, 1991-2025.** Where the office issued several opinions under one number
+it adds a letter (`92-0505A`, `92-0505B`), and each is its own opinion here.
+About half of the office's archive is posted as page scans with no text layer.
+Roughly 3,550 such documents are excluded until they are processed, rather than absent from the
+office's own archive.
+
 **Maryland, 601 opinions, 1993-2025.** Two series, both carried as the state publishes them: 565
 published opinions, cited by volume as `110 Op. Att'y Gen. 3`, and 36 unpublished ones that the
 office numbers `00-123` and posts separately.
@@ -242,9 +249,9 @@ Those volumes are not split into individual opinions and are not included.
 
 **Puerto Rico, 81 opinions, 2003-2010, in Spanish.** The text is Spanish as published, and
 `language_code` is `es`.
-The served range ends in 2010 because the opinions from that year onward are posted as page images
-with no text layer: 50 documents we can see are excluded until they are processed, rather than
-absent from the office's own archive.
+The served range ends in 2010 because every later opinion, and a handful from 2008 to 2010, is
+posted as a page image with no text layer: 50 documents we can see are excluded until they are
+processed, rather than absent from the office's own archive.
 
 Where a jurisdiction runs more than one series, the `series` field carries the publisher's own
 label so you can filter them apart. Washington's formal `AGO` and its `AGLO` letter opinions are
@@ -258,7 +265,7 @@ How often each corpus is re-pulled from its official source. Counts grow between
 | Corpus | Cadence |
 |---|---|
 | Federal | Daily to weekly, and on amendment for the Constitution. See the [federal table](/api-guide/coverage/federal). |
-| State statutes | 25 jurisdictions every 7 days, 3 quarterly, the rest monthly. See below. |
+| State statutes | Monthly for 46 jurisdictions and quarterly for 4. See below. |
 | State regulations | Monthly where the publisher supports one. Treat cadence as per-state, not uniform. |
 | State court rules | Monthly, for the jurisdictions that carry them. |
 | State constitutions | Monthly. Constitutions change on the order of years, via ballot measure. |
@@ -272,41 +279,35 @@ and is not available for every state.
 
 ### Which statute cadence applies where
 
-**Every 7 days, 25 jurisdictions.** California, Colorado, the District of Columbia, Florida, Idaho,
-Illinois, Indiana, Iowa, Louisiana, Michigan, Mississippi, Missouri, Nevada, New Jersey, New Mexico,
-New York, North Carolina, Oregon, Pennsylvania, Puerto Rico, South Dakota, Utah, Virginia, Wisconsin
-and Wyoming publish their code in a form that can be pulled whole, an official bulk export, an API,
-or a complete per-section fetch. Every run re-pulls the entire code and reconciles it against what
-is stored rather than checking only what looks new.
+**Monthly, 46 jurisdictions.** These state statute boards report `cadence: "monthly"` on
+`GET /boards`.
 
-**Every 91 days, 3 jurisdictions.** Arkansas, Georgia and Tennessee are pulled the same whole-code
-way, on a quarterly slot rather than a weekly one, tracking legislatures that sit for part of the
-year. They report `cadence: "quarterly"` on `GET /boards`.
+**Quarterly, 4 jurisdictions.** Arkansas, Georgia, Tennessee and the US Virgin Islands are
+pulled on a quarterly slot, tracking legislatures that sit for part of the year. They report
+`cadence: "quarterly"` on `GET /boards`.
 
-**Everywhere else**, statutes are re-pulled monthly or carry text as of their ingest date.
 `GET /boards` returns `lastRetrievedAt` and `cadence` per source, so you can read this off
 directly. A cadence is a schedule, so compare `lastRetrievedAt` against `cadence` to see how
 recently a source was pulled. The sections stay queryable at the `currentThrough` the coverage
 response reports.
 
-**Seven jurisdictions are covered but not watchable**: Delaware, the District of Columbia, Hawaii,
-Mississippi, New Mexico, North Carolina and Utah. Their statutes are live, complete and queryable.
+**Five jurisdictions are covered but not watchable**: Delaware, Hawaii, Mississippi, New Mexico and
+Utah. Their statutes are live, complete and queryable.
 What is held back is the automated re-pull, so they are absent from `GET /boards` rather than
 listed as idle. A board is switched on only once its refresh has been shown to work, so
-`GET /boards` lists what can be watched, never what is covered. For these seven, read currency from
+`GET /boards` lists what can be watched, never what is covered. For these five, read currency from
 `GET /us/statutes/coverage`.
 
 <Note>
-  Colorado is checked weekly but re-pulled annually. The Colorado Revised Statutes are published
-  once a year with no process for periodic updates, so Colorado's weekly slot re-pulls all 46
-  titles only when a new edition appears.
+  The Colorado Revised Statutes are published once a year with no process for periodic updates,
+  so a Colorado re-pull of all 46 titles changes the stored text only when a new edition appears.
 </Note>
 
 <Note>
   The `cadence` field on `/us/statutes/coverage` and `/boards` reports `monthly` for every state
-  statute board except Arkansas, Georgia and Tennessee, which report `quarterly`. The 25 weekly
-  jurisdictions above still report `monthly`. Read the field as the declared staleness window a
-  board is alerted against, not as a ceiling on how often the corpus is re-pulled.
+  statute board except Arkansas, Georgia, Tennessee and the US Virgin Islands, which report
+  `quarterly`. Read the field as the declared staleness window a board is alerted against, not as
+  a ceiling on how often the corpus is re-pulled.
 </Note>
 
 <Note>

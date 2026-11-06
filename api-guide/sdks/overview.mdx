@@ -55,7 +55,7 @@ Every method also takes per-call `timeout`, `max_retries` / `maxRetries`, `heade
 
 ## Which calls cost credits
 
-A call is charged when the API declares the `Idempotency-Key` header on its operation. That is 25 of the 36 operations in the US document.
+A call is charged when the API declares the `Idempotency-Key` header on its operation. That is 30 of the 42 operations in the US document.
 Both SDKs apply the same rule, and a test in each repo derives the list from the API contract.
 Free calls: `statutes.coverage`, `boards.list`, every watch operation except the change diff (`create`, `list`, `update`, `delete`, `test`, changes and deliveries), `credits.balance` and `pricing.get`.
 Prices are not hard-coded in the SDKs. `client.pricing.get()` is free and returns the live price list.

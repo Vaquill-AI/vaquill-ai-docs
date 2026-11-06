@@ -5,7 +5,7 @@ description: "The Vaquill Java client for the US Data API: quickstart, errors, r
 
 {/* Every sample on this page is copied from java/README.md of vaquill-sdks. */}
 
-The Java client covers all 36 operations of the US Data API and matches the behavior of the [Python SDK](/api-guide/sdks/python).
+The Java client covers all 42 operations of the US Data API and matches the behavior of the [Python SDK](/api-guide/sdks/python).
 It needs Java 11 or newer and has one runtime dependency, Jackson (`jackson-databind`).
 HTTP goes through the JDK `java.net.http.HttpClient`, so you can pass your own configured client.
 Every call has a blocking form, a `...WithResponse` form (status, headers, request id, credits) and a `...Async` form.
@@ -158,7 +158,7 @@ try {
 - Connect failures are always retried. Any other transport error is retried only for GET and HEAD, or when the request carries an Idempotency-Key, because the server may already have done the work.
 - A 5xx on a charged call is not retried without a key, for the same reason.
 
-The 25 charged operations accept an `Idempotency-Key`.
+The 30 charged operations accept an `Idempotency-Key`.
 The SDK generates one for every charged POST unless you pass your own with `RequestOptions.builder().idempotencyKey("...")`, so a retried call is charged once.
 A key must be 16 to 255 visible ASCII characters. An empty or malformed key is rejected before anything is sent.
 `Response.isIdempotentReplayed()` is true when the server answered from a stored result, and a replay counts as 0 credits against the spend guard.

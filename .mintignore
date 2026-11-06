@@ -6,3 +6,4 @@ guides/
 workflows/
 workspace-api/
 integrations/dms/
+api-guide/translation.mdx
