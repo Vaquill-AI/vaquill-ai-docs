@@ -98,27 +98,22 @@
               "api-guide/overview",
               "api-guide/quickstart",
               "api-guide/authentication",
-              "api-guide/data-privacy"
-            ]
-          },
-          {
-            "group": "SDKS",
-            "icon": "code",
-            "pages": [
-              "api-guide/sdks/overview",
+              "api-guide/data-privacy",
               {
-                "group": "Languages",
+                "group": "SDKs",
+                "icon": "code",
+                "root": "api-guide/sdks/overview",
                 "expanded": false,
                 "pages": [
                   "api-guide/sdks/python",
                   "api-guide/sdks/typescript",
                   "api-guide/sdks/go",
                   "api-guide/sdks/java",
-                  "api-guide/sdks/kotlin"
+                  "api-guide/sdks/kotlin",
+                  "api-guide/sdks/integrations",
+                  "api-guide/sdks/cli"
                 ]
-              },
-              "api-guide/sdks/integrations",
-              "api-guide/sdks/cli"
+              }
             ]
           },
           {
