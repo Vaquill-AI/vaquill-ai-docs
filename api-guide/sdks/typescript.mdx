@@ -3,6 +3,10 @@ title: "TypeScript SDK"
 description: "Install the Vaquill TypeScript client, resolve citations, search statutes and handle errors"
 ---
 
+import RetryRules from '/snippets/retry-rules.mdx';
+import IdempotencyKeys from '/snippets/idempotency-keys.mdx';
+import ChargedCallRule from '/snippets/charged-call-rule.mdx';
+
 {/* Samples are copied from the README of vaquill-js, apart from the resolve and watch samples, which use the argument shapes its resource tests execute (statutes.resolve({ cite }), watches.create({ corpusType, state, channel, webhookUrl })). */}
 
 The TypeScript client needs Node 20 or later. It is built on standard `fetch`, has no runtime dependencies, and is tested on Node 20, 22 and 24.
@@ -63,33 +67,29 @@ Path parameters are positional arguments. Query and body fields keep the camelCa
 
 The key is held in a private field. It does not appear in `JSON.stringify`, `util.inspect`, `String(client)` or any error.
 
-## Namespaces
+## Namespaces and credits
 
-| Namespace | Methods |
-| --- | --- |
-| `statutes` | `search`, `searchAll`, `getSection`, `getSectionBody`, `getSectionNeighbors`, `getSections`, `count`, `coverage`, `listDivisions`, `listDivisionsAll`, `getSectionChanges`, `getSectionChangesAll`, `getSectionEnactments`, `getSectionRulemaking`, `getPartRulemaking`, `getSectionCitedBy`, `getSectionDefinitions`, `getSectionCrossState`, `resolve`, `resolveBatch`, `extractCitations` |
-| `sessionLaws` | `search`, `searchAll`, `list`, `listAll`, `get`, `getBody`, `getVersions`, `getChanges`, `getChangesAll`, `getBatch` |
-| `watches` | `list`, `listAll`, `create`, `update`, `delete`, `test`, `listChanges`, `listChangesAll`, `getChangeDiff`, `listDeliveries` |
-| `boards` | `list`, `listAll` |
-| `credits` | `balance` |
-| `pricing` | `get` |
+<ChargedCallRule />
+
+| Namespace | Charged methods | Free methods | Paging helpers |
+| --- | --- | --- | --- |
+| `statutes` | `search`, `getSection`, `getSectionBody`, `getSectionNeighbors`, `getSections`, `count`, `listDivisions`, `getSectionChanges`, `getSectionEnactments`, `getSectionRulemaking`, `getPartRulemaking`, `getSectionCitedBy`, `getSectionDefinitions`, `getSectionCrossState`, `resolve`, `resolveBatch`, `extractCitations` | `coverage` | `searchAll`, `listDivisionsAll`, `getSectionChangesAll` |
+| `sessionLaws` | `search`, `list`, `get`, `getBody`, `getVersions`, `getChanges`, `getBatch` | none | `searchAll`, `listAll`, `getChangesAll` |
+| `watches` | `getChangeDiff` | `list`, `create`, `update`, `delete`, `test`, `listChanges`, `listDeliveries` | `listAll`, `listChangesAll` |
+| `boards` | none | `list` | `listAll` |
+| `credits` | none | `balance` | none |
+| `pricing` | none | `get` | none |
 
 Each method maps to one `operationId`, so `search_statutes` is `statutes.search` and `get_section_body` is `statutes.getSectionBody`.
-
-## Which calls cost credits
-
-A method is charged when the API declares the `Idempotency-Key` header on its operation. That is 25 operations:
-`statutes.search`, `getSection`, `getSectionBody`, `getSectionNeighbors`, `getSections`, `count`, `listDivisions`, `getSectionChanges`, `getSectionEnactments`, `getSectionRulemaking`, `getPartRulemaking`, `getSectionCitedBy`, `getSectionDefinitions`, `getSectionCrossState`, `resolve`, `resolveBatch`, `extractCitations`; `sessionLaws.search`, `list`, `get`, `getBody`, `getVersions`, `getChanges`, `getBatch`; and `watches.getChangeDiff`.
-The `*All` iterators call these and spend per page.
-
-Free: `statutes.coverage`, `watches.list`, `create`, `update`, `delete`, `test`, `listChanges`, `listDeliveries`, `boards.list`, `credits.balance` and `pricing.get`. Watches other than the change diff are free.
+That is 25 of the 30 charged operations in the contract. The other five are rulemaking docket routes without a method yet; the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) lists them.
+The `*All` iterators call charged methods and spend per page.
 `client.pricing.get()` returns the live price list.
 
 ## Spend guard
 
 Pass `maxCredits` to the constructor. Once responses on this client have reported that many credits, charged calls throw `SpendGuardExceededError` before sending anything.
 It checks what is already spent, not the cost of the next call.
-The guard is exact. While `maxCredits` is set, charged calls on the client and its derived clients run one at a time, from the check to the moment their credits are counted, so concurrent calls cannot all pass the check and overshoot the cap. Leave `maxCredits` unset to keep full concurrency.
+The [SDKs overview](/api-guide/sdks/overview#spend-guard) explains how the guard stays exact under concurrency.
 
 ```ts
 const client = new Vaquill({ maxCredits: 500 });
@@ -134,12 +134,12 @@ The message of an `UnprocessableEntityError` (422) ends with the first validatio
 
 ## Retries and idempotency
 
-- Retried: 408, 429 and 5xx, plus 409 only for `idempotency_in_progress`. Connection errors and timeouts are retried when it is safe.
-- Backoff is 0.5 s doubling to an 8 s cap, scaled down by 0 to 25 percent jitter. `retry-after-ms` wins over `Retry-After` (seconds or date), which wins over the body's `retryAfterSeconds`. A wait above 120 s is not retried.
-- Never retried: `insufficient_credits` (402), `daily_cap_exceeded`, any 4xx other than the above, and anything the server marks `retryable: false`.
-- Each charged call gets one generated `Idempotency-Key`, reused on every retry of that call. When the server honours the key, a retry cannot charge twice. Pass `idempotencyKey: "..."` to choose your own.
-- With `idempotencyKey: false` a charged call is not retried after a timeout, connection error or 5xx, because it could charge twice. A 429 `rate_limited` is still retried, since it is refused before any work.
-- Free `POST`s without a key (`watches.create`, `watches.test`) follow the same rule, so a retry cannot create a second watch.
+<RetryRules />
+
+<IdempotencyKeys />
+
+Pass `idempotencyKey: "..."` to choose your own key, or `idempotencyKey: false` to turn automatic keys off.
+With keys off, a charged call is not retried after a timeout, connection error or 5xx. The [SDKs overview](/api-guide/sdks/overview#idempotency) has the details, including free `POST`s such as `watches.create`.
 
 ## Pagination
 
@@ -205,12 +205,11 @@ import { webhooks } from "@vaquill-ai/sdk";
 const event = await webhooks.unwrap(rawBody, request.headers, process.env.WEBHOOK_SECRET!);
 ```
 
-`verify` and `unwrap` check the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance, accept several `v1` signatures (rotation) and a list of secrets, and compare in constant time.
+`verify` and `unwrap` follow the Standard Webhooks checks described in the [SDKs overview](/api-guide/sdks/overview#webhook-verification) (300 second tolerance, several signatures, a list of secrets for rotation) and compare in constant time.
 A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes.
-From the first release after 0.2.0, a `whsec_` secret that is not valid base64 throws `WebhookVerificationError` (0.2.0 still uses the text as the key).
-Copy a `whsec_` secret exactly: it must be valid base64. The TypeScript client falls back to the UTF-8 bytes of a secret it cannot decode, whereas the Python, Go, Java and Kotlin clients reject one.
+From 0.2.1, a `whsec_` secret that is not valid base64 throws `WebhookVerificationError` (0.2.0 used the text as the key), so copy the secret exactly.
 An empty or blank secret (or a bare `whsec_`) throws `WebhookVerificationError`, so an unset environment variable cannot verify a forged event.
-They throw `WebhookVerificationError` on any failure.
+Any failure throws `WebhookVerificationError`.
 
 <Warning>
   `{ allowLegacy: true }` also accepts the old `X-Vaquill-Signature: sha256=<hex>` header when the Standard Webhooks headers are absent. That header signs only the body, so it has no replay protection: a captured delivery verifies forever. It is off by default, as in Python (`allow_legacy`).

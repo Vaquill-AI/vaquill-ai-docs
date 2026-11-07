@@ -1,6 +1,6 @@
 ---
-title: "US Rulemaking"
-description: "Regulations.gov dockets and documents, Unified Agenda history, OIRA review and CRA links, tied together by the Regulation Identifier Number"
+title: "US rulemaking"
+description: "Regulations.gov dockets and documents, Unified Agenda history, OIRA review and CRA links, tied together by the RIN"
 ---
 
 A rule does not live in one place.
@@ -25,19 +25,22 @@ Regulations.gov keeps no history, so dockets and documents are the current state
 
 ## Endpoints
 
-Six `GET` routes under `/api/v1/us/rulemaking/`.
+Eight `GET` routes under `/api/v1/us/rulemaking/`.
 Calls are authenticated with an API key that has the `research:read` scope, as in [Authentication](/api-guide/authentication).
 
-| Endpoint | What it returns | Credits |
-|---|---|---:|
-| `GET /us/rulemaking/dockets/{docketId}` | One docket, with document counts by type and the comment count when measured | 2 |
-| `GET /us/rulemaking/dockets/list` | Dockets, most recently modified first, filtered | 1 per page |
-| `GET /us/rulemaking/dockets/{docketId}/documents` | The documents of one docket in posting order | 1 per page |
-| `GET /us/rulemaking/rins/{rin}` | Everything held for one RIN, with the quality of every link | 3 |
-| `GET /us/rulemaking/rins/{rin}/agenda` | Unified Agenda history of one RIN, newest edition first | 1 per page |
-| `GET /us/rulemaking/coverage` | What is held, per source, and how fresh it is | Free |
+| Endpoint | What it returns | Credits | Source |
+|---|---|---:|---|
+| `GET /us/rulemaking/dockets/{docketId}` | One docket, with document counts by type and the comment count when measured | 2 | Regulations.gov |
+| `GET /us/rulemaking/dockets/list` | Dockets, most recently modified first, filtered | 1 per page | Regulations.gov |
+| `GET /us/rulemaking/dockets/{docketId}/documents` | The documents of one docket in posting order | 1 per page | Regulations.gov |
+| `GET /us/rulemaking/rins/{rin}` | Everything held for one RIN, with the quality of every link | 3 | All sources |
+| `GET /us/rulemaking/rins/{rin}/agenda` | Unified Agenda history of one RIN, newest edition first | 1 per page | Unified Agenda |
+| `GET /us/rulemaking/coverage` | What is held, per source, and how fresh it is | Free | All sources |
+| `GET /us/rulemaking/committee-records/list` | Rules Committee records, most recent first, filtered | 1 per page | uscourts.gov |
+| `GET /us/rulemaking/committee-records/{recordId}` | One committee record, its dockets and rule links, and a window of page text | 2 | uscourts.gov |
 
-A page is one charge, and an empty page is still charged because it is an answer.
+A page is one charge.
+An empty first page of `dockets/list`, an empty page of `documents` for a docket we hold, and an empty page of `committee-records/list` are refunded (`creditsConsumed` 0), and their `note` names the filters that were applied.
 A docket or RIN we hold nothing for answers `404`, and a `503` from the rulemaking database is refunded.
 A malformed RIN or a bad cursor answers `422` before any charge.
 See [Errors](/api-guide/errors).
@@ -135,8 +138,17 @@ curl "https://api.vaquill.ai/api/v1/us/rulemaking/rins/2060-AV16/agenda?from=202
 
 `from` and `to` are edition ids (`YYYYMM`, for example `202510`), and `from` must not be after `to`.
 `limit` is 1 to 100, default 25.
-Each entry in `editions` has `editionId`, `season`, `year`, `runDate`, `title`, `abstract`, `stage`, `rinStatus`, `priority`, `major`, the agency fields, `furtherInfoUrl` (served only when it is an official `.gov` or `.mil` link), `publicCommentUrl`, and a `timetable`.
-Each `timetable` action has `action`, `dateRaw`, `dateValue`, `datePrecision` and, when the agency printed one, `frCitation`.
+Each entry in `editions` carries these fields:
+
+| Field | Meaning |
+|---|---|
+| `editionId`, `season`, `year`, `runDate` | The Unified Agenda edition the entry comes from |
+| `title`, `abstract` | The agency's title and abstract |
+| `stage`, `rinStatus`, `priority`, `major` | Stage, status, priority and major-rule flag as the agency printed them |
+| the agency fields | The agency that carried the entry |
+| `furtherInfoUrl` | Served only when it is an official `.gov` or `.mil` link |
+| `publicCommentUrl` | The agency's public comment link |
+| `timetable` | The agency's actions. Each has `action`, `dateRaw`, `dateValue`, `datePrecision` and, when the agency printed one, `frCitation` |
 
 ## Dockets and documents
 
@@ -145,13 +157,25 @@ curl "https://api.vaquill.ai/api/v1/us/rulemaking/dockets/EPA-HQ-OAR-2021-0208" 
   -H "Authorization: Bearer vq_key_..."
 ```
 
-A docket has `docketId`, `agencyId`, `docketType` (`Rulemaking` or `Nonrulemaking`), `title`, `abstract`, `rin`, `rinSource`, `spineRin`, `lastModifiedAt`, `modifyDate`, `documentCount`, `documentTypeCounts`, `commentCount`, `commentCountAsOf` and `sourceUrl`.
+A docket carries these fields:
 
+| Field | Meaning |
+|---|---|
+| `docketId`, `agencyId`, `title`, `abstract` | Identity and description from Regulations.gov |
+| `docketType` | `Rulemaking` or `Nonrulemaking` |
+| `rin`, `rinSource`, `spineRin` | The docket's RIN, where it came from, and a differing verified RIN from the spine (see below) |
+| `lastModifiedAt` | The field the `modifiedSince` and `modifiedUntil` window reads |
+| `modifyDate` | A second modification date, null when none was recorded |
+| `documentCount`, `documentTypeCounts` | Documents held, in total and by type |
+| `commentCount`, `commentCountAsOf` | The comment count when measured, and when it was taken |
+| `sourceUrl` | The docket on Regulations.gov |
+
+<Accordion title="How rin, rinSource and spineRin relate">
 `rin` is the RIN the agency entered on the docket when there is one.
 When the agency entered none, it is the single RIN our rulemaking spine holds as verified for the docket, and `rinSource` says which: `regulations_gov` for the agency's own entry, `spine` for one derived from the spine.
 `rin` and `rinSource` are both null when neither exists, or when the spine names several RINs for the docket, because no pick is made between them.
 `spineRin` is set only when the spine holds a verified RIN that differs from the agency's, and `rin` then stays the agency's value.
-`modifyDate` is a second modification date and is null when none was recorded; `lastModifiedAt` is the field the `modifiedSince` and `modifiedUntil` window reads.
+</Accordion>
 
 List dockets with filters:
 
@@ -177,8 +201,18 @@ curl "https://api.vaquill.ai/api/v1/us/rulemaking/dockets/EPA-HQ-OAR-2021-0208/d
 ```
 
 Filters are `documentType`, `openForComment`, `postedFrom` and `postedTo`.
-Each document has `documentId`, `documentType`, `subtype`, `title`, `postedAt`, `commentStartAt`, `commentEndAt`, `openForComment`, `withinCommentPeriod`, `allowLateComments`, `withdrawn`, `cfrPart`, `frPages`, `commentCount` and `sourceUrl`.
-`frDocNum` is the Federal Register document number as Regulations.gov prints it, and `frDocNumNorm` is the same number in the form used to join to the Federal Register (`2021-03456`).
+Each document carries these fields:
+
+| Field | Meaning |
+|---|---|
+| `documentId`, `documentType`, `subtype`, `title` | Identity and kind |
+| `postedAt` | When the document was posted |
+| `commentStartAt`, `commentEndAt`, `openForComment`, `withinCommentPeriod`, `allowLateComments` | The comment period and whether it is open |
+| `withdrawn` | Whether the document was withdrawn |
+| `cfrPart`, `frPages` | The CFR part and Federal Register pages it cites |
+| `frDocNum` | The Federal Register document number as Regulations.gov prints it |
+| `frDocNumNorm` | The same number in the form used to join to the Federal Register (`2021-03456`) |
+| `commentCount`, `sourceUrl` | The comment count when measured, and the document on Regulations.gov |
 
 ## Paging
 
@@ -206,13 +240,7 @@ Each entry in `sources` has `name`, `rowCounts`, `latestChange`, `lastRefreshAt`
   The committee records store is still loading. A record you cannot find may not be loaded yet, so a missing record is not proof that none exists.
 </Note>
 
-Two metered routes serve the records of the Judicial Conference Rules Committees (Standing, Appellate, Bankruptcy, Civil, Criminal and Evidence), taken from uscourts.gov: meeting minutes, agenda books, committee reports, rules packages, preliminary drafts, public comments and rules suggestions.
-Both use the same `research:read` scope as the rest of this API.
-
-| Endpoint | What it returns | Credits |
-|---|---|---:|
-| `GET /us/rulemaking/committee-records/list` | Records, most recent first, filtered | 1 per page |
-| `GET /us/rulemaking/committee-records/{recordId}` | One record, its dockets and rule links, and a window of page text | 2 |
+The last two routes in the [endpoint table](#endpoints) serve the records of the Judicial Conference Rules Committees (Standing, Appellate, Bankruptcy, Civil, Criminal and Evidence), taken from uscourts.gov: meeting minutes, agenda books, committee reports, rules packages, preliminary drafts, public comments and rules suggestions.
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/rulemaking/committee-records/list?committee=Civil&ruleSet=FRCP&rule=26&limit=20" \
@@ -222,15 +250,28 @@ curl "https://api.vaquill.ai/api/v1/us/rulemaking/committee-records/list?committ
 | Parameter | Meaning |
 |---|---|
 | `committee` | `Standing`, `Appellate`, `Bankruptcy`, `Civil`, `Criminal`, `Evidence` or `General` |
-| `docType` | One of `meeting_minutes`, `agenda_books`, `committee_reports`, `rules_packages`, `preliminary_drafts`, `superseded_pamphlets`, `rules_comments`, `rules_suggestions`, `fjc_studies`, `past_members`, `special_projects`, `style_resources`, `transcripts_testimony`, `rules_comments_archive` |
+| `docType` | One document type; see the values below |
 | `year` | Year of the record |
 | `ruleSet` | `FRCP`, `FRAP`, `FRBP`, `FRCRP` or `FRE`: records that discuss a rule of this set |
 | `rule` | A rule number such as `26`. Needs `ruleSet`, because five rule sets each have a Rule 5. Without it the call answers `422` before any charge |
 | `docketId` | A comment docket, for example one from [Dockets and documents](#dockets-and-documents) |
 | `limit`, `cursor` | Page size 1 to 100 (default 50) and the `nextCursor` of the previous page. A cursor is bound to the filters that produced it |
 
-A list entry has `recordId` (`rcr_` and 24 hex characters), `committee`, `docType`, `title`, `meetingDate`, `publishedDate` (each with a precision field), `year`, `sourceUrl`, `itemUrl`, `filename`, `textWithheld`, `sha256`, `bytes`, `pageCount`, `textStatus`, `textQuality`, `withdrawn` and `asOf`.
-Page text is not in the list.
+<Expandable title="docType values">
+`meeting_minutes`, `agenda_books`, `committee_reports`, `rules_packages`, `preliminary_drafts`, `superseded_pamphlets`, `rules_comments`, `rules_suggestions`, `fjc_studies`, `past_members`, `special_projects`, `style_resources`, `transcripts_testimony`, `rules_comments_archive`.
+</Expandable>
+
+A list entry carries these fields. Page text is not in the list.
+
+| Field | Meaning |
+|---|---|
+| `recordId` | `rcr_` and 24 hex characters |
+| `committee`, `docType`, `title`, `year` | Which committee, what kind of record, and its title and year |
+| `meetingDate`, `publishedDate` | Each comes with a precision field |
+| `sourceUrl`, `itemUrl`, `filename` | Where the original sits on uscourts.gov, and its file name |
+| `textWithheld`, `textStatus`, `textQuality` | Whether the text is served and how good it is (see [Withheld text](#withheld-text)) |
+| `sha256`, `bytes`, `pageCount` | Fingerprint, size and pages of the source file |
+| `withdrawn`, `asOf` | Whether the record was withdrawn, and when we last saw it |
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/rulemaking/committee-records/rcr_0123456789abcdef01234567?pageFrom=1&pageLimit=50" \
@@ -242,9 +283,12 @@ Every docket and rule link carries the `method` and `confidence` of the link, so
 `pageFrom` starts the window at a page and `pageLimit` is 1 to 200 pages (default 50).
 `nextPage` continues the window, and is `null` on the last one.
 One call is one charge whatever the window.
+A `pageFrom` past the last page of a record returns the record's metadata with no pages and sets `textNotice`.
 An unknown record answers `404` and is refunded, and a `503` from the rulemaking database is refunded.
 
-A scanned page has `quality: needs_ocr`, `textAvailable: false` and `text: null`.
+Scanned pages are read by OCR, and their text has `method: textract`.
+A scanned page OCR found no text on (the blank back of a printed page, a cover) has `quality: blank` and `method: textract`.
+A scanned page not yet read has `quality: needs_ocr`, `textAvailable: false` and `text: null`.
 `textStatus` and `textNotice` say so for the record, so empty text is never a blank page.
 
 ### Withheld text
@@ -258,6 +302,7 @@ The record, its date, its dockets and its rule links are served, and `sourceUrl`
 - **Federal Register.** `federalRegister[].actId` and `reviews[].frActId` point at the Federal Register document in the corpus. The document number is `frDocNumNorm` on a docket document. See [Federal coverage](/api-guide/coverage/federal) for what the Federal Register corpus holds.
 - **CFR.** `cfrParts` gives the CFR title and part a rulemaking amends. Browse the part with the [statute hierarchy](/api-guide/concepts/hierarchy) and read the section text from `/us/statutes`.
 - **US Code.** `publicLaws` and `craDisapprovals` link a rule to the public law behind it or to a Congressional Review Act resolution against it. Resolve a public law or section with [citation formats](/api-guide/concepts/citation-formats).
+- **CFR section and part.** `GET /us/statutes/section/{actId}/rulemaking` lists the Federal Register documents behind one CFR section and `GET /us/statutes/part/{title}/{part}/rulemaking` those for a whole CFR part. Each costs 2 credits, and a lookup that finds nothing is not charged.
 - **Law change alerts.** To be told when the CFR text changes, use [alerts](/api-guide/alerts).
 
 ## Known gaps
@@ -266,5 +311,9 @@ The record, its date, its dockets and its rule links are served, and `sourceUrl`
 - **Comment counts are mostly absent.** `commentCount` is `null` for most dockets and documents. `null` means not measured, never zero. `commentCountAsOf` says when a count was taken.
 - **GAO listing is partial.** The GAO major rule report listing does not cover every report.
 - **Not every rule is reviewed by OIRA**, and Unified Agenda entries exist only for the editions the agency published.
-- **Current state only.** Regulations.gov keeps no history, so a docket shows what it is now.
 - **Link quality varies.** Use `quality` and `linkStatus` as described above, and call [`/coverage`](#coverage) to see what is held and how fresh it is.
+
+## See also
+
+- [Law change alerts](/api-guide/alerts) to be told when a source changes.
+- [Coverage](/api-guide/coverage) for what each corpus holds.

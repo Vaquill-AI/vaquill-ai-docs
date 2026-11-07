@@ -72,13 +72,7 @@ WhatsApp does not allow direct bot integrations, so you connect through a Busine
 
 ### Production (paid WhatsApp Business sender)
 
-Real customers require a verified business sender:
-
-1. Upgrade to a paid Twilio account (trial accounts cannot register WhatsApp senders).
-2. Console > **Messaging > Senders > WhatsApp Senders > Register a WhatsApp Sender**.
-3. Register your business with Meta, submit your WhatsApp Business Profile, get a dedicated number, and submit message templates for approval (required for outbound messages outside the 24-hour window).
-4. Verification typically takes **2-5 business days**.
-5. Once approved, set `TWILIO_WHATSAPP_NUMBER` to your new number.
+Real customers require a verified business sender.
 
 | | Sandbox | Production |
 |---|---|---|
@@ -88,9 +82,17 @@ Real customers require a verified business sender:
 | **Message window** | 24 hours after user message | 24 hours + approved templates |
 | **Setup time** | ~5 minutes | 2-5 business days |
 
-<Warning>
-  The **24-hour customer-service window** is a WhatsApp policy, not a Twilio limit. Outside that window you can only send approved template messages.
-</Warning>
+<Accordion title="Register a production sender">
+  1. Upgrade to a paid Twilio account (trial accounts cannot register WhatsApp senders).
+  2. Console > **Messaging > Senders > WhatsApp Senders > Register a WhatsApp Sender**.
+  3. Register your business with Meta, submit your WhatsApp Business Profile, get a dedicated number, and submit message templates for approval (required for outbound messages outside the 24-hour window).
+  4. Verification typically takes **2-5 business days**.
+  5. Once approved, set `TWILIO_WHATSAPP_NUMBER` to your new number.
+
+  <Warning>
+    The **24-hour customer-service window** is a WhatsApp policy, not a Twilio limit. Outside that window you can only send approved template messages.
+  </Warning>
+</Accordion>
 
 ## Quickstart
 
@@ -155,19 +157,17 @@ The most-used environment variables are below. The full list is in the [repo `.e
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
 | `TWILIO_ACCOUNT_SID` | Yes | - | Twilio Account SID (starts with `AC`) |
 | `TWILIO_AUTH_TOKEN` | Yes | - | Twilio Auth Token |
 | `TWILIO_WHATSAPP_NUMBER` | Yes | - | Sender number with `whatsapp:` prefix |
-| `VAQUILL_MODE` | No | `standard` | Default research mode |
-| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
 | `RATE_LIMIT_DAILY` | No | `100` | Per-user daily cap |
 | `RATE_LIMIT_HOUR` | No | `30` | Per-user hourly cap |
 | `RATE_LIMIT_MINUTE` | No | `5` | Per-user minute cap |
-| `REDIS_URL` | No | - | Enables persistent sessions and rate limits |
 | `ALLOWED_NUMBERS` | No | - | Comma-separated phone allowlist |
 | `SESSION_TIMEOUT_MINUTES` | No | `30` | Conversation context expiry |
 | `PORT` | No | `8000` | Server port |
+
+The Vaquill variables (`VAQUILL_API_KEY`, `VAQUILL_MODE`, `VAQUILL_COUNTRY_CODE`) and `REDIS_URL` are in the [shared bot settings](/integrations/chatbots#shared-bot-settings).
 
 ## Commands
 
@@ -220,22 +220,22 @@ volumes:
 
 ### Cloud hosts
 
-<CardGroup cols={2}>
-  <Card title="Render">
+<AccordionGroup>
+  <Accordion title="Render">
     New Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
 
     The free tier cold-starts in 30-60s. Keep it warm with an uptime monitor.
-  </Card>
-  <Card title="Railway">
+  </Accordion>
+  <Accordion title="Railway">
     Auto-detects Python. Add env vars under Variables, get a `.up.railway.app` URL.
-  </Card>
-  <Card title="Fly.io">
+  </Accordion>
+  <Accordion title="Fly.io">
     `fly launch`, `fly secrets set ...`, `fly deploy`. Many regions are available.
-  </Card>
-  <Card title="VPS">
+  </Accordion>
+  <Accordion title="VPS">
     Run uvicorn behind nginx + Let's Encrypt for TLS.
-  </Card>
-</CardGroup>
+  </Accordion>
+</AccordionGroup>
 
 After deploying, set the Twilio webhook to `https://your-domain.com/webhook/whatsapp` (POST).
 

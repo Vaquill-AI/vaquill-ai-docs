@@ -26,61 +26,21 @@ There are three widget builds. Pick the one that fits your stack and the feature
 | **Framework** | Next.js 15 | FastAPI + Vite | Next.js 15 + React 19 |
 | **Deploy target** | Vercel | Docker Compose | Vercel / Railway |
 | **Streaming responses** | Yes (SSE) | No | Yes (SSE) |
-| **Multi-thread sidebar** | No | No | Yes |
-| **Voice mode (TTS + STT)** | No | No | Yes |
-| **Cross-tab sync** | No | No | Yes |
 | **Inline citation tooltips** | Yes | Yes | Yes |
 | **Embed modes** | iframe | floating, inline | iframe, floating |
 | **Single-file script embed** | No | Yes | Yes |
 | **Jurisdiction** | US-pinned | Configurable | Configurable |
 | **Persistence** | None | None | IndexedDB / localStorage |
 
-## Pick by use case
+Only Widget Pro has a multi-thread sidebar, voice mode (TTS and STT) and cross-tab sync.
 
-| If you... | Use |
-|---|---|
-| Want the leanest US-only chat for a marketing site | [Embedded Chat](/integrations/widgets/embedded-chat) |
-| Want a single Docker deploy with floating-button embed | [Docker Widget](/integrations/widgets/docker-widget) |
-| Need a Vaquill-style full experience (history sidebar, voice, gamification) | [Widget Pro](/integrations/widgets/widget-pro) |
+## Embedding
 
-## Common embedding patterns
+Each build page has its own embed snippet and options:
 
-### Floating button (Intercom-style)
-
-A single script tag adds a chat bubble to the bottom-right of every page.
-
-```html
-<script
-  src="https://your-widget-host/embed/script-floating-chatbot.js"
-  data-api-url="https://your-widget-host"
-></script>
-```
-
-### Inline embed
-
-A `<div>` plus a script tag mounts the chat inline.
-
-```html
-<div id="vaquill-widget-embed"></div>
-<script
-  src="https://your-widget-host/embed/script-inline-embed.js"
-  data-api-url="https://your-widget-host"
-  data-height="640px"
-></script>
-```
-
-### iframe
-
-Maximum isolation. Drop into any HTML page or CMS.
-
-```html
-<iframe
-  src="https://your-widget.vercel.app"
-  width="400"
-  height="600"
-  style="border: none; border-radius: 12px;"
-></iframe>
-```
+- Floating button (Intercom-style) and inline embed: [Docker Widget](/integrations/widgets/docker-widget#embedding).
+- iframe, for maximum isolation on any HTML page or CMS: [Embedded Chat](/integrations/widgets/embedded-chat#embedding).
+- Single-file loader: [Widget Pro](/integrations/widgets/widget-pro#embedding).
 
 ## Source
 

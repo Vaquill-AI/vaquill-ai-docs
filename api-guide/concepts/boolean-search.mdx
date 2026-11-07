@@ -1,7 +1,9 @@
 ---
-title: "Boolean Search"
-description: "Terms-and-connectors search on POST /us/statutes/search with matchType boolean: operators, precedence, proximity, wildcards, field restrictions, limits and errors"
+title: "Boolean search"
+description: "Search with AND, OR, NOT, proximity and wildcards using matchType boolean."
 ---
+
+import PriceTable from '/snippets/price-table.mdx';
 
 `POST /us/statutes/search` accepts a terms-and-connectors expression when you send `matchType: "boolean"`.
 It is the syntax used by the major legal research services: `AND`, `OR`, `NOT`, same-sentence and same-paragraph connectors, numeric proximity, wildcards, exact phrases and grouping.
@@ -14,21 +16,16 @@ Three guarantees hold for every Boolean search:
 
 1. Every result satisfies the expression, judged over the section's full text rather than one excerpt or passage.
 2. Results are ranked by relevance among the matches. The expression decides which sections qualify, and relevance decides their order.
-3. Nothing is silently loosened or misread. A malformed expression, an unsupported operator or an out-of-bounds value is a `422` that names the problem and its character position, and it is not charged.
+3. Nothing is silently loosened or misread. A malformed expression, an unsupported operator or an out-of-bounds value is a `422` that names the problem and its character position.
 
-## When to use Boolean instead of `any`
+## When to use Boolean
 
-| You have | Use | Why |
-|---|---|---|
-| A question in plain English | `any` (default) | Ranks on meaning, so a section can match with none of your words |
-| A term of art or defined term | `phrase` | The exact words, in order |
-| Words that must all appear, no other logic | `all` | Every word, anywhere |
-| Logic: alternatives, exclusions, proximity, wildcards, counts | `boolean` | Every result provably satisfies the expression |
-| A citation such as `42 U.S.C. § 1983` | `any`, or `GET /us/statutes/resolve` | A citation resolves to rank 1 in `any` mode. Boolean mode never pins a cited section |
-
-Boolean mode is a filter you control.
-Stay on `any` if you want the API to infer intent from a question.
 Use `boolean` when you need to say exactly which sections qualify and be told when your expression cannot be read.
+Stay on `any` if you want the API to infer intent from a question.
+[How search works](/api-guide/concepts/search#matchtype) compares every `matchType`.
+
+For a citation such as `42 U.S.C. § 1983`, use `any` or `GET /us/statutes/resolve`.
+A citation resolves to rank 1 in `any` mode, and Boolean mode never pins a cited section.
 
 ## Quick start
 
@@ -62,15 +59,10 @@ resp = requests.post(
 )
 
 if resp.status_code == 422:
-    # Nothing was charged. Change the expression before sending it again:
-    # the same expression returns the same 422. Either it could not be read
-    # (detail names the problem and the 0-based character position), or it
-    # was too heavy to verify within one search (narrow it with state or
-    # corpusType, or use fewer /s and /p connectors).
+    # Not charged. Change the expression (see Errors below).
     raise ValueError(resp.json()["detail"])
 if resp.status_code == 503:
-    # The search backend is temporarily unavailable. Nothing was charged.
-    # Retry with backoff.
+    # Not charged. Retry with backoff.
     raise RuntimeError(resp.json()["detail"])
 resp.raise_for_status()
 
@@ -98,10 +90,7 @@ const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
 
 const data = await resp.json();
 if (resp.status === 422 || resp.status === 503) {
-  // Not charged.
-  // 422: change the expression, never resend it unchanged. It could not be
-  // read, or it was too heavy to verify in time, so narrow it.
-  // 503: temporary, retry with backoff.
+  // Not charged. 422: change the expression. 503: retry with backoff.
   throw new Error(data.detail);
 }
 console.log(data.parsedQuery);
@@ -144,6 +133,21 @@ The response has the same shape as any search, plus `parsedQuery`, the paging fi
 
 Paging, filters (`state`, `corpusType`, `code`, `titleNumber`, `chapter`, `part`, `yearFrom`, `yearTo`, `excludeRepealed` and the rest) and `includeBody` work exactly as they do for any search.
 The scope filters narrow the corpus first, and the expression is judged inside that scope.
+Failures and what they cost are in [Failure and charging](#failure-and-charging).
+
+## Examples
+
+Requests translated into expressions.
+`parsedQuery` is identical to the expression for each of these.
+
+| The user asks for | Expression |
+|---|---|
+| Trust fund penalty provisions, excluding section 6672 | `"trust fund" AND penalty NOT 6672` |
+| A landlord mentioned near a security deposit | `landlord /10 "security deposit"` |
+| Negligence involving motor vehicles, any form of the word | `negligen* AND (motor OR vehicle)` |
+| Employer or employee retaliation or discharge in one sentence | `(employer OR employee) /s (retaliat* OR discharg*)` |
+| Sections whose heading is about security deposits | `title("security deposit")` |
+| Sections that use "negligence" at least five times | `atleast5(negligence)` |
 
 ## Operators
 
@@ -168,12 +172,18 @@ Lowercase `and`, `or` and `not` are ordinary words.
 | `*` or `!` at the end of a word | zero or more letters or digits | `retaliat*` |
 | `?` inside a word | exactly one letter or digit | `wom?n` |
 | `( )` | grouping | `(work OR employment) AND retaliation` |
+| `caps(word)` | the word printed with at least one capital letter. `parsedQuery` lowercases the argument | `caps(IRS) AND penalty` |
+| `allcaps(word)` | the word printed in all capitals | `allcaps(fdic)` |
+| `nocaps(word)` | the word printed with no capitals, so "will" but not "Will" | `nocaps(will)` |
+| `plural(word)` | the regular plural form, which `parsedQuery` shows as the plural word | `plural(deposit)` reads as `deposits` |
+| `singular(word)` | exactly the word as written | `singular(fee)` reads as `fee` |
 
 Details that matter in practice:
 
 - Distance counts word positions. `/1` means adjacent, and `notice /3 termination` matches "notice of the termination" (three positions apart) but `/2` does not.
 - `atleastN( )` and `atmN( )` take one term, phrase or wildcard: `atleast3("trust fund")`, `atleast2(retaliat*)`.
-- Matching is on whole words, case-insensitively, with no stemming and no synonyms. `deposit` does not match `deposits`, so write `deposit*` or `deposit OR deposits` when you mean both. `act` never matches `fact`.
+- Matching is on whole words, case-insensitively, with no stemming and no synonyms. `act` never matches `fact`, and `deposit` does not match `deposits` (see [Coming from another service](#coming-from-another-service) for the fix).
+- Case functions read the text as printed, so `allcaps(irs)` matches "IRS" and not "Irs". `plural( )` adds a regular plural ending, so for an irregular plural type the plural word itself (`children`).
 - Punctuation inside a word splits it. `§ 1983` is the phrase `section 1983`, and `rule 10b-5` is the phrase `rule 10b 5`.
 - A hyphenated word on its own also matches its joined form. `non-compete` is read as `"non compete" OR noncompete`, and `at-will` as `"at will" OR atwill`.
 - A slash between two words is text. `and/or` is the phrase `and or`, and `24/7` is `24 7`. Anything else containing `/`, `~` or `^` that is not a known operator is refused, never searched as words.
@@ -197,17 +207,24 @@ Legal research services use this order. Textbook Boolean binds `AND` tighter tha
 
 | You send | `parsedQuery` | Read it as |
 |---|---|---|
-| `contract OR agreement /s breach` | `(contract OR agreement) /s breach` | either word, in a sentence with "breach" |
 | `work OR employment AND retaliation` | `(work OR employment) AND retaliation` | either word, and "retaliation" anywhere |
 | `landlord /s tenant AND deposit` | `(landlord /s tenant) AND deposit` | the sentence pair, and "deposit" anywhere |
+| `landlord NOT commercial OR industrial` | `landlord NOT (commercial OR industrial)` | "landlord", and neither excluded word anywhere |
+
+<Accordion title="More precedence examples">
+
+| You send | `parsedQuery` | Read it as |
+|---|---|---|
+| `contract OR agreement /s breach` | `(contract OR agreement) /s breach` | either word, in a sentence with "breach" |
 | `landlord /p tenant /s notice` | `landlord /p (tenant /s notice)` | "tenant" and "notice" in one sentence, inside a paragraph that also has "landlord" |
 | `landlord /10 tenant /3 notice` | `landlord /10 (tenant /3 notice)` | the smaller distance binds first |
 | `landlord /3 tenant /10 notice` | `(landlord /3 tenant) /10 notice` | the same rule, from the other side |
 | `notice /5 termination +5 cause` | `notice /5 (termination +5 cause)` | at an equal distance, the ordered form binds first |
 | `landlord AND tenant NOT commercial` | `landlord AND tenant NOT commercial` | both words, and "commercial" nowhere |
-| `landlord NOT commercial OR industrial` | `landlord NOT (commercial OR industrial)` | "landlord", and neither excluded word anywhere |
 | `landlord NOT tenant /5 notice` | `landlord NOT (tenant /5 notice)` | "landlord", and no "tenant" within 5 words of "notice" |
 | `landlord OR tenant /5 notice AND deposit NOT commercial` | `((landlord OR tenant) /5 notice) AND deposit NOT commercial` | all of the above at once |
+
+</Accordion>
 
 When in doubt, add parentheses.
 They never change a correct expression, and `parsedQuery` drops the ones that are redundant.
@@ -220,54 +237,30 @@ Each side of a proximity connector (`/N`, `/s`, `/p` and their `+` forms) must b
 You can paste a search written in another service's syntax.
 Each spelling below is read as the operator shown, and `parsedQuery` echoes the canonical form.
 
-| You send | `parsedQuery` | Meaning |
+<Accordion title="Spellings from other services">
+
+| Reads as | Spellings accepted | You send, then `parsedQuery` |
 |---|---|---|
-| `contract & breach` | `contract AND breach` | `&` and `&&` are `AND` |
-| `contract && breach` | `contract AND breach` | |
-| `work \| employment` | `work OR employment` | `\|` and `\|\|` are `OR` |
-| `work \|\| employment` | `work OR employment` | |
-| `landlord XOR tenant` | `(landlord OR tenant) NOT (landlord AND tenant)` | one or the other, not both |
-| `negligence % criminal` | `negligence NOT criminal` | `%`, a standalone `^`, `BUT NOT` and `AND NOT` are `NOT` |
-| `penalty ^ 6672` | `penalty NOT 6672` | |
-| `negligence BUT NOT criminal` | `negligence NOT criminal` | |
-| `negligence AND NOT criminal` | `negligence NOT criminal` | |
-| `employer -retaliation` | `employer NOT retaliation` | a leading `-` on a word is `NOT` |
-| `+retaliation AND employer` | `retaliation AND employer` | a leading `+` or `#` changes nothing: every term is already required and exact |
-| `#retaliation` | `retaliation` | |
-| `retaliation^2 AND employer` | `retaliation AND employer` | a boost does not change which sections match |
-| `arbitration w/5 award` | `arbitration /5 award` | `w/N`, `W/N`, `n/N`, `NEAR/N`, `AROUND(N)` and `NEARn` are `/N` |
-| `arbitration n/5 award` | `arbitration /5 award` | |
-| `arbitration NEAR/5 award` | `arbitration /5 award` | |
-| `notice AROUND(4) termination` | `notice /4 termination` | |
-| `notice NEAR4 termination` | `notice /4 termination` | |
-| `notice pre/5 termination` | `notice +5 termination` | `pre/N`, `np/N`, `before/N`, `onear/N`, `ADJn` and `ONEARn` are `+N` |
-| `notice np/5 termination` | `notice +5 termination` | |
-| `notice before/5 termination` | `notice +5 termination` | |
-| `notice onear/5 termination` | `notice +5 termination` | |
-| `notice ADJ3 termination` | `notice +3 termination` | |
-| `notice ONEAR2 termination` | `notice +2 termination` | |
-| `notice ADJ termination` | `notice +1 termination` | bare `ADJ` is `+1` |
-| `notice NEAR termination` | `notice /1 termination` | bare `NEAR` is `/1` |
-| `covenant w/s compete` | `covenant /s compete` | `w/s`, `w/sent`, `s/` and `WITH` are `/s` |
-| `covenant w/sent compete` | `covenant /s compete` | |
-| `motion s/ denied` | `motion /s denied` | |
-| `notice WITH termination` | `notice /s termination` | |
-| `contract w/p unconscionable` | `contract /p unconscionable` | `w/p`, `w/para`, `p/` and `SAME` are `/p` |
-| `contract w/para unconscionable` | `contract /p unconscionable` | |
-| `motion p/ denied` | `motion /p denied` | |
-| `notice SAME termination` | `notice /p termination` | |
-| `landlord w/seg tenant` | `landlord AND tenant` | a statute section is one segment |
-| `landlord NOT w/5 tenant` | `landlord NOT /5 tenant` | negative proximity, see below |
-| `"notice termination"~3` | `notice /4 termination` | phrase slop: within N+1 words, any order |
-| `"notice termination"~0` | `"notice termination"` | slop 0 is the exact phrase |
-| `atl3(negligence)` | `atleast3(negligence)` | `atlN( )` is `atleastN( )` |
-| `ATLEAST3(negligence)` | `atleast3(negligence)` | function names are case-insensitive |
-| `retaliat!` | `retaliat*` | `!` or `$` at the end of a word is the `*` wildcard |
-| `retaliat$` | `retaliat*` | |
-| `negligence~` | `negligence~2` | fuzzy term, see below |
-| `negligence~0.8` | `negligence~1` | a similarity of 0.5 or more is 1 edit, below 0.5 is 2 |
-| `contract/s breach` | `contract /s breach` | missing or extra spaces around a connector are fine |
-| `arbitration w/ 5 award` | `arbitration /5 award` | |
+| `AND` | `&`, `&&` | `contract & breach` and `contract && breach` become `contract AND breach` |
+| `OR` | `\|`, `\|\|` | `work \| employment` and `work \|\| employment` become `work OR employment` |
+| `XOR` | `XOR`: one or the other, not both | `landlord XOR tenant` becomes `(landlord OR tenant) NOT (landlord AND tenant)` |
+| `NOT` | `%`, a standalone `^`, `BUT NOT`, `AND NOT` | `negligence % criminal`, `negligence BUT NOT criminal` and `negligence AND NOT criminal` become `negligence NOT criminal`; `penalty ^ 6672` becomes `penalty NOT 6672` |
+| `NOT` | a leading `-` on a word | `employer -retaliation` becomes `employer NOT retaliation` |
+| nothing | a leading `+` or `#` changes nothing: every term is already required and exact | `+retaliation AND employer` becomes `retaliation AND employer`; `#retaliation` becomes `retaliation` |
+| nothing | a boost such as `^2` does not change which sections match | `retaliation^2 AND employer` becomes `retaliation AND employer` |
+| `/N` | `w/N`, `W/N`, `n/N`, `NEAR/N`, `AROUND(N)`, `NEARn`; bare `NEAR` is `/1` | `arbitration w/5 award`, `arbitration n/5 award` and `arbitration NEAR/5 award` become `arbitration /5 award`; `notice AROUND(4) termination` and `notice NEAR4 termination` become `notice /4 termination`; `notice NEAR termination` becomes `notice /1 termination` |
+| `+N` | `pre/N`, `np/N`, `before/N`, `onear/N`, `ADJn`, `ONEARn`; bare `ADJ` is `+1` | `notice pre/5 termination`, `notice np/5 termination`, `notice before/5 termination` and `notice onear/5 termination` become `notice +5 termination`; `notice ADJ3 termination` becomes `notice +3 termination`; `notice ONEAR2 termination` becomes `notice +2 termination`; `notice ADJ termination` becomes `notice +1 termination` |
+| `/s` | `w/s`, `w/sent`, `s/`, `WITH` | `covenant w/s compete` and `covenant w/sent compete` become `covenant /s compete`; `motion s/ denied` becomes `motion /s denied`; `notice WITH termination` becomes `notice /s termination` |
+| `/p` | `w/p`, `w/para`, `p/`, `SAME` | `contract w/p unconscionable` and `contract w/para unconscionable` become `contract /p unconscionable`; `motion p/ denied` becomes `motion /p denied`; `notice SAME termination` becomes `notice /p termination` |
+| `AND` | `w/seg`: a statute section is one segment | `landlord w/seg tenant` becomes `landlord AND tenant` |
+| `NOT /N` | `NOT w/N`: negative proximity, see below | `landlord NOT w/5 tenant` becomes `landlord NOT /5 tenant` |
+| `/N` or phrase | Phrase slop `"..."~N`: within N+1 words, any order. Slop 0 is the exact phrase | `"notice termination"~3` becomes `notice /4 termination`; `"notice termination"~0` becomes `"notice termination"` |
+| `atleastN( )` | `atlN( )`. Function names are case-insensitive | `atl3(negligence)` and `ATLEAST3(negligence)` become `atleast3(negligence)` |
+| `*` wildcard | `!` or `$` at the end of a word | `retaliat!` and `retaliat$` become `retaliat*` |
+| fuzzy term | `~` alone is 2 edits. A similarity of 0.5 or more is 1 edit, below 0.5 is 2. See below | `negligence~` becomes `negligence~2`; `negligence~0.8` becomes `negligence~1` |
+| spacing | missing or extra spaces around a connector are fine | `contract/s breach` becomes `contract /s breach`; `arbitration w/ 5 award` becomes `arbitration /5 award` |
+
+</Accordion>
 
 A `-` before a word is `NOT`, so `penalty -6672` excludes 6672 rather than searching for it.
 A `!` before a word is refused: one family of services reads it as `NOT` and another as a wildcard, so we ask you to write `NOT criminal` or `criminal!` instead of guessing.
@@ -289,7 +282,7 @@ These are refused with a `422`:
 - a placeholder left in a connector (`w/n`), a connector we do not know (`s/5`), and any leftover `/`, `~` or `^` that is not one of the operators above;
 - a distance in sentences or paragraphs (`WITH2`, `SAME3`): use `/s`, `/p` or `/N`;
 - regular expressions (`/negligen.*/`), backslash escapes, number ranges (`1..5`) and ranges (`[2000 TO 2010]`);
-- a case-sensitive phrase (`^"Internal Revenue"`): use the case functions below;
+- a case-sensitive phrase (`^"Internal Revenue"`): use the case functions in [Operators](#operators);
 - `title:26`, which looks like a U.S. Code title number: use the `titleNumber` or `code` filters, or `cite( )`;
 - any field a statute section does not have (see below).
 
@@ -315,23 +308,14 @@ Fields a statute section does not have are refused by name rather than ignored: 
 Filter by year with `yearFrom` and `yearTo`, by jurisdiction with `state`, and by code with `code` or `titleNumber`.
 For a section's amendment history, read `GET /us/statutes/section/{actId}/changes`.
 
-### Case and number functions
-
-| You send | `parsedQuery` | Matches |
-|---|---|---|
-| `caps(IRS) AND penalty` | `caps(irs) AND penalty` | the word printed with at least one capital letter |
-| `allcaps(fdic)` | `allcaps(fdic)` | the word printed in all capitals |
-| `nocaps(will)` | `nocaps(will)` | the word printed with no capitals, so "will" but not "Will" |
-| `plural(deposit)` | `deposits` | the regular plural form |
-| `singular(fee)` | `fee` | exactly the word as written |
-
-Case functions read the text as printed, so `allcaps(irs)` matches "IRS" and not "Irs".
-`plural( )` adds a regular plural ending.
-For an irregular plural, type the plural word itself (`children`).
-
 ## Sentences and paragraphs in statute text
 
-`/s` and `/p` depend on where a sentence and a paragraph end. Statute text is not ordinary prose, so the boundaries are defined for it, and they are real boundaries rather than fixed word windows.
+`/s` and `/p` depend on where a sentence and a paragraph end.
+Statute text is not ordinary prose, so the boundaries are defined for it, and they are real boundaries rather than fixed word windows.
+
+So in "(a) The landlord may recover. (b) The tenant shall pay.", `landlord /p tenant` does not match: `(b)` after a period starts a new paragraph.
+
+<Accordion title="Where a sentence or paragraph ends">
 
 A sentence ends at a sentence-ending period, question mark or exclamation mark followed by a new sentence.
 Legal abbreviations, decimals and initials do not end one: "Sec.", "U.S.C." and "1950.5" stay inside their sentence.
@@ -346,21 +330,23 @@ A single line break is **never** a paragraph boundary, because much statute text
 A marker inside a sentence ("under subsection (b) of this section") does not start a paragraph, and a chained marker such as `(2) (a)` stays one paragraph rather than leaving the `(2)` alone.
 A section with none of these boundaries is one paragraph.
 
-So in "(a) The landlord may recover. (b) The tenant shall pay.", `landlord /p tenant` does not match: `(b)` after a period starts a new paragraph.
+</Accordion>
 
 ## Wildcards and fuzzy terms
 
-| You send | `parsedQuery` | Matches |
-|---|---|---|
-| `retaliat*` | `retaliat*` | retaliate, retaliation, retaliatory, and "retaliat" itself |
-| `wom?n` | `wom?n` | woman, women |
-| `1983*` | `1983*` | 1983, 1983a |
-| `object$3` | `object OR object? OR object?? OR object???` | "object" plus at most 3 more letters or digits: objects, objected, objection, but not objectionable |
-| `object***` | `object OR object? OR object?? OR object???` | the same: a run of 2 to 5 trailing `*` caps the extra characters |
-| `retaliat* claim` | `"retaliat* claim"` | a wildcard can sit inside a phrase |
-| `"landlord * deposit"` | `"landlord * deposit"` | `*` alone inside quotes is exactly one word: "landlord security deposit" |
-| `negligence~1` | `negligence~1` | any word within 1 edit: "negligance" |
-| `negligence~` | `negligence~2` | any word within 2 edits |
+`parsedQuery` echoes the expression unchanged except where the table says otherwise.
+
+| You send | Matches |
+|---|---|
+| `retaliat*` | retaliate, retaliation, retaliatory, and "retaliat" itself |
+| `wom?n` | woman, women |
+| `1983*` | 1983, 1983a |
+| `object$3` | "object" plus at most 3 more letters or digits: objects, objected, objection, but not objectionable. `parsedQuery` is `object OR object? OR object?? OR object???` |
+| `object***` | the same: a run of 2 to 5 trailing `*` caps the extra characters, and `parsedQuery` is the same |
+| `retaliat* claim` | a wildcard can sit inside a phrase. `parsedQuery` is `"retaliat* claim"` |
+| `"landlord * deposit"` | `*` alone inside quotes is exactly one word: "landlord security deposit" |
+| `negligence~1` | any word within 1 edit: "negligance" |
+| `negligence~` | any word within 2 edits. `parsedQuery` is `negligence~2` |
 
 Rules:
 
@@ -372,26 +358,39 @@ Rules:
 
 ## Text pasted from Word, PDFs and the web
 
-The expression is normalized before it is read, so a search copied out of a document behaves like one typed by hand:
+The expression is normalized before it is read, so a search copied out of a document behaves like one typed by hand.
+
+<Accordion title="What each pasted character is read as">
 
 | Pasted | Read as |
 |---|---|
 | curly quotes, as in `“summary judgment”` | straight quotes: `"summary judgment"` |
-| a minus sign or a typographic dash before a word | a leading `-`, so `NOT`: `trust` followed by a dashed `fund` is `trust NOT fund` |
+| a minus sign or a typographic dash before a word | a leading `-`, so `NOT`: pasted as `trust` then a typographic dash right before `fund`, it is read as `trust -fund`, which is `trust NOT fund` |
 | a non-breaking hyphen inside a word | a hyphen, so `"non compete" OR noncompete` |
 | a curly apostrophe, as in `tenant’s rights` | punctuation, so `"tenant s rights"` |
 | zero-width spaces and control characters | a space |
 | fullwidth letters | ordinary letters |
 
+</Accordion>
+
 ## Response fields
 
-`parsedQuery` is present only when `matchType` is `boolean`.
-It is your expression in canonical form: aliases replaced by the operators above, implicit phrases quoted, groups parenthesized, redundant parentheses dropped.
-Sending `parsedQuery` back as the query runs the same search, so it is the right thing to log, cache or show to a user.
+| Field | Present when | Meaning |
+|---|---|---|
+| `parsedQuery` | `matchType` is `boolean` | Your expression in canonical form: aliases replaced by the operators above, implicit phrases quoted, groups parenthesized, redundant parentheses dropped. Sending it back as the query runs the same search, so log, cache or show it |
+| `queryWarnings` | `matchType` is `boolean` and the expression is valid but may not mean what you intended. Omitted when there is nothing to warn about | A list of plain-English strings. It never changes the search: the search ran as `parsedQuery` shows |
+| `queryHint` | `matchType` is `any` and the query looks like a Boolean expression: an uppercase `AND`, `OR` or `NOT` between words, a proximity connector such as `/s` or `/5`, or `atleastN(`, in a query that would parse | The search ran as natural language, operators included as ordinary words. Retry with `matchType: "boolean"` if you meant the operators. A Boolean-looking query is never switched to Boolean mode for you, because the same request must mean the same thing every time |
+| `totalMatches` | Boolean search. Absent only when the count could not be finished in time | How many sections satisfy the expression within your filters, across all pages. The same on every page of a query |
+| `totalMatchesExact` | Boolean search | `true`: `totalMatches` is the exact number. `false`: it is an upper bound |
+| `relevanceRankedCount` | Boolean search | How many leading results are ordered by relevance, at most 120. Results after them continue in keyword (BM25) order and repeat the last ranked `relevanceScore`, so you can reach every match without each one being re-scored |
+| `nextOffset` | While `hasMore` is `true` | The `offset` to send for the next page |
+| `matchContexts` | On each result, in Boolean mode only | Up to three short passages showing where that section satisfied the expression |
+| `noGoodMatch` | Every search | `true` only when no section matched, and `false` otherwise. Every result matches by definition |
+| `matchQuality` | Every search | `null` in Boolean mode. Its tiers are calibrated on natural-language ranking and do not describe membership in a Boolean set |
+| `relevanceScore` | Each result | Orders the matches, as it does in every mode. Negated terms never contribute to ranking |
+| `rankingDegraded` | Only when `true` | The order fell back to a simpler score. Every result still satisfies the expression |
 
-`queryWarnings` is present only when `matchType` is `boolean` and the expression is valid but may not mean what you intended.
-It is a list of plain-English strings, and it never changes the search: the search ran as `parsedQuery` shows.
-It flags three cases:
+<Accordion title="queryWarnings: the three cases">
 
 | You send | `parsedQuery` | Warning about |
 |---|---|---|
@@ -399,27 +398,18 @@ It flags three cases:
 | `landlord and tenant AND deposit` | `"landlord and tenant" AND deposit` | lowercase `and`, `or` or `not` next to real operators, searched as words |
 | `retaliation^2 AND employer` | `retaliation AND employer` | a `^` boost, which was ignored because every result satisfies the expression and is ranked by relevance |
 
-The field is omitted when there is nothing to warn about.
+</Accordion>
 
-`queryHint` is present only when `matchType` is `any` and the query looks like a Boolean expression: an uppercase `AND`, `OR` or `NOT` between words, a proximity connector such as `/s` or `/5`, or `atleastN(`, in a query that would parse.
-It means the search ran as natural language, operators included as ordinary words.
-Retry with `matchType: "boolean"` if you meant the operators.
-A Boolean-looking query is never switched to Boolean mode for you, because the same request must mean the same thing every time.
+<Accordion title="totalMatchesExact: when the count is only an upper bound">
 
-`totalMatches` is how many sections satisfy the expression within your filters, across all pages.
-It is the same on every page of a query, and it is absent only when the count could not be finished in time.
-
-`totalMatchesExact` says how to read `totalMatches`.
-`true` means it is the exact number of matching sections.
+`true` means `totalMatches` is the exact number of matching sections.
 `false` means it is an upper bound: the expression uses an operator the count cannot judge exactly (phrases, `/s`, `/p`, proximity, `atleastN`, wildcards inside proximity), or you set a filter the count does not apply (anything other than `corpusType`, `state`, `actStatus` and `excludeRepealed`).
 Every result you are served still satisfies the expression; only the count is a ceiling.
 A section the corpus holds under two ids, such as a Federal Rule kept in two collections, is counted twice and served once.
 
-`relevanceRankedCount` is how many leading results are ordered by relevance, at most 120.
-Results after them continue in keyword (BM25) order and repeat the last ranked `relevanceScore`, so you can reach every match without each one being re-scored.
+</Accordion>
 
-`nextOffset` is the `offset` to send for the next page, present while `hasMore` is `true`.
-It is usually `offset` plus `limit`.
+`nextOffset` is usually `offset` plus `limit`.
 Past the relevance-ranked results a page can hold fewer rows than `limit`, because candidates outside your filters, or failing the expression on its full text, are left out.
 When full-text verification runs out of time, the page stops early and `nextOffset` resumes exactly where it stopped, so always page with `nextOffset` rather than computing the offset yourself.
 
@@ -434,10 +424,21 @@ while offset is not None:
 To get the total without the results, send the same expression to `POST /us/statutes/count` with `matchType: "boolean"`.
 It returns the same figure as `count`, with `isExact` in place of `totalMatchesExact`, for 1 credit.
 
-`matchContexts` is on each result, and only in Boolean mode: up to three short passages showing where that section satisfied the expression, the way research services show hits in context.
+<Accordion title="matchContexts and highlights">
+
+`matchContexts` shows where a section satisfied the expression, the way research services show hits in context.
 Each passage is about 240 characters of the section's text, cut on word boundaries, with whitespace runs shown as one space and soft hyphens removed.
 `highlights` lists `[start, end]` character offsets into that passage's `text` (end exclusive), so you choose how to style them.
-The highlights come from the same engine that decides whether a section matches, so each one took part in the match: every conjunct of an `AND`, the `OR` branches that matched, a whole phrase, both operands of a satisfied `/N`, `/s` or `/p` pair (not the words between them), the occurrences `atleastN` counted, and for `a NOT W/N b` the `a` with no `b` in range.
+
+The highlights come from the same engine that decides whether a section matches, so each one took part in the match:
+
+- every conjunct of an `AND`;
+- the `OR` branches that matched;
+- a whole phrase;
+- both operands of a satisfied `/N`, `/s` or `/p` pair (not the words between them);
+- the occurrences `atleastN` counted;
+- for `a NOT W/N b`, the `a` with no `b` in range.
+
 A `NOT` never highlights anything, and a word that occurs only where it did not take part in the match is not highlighted.
 The first occurrence of each part of the expression is shown before a second occurrence of any.
 Offsets point at the text as printed, so a highlight for `section` can cover `§` and one for `café` can cover `CAFÉ`.
@@ -459,24 +460,34 @@ It is absent on a row whose passages could not be prepared within the search's t
 Contexts never change which sections are returned, their order or the price.
 Leaving `matchContexts` out of `fields` skips the work entirely.
 
-In Boolean mode:
-
-- **`noGoodMatch`** is `true` only when no section matched, and `false` otherwise. Every result matches by definition.
-- **`matchQuality`** is `null`. Its tiers are calibrated on natural-language ranking and do not describe membership in a Boolean set.
-- **`relevanceScore`** orders the matches, as it does in every mode. Negated terms never contribute to ranking.
-- **`rankingDegraded: true`** means the order fell back to a simpler score. Every result still satisfies the expression.
+</Accordion>
 
 ## Recall: what you get and what you do not
 
 Boolean mode guarantees precision: every section returned satisfies the expression.
-It also pages to the end of the matches: `offset` goes up to 10,000 in Boolean mode (70 in every other mode), the first 120 results are ranked by relevance, and the rest follow in keyword order.
+It also pages to the end of the matches, up to the `offset` ceiling and the relevance-ranked count in [Limits](#limits).
 Read `totalMatches` to know how many there are, and page with `nextOffset` until `hasMore` is `false`.
-Three things still bound what comes back:
+Four things still bound what comes back:
 
-- The deepest offset is 10,000. When `totalMatches` is larger than you can page to, narrow with `state`, `corpusType`, `code` or `titleNumber`, or split the expression, to reach the rest.
-- Wildcard and fuzzy terms match the word forms found while searching. `retaliat*` matches every form that turns up in the candidate sections, which in practice is every common form, but a rare form that appears only in sections the search never reached can be missed. If one form matters, write it out: `retaliat* OR retaliatory`.
-- Very long sections. When the words of an `AND` or a proximity pair sit far apart in a long section, that section is still found, but it can sit further down the pages than its relevance alone would put it.
-- Verification time. Multi-word phrases and proximity connectors are confirmed against each candidate's full text within one search's time budget. When time runs out after some matches were confirmed, those matches are served as a normal `200`, and a candidate that was not confirmed is never served as a match. When it runs out before any match was confirmed, the search is a `422` (see [Errors](#errors)). Narrowing with `state` or `corpusType`, or using fewer `/s` and `/p` connectors, reaches the rest.
+- The deepest offset is reached. When `totalMatches` is larger than you can page to, narrow with `state`, `corpusType`, `code` or `titleNumber`, or split the expression, to reach the rest.
+- Wildcard and fuzzy terms can miss a rare word form.
+- Very long sections can sit further down the pages than their relevance alone would put them.
+- Verification time can stop a page early.
+
+<Accordion title="Wildcard recall and verification time in detail">
+
+**Wildcards.** Wildcard and fuzzy terms match the word forms found while searching.
+`retaliat*` matches every form that turns up in the candidate sections, which in practice is every common form, but a rare form that appears only in sections the search never reached can be missed.
+If one form matters, write it out: `retaliat* OR retaliatory`.
+
+**Long sections.** When the words of an `AND` or a proximity pair sit far apart in a long section, that section is still found, but it can sit further down the pages than its relevance alone would put it.
+
+**Verification time.** Multi-word phrases and proximity connectors are confirmed against each candidate's full text within one search's time budget.
+When time runs out after some matches were confirmed, those matches are served as a normal `200`, and a candidate that was not confirmed is never served as a match.
+When it runs out before any match was confirmed, the search is a `422` (see [Errors](#errors)).
+Narrowing with `state` or `corpusType`, or using fewer `/s` and `/p` connectors, reaches the rest.
+
+</Accordion>
 
 An empty Boolean result means no section in your scope that the search reached satisfies the expression.
 Before concluding the corpus holds nothing, loosen the expression (`/s` to `/p`, `/p` to `AND`, a phrase to its words joined by `AND`) or widen the scope.
@@ -486,33 +497,36 @@ See [How search works](/api-guide/concepts/search#when-search-is-the-wrong-tool)
 
 ## Pricing
 
-A Boolean search costs the same as any search: **4 credits per call**, and every page is its own call.
-A Boolean count on `POST /us/statutes/count` costs **1 credit**, and a count of zero is refunded.
-A `422` is **not charged**.
-An expression we cannot read is refused before any charge starts, and an expression too heavy to verify within one search is refunded if a charge had started.
-A `503` from a temporary backend outage is refunded.
-A valid expression that matches nothing is a completed search and is charged.
-Read `creditsConsumed` on the response, and see `GET /api-credits/pricing` for the live matrix.
+A Boolean search is priced like any search, and every page is its own call.
+
+<PriceTable />
+
+A Boolean count on `POST /us/statutes/count` costs 1 credit, and a count of zero is refunded.
+What is charged on a failure or an empty result is in [Failure and charging](#failure-and-charging).
 
 ## Limits
 
-| Limit | Value | Over the limit |
-|---|---|---|
-| Query length | 500 characters | `422` |
-| Terms, phrases and wildcards | 32 | `422` |
-| Parenthesis nesting | 8 levels | `422` |
-| Wildcard and fuzzy terms | 20 | `422` |
-| Characters before a wildcard | at least 3 | `422` |
-| Extra characters in `$N` or `***` | 1 to 5 | `422` |
-| N in `/N` and `+N` | 1 to 255 | `422` |
-| N in `atleastN( )` | 1 to 100 | `422` |
-| N in `atmN( )` | 1 to 99 | `422` |
-| Fuzzy edits | at most 2 | `422` |
-| Verification time | one search's time budget | `422`, not charged, when no match was confirmed in time. Matches confirmed in time are served |
-| Relevance-ranked results | 120 | later results follow in keyword (BM25) order |
-| `offset` | 10,000 (70 in other modes) | `422` |
+| Limit | Value |
+|---|---|
+| Query length | 500 characters |
+| Terms, phrases and wildcards | 32 |
+| Parenthesis nesting | 8 levels |
+| Wildcard and fuzzy terms | 20 |
+| Characters before a wildcard | at least 3 |
+| Extra characters in `$N` or `***` | 1 to 5 |
+| N in `/N` and `+N` | 1 to 255 |
+| N in `atleastN( )` | 1 to 100 |
+| N in `atmN( )` | 1 to 99 |
+| Fuzzy edits | at most 2 |
+| `offset` | 10,000 (70 in other modes) |
+| Relevance-ranked results | 120 |
 
+Exceeding any of the first eleven limits returns `422`.
 Limits are refused, never truncated: a search that quietly dropped part of your expression would return a different set than the one you asked for.
+Two limits behave differently:
+
+- **Verification time** is one search's time budget. When no match was confirmed in time the search is a `422` and is not charged. Matches confirmed in time are served.
+- **Relevance-ranked results** are not refused. Later results follow in keyword (BM25) order.
 
 ## Coming from another service
 
@@ -523,7 +537,7 @@ If you already write terms-and-connectors searches on another service, these dif
 | A space means `OR` (or `AND`) | A space joins words into an **exact phrase**: `landlord tenant` is the phrase "landlord tenant" | `landlord OR tenant`, or `landlord AND tenant` |
 | `*` is one character | `*` is **any number** of letters or digits, `?` is exactly one, and `***` caps the count | `wom?n` for one character |
 | Lowercase connectors work | Word operators are **UPPERCASE** only. `landlord or tenant` is the three-word phrase "landlord or tenant", and `shall not` is the phrase it looks like | `landlord OR tenant` |
-| Plurals and word forms are added for you | No stemming: `damage` does not match `damages` | `damage*` |
+| Plurals and word forms are added for you | No stemming: `damage` does not match `damages` | `damage*`, or `damage OR damages` |
 | `AND` binds tighter than `OR` | `OR` binds tightest | parentheses: `(a AND b) OR c` |
 | `/s` and `/p` are word windows | They are real sentence and paragraph boundaries | `/N` for a word distance |
 | `!word` excludes, or is a wildcard | A leading `!` is refused as ambiguous | `NOT word`, or `word!` |
@@ -540,6 +554,28 @@ It names the problem and, where there is one, the **0-based character position**
 ```json
 { "detail": "Invalid Boolean query: Unclosed parenthesis at position 0" }
 ```
+
+### Failure and charging
+
+| Outcome | Cause | Charged | What to do |
+|---|---|---|---|
+| `422` | The expression could not be read. It is refused before any charge starts | No | Change the expression. The same expression returns the same `422` |
+| `422` | The expression is too heavy to verify within one search. No match could be confirmed in time | No, refunded if a charge had started | Narrow it with `state` or `corpusType`, or use fewer `/s` and `/p` connectors, then send it again |
+| `503` | The search backend is temporarily unavailable | No, refunded | Retry with backoff. Do not change the expression |
+| `200` with no results | A valid expression that matches nothing is a completed search | Yes | Loosen the expression or widen the scope, see [Recall](#recall-what-you-get-and-what-you-do-not) |
+
+### Common mistakes
+
+| Mistake | Example | Fix |
+|---|---|---|
+| Unclosed quote or parenthesis | `"trust fund`, `(a OR b` | Close it |
+| Missing operator before a parenthesis | `landlord tenant (deposit)` | Write `AND`, `OR`, `NOT`, `/s`, `/p` or `/N` between the operands |
+| Only a negation | `NOT foo` | Add a term to search for |
+| Wildcard too short | `ab* x` | Put at least 3 letters or digits before the first wildcard character |
+| Expression ends early | `a AND` | End with a term |
+| Leading `!` | `employer AND !criminal` | Write `NOT criminal` to exclude, or `criminal!` as a wildcard |
+
+<Accordion title="Every 422 message, with the query that causes it">
 
 | Query | `detail` |
 |---|---|
@@ -579,7 +615,11 @@ It names the problem and, where there is one, the **0-based character position**
 | `judge(smith)` | `Invalid Boolean query: 'judge' is a case-law field; a statute section has no such field. Available fields: title (the section heading), cite (the citation), text (the body) at position 0` |
 | `site:gov AND tax` | `Invalid Boolean query: 'site' is not a field of this search; scope with the request's filters instead. Available fields: title (the section heading), cite (the citation), text (the body) at position 0` |
 
+</Accordion>
+
 A query over 500 characters fails schema validation instead, with the `errors` array and its `loc` described in [Errors](/api-guide/errors).
+
+<Accordion title="Why an expression can be too heavy to verify">
 
 One `422` is about an expression's weight, not its syntax.
 Every result is verified against the section's full text, and multi-word phrases and proximity (`/s`, `/p`, `/N`, `atleastN( )`, wildcards inside a proximity pair) need that check to confirm each candidate.
@@ -589,57 +629,36 @@ When the check runs out of time before confirming any match, the search returns 
 { "detail": "This Boolean expression needs more time to verify than one search allows, so no result could be confirmed. Narrow it with `state` or `corpusType`, or use fewer sentence (/s) and paragraph (/p) connectors. You were not charged." }
 ```
 
-Retrying the same expression returns the same `422`.
-Narrow the scope with `state` or `corpusType`, or use fewer `/s` and `/p` connectors, and send it again.
-
-If the search backend is temporarily unavailable, the API returns `503` and does not charge. Retry with backoff.
+</Accordion>
 
 ## For AI agents
 
-Rules for writing an expression that does what you mean on the first call:
+Checklist for an expression that does what you mean on the first call:
 
-1. **Send `matchType: "boolean"`.** Without it the operators are searched as words, and the response carries `queryHint`.
-2. **Write operators in UPPERCASE**: `AND`, `OR`, `NOT`, `/s`, `/p`, `/5`. Lowercase `and`, `or`, `not` are words.
-3. **Always write `AND` between concepts.** A space makes a phrase: `landlord tenant` is the phrase "landlord tenant", not both words.
-4. **Quote multi-word terms** to make phrases explicit: `"security deposit"`.
-5. **Parenthesize every `OR` group** and any mix of operators. Precedence is `OR`, then `/N`, `/s`, `/p`, then `AND`, then `NOT`, which differs from textbook Boolean.
-6. **Prefer `/s` or `/p` to `AND`** when two ideas must be connected, not merely present in a long section.
-7. **Use wildcards for word forms**: there is no stemming, so `deposit` misses `deposits`. Write `deposit*`, with at least 3 characters before the `*`, and no more than 20 wildcard or fuzzy terms.
-8. **Exclude with `NOT word`.** Never write `!word`, which is refused.
-9. **Every expression needs one positive term.** `NOT x` alone is refused.
-10. **Scope with request fields, not query words.** Use `state`, `corpusType`, `code`, `titleNumber`, `yearFrom` and `yearTo`. Field functions exist only for `title( )`, `cite( )` and `text( )`.
-11. **On `422`, change the request before retrying.** Read `detail`: it names the problem and the character position, or says the expression was too heavy to verify within one search. In that case narrow it with `state` or `corpusType`, or use fewer `/s` and `/p` connectors. Sending the same request again returns the same `422`. A `422` costs nothing.
-12. **On `503`, retry with backoff.** It is a temporary backend outage and is not charged; do not change the expression.
-13. **Read `parsedQuery`** to confirm the grouping you intended, and log it rather than the raw string. If `queryWarnings` is present, fix the expression it names before relying on the results.
-14. **Page with `nextOffset` until `hasMore` is `false`** when you need every match, and read `totalMatches` first: when `totalMatchesExact` is `false` it is an upper bound. For the total alone, send the expression to `POST /us/statutes/count`.
-15. **An empty result means "no match in scope".** It does not show that no such law exists. Loosen (`/s` to `/p` to `AND`) or widen the scope before reporting a gap.
-16. **To fetch a known citation, do not use Boolean.** Call `GET /us/statutes/resolve`, or search the citation with `matchType: "any"`.
-17. **Quote `matchContexts`, not `excerpt`, to show why a section matched.** The highlights are the words that satisfied the expression; `excerpt` may not contain them. When `matchContexts` is absent, fetch the body before quoting.
+1. Send `matchType: "boolean"`. Without it the operators are searched as words, and the response carries `queryHint` ([Response fields](#response-fields)).
+2. Write operators in UPPERCASE: `AND`, `OR`, `NOT`, `/s`, `/p`, `/5` ([Operators](#operators)).
+3. Write `AND` between concepts, because a space makes a phrase ([Coming from another service](#coming-from-another-service)).
+4. Parenthesize every `OR` group and any mix of operators, because precedence differs from textbook Boolean ([Precedence](#precedence)).
+5. Read `parsedQuery` to confirm the grouping, log it rather than the raw string, and fix the expression any `queryWarnings` entry names ([Response fields](#response-fields)).
+6. Page with `nextOffset` until `hasMore` is `false` ([Recall](#recall-what-you-get-and-what-you-do-not)).
 
-Worked translations from a request to an expression:
+On `422`, change the request before retrying.
+On `503`, retry with backoff and leave the expression alone.
+Both are covered in [Failure and charging](#failure-and-charging).
 
-| The user asks for | Expression | `parsedQuery` |
-|---|---|---|
-| Trust fund penalty provisions, excluding section 6672 | `"trust fund" AND penalty NOT 6672` | `"trust fund" AND penalty NOT 6672` |
-| A landlord mentioned near a security deposit | `landlord /10 "security deposit"` | `landlord /10 "security deposit"` |
-| Negligence involving motor vehicles, any form of the word | `negligen* AND (motor OR vehicle)` | `negligen* AND (motor OR vehicle)` |
-| Employer or employee retaliation or discharge in one sentence | `(employer OR employee) /s (retaliat* OR discharg*)` | `(employer OR employee) /s (retaliat* OR discharg*)` |
-| Sections whose heading is about security deposits | `title("security deposit")` | `title("security deposit")` |
-| Sections that use "negligence" at least five times | `atleast5(negligence)` | `atleast5(negligence)` |
+<Accordion title="More rules for agents">
+
+1. **Quote multi-word terms** to make phrases explicit: `"security deposit"`.
+2. **Prefer `/s` or `/p` to `AND`** when two ideas must be connected, not merely present in a long section.
+3. **Every expression needs one positive term.** `NOT x` alone is refused.
+4. **Scope with request fields, not query words.** Use `state`, `corpusType`, `code`, `titleNumber`, `yearFrom` and `yearTo`. Field functions exist only for `title( )`, `cite( )` and `text( )`.
+5. **Quote `matchContexts`, not `excerpt`, to show why a section matched.** The highlights are the words that satisfied the expression; `excerpt` may not contain them. When `matchContexts` is absent, fetch the body before quoting.
+6. **Read `totalMatches` first** when you need every match: when `totalMatchesExact` is `false` it is an upper bound. For the total alone, send the expression to `POST /us/statutes/count`.
+
+</Accordion>
 
 ## Related
 
-<CardGroup cols={2}>
-  <Card title="How search works" href="/api-guide/concepts/search">
-    The hybrid ranking model and every matchType.
-  </Card>
-  <Card title="Search API reference" href="/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions">
-    Every request and response field of POST /us/statutes/search.
-  </Card>
-  <Card title="Best practices" href="/api-guide/best-practices">
-    Scoping, choosing a matchType, and reading the response.
-  </Card>
-  <Card title="Errors" href="/api-guide/errors">
-    Status codes and how to recover from each.
-  </Card>
-</CardGroup>
+- [How search works](/api-guide/concepts/search): the hybrid ranking model and every `matchType`.
+- [Search API reference](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions): every request and response field of `POST /us/statutes/search`.
+- [Best practices](/api-guide/best-practices): scoping, choosing a `matchType`, and reading the response.

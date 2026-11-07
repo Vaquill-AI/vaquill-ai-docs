@@ -1,38 +1,44 @@
 ---
 title: "Kotlin SDK"
 description: "The Vaquill Kotlin client for the US Data API: coroutines, Flow pagination, errors, retries, spend guard and webhooks"
+tag: "Preview"
 ---
+
+import RetryRules from '/snippets/retry-rules.mdx';
+import IdempotencyKeys from '/snippets/idempotency-keys.mdx';
+import ChargedCallRule from '/snippets/charged-call-rule.mdx';
 
 {/* Every sample on this page is copied from kotlin/README.md of vaquill-sdks. */}
 
 The Kotlin client is built for coroutines.
 Every call is a `suspend` function, every paginated endpoint is a `Flow`, and every model is a `kotlinx.serialization` data class.
-It covers all 42 operations of the US Data API.
+It covers the statutes, session law, watch, board, credit and pricing operations of the US Data API; the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) lists the operations without a method yet.
 It targets JVM 11 and newer, and depends on `kotlinx-serialization-json` and `kotlinx-coroutines-core`.
 Transport is the JDK `java.net.http.HttpClient`, so there is no HTTP engine to choose.
 For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
 
 <Warning>
-  Not yet published. The artifact is not on Maven Central, so the coordinates below do not resolve today.
-  Until the first release, build it locally and use `publishToMavenLocal`.
+  Preview. Not yet published to Maven Central, so build locally and use `publishToMavenLocal` until the first release.
 </Warning>
 
 ## Install
 
-Once the artifact is on Maven Central, the dependency will be:
-
-```kotlin
-dependencies {
-    implementation("ai.vaquill:vaquill-kotlin:0.1.0")
-}
-```
-
-Until then, build it locally from the [`kotlin/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/kotlin) of the repository.
+Build it locally from the [`kotlin/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/kotlin) of the repository.
 
 ```bash
 ./gradlew build
 ./gradlew publishToMavenLocal    # local check, no signing, no network upload
 ```
+
+<Accordion title="After release: Gradle coordinates">
+  The intended dependency does not resolve today.
+
+  ```kotlin
+  dependencies {
+      implementation("ai.vaquill:vaquill-kotlin:0.1.0")
+  }
+  ```
+</Accordion>
 
 Source: [`Vaquill-AI/vaquill-sdks`, `kotlin/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/kotlin) on GitHub.
 
@@ -140,15 +146,18 @@ try {
 
 ## Retries and idempotency
 
-* Up to `maxRetries` (default 2) retries with exponential backoff from 0.5 s to 8 s, scaled down by 0 to 25 percent jitter.
-* `retry-after-ms`, `Retry-After` seconds and `Retry-After` HTTP dates are honoured. A wait longer than 120 s raises the error immediately.
-* Retried: 408, 429, 5xx (except 501) and the codes the server marks retryable. Never retried: `insufficient_credits`, `daily_cap_exceeded` and any response with `retryable: false`.
+<RetryRules />
+
+Kotlin specifics:
+
+* 501 is not retried, and the codes the server marks retryable are retried.
 * Connect failures never reached the server, so they are always retried.
 * Other transport failures are ambiguous. They are retried only for GET and HEAD, or when the call carries an idempotency key.
 * A 5xx on a charged call is not retried unless the call has an idempotency key, because it may already have been billed.
 
-Charged calls get a fresh UUID `Idempotency-Key` automatically, reused on every retry of that call.
-Pass your own for a retry that spans processes.
+<IdempotencyKeys />
+
+Charged calls get a fresh UUID key automatically. Pass your own for a retry that spans processes.
 
 ```kotlin
 client.statutes.search("trespass", options = RequestOptions(idempotencyKey = "order-7731-search-1"))
@@ -161,7 +170,7 @@ The batch helpers suffix a caller key with `-1`, `-2` and so on for chunks after
 ## Spend guard
 
 `maxCredits` caps what this client, and clients derived from it, will spend.
-Charged calls are serialised by a coroutine `Mutex` while the cap is set, so the check, the call and the accounting are one step and the cap is exact even under heavy concurrency.
+Charged calls are serialised by a coroutine `Mutex` while the cap is set, so the cap is exact even under heavy concurrency. See [how the guard stays exact](/api-guide/sdks/overview#spend-guard).
 When the cap is reached the call throws `SpendGuardExceededException` and nothing is sent.
 Free calls are never blocked. `client.creditsSpent` shows the running total.
 
@@ -223,10 +232,13 @@ See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
 
 ## Versioning
 
-An operation is charged when the contract declares the `Idempotency-Key` header on it. That is 30 operations.
+<ChargedCallRule />
+
 Read the live prices with `client.pricing.get()`, which is free.
 The User-Agent is `vaquill-kotlin/0.1.0 kotlin/<version> java/<version> <os>`.
 A dedicated [Java SDK](/api-guide/sdks/java) also exists. For an endpoint newer than the SDK, use `client.rawRequest(method, path, query, body, charged)`.
 
-The release workflow, which signs the artifacts and uploads them to the Sonatype Central Portal, has never run.
-The first release may need fixes, and a release candidate tag is planned first.
+<Accordion title="Release workflow status">
+  The release workflow, which signs the artifacts and uploads them to the Sonatype Central Portal, has never run.
+  The first release may need fixes, and a release candidate tag is planned first.
+</Accordion>

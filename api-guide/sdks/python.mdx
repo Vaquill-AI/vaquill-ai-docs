@@ -3,6 +3,11 @@ title: "Python SDK"
 description: "Install the Vaquill Python client, resolve citations, search statutes and handle errors"
 ---
 
+import RetryRules from '/snippets/retry-rules.mdx';
+import IdempotencyKeys from '/snippets/idempotency-keys.mdx';
+import ChargedCallRule from '/snippets/charged-call-rule.mdx';
+import PriceTable from '/snippets/price-table.mdx';
+
 {/* Every sample on this page is copied from the README, docs/OPERATIONS.md or examples/ of vaquill-python. The test suite runs the three examples against a fake server. */}
 
 The Python client needs Python 3.11 or later. It depends on `httpx` and `pydantic`.
@@ -30,10 +35,10 @@ from vaquill import Vaquill
 
 client = Vaquill()  # reads VAQUILL_API_KEY; VAQUILL_BASE_URL overrides the host
 
-# 2 credits. Even an unresolved citation is charged: the answer is what you pay for.
+# Charged. Even an unresolved citation is charged: the answer is what you pay for.
 result = client.statutes.resolve("42 U.S.C. 1983")
 if result.resolved and result.section:
-    body = client.statutes.get_section_body(result.section.act_id)  # 6 credits
+    body = client.statutes.get_section_body(result.section.act_id)  # charged at the text price
     print(body.plain)
 ```
 
@@ -44,7 +49,7 @@ Search statutes.
 ```python
 hits = client.statutes.search(
     "statute of limitations for medical malpractice", state="ca"
-)  # 4 credits
+)  # charged at the search price
 for hit in hits.results:
     print(hit.citation, hit.section_title)
 print(hits.credits_consumed, client.credits_spent)
@@ -64,14 +69,18 @@ Every method also accepts `timeout`, `max_retries`, `idempotency_key` and `heade
 | `client.credits` | `balance()` |
 | `client.pricing` | `get()`, the credit price of every endpoint |
 
-The SDK covers 42 operations. Each method is the `operationId` with the namespace noun removed, so `search_statutes` is `statutes.search` and `get_session_law_body` is `session_laws.get_body`.
+Each method is the `operationId` with the namespace noun removed, so `search_statutes` is `statutes.search` and `get_session_law_body` is `session_laws.get_body`.
 
 ## Which calls cost credits
 
-A call is charged when the API declares the `Idempotency-Key` header on its operation. That is 30 of the 42 operations.
-Free: `statutes.coverage`, `boards.list`, every watch operation except `watches.change_diff` (`create`, `list`, `update`, `delete`, `test`, `changes`, `deliveries`), `credits.balance`, `pricing.get` and the rulemaking coverage read.
-Prices are not hard-coded in the SDK. `client.pricing.get()` is free and returns the live price list.
+<ChargedCallRule />
+
+Free: `statutes.coverage`, `boards.list`, every watch operation except `watches.change_diff` (`create`, `list`, `update`, `delete`, `test`, `changes`, `deliveries`), `credits.balance` and `pricing.get`.
+The [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) has the full charged and free table and the operations that have no method yet.
 Some charged calls return `credits_consumed` of 0 (for example a body that is not held), so read the figure from the response.
+`extract_citations` costs 0 credits when `resolve=False`.
+
+<PriceTable />
 
 ## Credits and the spend guard
 
@@ -84,7 +93,7 @@ client.pricing.get()  # free: the live price list
 ```
 
 The guard checks what is already spent before a charged call, not the cost of the next call. `credits_spent` adds each response's `credits_consumed`.
-The guard is exact. While `max_credits` is set, charged calls run one at a time, from the check to the moment their credits are counted, so concurrent threads or tasks cannot all pass the check and overshoot the cap. Without `max_credits`, calls keep full concurrency.
+The guard is exact under concurrent threads and tasks. See [how the guard stays exact](/api-guide/sdks/overview#spend-guard).
 
 Async is the same with `AsyncVaquill` and `await`.
 
@@ -129,12 +138,12 @@ The message of an `UnprocessableEntityError` (422) ends with the first validatio
 
 ## Retries and idempotency
 
-- Retried: 408, 429 and 5xx, plus 409 only for `idempotency_in_progress`. Connection errors and timeouts are retried when it is safe.
-- Backoff starts at 0.5 s, doubles to an 8 s cap and is scaled down by 0 to 25 percent jitter. `retry-after-ms` wins over `Retry-After`, which wins over the body's `retryAfterSeconds`. A wait above 120 s is not retried. The default is 2 retries; `max_retries=0` turns them off.
-- Never retried: `insufficient_credits` (402), `daily_cap_exceeded`, any other 4xx, and anything the server marks `retryable: false`.
-- Each charged call sends one generated `Idempotency-Key`, reused on every retry of that call. When the server honours the key, an ambiguous failure cannot charge twice. Pass `idempotency_key="..."` (16 to 255 visible ASCII characters) to supply your own.
-- With `idempotency_keys=False` on the client, or `with_options(idempotency_keys=False)`, charged calls are not retried after a timeout, connection error or 5xx, because they could charge twice. A 429 is still retried, since it is refused before any work.
-- Free `POST`s without a key (`watches.create`, `watches.test`) follow the same rule, so a retry cannot create a second watch.
+<RetryRules />
+
+<IdempotencyKeys />
+
+- Set `max_retries=0` to turn retries off. Pass `idempotency_key="..."` (16 to 255 visible ASCII characters) to supply your own key.
+- With `idempotency_keys=False` on the client, or `with_options(idempotency_keys=False)`, charged calls are not retried after a timeout, connection error or 5xx. The [SDKs overview](/api-guide/sdks/overview#idempotency) has the details, including free `POST`s such as `watches.create`.
 - Every top-level response has `credits_consumed`, `request_id` and `idempotent_replayed`. A replayed response was stored and nothing new was charged.
 
 ## Pagination
@@ -148,7 +157,7 @@ The message of an `UnprocessableEntityError` (422) ends with the first validatio
 ```python
 pager = client.statutes.iter_search(
     "negligence", state="ny", limit=10, max_pages=3
-)  # at most 12 credits
+)  # at most 3 charged pages
 for hit in pager:
     print(hit.citation)
 print(pager.truncated)  # True when the guard stopped it with more available
@@ -186,8 +195,6 @@ All three are charged. Each exists on `AsyncVaquill` with `await`.
 ## Argument checks
 
 A path argument that is empty, `.` or `..` raises `ValueError` before any request, because a URL parser would resolve it to another endpoint.
-`extract_citations` costs 0 credits when `resolve=False`.
-
 ## Raw responses
 
 ```python
@@ -232,7 +239,7 @@ except WebhookVerificationError:
 
 `verify_webhook` checks the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance. It accepts several `v1` signatures and a list of secrets, so you can rotate a secret without downtime. A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes. It raises `WebhookVerificationError` on any signature failure.
 A `whsec_` secret must be valid base64.
-From the first release after 0.2.0, one that is not raises `ValueError` instead of being used as plain text (0.2.0 still uses the text).
+From 0.2.1, one that is not raises `ValueError` instead of being used as plain text (0.2.0 used the text).
 An empty or whitespace-only secret (or `whsec_` with no key) raises `ValueError` in every version, so an unset environment variable cannot verify a forged event.
 
 <Warning>

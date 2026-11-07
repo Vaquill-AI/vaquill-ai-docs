@@ -1,38 +1,79 @@
 ---
-title: "Law Change Alerts"
+title: "Law change alerts"
 description: "Subscribe to a jurisdiction or corpus and get a webhook or email when it changes, with the exact sections that changed"
 ---
 
-Corpus data updates on its own refresh cadence, and every board reports it in `cadence`: daily for the eCFR and Federal Register agency rules, weekly for the US Code and federal local court rules, monthly for most other sources including agency guidance, Federal Register notices, Statutes at Large and the state regulations, court rules and constitutions, and monthly or quarterly for state codes (Arkansas, Georgia, Tennessee and the US Virgin Islands are quarterly). Law Change Alerts let you subscribe to a **board** (a tracked source, identified by `corpusType` + `state`) and get notified automatically whenever it refreshes with real changes, instead of polling on your own schedule.
-
+A **board** is a tracked source, identified by `corpusType` and `state`. Subscribe to one and we notify you by webhook or email whenever it refreshes with real changes, instead of you polling on your own schedule.
 Every alert names the sections that changed, and for any amended section you can fetch the old text next to the new text.
 
-Every path below is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header. Every endpoint in this guide is free except one: [`GET /watches/{id}/changes/{changeId}/diff`](#read-the-diff-for-one-change) is metered, because it reconstructs both sides of the text. The rest are authenticated and rate-limited but not credit-metered.
+Start with `GET /boards`, then `POST /watches`.
 
-<Warning>
-  **Two plan limits apply to watches.**
+Every path below is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header.
+Free routes still count against your rate limit.
 
-  **Webhook delivery requires the Business plan.** Creating or repointing a watch whose `channel` is `webhook` or `both` returns **403** on any other plan. Email delivery is open to every plan, so `channel: "email"` always works.
+| Endpoint | Purpose | Credits |
+|---|---|---:|
+| `GET /boards` | List the boards you can watch | Free |
+| `GET /watches` | List your watches | Free |
+| `POST /watches` | Create a watch | Free |
+| `PATCH /watches/{watchId}` | Pause, resume or rotate a destination | Free |
+| `DELETE /watches/{watchId}` | Remove a watch | Free |
+| `POST /watches/{watchId}/test` | Fire a one-off test delivery | Free |
+| `GET /watches/{watchId}/deliveries` | Webhook delivery history | Free |
+| `GET /watches/{watchId}/changes` | The sections a board added, amended or removed | Free |
+| `GET /watches/{watchId}/changes/{changeId}/diff` | The section's text before and after one change. See [Read the diff for one change](#read-the-diff-for-one-change) | 4 |
 
-  **Watch count is capped at 3** outside Business, and at 100 on Business. Exceeding it returns **429**. Delete a watch before creating another, or upgrade.
-</Warning>
+Only the diff is metered, because it reconstructs both sides of the text.
+
+<Accordion title="How often each source refreshes">
+Corpus data updates on its own refresh cadence, and every board reports it in `cadence`: daily for the eCFR and Federal Register agency rules, weekly for the US Code and federal local court rules, monthly for most other sources including agency guidance, Federal Register notices, Statutes at Large and the state regulations, court rules and constitutions, and monthly or quarterly for state codes (Arkansas, Georgia, Tennessee and the US Virgin Islands are quarterly).
+See [Which statute cadence applies where](/api-guide/coverage#which-statute-cadence-applies-where).
+</Accordion>
+
+Two plan limits apply to watches:
+
+| Plan | Webhook delivery | Watches |
+|---|---|---|
+| Business | Yes | Up to 100 |
+| Every other plan | No. Creating or repointing a watch whose `channel` is `webhook` or `both` returns **403**. Email works on every plan | Up to 3 |
+
+Exceeding the watch cap returns **429**. Delete a watch before creating another, or upgrade.
 
 ## Boards and watches
 
-A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`. Watching a board does not change how often it refreshes. Read `cadence` as the declared staleness window a board is alerted against, not as a ceiling on how often it is re-pulled: nearly every state statute board declares `monthly` (Arkansas, Georgia, Tennessee and the US Virgin Islands declare `quarterly`). Compare `lastRetrievedAt` against `cadence` to see how recently a source was pulled, and see [Which statute cadence applies where](/api-guide/coverage#which-statute-cadence-applies-where).
+A **board** is a source you can watch: `GET /boards` lists every one, each with a `corpusType`, an optional `state` (omitted for federal boards), a human `label`, and its refresh `cadence`.
+Watching a board does not change how often it refreshes.
+Compare `lastRetrievedAt` against `cadence` to see how recently a source was pulled.
 
-Not every jurisdiction we carry is watchable. Seven state statute jurisdictions (Delaware, the District of Columbia, Hawaii, Mississippi, New Mexico, North Carolina and Utah) are covered and queryable but have their automated re-pull held, so they are absent from `GET /boards` rather than listed as idle. A board is switched on only once its refresh has been shown to work. `GET /boards` lists what can be watched, which is narrower than what we cover. For coverage, use `GET /us/statutes/coverage`.
+<Accordion title="What cadence means">
+Read `cadence` as the declared staleness window a board is alerted against, not as a ceiling on how often it is re-pulled: nearly every state statute board declares `monthly` (Arkansas, Georgia, Tennessee and the US Virgin Islands declare `quarterly`).
+</Accordion>
+
+Not every jurisdiction we carry is watchable, so `GET /boards` lists what can be watched, which is narrower than what we cover. For coverage, use `GET /us/statutes/coverage`.
+
+<Accordion title="Jurisdictions held back from boards">
+Seven state statute jurisdictions (Delaware, the District of Columbia, Hawaii, Mississippi, New Mexico, North Carolina and Utah) are covered and queryable but have their automated re-pull held, so they are absent from `GET /boards` rather than listed as idle.
+A board is switched on only once its refresh has been shown to work.
+This list can change, so `GET /boards` is the live answer.
+</Accordion>
 
 A **watch** is your subscription to one board, on one or more channels (webhook, email, or both). By default a watch covers the whole board; see [Narrow a watch to a citation](#narrow-a-watch-to-a-citation) to follow one title or part instead.
 
-Two fields on each board tell you whether narrowing is available. **`scopable`** is `true` when `POST /watches` accepts a `scope` for that source. It is `false` for sources whose documents are not citations, such as the Federal Register, where an item is a numbered document rather than a section of a code, so there is no title or part to narrow by. **`scopeBrowseCorpus`** is the `corpusType` to pass to [`GET /us/statutes/divisions`](/api-reference/us-statutes/browse-the-statutory-hierarchy) if you want to enumerate a source's titles, chapters and parts. The vocabulary differs from the board's own `corpusType` on purpose: a board is `cfr`, and `/us/statutes/divisions` wants `CFR`. When `scopable` is `true` and `scopeBrowseCorpus` is `null`, narrowing works but there is no endpoint that lists that source's hierarchy for you.
+Two fields on each board tell you whether narrowing is available: `scopable` is `true` when `POST /watches` accepts a `scope` for that source, and `scopeBrowseCorpus` is the `corpusType` that lists its titles, chapters and parts.
 
-<CodeGroup>
+<Accordion title="scopable and scopeBrowseCorpus">
+**`scopable`** is `false` for sources whose documents are not citations, such as the Federal Register, where an item is a numbered document rather than a section of a code, so there is no title or part to narrow by.
+**`scopeBrowseCorpus`** is the `corpusType` to pass to [`GET /us/statutes/divisions`](/api-reference/us-statutes/browse-the-statutory-hierarchy) if you want to enumerate a source's titles, chapters and parts.
+The vocabulary differs from the board's own `corpusType` on purpose: a board is `cfr`, and `/us/statutes/divisions` wants `CFR`.
+When `scopable` is `true` and `scopeBrowseCorpus` is `null`, narrowing works but there is no endpoint that lists that source's hierarchy for you.
+</Accordion>
+
 ```bash cURL
 curl "https://api.vaquill.ai/api/v1/boards?limit=500&offset=0" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
+<Accordion title="Python pager for all boards">
 ```python Python
 import requests
 
@@ -54,12 +95,10 @@ def all_boards():
 for b in all_boards():
     print(b["corpusType"], b.get("state"), b["label"], b["cadence"])
 ```
-</CodeGroup>
+</Accordion>
 
 <Warning>
-  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There were 312 boards on 2026-11-04, so the default covers the whole registry right now, but nothing guarantees that. Read `data.total` and `data.hasMore` and page on `offset`, as above.
-
-  `GET /boards` is free, so paging it costs nothing but a request against your rate limit.
+  **`GET /boards` truncates silently once the registry passes 500.** `limit` defaults to 500 and 500 is also the maximum, so a call that never passes `offset` returns the first 500 boards and no error. There were 312 boards on 2026-11-04, so the default covers the whole registry right now. Read `data.total` and `data.hasMore` and page on `offset`.
 </Warning>
 
 Filter instead of paging where you can: `corpusType` and `state` both narrow the list server-side. Pass `state=federal` for the boards that have no state (USC, eCFR, the Federal Register), which is not the same as omitting `state`.
@@ -123,6 +162,7 @@ watch = resp.json()["data"]
 - **`webhookSecret`** (optional): stored encrypted, never returned. When set, every delivery is HMAC-signed (see below).
 - **`webhookAuth`** (optional): a credential we send on every delivery, so your gateway can authenticate us. See [Authenticating our deliveries](#authenticating-our-deliveries).
 - `webhookUrl` is validated against an SSRF blocklist (loopback, private, and link-local ranges, plus cloud metadata endpoints) at creation and again on every dispatch.
+- **`corpusType`** is one of the values `GET /boards` can return for a watchable board, and the API reference lists them as an enum. Send the board key (`state_regulation`) or the search-style token for the same body of law (`REGULATION` becomes `state_regulation`, `USC` becomes `usc`). Case does not matter. Any other value is a `422` that lists the allowed values. `constitution`, `executive_action`, `agency_action`, `cfr_annual`, `usc_annual`, `federal_rules_annual`, `federal_rules_proposed`, `us_treaty`, `state_session_law`, `state_register` and `federal_bill` cannot be watched.
 - `404` if the `corpusType`/`state` pair does not match a real, enabled board. `409` if you already have a watch on that board, for that channel, with that same `scope`. Two different scopes on the same board and channel are two separate watches, which is how you follow several parts at once.
 
 `GET /watches` lists your own watches. `PATCH /watches/{watchId}` pauses (`isActive: false`), resumes, or rotates a destination without losing history. `DELETE /watches/{watchId}` removes it.
@@ -252,15 +292,14 @@ Headers:
 Body:
 {
   "event": "board.updated",
-  "corpusType": "state",
-  "state": "wa",
-  "boardLabel": "Washington statutes",
+  "corpusType": "cfr",
+  "boardLabel": "Code of Federal Regulations",
   "rowsAdded": 4,
   "rowsUpdated": 2,
   "rowsDeleted": 0,
   "refreshLogId": 4412,
   "changes": [
-    {"changeKind": "amended", "actId": "CFR_T33_P100_S100_901", "citation": "33 C.F.R. § 100.901 (2026)", "title": "Special local regulations"}
+    {"changeKind": "amended", "actId": "CFR_T21_P314_S314_50", "citation": "21 CFR 314.50", "title": "Content and format of an NDA"}
   ],
   "changesOverflowCount": 0,
   "deliveryId": "9f2b1e0a-...:4412",
@@ -331,14 +370,13 @@ changes = requests.get(
       {
         "id": 91,
         "refreshLogId": 4412,
-        "corpusType": "state_regulation",
-        "state": "wa",
+        "corpusType": "cfr",
         "changeKind": "amended",
-        "actId": "CFR_T33_P100_S100_901",
-        "citation": "33 C.F.R. § 100.901 (2026)",
-        "title": "Special local regulations",
+        "actId": "CFR_T21_P314_S314_50",
+        "citation": "21 CFR 314.50",
+        "title": "Content and format of an NDA",
         "detectedAt": "2026-08-07T04:10:00Z",
-        "hasDiff": true
+        "hasDiff": false
       }
     ]
   },
@@ -348,20 +386,16 @@ changes = requests.get(
 
 ### Polling
 
-You can poll this endpoint as often as you like, including alongside a webhook or email watch.
-
-<Note>
-  There is no "last checked" state to interfere with. Notifications fire when a corpus refresh completes, not by comparing against a stored watermark, and this endpoint writes nothing. Polling cannot suppress, advance, or double-fire a delivery. (`lastNotifiedAt` on a watch records the outcome of the last delivery attempt, for your visibility. It is never an input to what gets sent.)
-</Note>
+You can poll this endpoint as often as you like, including alongside a webhook or email watch: it writes nothing, and notifications fire when a corpus refresh completes rather than against a stored watermark, so polling cannot suppress, advance or double-fire a delivery. (`lastNotifiedAt` on a watch records the outcome of the last delivery attempt, for your visibility. It is never an input to what gets sent.)
 
 To fetch only what is new, pass `sinceId` with the `meta.cursor` from your previous page. Ids are a monotonic sequence, so this is exact: it cannot skip a change or return one twice, and it is immune to clock skew.
 
-<CodeGroup>
 ```bash cURL
 curl "https://api.vaquill.ai/api/v1/watches/{watchId}/changes?sinceId=91&order=asc&limit=200" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
+<Accordion title="Python poller">
 ```python Python
 cursor = load_cursor()  # highest id you have processed, or None
 
@@ -383,27 +417,24 @@ while True:
     if not page["meta"]["hasMore"]:
         break
 ```
-</CodeGroup>
+</Accordion>
 
 | Parameter | Notes |
 | --- | --- |
 | `sinceId` | Return changes with an `id` **greater** than this. The cursor to build on, for walking forward. |
 | `beforeId` | Return changes with an `id` **less** than this. How you page backwards into history. |
-| `since` | ISO-8601 timestamp, strictly after. Combines with `sinceId`. See below. |
+| `since` | ISO-8601 timestamp, strictly after. Combines with `sinceId`. Coarser than `sinceId`, because one refresh writes many rows at the same instant, but it is what you want if all you kept was a `detectedAt` from a webhook body. |
 | `changeKind` | `added`, `amended`, or `removed`. Repeat for several: `?changeKind=added&changeKind=amended`. |
-| `order` | `desc` (default) for a recent-activity view; `asc` when catching up from a cursor. |
-| `limit` | 1 to 200, default 50. |
-
-`since` is coarser than `sinceId`, because one refresh writes many rows at the same instant, but it is what you want if all you kept was a `detectedAt` from a webhook body.
-
-`meta.hasMore` is true when the page filled to `limit`, so keep calling with the new cursor until it is false. Use `order=asc` while catching up: walking forward means a page that hits `limit` leaves the gap at a known end.
+| `order` | `desc` (default) for a recent-activity view; `asc` when catching up from a cursor. Walking forward with `asc` means a page that hits `limit` leaves the gap at a known end. |
+| `limit` | 1 to 200, default 50. `meta.hasMore` is true when the page filled to `limit`, so keep calling with the new cursor until it is false. |
 
 ### Paging backwards with beforeId
 
-`sinceId` only walks forward from a cursor you already hold, so it does not page back into earlier history. `beforeId` is how you backfill the history captured before you created the watch.
-
+`sinceId` only walks forward from a cursor you already hold. `beforeId` is how you backfill the history captured before you created the watch.
 Keep `order=desc` (the default), and pass the **lowest** `id` you have seen as `beforeId` to fetch the page behind it. Repeat until a page comes back empty.
+`meta.cursor` is always the **highest** `id` on the page, which is what you want for `sinceId` and not for `beforeId`, so take the lowest id from the page yourself.
 
+<Accordion title="Python backfill">
 ```python Python
 before = None
 history = []
@@ -431,31 +462,30 @@ while True:
     if not page["meta"]["hasMore"]:
         break
 ```
+</Accordion>
 
-<Note>
-  `meta.cursor` is always the **highest** `id` on the page, which is what you want for `sinceId` and not for `beforeId`. Compute the lowest id from the page yourself when walking backwards.
-</Note>
+Running both channels is a reasonable design: take the webhook as the low-latency path, and poll on a slow timer as a backstop for deliveries your endpoint missed while it was down. Dedup on the change `id`, or on `deliveryId` for whole webhook payloads.
 
-<Tip>
-  Running both channels is a reasonable design: take the webhook as the low-latency path, and poll on a slow timer as a backstop for deliveries your endpoint missed while it was down. Dedup on the change `id`, or on `deliveryId` for whole webhook payloads.
-</Tip>
+A change can be retracted, so treat an `id` you hold that no longer appears in the feed as withdrawn.
 
-<Warning>
-  A change can be **retracted**. When we find that a recorded change was not a change in the law (for example a refresh that mislabelled content it was storing for the first time), we remove it from the record: its `id` stops appearing in `GET /watches/{id}/changes`, and its diff returns `404`. Ids are never reused.
-  If you keep a local copy, treat an `id` you hold that no longer appears as withdrawn, rather than as an error on your side.
-</Warning>
+<Accordion title="Retracted changes">
+When we find that a recorded change was not a change in the law (for example a refresh that mislabelled content it was storing for the first time), we remove it from the record: its `id` stops appearing in `GET /watches/{id}/changes`, and its diff returns `404`. Ids are never reused.
+If you keep a local copy, treat an `id` you hold that no longer appears as withdrawn, rather than as an error on your side.
+</Accordion>
 
-When `hasDiff` is `true`, call `GET /watches/{watchId}/changes/{changeId}/diff` for the section's text before and after that specific change. **This is the one metered call in this guide, and it is charged whether or not both sides are available**, so branch on `hasDiff` before spending on it.
+### Read the diff for one change
+
+When `hasDiff` is `true`, call `GET /watches/{watchId}/changes/{changeId}/diff` for the section's text before and after that specific change. **It costs 4 credits, charged whether or not both sides are available**, so branch on `hasDiff` before spending on it.
 
 <CodeGroup>
 ```bash cURL
-curl https://api.vaquill.ai/api/v1/watches/{watchId}/changes/91/diff \
+curl https://api.vaquill.ai/api/v1/watches/{watchId}/changes/118/diff \
   -H "Authorization: Bearer vq_key_..."
 ```
 
 ```python Python
 diff = requests.get(
-    f"https://api.vaquill.ai/api/v1/watches/{watch_id}/changes/91/diff",
+    f"https://api.vaquill.ai/api/v1/watches/{watch_id}/changes/118/diff",
     headers={"Authorization": "Bearer vq_key_..."},
 ).json()["data"]
 
@@ -468,7 +498,7 @@ if diff["hasBefore"] and diff["hasAfter"]:
 ```json
 {
   "data": {
-    "changeId": 91,
+    "changeId": 118,
     "changeKind": "amended",
     "beforeText": "An application for approval of a new drug...",
     "afterText": "An application for approval of a new drug or amended new drug...",
@@ -480,17 +510,14 @@ if diff["hasBefore"] and diff["hasAfter"]:
 ```
 
 <Note>
-  `hasDiff` (on the change) and `hasBefore`/`hasAfter` (on the diff) can legitimately be `false`: an `added` change has nothing to diff against, and a handful of sources track only *that* a section changed, not the text itself (see below). Check the flags rather than assuming both sides are always present.
+  `hasDiff` (on the change) and `hasBefore`/`hasAfter` (on the diff) can be `false`: an `added` change has nothing to diff against, and `corpusType=cfr` (and any change from before this feature shipped) reports real `added`/`amended`/`removed` events but never a diff. Every other corpus, including every state corpus, reports a real diff for every `amended` change. Check the flags rather than assuming both sides are present.
 </Note>
-
-<Warning>
-  A small number of sources (`corpusType=cfr`, and any change from before this feature shipped) report real `added`/`amended`/`removed` events but never a diff. `hasDiff` stays `false` for them by design. Everything else, including every state corpus, reports a real diff for every `amended` change.
-</Warning>
 
 ## Pending Federal Rules amendments
 
 A watch on a Federal Rule (`corpusType=federal_rules`) also fires when a pending amendment to that rule moves a stage.
 The rule's own text has not changed on that day, so read these events differently from an ordinary change.
+The shape of such an event:
 
 ```json
 {
@@ -500,8 +527,6 @@ The rule's own text has not changed on that day, so read these events differentl
   "relatedActId": "FRULES_FRCP_R26_P2027"
 }
 ```
-
-The values are placeholders that show the shape, not a recorded event.
 
 | Field | Meaning |
 |---|---|
@@ -516,19 +541,10 @@ Pending amendments are re-read weekly.
 `FEDERAL_RULES_ANNUAL` and `FEDERAL_RULES_PROPOSED` have no boards of their own: watch the rule.
 See [Federal coverage](/api-guide/coverage/federal).
 
-## Related
+## See also
 
-<CardGroup cols={2}>
-  <Card title="Monitor corpus coverage" href="/api-guide/recipes/coverage-monitoring">
-    A DIY alternative for detecting when a jurisdiction gains an entirely new corpus, rather than a section-level change within one you already watch.
-  </Card>
-  <Card title="Errors" href="/api-guide/errors">
-    How error responses are shaped, and what each status code means.
-  </Card>
-  <Card title="Coverage" href="/api-guide/coverage">
-    The jurisdiction and corpus matrix you're choosing a board from.
-  </Card>
-  <Card title="SDKs" href="/api-guide/sdks/overview">
-    The official SDKs create watches and verify webhook signatures for you.
-  </Card>
-</CardGroup>
+- [Monitor corpus coverage](/api-guide/recipes/coverage-monitoring): a DIY way to detect when a jurisdiction gains an entirely new corpus, rather than a section-level change within one you already watch.
+- [Errors](/api-guide/errors): how error responses are shaped, and what each status code means.
+- [Coverage](/api-guide/coverage): the jurisdiction and corpus matrix you are choosing a board from.
+- [SDKs](/api-guide/sdks/overview): the official SDKs create watches and verify webhook signatures for you.
+- [State session laws](/api-guide/session-laws): the session-law registry has its own `GET /us/session-laws/changes` feed.

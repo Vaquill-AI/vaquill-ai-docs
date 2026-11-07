@@ -3,9 +3,10 @@ title: "Authentication"
 description: "API key authentication for the Vaquill API"
 ---
 
-The Vaquill API gives you programmatic access to US primary law: the US Code and CFR, statutes for all 50 states plus DC and Puerto Rico, administrative regulations for all 50 states plus DC and Puerto Rico, the US and state constitutions, court rules, the Federal Register, agency guidance, and executive orders. Use it to power statute lookup and search in your own product or internal tools.
+Authenticate every request with a `vq_key_` bearer key.
+For what the API covers, see the [API overview](/api-guide/overview).
 
-## API Keys
+## API keys
 
 All requests require an API key in the `Authorization` header:
 
@@ -15,69 +16,33 @@ Authorization: Bearer vq_key_your_api_key_here
 
 Keys use the `vq_key_` prefix and are tied to your account.
 
-## Get Your API Key
+## Get your API key
 
 <Steps>
   <Step title="Sign in">
     Go to [app.vaquill.ai/settings](https://app.vaquill.ai/settings).
   </Step>
   <Step title="Create a key">
-    Under **API Keys**, click **Create API Key**. Copy the key immediately. It won't be shown again.
+    Under **API Keys**, click **Create API Key**. Copy the key now and store it somewhere safe.
+    The dashboard can reveal keys created on or after 2026-08-03 again, but treat the key as a secret either way.
   </Step>
 </Steps>
 
-<Tip>
-  To test a key without writing code, fork the public [Postman collection](https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd?action=share&source=copy-link&creator=52997016) and set the key as the bearer token.
-</Tip>
+## Example request
 
-## Example Requests
-
-<CodeGroup>
-```bash cURL
+```bash
 curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{"query": "data breach notification"}'
 ```
 
-```python Python
-import requests
+The same call in Python and JavaScript is in the [Quickstart](/api-guide/quickstart).
 
-response = requests.post(
-    "https://api.vaquill.ai/api/v1/us/statutes/search",
-    headers={
-        "Authorization": "Bearer vq_key_your_api_key_here",
-        "Content-Type": "application/json"
-    },
-    json={"query": "data breach notification"}
-)
-```
+## Errors
 
-```javascript JavaScript
-const response = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
-  method: "POST",
-  headers: {
-    "Authorization": "Bearer vq_key_your_api_key_here",
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ query: "data breach notification" })
-});
-```
-
-```go Go
-req, _ := http.NewRequest("POST", "https://api.vaquill.ai/api/v1/us/statutes/search", body)
-req.Header.Set("Authorization", "Bearer vq_key_your_api_key_here")
-req.Header.Set("Content-Type", "application/json")
-```
-</CodeGroup>
-
-## Error Codes
-
-| Code | Meaning |
-|------|---------|
-| `401` | Invalid or missing API key |
-| `402` | Payment required. Check your account dashboard |
-| `429` | Rate limit exceeded |
+`401` is an invalid or missing key, `402` is payment required (check your account dashboard), and `429` is a rate limit.
+See [Errors](/api-guide/errors) for how to recover from each.
 
 <Warning>
   Never expose your API key in client-side code or public repositories. If compromised, revoke it from your [dashboard](https://app.vaquill.ai/settings) and generate a new one immediately.
@@ -90,23 +55,23 @@ Active keys are capped per account. Creating one past the cap fails.
 | Plan | Active keys |
 |------|------------:|
 | Vaquill API Business | 5 |
-| Every other plan, including Vaquill API Pro | 2 |
+| All other plans | 2 |
 
 The cap of 2 fills up fast, because the console's Playground mints a key of its own when it cannot reuse one. An account with one integration key and a Playground key is already at the cap.
 
 Revoking a key frees its slot immediately.
 The cap is only checked when a key is created or reactivated, so lowering a plan never revokes a key you already hold.
 
-## Rotating a key
+<Accordion title="Rotating a key">
+  On Business, you can rotate without downtime: create the new key, deploy it, then revoke the old one. Five slots leave room to overlap.
 
-On Business, you can rotate without downtime: create the new key, deploy it, then revoke the old one. Five slots leave room to overlap.
+  On any other plan sitting at 2 keys, you cannot create the replacement first.
+  Revoke the old key, then create the new one and deploy it. For a short window the old key is dead and the new one is not yet live, so do the revoke and the deploy close together, or upgrade if you need an overlap.
 
-On any other plan sitting at 2 keys, you cannot create the replacement first.
-Revoke the old key, then create the new one and deploy it. For a short window the old key is dead and the new one is not yet live, so do the revoke and the deploy close together, or upgrade if you need an overlap.
-
-<Warning>
-  A revoked key stops working immediately. If you are at the cap, confirm your deploy pipeline is ready before you revoke, because there is no free slot to hold the old key open while you roll out.
-</Warning>
+  <Warning>
+    A revoked key stops working immediately, and at the cap there is no free slot to hold the old key open while you roll out. Confirm your deploy pipeline is ready before you revoke.
+  </Warning>
+</Accordion>
 
 ## Related
 

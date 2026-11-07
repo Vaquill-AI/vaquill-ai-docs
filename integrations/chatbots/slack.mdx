@@ -129,14 +129,11 @@ The main environment variables are below. [The repo's `.env.example`](https://gi
 | `SLACK_BOT_TOKEN` | Yes | - | Bot User OAuth Token (`xoxb-...`) |
 | `SLACK_SIGNING_SECRET` | Yes | - | App signing secret from Basic Information |
 | `SLACK_APP_TOKEN` | No | - | App-level token (`xapp-...`); presence enables Socket Mode |
-| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
-| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | API base URL |
-| `VAQUILL_MODE` | No | `standard` | RAG tier: `standard` or `deep` |
-| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
-| `REDIS_URL` | No | - | Enables distributed rate limiting |
 | `RATE_LIMIT_PER_USER` | No | `20` | Max requests per user per minute |
 | `RATE_LIMIT_PER_CHANNEL` | No | `100` | Max requests per channel per hour |
 | `PORT` | No | `3000` | HTTP server port (HTTP mode only) |
+
+The Vaquill variables (`VAQUILL_API_KEY`, `VAQUILL_API_URL`, `VAQUILL_MODE`, `VAQUILL_COUNTRY_CODE`) and `REDIS_URL` are in the [shared bot settings](/integrations/chatbots#shared-bot-settings).
 
 ## Commands
 
@@ -177,22 +174,22 @@ docker run -d --name vaquill-slack-bot \
 
 ### Cloud hosts
 
-<CardGroup cols={2}>
-  <Card title="Railway">
+<AccordionGroup>
+  <Accordion title="Railway">
     Push the repo, set env vars in the Railway dashboard. Railway provisions an HTTPS domain you can paste into Slack's Request URLs.
-  </Card>
-  <Card title="Render">
+  </Accordion>
+  <Accordion title="Render">
     Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
 
     The free tier sleeps after 15 minutes, so slash commands may time out on cold starts.
-  </Card>
-  <Card title="Fly.io">
+  </Accordion>
+  <Accordion title="Fly.io">
     `fly launch`, then `fly secrets set ...` for each env var, then `fly deploy`.
-  </Card>
-  <Card title="VPS + nginx">
+  </Accordion>
+  <Accordion title="VPS + nginx">
     Reverse-proxy port 3000 behind TLS (Let's Encrypt or Cloudflare). Use Socket Mode to skip the proxy entirely.
-  </Card>
-</CardGroup>
+  </Accordion>
+</AccordionGroup>
 
 For production, run in HTTP mode (drop `SLACK_APP_TOKEN`) behind HTTPS and update **Event Subscriptions**, **Slash Commands**, and **Interactivity** Request URLs to `https://your-domain.com/slack/events`.
 
@@ -207,8 +204,9 @@ For production, run in HTTP mode (drop `SLACK_APP_TOKEN`) behind HTTPS and updat
 | Bot does not respond to `@mentions` | Invite the bot to the channel (`/invite @Vaquill`). Verify `app_mention` is subscribed. Check tokens. |
 | Bot does not respond to DMs | Add `im:history`, `im:read`, `im:write` scopes and reinstall. Subscribe to `message.im`. |
 | "This app responded with an error" on slash commands | Cold-start timeout. Use Socket Mode or a host that keeps the process warm. |
-| 401 from Vaquill API | `VAQUILL_API_KEY` is invalid or expired. Generate a new one from your [dashboard](https://app.vaquill.ai/settings). |
 | Bot replies to its own messages | Confirm `IGNORE_BOT_MESSAGES=true` (default) and that the user ID is logged at startup. |
+
+For `401`, `402` and `429` responses from the Vaquill API, see the [Errors reference](/api-guide/errors).
 
 ## Related
 

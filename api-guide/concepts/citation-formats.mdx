@@ -1,18 +1,27 @@
 ---
-title: "Citation Formats"
-description: "Which citation strings resolve, why the form your state prints is the safest one to send, and which forms are refused on purpose"
+title: "Citation formats"
+description: "Which citation strings resolve, why the form your state prints is the safest to send, and which forms are refused on purpose."
 ---
 
-`GET /us/statutes/resolve` turns a citation string into one exact section, and
+`GET /us/statutes/resolve` turns a citation string into one exact section.
 `POST /us/statutes/resolve` does the same for up to 50 at a time.
-This page covers what to send and when to scope it, which together decide whether
-either route works for you.
+This page covers what to send and when to scope it, which together decide whether either route works for you.
+It covers statutes, regulations, constitutions and court rules.
+The Data API is not a case law API.
+
+On this page:
+
+- [Send back the citation we gave you](#the-short-answer-send-back-the-citation-we-gave-you)
+- [Accepted variants and refused forms](#you-do-not-have-to-send-bluebook)
+- [Scoping with `state` and `corpusType`](#scoping-a-constraint-not-a-hint)
+- [Answers that are not the exact unit you cited](#when-the-answer-is-not-the-exact-unit-you-cited-matchlevel), including [register citations](#register-citations)
+- [Batch resolve](#checking-a-whole-document-post-usstatutesresolve), [session laws](#state-session-law-citations) and [treaties](#treaty-citations)
+- [When something does not resolve](#when-something-does-not-resolve)
 
 ## The short answer: send back the citation we gave you
 
-Every section we return carries a `citation` field. That string is the form the
-publishing jurisdiction itself prints, and feeding it back is guaranteed to
-resolve to the same section.
+Every section we return carries a `citation` field.
+That string is the form the publishing jurisdiction itself prints, and feeding it back is guaranteed to resolve to the same section.
 
 ```json Result from /us/statutes/search
 {
@@ -28,63 +37,53 @@ curl -G https://api.vaquill.ai/api/v1/us/statutes/resolve \
   --data-urlencode "cite=O.C.G.A. § 51-1-6"
 ```
 
-If you are storing citations in your own database, store the `citation` value we
-return rather than a form you construct. It round-trips by definition, and it
-survives us adding jurisdictions.
+If you are storing citations in your own database, store the `citation` value we return rather than a form you construct.
+It round-trips by definition, and it survives us adding jurisdictions.
 
 ## You do not have to send Bluebook
 
-Both the Bluebook form and the form the state's own courts use resolve to the
-same section. You do not need a per-state table.
+The Bluebook form and the form the state's own courts use resolve to the same section.
+You do not need a per-state table.
+Real documents carry other variants too, and these are accepted.
 
-| You send | Resolves to |
-|---|---|
-| `Ga. Code Ann. § 51-1-6` **or** `O.C.G.A. § 51-1-6` | the same Georgia section |
-| `Wash. Rev. Code § 59.18.060` **or** `RCW 59.18.060` | the same Washington section |
-| `Ohio Rev. Code § 2305.10` **or** `R.C. 2305.10` | the same Ohio section |
-| `Tenn. Code Ann. § 49-1-602` **or** `T.C.A. § 49-1-602` | the same Tennessee section |
-| `Alaska Stat. § 11.76.115` **or** `AS 11.76.115` | the same Alaska section |
-
-Also accepted, because real documents contain them:
-
-- **The code name after the section.** `§ 292.290, RSMo` and `§ 162.41, Fla. Stat.`
-  resolve exactly like the name-first forms.
-- **An edition year inside the code name.** `Ala. Code 1975, § 17-14-2` and
-  `NMSA 1978, § 22-23-1.1`. The year names the edition, not the section, and is
-  ignored.
-- **Doubled section symbols.** `Cal. Civ. Code §§ 1950.5`.
-- **A trailing period**, so a citation lifted out of a sentence works:
-  `42 U.S.C. § 1983.`
-- **Typographic dashes.** Text copied from a PDF or Word document carries
-  non-breaking hyphens, figure dashes and minus signs instead of `-`. They are
-  invisible on screen and they are normalized for you.
-- **Pinpoint subsections.** `42 U.S.C. § 1983(b)(2)` resolves to its section.
-  `subsection` still echoes the dot-joined pinpoint (`b.2`).
-  A `pinpoint` object beside the section carries the unit itself: its text, path, children, siblings and character offsets.
-  See [Pinpoints](/api-guide/concepts/pinpoints).
+| Variant | Example | Note |
+|---|---|---|
+| State form | `Ga. Code Ann. § 51-1-6` and `O.C.G.A. § 51-1-6` | The same Georgia section |
+| State form | `Wash. Rev. Code § 59.18.060` and `RCW 59.18.060` | The same Washington section |
+| State form | `Ohio Rev. Code § 2305.10` and `R.C. 2305.10` | The same Ohio section |
+| State form | `Tenn. Code Ann. § 49-1-602` and `T.C.A. § 49-1-602` | The same Tennessee section |
+| State form | `Alaska Stat. § 11.76.115` and `AS 11.76.115` | The same Alaska section |
+| Code name after the section | `§ 292.290, RSMo`, `§ 162.41, Fla. Stat.` | Resolves like the name-first form |
+| Edition year in the code name | `Ala. Code 1975, § 17-14-2`, `NMSA 1978, § 22-23-1.1` | The year names the edition, not the section, and is ignored |
+| Doubled section symbol | `Cal. Civ. Code §§ 1950.5` | |
+| Trailing period | `42 U.S.C. § 1983.` | A citation lifted out of a sentence works |
+| Typographic dashes | Non-breaking hyphens, figure dashes, minus signs | Copied from a PDF or Word document. Invisible on screen, normalized for you |
+| Pinpoint subsection | `42 U.S.C. § 1983(b)(2)` | Resolves to its section. `subsection` echoes the dot-joined pinpoint (`b.2`), and a `pinpoint` object carries the unit. See [Pinpoints](/api-guide/concepts/pinpoints) |
 
 ## Forms that are refused on purpose
 
-Some acronyms belong to two jurisdictions.
+Some acronyms belong to two or more jurisdictions.
 We read the number that follows the acronym as well, and answer only when it fits one jurisdiction.
-When it fits both, `resolve` returns `resolved: false` rather than guessing.
+When it fits more than one, `resolve` returns `resolved: false` rather than guessing.
+Pass `state` and it resolves, because you have told us which jurisdiction you mean.
 
-| Acronym | Claimed by | Resolves without `state` when the number settles it |
-|---|---|---|
-| `MCA` | Montana **and** Mississippi Code Annotated | `MCA § 27-2-204` is Montana's three-part number |
-| `IC` | Indiana **and** Idaho Code | `IC 34-11-2-1` is Indiana's four-part number, `IC 18-4001` Idaho's two-part one |
-| `G.S.` | North Carolina **and** Connecticut General Statutes | `G.S. 1-52` is North Carolina's. `G.S. 52-577` fits both and is refused |
-| `G.L.` | Massachusetts **and** Rhode Island General Laws | `G.L. c. 93A, § 2` can only be Massachusetts, and `G.L. 1956 § 9-1-13` Rhode Island |
-| bare `R.S.` | Louisiana **and** New Jersey Revised Statutes | `R.S. 2C:12-1` is New Jersey's. `R.S. 14:30` fits both and is refused |
+| Acronym | Kind | Claimed by | Resolves without `state` when the number settles it |
+|---|---|---|---|
+| `MCA` | Statute | Montana and Mississippi Code Annotated | `MCA § 27-2-204` is Montana's three-part number |
+| `IC` | Statute | Indiana and Idaho Code | `IC 34-11-2-1` is Indiana's four-part number, `IC 18-4001` Idaho's two-part one |
+| `G.S.` | Statute | North Carolina and Connecticut General Statutes | `G.S. 1-52` is North Carolina's. `G.S. 52-577` fits both and is refused |
+| `G.L.` | Statute | Massachusetts and Rhode Island General Laws | `G.L. c. 93A, § 2` can only be Massachusetts, and `G.L. 1956 § 9-1-13` Rhode Island |
+| Bare `R.S.` | Statute | Louisiana and New Jersey Revised Statutes | `R.S. 2C:12-1` is New Jersey's. `R.S. 14:30` fits both and is refused |
+| `CR` | Court rule | Kentucky Civil Rules and Washington Superior Court Civil Rules | Never. Pass `state` |
+| `RAP` | Court rule | Washington, Kentucky and West Virginia | Never. Pass `state` |
+| `TCR` | Court rule | Oregon and West Virginia | Never. Pass `state` |
+| `M. R. Civ. P.` | Court rule | Montana and Maine | Never. Pass `state` |
 
 <Warning>
-  `resolved: false` on one of these is the correct answer, not a gap. A wrong
-  section misstates the law, while an unresolved citation is a question you can
-  answer.
+  `resolved: false` on one of these is the correct answer, not a gap.
+  A wrong section misstates the law, while an unresolved citation is a question you can answer.
+  For a court-rule acronym the refusal holds even when we hold that rule number for only one state, because a gap in our coverage never counts as disambiguation.
 </Warning>
-
-**Pass `state` and they resolve.** You have told us which jurisdiction you mean,
-so there is nothing left to guess:
 
 ```bash
 # resolved: false - G.S. 52-577 fits North Carolina AND Connecticut
@@ -92,20 +91,23 @@ so there is nothing left to guess:
 
 # resolves - Conn. Gen. Stat. § 52-577
 --data-urlencode "cite=G.S. 52-577" -d "state=ct"
+
+# resolves - CR is KY and WA, so scope it: Washington Superior Court Civil Rule 56 (SRULES_WA_CR_R56)
+--data-urlencode "cite=CR 56" -d "state=wa"
 ```
 
-The same applies to a form carrying no jurisdiction at all: Virginia's own
-in-state form is the bare word `Code`, so `cite=Code § 8.01-243&state=va`
-resolves while the string alone cannot.
-
-Connecticut and North Carolina both print `General Statutes § ...`, which names
-a compilation but no jurisdiction. Those resolve the same way:
-`cite=General Statutes § 42a-1-101&state=ct`.
+<Accordion title="Forms that name no jurisdiction">
+  Virginia's own in-state form is the bare word `Code`, so `cite=Code § 8.01-243&state=va` resolves while the string alone cannot.
+  Connecticut and North Carolina both print `General Statutes § ...`, which names a compilation but no jurisdiction.
+  Those resolve the same way: `cite=General Statutes § 42a-1-101&state=ct`.
+</Accordion>
 
 ## Court rules
 
-Many states cite a court rule with no jurisdiction token at all, because inside
-that state none is needed. Those resolve on the set acronym alone:
+Many states cite a court rule with no jurisdiction token at all, because inside that state none is needed.
+Those resolve on the set acronym alone.
+Punctuation and case do not matter: `I.I.R. 4`, `IIR 4` and `iir 4` are the same citation.
+Acronyms shared between states are in the [refused forms table](#forms-that-are-refused-on-purpose).
 
 | You send | Resolves to |
 |---|---|
@@ -114,44 +116,37 @@ that state none is needed. Those resolve on the set acronym alone:
 | `N.D.R.Civ.P. 64` | North Dakota Rules of Civil Procedure |
 | `Rule 901, SCRE` | South Carolina Rules of Evidence |
 
-Punctuation and case do not matter: `I.I.R. 4`, `IIR 4` and `iir 4` are the same
-citation.
+<Accordion title="More accepted forms: local rules, conduct rules, territories, Vermont">
+  A county or district trial court's local rules are cited with the court named, because the court is part of the citation and of the `actId`.
+  A bare rule number that names no court is never guessed at.
 
-<Warning>
-  Some set acronyms are shared. `CR` is both the Kentucky Civil Rules and the
-  Washington Superior Court Civil Rules; `RAP` belongs to Washington, Kentucky
-  and West Virginia; `TCR` to Oregon and West Virginia; `M. R. Civ. P.` to Montana and Maine. These return
-  `resolved: false` until you pass `state`. The refusal comes from the
-  acronym's own ambiguity, even when we hold that rule number for only one
-  state. A gap in our coverage never counts as disambiguation.
-</Warning>
+  | Group | Example cite | Resolves to |
+  |---|---|---|
+  | Trial-court local rules | `Cook Cnty. Cir. Ct. R. 2.1` | Cook County Circuit Court rule 2.1 |
+  | Trial-court local rules | `LRSF 16.15` | San Francisco Superior Court Local Rule 16.15 |
+  | Trial-court local rules | `KCLCMR 7` | King County Local Mandatory Arbitration Rule 7 |
+  | Trial-court local rules | `Phila. R.J.A. 4008` | Philadelphia Rule of Judicial Administration 4008 |
+  | Trial-court local rules | `Ariz. Local R. Prac. Super. Ct. (Maricopa) 2.8` | Maricopa County local rule 2.8 |
+  | Professional conduct | `Cal. R. Prof. Conduct 1.1` | California, in the form the jurisdiction prints |
+  | Professional conduct | `Or. RPC 1.1` | Oregon |
+  | Professional conduct | `Va. R. Prof. Conduct 1.1` | Virginia |
+  | Professional conduct | `D.C. R. Prof. Conduct 1.1` | District of Columbia |
+  | Professional conduct | `Ga. R. Prof. Conduct 1.1` | Georgia |
+  | Professional conduct | `Idaho R. Prof. Conduct 1.1` | Idaho |
+  | Professional conduct | `Fla. R. Regulating Fla. Bar 4-1.1` | Florida |
+  | Nevada ADR rules (three sets) | `Nev. R. ADR 1` | The General Provisions only |
+  | Nevada ADR rules (three sets) | `Nev. Arb. R. 14`, `Nev. Med. R. 9` | Arbitration and mediation rules |
+  | Territory codes | `9 Guam Code Ann. § 16.10` | Guam |
+  | Territory codes | `2 N. Mar. I. Code § 7222` | Northern Mariana Islands |
+  | Territory codes | `Am. Samoa Code Ann. § 46.4810` or `A.S.C.A. § 46.4810` | American Samoa |
+  | Territory codes | `Am. Samoa Const. art. IV, § 4`, `Am. Samoa Admin. Code § 4.2126` | American Samoa constitution and administrative code |
+  | Territory codes | `V.I. Code Ann. tit. 14, § 1` or `14 V.I.C. § 1`, `12 V.I. R. & Regs. § 803-52` | U.S. Virgin Islands |
+  | Territory court rules | `Guam R. Civ. P. 71`, `N. Mar. I. R. Civ. P. 53`, `Am. Samoa High Ct. R. 139` | Guam, Northern Mariana Islands, American Samoa |
+  | Territory court rules | `V.I. R. Civ. P. 6-3`, `V.I. S. Ct. R. 211.1.10` | U.S. Virgin Islands |
+  | Vermont court rules | `Vt. R. Civ. P. 26` or `V.R.C.P. 26`, `Vt. R. Evid. 803` or `V.R.E. 803` | The Judiciary's own forms |
+</Accordion>
 
-```bash
---data-urlencode "cite=CR 56"                 # resolved: false - CR is KY and WA
---data-urlencode "cite=CR 56" -d "state=wa"   # Washington Superior Court Civil Rule 56 (SRULES_WA_CR_R56)
-```
-
-### Trial-court, professional-conduct and territory forms
-
-A county or district trial court's local rules are cited with the court named, because the court is part of the citation and of the `actId`:
-
-| You send | Resolves to |
-|---|---|
-| `Cook Cnty. Cir. Ct. R. 2.1` | Cook County Circuit Court rule 2.1 |
-| `LRSF 16.15` | San Francisco Superior Court Local Rule 16.15 |
-| `KCLCMR 7` | King County Local Mandatory Arbitration Rule 7 |
-| `Phila. R.J.A. 4008` | Philadelphia Rule of Judicial Administration 4008 |
-| `Ariz. Local R. Prac. Super. Ct. (Maricopa) 2.8` | Maricopa County local rule 2.8 |
-
-A bare rule number that names no court is never guessed at.
-The 38 courts held are listed on [State and territory coverage](/api-guide/coverage/states#court-rules-from-county-and-district-trial-courts).
-
-Professional-conduct rules resolve in the form each jurisdiction prints: `Cal. R. Prof. Conduct 1.1`, `Or. RPC 1.1`, `Va. R. Prof. Conduct 1.1`, `D.C. R. Prof. Conduct 1.1`, `Ga. R. Prof. Conduct 1.1`, `Idaho R. Prof. Conduct 1.1`, `Fla. R. Regulating Fla. Bar 4-1.1`.
-Nevada's alternative dispute resolution rules are three sets: `Nev. R. ADR 1` (the General Provisions only), `Nev. Arb. R. 14` and `Nev. Med. R. 9`.
-
-The territories use their own codes: `9 Guam Code Ann. § 16.10`, `2 N. Mar. I. Code § 7222`, `Am. Samoa Code Ann. § 46.4810` (or `A.S.C.A. § 46.4810`), `Am. Samoa Const. art. IV, § 4`, `Am. Samoa Admin. Code § 4.2126`, `V.I. Code Ann. tit. 14, § 1` (or `14 V.I.C. § 1`) and `12 V.I. R. & Regs. § 803-52`.
-Their court rules resolve as `Guam R. Civ. P. 71`, `N. Mar. I. R. Civ. P. 53`, `Am. Samoa High Ct. R. 139`, `V.I. R. Civ. P. 6-3` and `V.I. S. Ct. R. 211.1.10`.
-Vermont's court rules resolve in the Judiciary's own forms, `Vt. R. Civ. P. 26` (or `V.R.C.P. 26`) and `Vt. R. Evid. 803` (or `V.R.E. 803`).
+The 38 trial courts held are listed on [State and territory coverage](/api-guide/coverage/states#court-rules-from-county-and-district-trial-courts).
 
 ## Scoping: a constraint, not a hint
 
@@ -159,34 +154,30 @@ Vermont's court rules resolve in the Judiciary's own forms, `Vt. R. Civ. P. 26` 
 
 <Steps>
   <Step title="A citation that agrees with the scope resolves normally">
-    `cite=O.C.G.A. § 51-1-6&state=ga&corpusType=STATE` returns the same section
-    as the unscoped call.
+    `cite=O.C.G.A. § 51-1-6&state=ga&corpusType=STATE` returns the same section as the unscoped call.
   </Step>
   <Step title="A citation that disagrees returns resolved: false">
-    `cite=O.C.G.A. § 51-1-6&state=tx` does not find a Texas section that
-    happens to share the number. It returns `resolved: false`.
+    `cite=O.C.G.A. § 51-1-6&state=tx` does not find a Texas section that happens to share the number.
+    It returns `resolved: false`.
   </Step>
 </Steps>
 
 `corpusType` on `resolve` takes `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION` or `STATE_CONSTITUTION`.
 `STATE` covers statutes of every jurisdiction, federal ones included.
-Any other value, such as `USC`, is refused with a `400` that names the accepted ones, and the charge is refunded.
-An unrecognized `state` is a `400` on `resolve` too, where `search` answers `422`.
+Any other value, such as `USC`, is refused with a `422` (code `invalid_citation_input`) that names the accepted ones, before any charge.
+An unrecognized `state` is a `422` on `resolve` too.
 
-Scope when a citation form is shared across jurisdictions or corpora, since
-that is when a bare lookup could pick the wrong one:
+Scope when a citation form is shared across jurisdictions or corpora, since that is when a bare lookup could pick the wrong one:
 
-- `8 CCR 1206-2` is Colorado and `22 CCR 76227` is California. The acronym alone
-  cannot say which, so pass `state`.
-- A rule number and a statute section often collide. If your citation names a
-  court rule, pass `corpusType=STATE_RULES` so a same-numbered statute cannot
-  answer instead.
+- `8 CCR 1206-2` is Colorado and `22 CCR 76227` is California. The acronym alone cannot say which, so pass `state`.
+- A rule number and a statute section often collide. If your citation names a court rule, pass `corpusType=STATE_RULES` so a same-numbered statute cannot answer instead.
 
-<Tip>
-  If you are not disambiguating, leave the scope off. Scoping an unambiguous
-  citation cannot improve the answer, and a scope that disagrees with the
-  citation turns a good result into `resolved: false`.
-</Tip>
+If you are not disambiguating, leave the scope off.
+Scoping an unambiguous citation cannot improve the answer, and a scope that disagrees with the citation turns a good result into `resolved: false`.
+
+On `POST /us/statutes/search`, `state` and `corpusType` are a different thing: they filter the candidate pool before ranking.
+A recognized citation passed as the `query` is pinned to rank 1 at `relevanceScore: 1.0`, scoped or not, so for one exact section prefer `/us/statutes/resolve`, which is cheaper and tells you whether the citation is real.
+For a natural-language query, scoping changes which candidates are considered, so scoped and unscoped searches legitimately return different result sets.
 
 ## When the answer is not the exact unit you cited: `matchLevel`
 
@@ -194,79 +185,86 @@ An exact match carries none of the fields below.
 Four optional fields appear on both `GET` and `POST /us/statutes/resolve` only when `section` is not the exact unit you cited.
 `resolved` keeps its meaning (a section came back) and is `true` at every level, so read `matchLevel` to tell an exact section from a first-of-several.
 
-| `matchLevel` | You cited | `section` is | Companion field |
-|---|---|---|---|
-| absent | one section | exactly that section | none |
-| `container` | a chapter, series, article, part or amendment | the **first section in force** inside it (the first of all when none is) | `container` |
-| `multiple` | several sections in one citation | the **first** of them | `citedSections` |
-| `repaired` | a recognized miscite of a code name | the section the repair names | `repair` |
-| `register_reference` | a state register page, issue or filing | the register item, or a rule whose history cites it | `registerReference` |
-
-The companion fields:
-
-- **`container`**: `kind` (`chapter`, `subchapter`, `series`, `article`, `section` for a constitution section made of numbered paragraphs, or `amendment`), `label`, `childCount` (always exact), `children` (`actId`, `citation`, `status`, in document order) and `truncated` (true when `children` lists fewer than `childCount`; at most 50 are listed).
-- **`citedSections`**: the sections you named, as written. A range such as `1983-1985` is one entry.
-- **`repair`**: `kind` (today only `code_name`), `cited` (the part we corrected), `interpretedAs`, and `alternatives`, the other held sections the same code name could have meant. Empty when the repair was the only reading.
-- **`registerReference`**: see [Register citations](#register-citations).
-
-Real answers, taken from the resolver:
-
-```bash container
-# Mo. Code Regs. Ann. tit. 10, § 40-6 is a chapter, not a section
-curl -G https://api.vaquill.ai/api/v1/us/statutes/resolve \
-  -H "Authorization: Bearer vq_key_..." \
-  --data-urlencode "cite=Mo. Code Regs. Ann. tit. 10, § 40-6"
-```
-
-```json container (fields beside resolved and section)
-{
-  "matchLevel": "container",
-  "container": {
-    "kind": "chapter",
-    "label": "10 CSR 40-6",
-    "childCount": 12,
-    "children": [
-      { "actId": "STATE_MO_CSR_T10_D40_C6_S010", "citation": "10 CSR 40-6.010", "status": "in_force" },
-      { "actId": "STATE_MO_CSR_T10_D40_C6_S020", "citation": "10 CSR 40-6.020", "status": "in_force" }
-    ],
-    "truncated": false
-  }
-}
-```
-
-The `children` array above is cut to two of the twelve entries for this page; the real response lists all twelve.
-
-```json repaired (N.Y. Jud. Ct. Acts Law § 475)
-{
-  "matchLevel": "repaired",
-  "repair": {
-    "kind": "code_name",
-    "cited": "Jud. Ct. Acts Law",
-    "interpretedAs": "N.Y. Judiciary Law § 475",
-    "alternatives": [{ "actId": "STATE_NY_AFCT_A4_P7_S475", "citation": "N.Y. FCT Law § 475" }]
-  }
-}
-```
-
-| You send | `matchLevel` | `section.actId` | Note |
-|---|---|---|---|
-| `42 U.S.C. § 1983` | absent | `USC_T42_C21_S1983` | An exact match |
-| `42 U.S.C. §§ 1983-1985` | `multiple` | `USC_T42_C21_S1983` | `citedSections: ["1983-1985"]` |
-| `Mo. Code Regs. Ann. tit. 10, § 40-6` | `container` | `STATE_MO_CSR_T10_D40_C6_S010` | Chapter of 12 sections |
-| `N.J.A.C. 8:33E` | `container` | `STATE_NJ_NJAC_T8_C33E_S1_S8_33E_1_1` | Chapter of 31 sections |
-| `85 CSR 20` | `container` | `STATE_WV_CSR_T85_SER20_S1` | Series of 71 sections, `truncated: true` |
-| `Ga. Const. art. X, § I` | `container` | `SCONST_GA_AX.I_SI` | Six paragraphs under one section number |
-| `Iowa Const. amend. 21` | `container` | `SCONST_IA_AV_S4` | Nine sections whose own note credits Amendment 21. `children` starts with `SCONST_IA_AV_S3`, which is repealed, so the first section in force is returned |
-| `N.Y. Jud. Ct. Acts Law § 475` | `repaired` | `STATE_NY_AJUD_A15_S475` | Read as `N.Y. Judiciary Law § 475` |
-| `36 Pa. Bull. 510` | `register_reference` | `SREGISTER_PA_V36_P510` | The register item itself, `registerItemHeld: true` |
-| `17 Ill. Reg. 10414` | `register_reference` | `STATE_IL_IAC_T1_P100_S100_120` | A rule whose history cites the page, `ruleCount: 18` |
+| `matchLevel` | You cite | `section` is | Companion field | Example |
+|---|---|---|---|---|
+| absent | One section | Exactly that section | None | `42 U.S.C. § 1983` gives `USC_T42_C21_S1983` |
+| `container` | A chapter, series, article, part or amendment | The first section in force inside it (the first of all when none is) | `container` | `Mo. Code Regs. Ann. tit. 10, § 40-6` gives `STATE_MO_CSR_T10_D40_C6_S010`, a chapter of 12 sections |
+| `multiple` | Several sections in one citation | The first of them | `citedSections` | `42 U.S.C. §§ 1983-1985` gives `USC_T42_C21_S1983` |
+| `repaired` | A recognized miscite of a code name | The section the repair names | `repair` | `N.Y. Jud. Ct. Acts Law § 475` gives `STATE_NY_AJUD_A15_S475`, read as `N.Y. Judiciary Law § 475` |
+| `register_reference` | A state register page, issue or filing | The register item, or a rule whose history cites it | `registerReference` | `36 Pa. Bull. 510` gives `SREGISTER_PA_V36_P510` |
 
 <Warning>
-  A flagged answer is the first section of several, or a correction of what you wrote.
-  Do not treat it as the section you cited.
-  Citation verification that must mean "this exact string names exactly this section" should accept only an answer with no `matchLevel`.
-  A citation that resolves only through a flagged reading (the first section of a chapter, a repair, a register reference) is not pinned to rank 1 by `POST /us/statutes/search` and is not accepted by the `{actId}` routes.
+  A flagged answer is the first section of several, or a correction of what you wrote, so do not treat it as the section you cited.
+  For strict verification, accept only responses with no `matchLevel`.
+  A citation that resolves only through a flagged reading is not pinned to rank 1 by `POST /us/statutes/search` and is not accepted by the `{actId}` routes.
 </Warning>
+
+<AccordionGroup>
+  <Accordion title="container: chapters, series, articles and amendments">
+    `container` carries `kind` (`chapter`, `subchapter`, `series`, `article`, `section` for a constitution section made of numbered paragraphs, or `amendment`), `label`, `childCount` (always exact), `children` (`actId`, `citation`, `status`, in document order) and `truncated` (true when `children` lists fewer than `childCount`; at most 50 are listed).
+
+    More examples:
+
+    | You send | `section.actId` | Note |
+    |---|---|---|
+    | `N.J.A.C. 8:33E` | `STATE_NJ_NJAC_T8_C33E_S1_S8_33E_1_1` | Chapter of 31 sections |
+    | `85 CSR 20` | `STATE_WV_CSR_T85_SER20_S1` | Series of 71 sections, `truncated: true` |
+    | `Ga. Const. art. X, § I` | `SCONST_GA_AX.I_SI` | Six paragraphs under one section number |
+    | `Iowa Const. amend. 21` | `SCONST_IA_AV_S4` | Nine sections whose own note credits Amendment 21. `children` starts with `SCONST_IA_AV_S3`, which is repealed, so the first section in force is returned |
+
+    A real answer, taken from the resolver:
+
+    ```bash container
+    # Mo. Code Regs. Ann. tit. 10, § 40-6 is a chapter, not a section
+    curl -G https://api.vaquill.ai/api/v1/us/statutes/resolve \
+      -H "Authorization: Bearer vq_key_..." \
+      --data-urlencode "cite=Mo. Code Regs. Ann. tit. 10, § 40-6"
+    ```
+
+    ```json container (fields beside resolved and section)
+    {
+      "matchLevel": "container",
+      "container": {
+        "kind": "chapter",
+        "label": "10 CSR 40-6",
+        "childCount": 12,
+        "children": [
+          { "actId": "STATE_MO_CSR_T10_D40_C6_S010", "citation": "10 CSR 40-6.010", "status": "in_force" },
+          { "actId": "STATE_MO_CSR_T10_D40_C6_S020", "citation": "10 CSR 40-6.020", "status": "in_force" }
+        ],
+        "truncated": false
+      }
+    }
+    ```
+
+    The real response lists all twelve children.
+  </Accordion>
+  <Accordion title="multiple: several sections in one citation">
+    `citedSections` lists the sections you named, as written.
+    A range such as `1983-1985` is one entry, as in `citedSections: ["1983-1985"]`.
+  </Accordion>
+  <Accordion title="repaired: a recognized miscite of a code name">
+    `repair` carries `kind` (today only `code_name`), `cited` (the part we corrected), `interpretedAs`, and `alternatives`, the other held sections the same code name could have meant.
+    `alternatives` is empty when the repair was the only reading.
+
+    ```json repaired (N.Y. Jud. Ct. Acts Law § 475)
+    {
+      "matchLevel": "repaired",
+      "repair": {
+        "kind": "code_name",
+        "cited": "Jud. Ct. Acts Law",
+        "interpretedAs": "N.Y. Judiciary Law § 475",
+        "alternatives": [{ "actId": "STATE_NY_AFCT_A4_P7_S475", "citation": "N.Y. FCT Law § 475" }]
+      }
+    }
+    ```
+  </Accordion>
+  <Accordion title="register_reference: examples">
+    `36 Pa. Bull. 510` returns the register item itself, with `registerItemHeld: true`.
+    `17 Ill. Reg. 10414` returns `STATE_IL_IAC_T1_P100_S100_120`, a rule whose history cites the page, with `ruleCount: 18`.
+    Fields and rules are under [Register citations](#register-citations).
+  </Accordion>
+</AccordionGroup>
 
 ### Register citations
 
@@ -276,53 +274,51 @@ The answer depends on whether we hold that register:
 - **We hold the item** (`registerReference.registerItemHeld: true`). `section` is the register notice itself, `corpusType` `STATE_REGISTER`. It is a notice as printed on a date, not codified law. `kind` is `page` when the citation names the page the item starts on and `range` when it names a later page of the item. Held for the jurisdictions listed under [State administrative registers](/api-guide/coverage/states#state-administrative-registers).
 - **We do not hold it** (`registerItemHeld: false`). `section` is a codified rule whose history note cites that page: the first of `ruleCount`, with the others in `rules`. An omnibus item that touched more than 30 rules is refused rather than represented by one arbitrary rule.
 
-`registerReference` carries `citation` (as we read it), `state`, `kind`, `ruleCount` (always exact), `rules` (their `actId`s, in document order, at most 25) and `registerItemHeld`.
-`kind` is `page` (a history note cites exactly this volume and page), `range` (a note cites a range that contains the page), `issue` (the citation names a register issue, as Colorado and Michigan cite) or `filing` (it names a filing identifier, as Washington, Nevada, Indiana and Wisconsin do).
+<Accordion title="registerReference fields, samples and the exact-hit rule">
+  `registerReference` carries `citation` (as we read it), `state`, `kind`, `ruleCount` (always exact), `rules` (their `actId`s, in document order, at most 25) and `registerItemHeld`.
+  `kind` is `page` (a history note cites exactly this volume and page), `range` (a note cites a range that contains the page), `issue` (the citation names a register issue, as Colorado and Michigan cite) or `filing` (it names a filing identifier, as Washington, Nevada, Indiana and Wisconsin do).
 
-```json register item held (36 Pa. Bull. 510)
-{
-  "matchLevel": "register_reference",
-  "registerReference": {
-    "citation": "36 Pa. Bull. 510",
-    "state": "pa",
-    "kind": "page",
-    "ruleCount": 1,
-    "rules": ["SREGISTER_PA_V36_P510"],
-    "registerItemHeld": true
+  ```json register item held (36 Pa. Bull. 510)
+  {
+    "matchLevel": "register_reference",
+    "registerReference": {
+      "citation": "36 Pa. Bull. 510",
+      "state": "pa",
+      "kind": "page",
+      "ruleCount": 1,
+      "rules": ["SREGISTER_PA_V36_P510"],
+      "registerItemHeld": true
+    }
   }
-}
-```
+  ```
 
-```json register item not held (17 Ill. Reg. 10414)
-{
-  "matchLevel": "register_reference",
-  "registerReference": {
-    "citation": "17 Ill. Reg. 10414",
-    "state": "il",
-    "kind": "page",
-    "ruleCount": 18,
-    "rules": ["STATE_IL_IAC_T1_P100_S100_120", "STATE_IL_IAC_T1_P100_S100_210"],
-    "registerItemHeld": false
+  ```json register item not held (17 Ill. Reg. 10414)
+  {
+    "matchLevel": "register_reference",
+    "registerReference": {
+      "citation": "17 Ill. Reg. 10414",
+      "state": "il",
+      "kind": "page",
+      "ruleCount": 18,
+      "rules": ["STATE_IL_IAC_T1_P100_S100_120", "STATE_IL_IAC_T1_P100_S100_210"],
+      "registerItemHeld": false
+    }
   }
-}
-```
+  ```
 
-Only an exact hit counts: the exact volume and page, a range that contains the page, or the exact filing identifier.
-A page that merely falls between two cited pages is never a hit, and a page is never matched without its volume.
-`17 Ill. Reg. 10415` returns `resolved: false`.
-Washington's `WSR 20-12-091` and Virginia's `27 Va. Reg. 640` resolve to the register item, and Colorado's `42 CR 15` names an issue and resolves to the first of 11 rules that cite it.
-A register citation that no held item and no rule's history note cites returns `resolved: false`.
+  Only an exact hit counts: the exact volume and page, a range that contains the page, or the exact filing identifier.
+  A page that merely falls between two cited pages is never a hit, and a page is never matched without its volume.
+  `17 Ill. Reg. 10415` returns `resolved: false`.
+  Washington's `WSR 20-12-091` and Virginia's `27 Va. Reg. 640` resolve to the register item, and Colorado's `42 CR 15` names an issue and resolves to the first of 11 rules that cite it.
+  A register citation that no held item and no rule's history note cites returns `resolved: false`.
+</Accordion>
 
 ## Checking a whole document: `POST /us/statutes/resolve`
 
 Everything above applies unchanged to the batch route.
-It takes up to **50 citations** in one call and returns the same verdict per
-citation.
-
-Use it when you are checking the citations in a document rather than looking one
-up.
-A brief, a memo or a model's output typically carries dozens, and the
-single-citation route makes that dozens of round trips.
+It takes up to **50 citations** in one call and returns the same verdict per citation.
+Use it when you are checking the citations in a document rather than looking one up.
+A brief, a memo or a model's output typically carries dozens, and the single-citation route makes that dozens of round trips.
 
 <CodeGroup>
 
@@ -359,43 +355,12 @@ print(resp["resolvedCount"], "of", resp["count"], "resolved")
 
 </CodeGroup>
 
-The response and the price work as follows.
-
-**Every input gets an entry.**
-An unresolved citation comes back with `resolved: false`, never as an omission.
-A caller checking thirty citations needs to know which ones failed, and a shorter
-array cannot say that.
-
-**Duplicates are collapsed** before pricing and before the response is built, so
-sending the same citation twice costs once and returns one entry.
-`results` lines up with the de-duplicated input, in the order supplied, and
-`count` is its length.
-
-**Scoping applies to the whole batch.**
-`state` and `corpusType` are the same constraint they are on the single route,
-applied to every citation in the call.
-A batch spanning jurisdictions should omit them and let each citation name its
-own.
-
-**Batching is billed per citation.**
-It saves round trips, but the price is exactly what it would be if you resolved them one at a time.
-Unresolved citations are charged, because a confident "this does not resolve" is
-the answer you are paying for when you are verifying a model's output.
-Only citations we failed to process because of a backend error are refunded, so
-read `creditsConsumed` rather than multiplying.
-
-## Scoping on search is a different thing
-
-On `POST /us/statutes/search`, `state` and `corpusType` filter the candidate pool
-before ranking. Two consequences follow:
-
-- A **recognized citation** passed as the `query` is pinned to rank 1 at
-  `relevanceScore: 1.0`, scoped or not. If you want one exact section, prefer
-  `/us/statutes/resolve`: it is cheaper and it tells you whether the citation is
-  real.
-- For a **natural-language query**, scoping changes which candidates are
-  considered, so scoped and unscoped searches legitimately return different
-  result sets. That is the filter working as designed.
+| Behavior | Rule |
+|---|---|
+| Every input gets an entry | An unresolved citation comes back with `resolved: false`, never as an omission, so you can tell which ones failed |
+| Duplicates | Collapsed before pricing and before the response is built. The same citation sent twice costs once and returns one entry. `results` lines up with the de-duplicated input, in the order supplied, and `count` is its length |
+| Scoping | `state` and `corpusType` apply to every citation in the call, the same constraint as on the single route. A batch spanning jurisdictions should omit them and let each citation name its own |
+| Price | Billed per citation, exactly what resolving them one at a time would cost. Unresolved citations are charged, because a confident "this does not resolve" is the answer you are paying for. Only citations we failed to process because of a backend error are refunded, so read `creditsConsumed` rather than multiplying |
 
 ## State session law citations
 
@@ -409,22 +374,26 @@ To read the law, send its `sessionLawId` or the citation itself to [`GET /us/ses
 
 A treaty citation is recognized as a treaty. It is never read as a U.S. Code section or a Public Law.
 
-| Form | Example |
-|---|---|
-| Senate Treaty Document | `S. Treaty Doc. No. 98-9`, `Treaty Doc. 105-1A` |
-| Senate Executive Report | `S. Exec. Rep. No. 102-23` |
-| United States Treaties | `20 U.S.T. 361` |
-| Treaties and Other International Acts Series | `T.I.A.S. No. 6638` |
-| Treaty Series, Executive Agreement Series | `T.S. No. 993`, `E.A.S. No. 12` |
-| Bevans | `1 Bevans 631` |
-| United Nations Treaty Series | `658 U.N.T.S. 163` |
-| League of Nations Treaty Series | `137 L.N.T.S. 11` |
+| Form | Example | Resolves |
+|---|---|---|
+| Senate Treaty Document | `S. Treaty Doc. No. 98-9`, `Treaty Doc. 105-1A` | Yes. The Treaty Document text when the treaty went to the Senate from 1995 on, otherwise the ratification record |
+| United States Treaties | `20 U.S.T. 361` | Yes. The instrument that begins at that page (volumes 1 to 35, 1950 to 1984) |
+| Statutes at Large | `49 Stat. 3000` | Yes, in volumes 1 to 64. The treaty or the session law printed at that page |
+| Bevans | `1 Bevans 631` | Yes. Answered from the Statutes at Large printing of the same instrument where both exist, so `1 Bevans 631` returns `36 Stat. 2277` |
+| Senate Executive Report | `S. Exec. Rep. No. 102-23` | `not_held` |
+| Treaties and Other International Acts Series | `T.I.A.S. No. 6638` | `not_held` |
+| Treaty Series, Executive Agreement Series | `T.S. No. 993`, `E.A.S. No. 12` | `not_held` |
+| United Nations Treaty Series | `658 U.N.T.S. 163` | `not_held` |
+| League of Nations Treaty Series | `137 L.N.T.S. 11` | `not_held` |
 
-An article pinpoint written before the series cite, as in `Hague Service Convention art. 1, Nov. 15, 1965, 20 U.S.T. 361, T.I.A.S. No. 6638`, is read as the pinpoint.
+Treaty text is served one section per article.
+A cite to the instrument itself, such as `20 U.S.T. 361`, answers with `matchLevel: "container"`: `section` is the instrument's opening section, and `container.children` lists every article in printed order.
+An article pinpoint written before the series cite, as in `Hague Service Convention art. 10, Nov. 15, 1965, 20 U.S.T. 361, T.I.A.S. No. 6638`, is read as the pinpoint and resolves to that article.
+A pinpoint to an article the instrument does not print is refused, never answered with another article.
 
-- **Resolves today:** a Senate Treaty Document citation answers the Senate record we hold for that treaty, the Treaty Document text when the treaty went to the Senate from 1995 on, otherwise the ratification record.
-- **Returns `not_held`:** every series cite above, and a Senate Executive Report. The response carries `resolved: false`, `missReason: "not_held"` and a `missReasonHint` that says the form was recognized and what treaty material we do hold: the Senate ratification record, Treaty Document text from 1995 on, and the IRS income tax treaties. A series cite is no longer answered with `ambiguous_jurisdiction` or a hint to cite a U.S. Code section or Public Law.
-- **Statutes at Large pages:** a cite such as `49 Stat. 3000` still resolves to the session law printed there when we hold one. In volumes 1 to 64 a page can instead be a treaty, so a miss on one of those volumes says so. Treaty text printed in the Statutes at Large, U.S.T., T.I.A.S. and Bevans is not held.
+A `not_held` answer carries `resolved: false`, `missReason: "not_held"` and a `missReasonHint` that says the form was recognized and lists the treaty material we hold.
+For U.S.T., Bevans and Statutes at Large cites the hint says that the series is held and no instrument we hold begins at or spans that volume and page, so check the citation.
+Text printed only in T.I.A.S., T.S., E.A.S., U.N.T.S. or L.N.T.S. is not held. Cite such an instrument by its U.S.T. or Statutes at Large citation where it has one.
 
 To find an instrument by topic or party, search `corpusType=US_TREATY`, or `US_TAX_TREATY` for the IRS income tax treaties.
 See [Treaty coverage](/api-guide/coverage/treaties) for what each holds.
@@ -433,27 +402,34 @@ See [Treaty coverage](/api-guide/coverage/treaties) for what each holds.
 
 <Steps>
   <Step title="Check it is not a deliberate refusal">
-    Compare against the ambiguous-acronym table above. If it is on that list,
-    add `state`.
+    Compare against the shared-acronym table above.
+    If it is on that list, add `state`.
   </Step>
   <Step title="Drop the scope">
-    A scope that disagrees with the citation returns `resolved: false`. Retry
-    without `state` and `corpusType` to find out whether the scope was the
-    problem.
+    A scope that disagrees with the citation returns `resolved: false`.
+    Retry without `state` and `corpusType` to find out whether the scope was the problem.
   </Step>
   <Step title="Search for it instead">
-    `POST /us/statutes/search` with the citation as the `query` will surface the
-    section even when the string is not a form we parse, and the result carries
-    the `citation` we do recognize.
+    `POST /us/statutes/search` with the citation as the `query` will surface the section even when the string is not a form we parse, and the result carries the `citation` we do recognize.
   </Step>
   <Step title="Tell us">
-    A citation that a jurisdiction genuinely prints and that we cannot read back
-    is a defect on our side, not yours. Send it to
-    [contact@vaquill.ai](mailto:contact@vaquill.ai) and we will fix the parser.
+    A citation that a jurisdiction genuinely prints and that we cannot read back is a defect on our side, not yours.
+    Send it to [contact@vaquill.ai](mailto:contact@vaquill.ai) and we will fix the parser.
   </Step>
 </Steps>
 
-<Note>
-  Case law citations are not covered here. The Data API serves statutes,
-  regulations, constitutions and court rules; it is not a case law API.
-</Note>
+### Miss reasons
+
+An unresolved answer can carry a `missReason`.
+
+| `missReason` | Meaning | Fix |
+|---|---|---|
+| `not_held` | The citation reads as one to a jurisdiction and corpus we serve, and we do not hold that section. A `T.I.A.S.` cite is an example | Read `missReasonHint` for what we do hold |
+| `ambiguous_jurisdiction` | The form is one several jurisdictions print, or names none, and no `state` was given | Pass `state`. `candidates` lists the held sections it could mean when we can name them |
+| `former_law` | It names a repealed, renumbered or retired compilation we do not serve as current law | Read `missReasonHint` for the successor where one is known |
+| `malformed` | No parser reads it: a docket or database token, a case or treatise citation, a string with no section number | Fix the string, or search for it instead |
+| `out_of_scope_corpus` | It names a body of law this route does not serve | `missReasonHint` says which and where to look |
+| `container_not_supported` | It cites a chapter, article, title or part, not a section, in a form this route does not answer | Cite a section inside it, or browse with `GET /us/statutes/divisions` |
+| `index_warming` | Batch items only. The code was still being read, so there is no verdict. The item is not billed | Send it again in a few seconds |
+| `lookup_failed` | Batch items only. The citation resolved but we failed to load its section. The item is refunded | Retry it |
+| `miss_reason_unavailable` | The check that explains a miss failed on our side. The unresolved verdict is unchanged | Resend it |

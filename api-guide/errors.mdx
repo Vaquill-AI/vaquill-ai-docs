@@ -1,19 +1,27 @@
 ---
-title: "Errors"
-description: "HTTP status codes and error handling"
+title: "Errors and rate limits"
+description: "Status codes, the error body, 400 versus 422 and how to handle rate limits on the Data API"
 ---
 
-## Error Format
+import RetryAfter from '/snippets/retry-after.mdx';
 
-Errors return JSON with a `detail` field:
+## Error format
+
+Errors return JSON with a `detail` field.
+On the metered routes the body also carries a stable `code`, a `requestId` and a `retryable` flag:
 
 ```json
 {
-  "detail": "Invalid or expired API key"
+  "detail": "Invalid or expired API key",
+  "code": "invalid_api_key",
+  "requestId": "8c1f0c2e-3d4b-4a8e-9f10-5b6a7c8d9e0f",
+  "retryable": false
 }
 ```
 
-The `401` text says which of three things is wrong: no key was sent, the key does not start with `vq_key_`, or the key is unknown, revoked or expired.
+Branch on `code`, not on the text of `detail`.
+Quote `requestId` when you contact support.
+Every code is listed in the [error code reference](/errors/codes).
 
 Validation errors (422) keep `detail` as a short string and put the field-level details in `errors`:
 
@@ -31,27 +39,58 @@ Validation errors (422) keep `detail` as a short string and put the field-level 
 ```
 
 Read `detail` for the message and `errors[].loc` to find the field.
-Some validation errors carry extra keys on each entry, such as `ctx` for a failed rule.
-A `422` from a rule that spans several fields (`chapter` without `titleNumber`, a malformed Boolean expression) is a plain `detail` string with no `errors` array, as is every other error status.
 
-## Status Codes
+<Accordion title="Error body edge cases">
+  The `401` text says which of three things is wrong: no key was sent, the key does not start with `vq_key_`, or the key is unknown, revoked or expired.
 
-| Code | Meaning | Action |
-|------|---------|--------|
-| `200` | Success | |
-| `400` | Bad Request | The request parsed but the API refused it. See [400 versus 422](#400-versus-422) |
-| `401` | Unauthorized | Check your API key and `Authorization` header |
-| `402` | Payment Required | Check your account dashboard. |
-| `403` | Forbidden | Your key lacks the required scope, or your plan does not include the feature. Webhook delivery is Business-only |
-| `404` | Not Found | Resource does not exist |
-| `409` | Conflict | You already hold this watch. See [409 on watches](#409-on-watches) |
-| `422` | Validation Error | Check request body for missing or invalid fields. A malformed [Boolean expression](/api-guide/concepts/boolean-search#errors) is also a `422`, and is not charged |
-| `429` | Rate Limited | Back off and retry with exponential backoff. Also returned when you exceed your plan's watch cap |
-| `500` | Internal Error | Retry after a brief delay. [Contact support](mailto:contact@vaquill.ai) if it persists |
-| `503` | Service Unavailable | A backend is temporarily unavailable. Not charged. Retry with backoff |
+  Every `404` and `405` carries `code` and `requestId`, including a path that does not exist.
 
-On `403`, webhook delivery on a watch requires the Business plan: use `channel: "email"` or upgrade.
-On `429`, the watch cap is 3 outside Business and 100 on Business.
+  Some validation errors carry extra keys on each entry, such as `ctx` for a failed rule.
+  A `422` from a rule that spans several fields (`chapter` without `titleNumber`, a malformed Boolean expression) is a plain `detail` string with no `errors` array, as is every other error status.
+</Accordion>
+
+## Status codes
+
+Each row links to the [error code reference](/errors/codes), which is the per-code detail.
+
+| Status | Error codes | What to do |
+|---|---|---|
+| `400` Bad Request | [`bad_request`](/errors/codes#bad_request) | Well-formed but refused. See [400 versus 422](#400-versus-422) |
+| `401` Unauthorized | [`authentication_required`](/errors/codes#authentication_required), [`invalid_api_key`](/errors/codes#invalid_api_key), [`api_key_expired`](/errors/codes#api_key_expired) | Send `Authorization: Bearer vq_key_...` with the `Bearer` prefix. The key alone is rejected. See [Authentication](/api-guide/authentication) |
+| `402` Payment Required | [`insufficient_credits`](/errors/codes#insufficient_credits) | Credits are too low: top up, then resend. Not a rate limit, and the SDKs do not retry it. See [402 body](#402-body) |
+| `403` Forbidden | [`permission_denied`](/errors/codes#permission_denied), [`insufficient_scope`](/errors/codes#insufficient_scope) | The key lacks the scope, or the plan lacks the feature. Webhook delivery on a watch is Business-only: use `channel: "email"` or upgrade |
+| `404` Not Found | [`section_not_found`](/errors/codes#section_not_found), [`resource_not_found`](/errors/codes#resource_not_found) | The resource does not exist. A session-law or section miss is `section_not_found` |
+| `405` Method Not Allowed | [`method_not_allowed`](/errors/codes#method_not_allowed) | The path exists but not for this method. The `Allow` header lists the right ones |
+| `409` Conflict | [`conflict`](/errors/codes#conflict), [`idempotency_in_progress`](/errors/codes#idempotency_in_progress), [`idempotency_replay_unavailable`](/errors/codes#idempotency_replay_unavailable) | You already hold this watch. See [409 on watches](#409-on-watches) |
+| `413` Payload Too Large | [`payload_too_large`](/errors/codes#payload_too_large) | The request body is over the limit |
+| `415` Unsupported Media Type | [`unsupported_media_type`](/errors/codes#unsupported_media_type) | Send `Content-Type: application/json` |
+| `422` Unprocessable Entity | [`validation_error`](/errors/codes#validation_error), [`invalid_query`](/errors/codes#invalid_query), [`invalid_citation_input`](/errors/codes#invalid_citation_input), [`idempotency_key_reused`](/errors/codes#idempotency_key_reused) | Set `Content-Type: application/json` and fix the field named in `errors[].loc`. A malformed [Boolean expression](/api-guide/concepts/boolean-search#errors) is also a `422`, and is not charged |
+| `429` Too Many Requests | [`rate_limited`](/errors/codes#rate_limited), [`daily_cap_exceeded`](/errors/codes#daily_cap_exceeded), [`quota_exceeded`](/errors/codes#quota_exceeded) | Back off and retry. See [rate limiting](#rate-limiting) |
+| `500` Internal Error | [`internal_error`](/errors/codes#internal_error) | Retry after a brief delay. [Contact support](mailto:contact@vaquill.ai) if it persists |
+| `503` Service Unavailable | [`service_unavailable`](/errors/codes#service_unavailable) | A backend is temporarily unavailable. Not charged. Retry with backoff |
+| `504` Gateway Timeout | [`upstream_timeout`](/errors/codes#upstream_timeout) | An upstream call timed out. Refunded. Retry with backoff |
+
+A `429` has three meanings, told apart by `code`.
+`rate_limited` is retryable.
+`quota_exceeded` is a standing account limit such as the watch cap (see [Law change alerts](/api-guide/alerts)), and `retryable: false`, because waiting does not help: delete a watch or upgrade.
+`daily_cap_exceeded` is the per-key daily cap.
+The cooldown `429` on a watch test delivery sends `Retry-After: 30`.
+
+### 402 body
+
+A `402` adds the numbers behind the refusal when they are known:
+
+```json
+{
+  "detail": "Insufficient credits",
+  "code": "insufficient_credits",
+  "creditsRequired": 64,
+  "creditsAvailable": 12,
+  "topUpHint": "Add credits from the Billing tab of your developer dashboard, or switch on auto top-up."
+}
+```
+
+`GET /credits/balance` is free and shows your current balance.
 
 ### 400 versus 422
 
@@ -59,7 +98,7 @@ A `422` is schema validation: a field is missing, or its type or range is wrong.
 The API rejects it before your request reaches any business logic, and the response carries the `loc` array shown above.
 
 A `400` is a request that is well-formed but not allowed.
-`GET` and `POST /us/statutes/resolve` return it for a `corpusType` or `state` scope they do not accept, and refund the charge.
+`GET` and `POST /us/statutes/resolve` answer a `corpusType` or `state` scope they do not accept with a `422` (code `invalid_citation_input`) before any charge, so nothing is charged or refunded.
 `POST /watches` and `PATCH /watches/{id}` return it for:
 
 - a `scope` the board cannot be narrowed by, or an `actId` scope that does not exist on that board,
@@ -77,11 +116,27 @@ Watches are unique on that triple, so a `409` means the subscription already exi
 `PATCH /watches/{id}` returns it for the same reason, when narrowing a watch's `scope` would collide with another watch you already hold.
 List your watches with `GET /watches` and reuse the existing one.
 
-## Rate Limiting
+## Rate limiting
 
 Limits are enforced per API key and scale with your plan.
-Every response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` (a Unix timestamp) for the per-minute window, and `X-RateLimit-Limit-Day` and `X-RateLimit-Remaining-Day` for the daily one.
-When you exceed one the API returns `429` with a `Retry-After` header telling you how many seconds to wait. Respect it, and add exponential backoff so retries spread out under sustained pressure.
+A valid key has its own bucket at your plan limit, so other callers behind the same IP address do not use it up.
+A per-address backstop at 10 times that limit also applies.
+A key that does not validate is counted in the shared per-address bucket instead.
+
+Every response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` (a Unix timestamp) for the per-minute window.
+It also carries `X-RateLimit-Limit-Hour` and `X-RateLimit-Remaining-Hour` for the hourly window.
+`X-RateLimit-Limit-Day`, `X-RateLimit-Remaining-Day` and `X-RateLimit-Reset-Day` (the next UTC midnight, as a Unix timestamp) describe the daily one.
+On a request with an API key, `X-RateLimit-Scope` is `key` when the numbers describe your key's own bucket and `ip` when they describe the shared per-address bucket.
+It is absent on requests without an API key.
+Browsers can read all of these headers on cross-origin calls.
+When you exceed one the API returns `429`.
+
+<RetryAfter />
+
+The official [SDKs](/api-guide/sdks/overview) already retry the safe cases for you.
+If you call the API directly, add exponential backoff so retries spread out under sustained pressure.
+
+<Accordion title="Retry loop example">
 
 <CodeGroup>
 ```python Python
@@ -139,33 +194,19 @@ async function searchWithRetry(payload, maxRetries = 5) {
 const data = await searchWithRetry({ query: "data breach notification" });
 ```
 </CodeGroup>
+</Accordion>
 
 <Tip>
   Pace your requests before you hit the ceiling. A small client-side delay between calls in a paging loop keeps you under the limit and cuts down on retries.
 </Tip>
 
-## Troubleshooting
-
-<AccordionGroup>
-  <Accordion title="401 but my key is correct">
-    Include the `Bearer` prefix: `Authorization: Bearer vq_key_...`. The key alone is rejected.
-  </Accordion>
-
-  <Accordion title="422 validation error">
-    Set `Content-Type: application/json`. Check the `loc` field in the response to find the problematic field.
-  </Accordion>
-</AccordionGroup>
-
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Authentication" href="/api-guide/authentication">
-    Create and manage your API key.
-  </Card>
-  <Card title="Best practices" href="/api-guide/best-practices">
-    Scope queries, cache coverage, and retry well.
+  <Card title="Error code reference" href="/errors/codes">
+    Every machine-readable code, with its status, retry rule and SDK class.
   </Card>
   <Card title="SDKs" href="/api-guide/sdks/overview">
-    The official Python and TypeScript SDKs map these errors to typed exceptions and retry the safe ones for you.
+    The official SDKs map these errors to typed exceptions and retry the safe ones for you.
   </Card>
 </CardGroup>

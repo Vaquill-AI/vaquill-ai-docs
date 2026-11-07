@@ -1,7 +1,9 @@
 ---
-title: "Status & Currency"
-description: "Tell whether a section is still good law: the actStatus vocabulary, the goodLawStatus verdict, how to filter on both, and the move pointers"
+title: "Status and currency"
+description: "Tell whether a section is still good law: actStatus, goodLawStatus, filtering on both, and move pointers."
 ---
+
+import GoodLawUnknown from '/snippets/good-law-unknown.mdx';
 
 Two fields answer "can I rely on this section today", and they answer different questions.
 
@@ -16,47 +18,37 @@ Both appear on `POST /us/statutes/search`, `GET /us/statutes/section/{actId}`, a
 The raw status of the section, straight from the source structure.
 It is the only one of the two that is indexable, so it is what you filter on.
 
-**Operative**
+The groups:
 
-| Value | Meaning |
-|-------|---------|
-| `in_force` | The section is currently operative. |
+- Operative: the section is currently operative.
+- Dormant: it exists, but has no operative force right now.
+- Dead: it is not law, or is no longer at this citation.
+- Filterable, never excludable: you may filter to it with `actStatus`, but `excludeRepealed` never drops it.
 
-**Dormant: it exists, but has no operative force right now**
-
-| Value | Meaning |
-|-------|---------|
-| `reserved` | A reserved or held-open placeholder with no current text. |
-| `vacant` | A vacant number with no content. |
-| `inactive` | Present and revivable, marked inactive by the publisher. |
-| `not_funded` | Enacted subject to appropriation, and not yet funded. |
-| `not_yet_effective` | Enacted with a later commencement date it has not reached. |
-
-**Dead: it is not law, or is no longer at this citation**
-
-| Value | Meaning |
-|-------|---------|
-| `repealed` | Repealed. |
-| `unconstitutional` | Held unconstitutional. |
-| `expired` | Reached its own sunset date. |
-| `omitted` | Omitted from the code, often editorially, without repeal. |
-| `deleted` | Deleted by the publisher. |
-| `superseded` | Replaced by a later version of the same instrument. |
-| `renumbered` | Moved to a new number. See `renumberedTo`. |
-| `transferred` | Moved to a different code or title. See `transferredTo`. |
-| `recodified` / `recompiled` / `relocated` | The provision still exists, but not at this citation. |
-| `rescinded` / `revoked` / `withdrawn` | An agency retired its own rule or guidance. |
-| `terminated` / `abolished` / `removed` | The body or provision was ended by the publisher's own word. |
-| `vetoed` | Passed by the legislature and vetoed. |
-| `rejected` | A proposed constitutional article or amendment the electorate voted down. |
-| `proposed` | A draft published for comment. Full text, no legal force, and never law. |
-| `vacated` | Set aside on review (the Administrative Review Board's verb). It binds nobody. |
-
-**Filterable, never excludable**
-
-| Value | Meaning |
-|-------|---------|
-| `non_precedential` | A document the law forbids citing as precedent, such as an IRS private letter ruling. You may filter to it with `actStatus`, and `excludeRepealed` never drops it, because it is neither dead nor dormant. |
+| Value | Group | Meaning |
+|-------|-------|---------|
+| `in_force` | Operative | The section is currently operative. |
+| `reserved` | Dormant | A reserved or held-open placeholder with no current text. |
+| `vacant` | Dormant | A vacant number with no content. |
+| `inactive` | Dormant | Present and revivable, marked inactive by the publisher. |
+| `not_funded` | Dormant | Enacted subject to appropriation, and not yet funded. |
+| `not_yet_effective` | Dormant | Enacted with a later commencement date it has not reached. |
+| `repealed` | Dead | Repealed. |
+| `unconstitutional` | Dead | Held unconstitutional. |
+| `expired` | Dead | Reached its own sunset date. |
+| `omitted` | Dead | Omitted from the code, often editorially, without repeal. |
+| `deleted` | Dead | Deleted by the publisher. |
+| `superseded` | Dead | Replaced by a later version of the same instrument. |
+| `renumbered` | Dead | Moved to a new number. See `renumberedTo`. |
+| `transferred` | Dead | Moved to a different code or title. See `transferredTo`. |
+| `recodified` / `recompiled` / `relocated` | Dead | The provision still exists, but not at this citation. |
+| `rescinded` / `revoked` / `withdrawn` | Dead | An agency retired its own rule or guidance. |
+| `terminated` / `abolished` / `removed` | Dead | The body or provision was ended by the publisher's own word. |
+| `vetoed` | Dead | Passed by the legislature and vetoed. |
+| `rejected` | Dead | A proposed constitutional article or amendment the electorate voted down. |
+| `proposed` | Dead | A draft published for comment. Full text, no legal force, and never law. |
+| `vacated` | Dead | Set aside on review (the Administrative Review Board's verb). It binds nobody. |
+| `non_precedential` | Filterable, never excludable | A document the law forbids citing as precedent, such as an IRS private letter ruling. `excludeRepealed` never drops it, because it is neither dead nor dormant. |
 
 A dead or dormant status is a real answer about the law, not a data quality flag.
 Several of these exist because one jurisdiction uses its own verb: `recompiled` is New Mexico's, `not_funded` is the District of Columbia's, `relocated` is Alaska's, `terminated` and `vetoed` are Wyoming's.
@@ -74,12 +66,11 @@ A derived, conservative verdict computed on top of `actStatus` and jurisdiction-
 | `unknown` | The jurisdiction has no reliable repeal signal, so we do not claim it is current. |
 
 <Warning>
-  `goodLawStatus` is deliberately conservative. Some jurisdictions and some
-  publishers do not publish a reliable repeal signal, so their sections resolve
-  to `unknown` rather than over-claiming `good_law`.
-
-  Treat `unknown` as "verify against the official source," not as "current."
+  `goodLawStatus` is conservative.
+  Some jurisdictions and some publishers do not publish a reliable repeal signal, so their sections resolve to `unknown` rather than over-claiming `good_law`.
   The field is `null` when currency checking is disabled.
+
+  <GoodLawUnknown />
 </Warning>
 
 ## Filtering on status
@@ -89,13 +80,9 @@ There are two filters on `POST /us/statutes/search`, and they are not inverses o
 `excludeRepealed: true` drops everything whose own status says it is no longer operative: the dead and dormant vocabularies above, in full.
 
 <Note>
-**`excludeRepealed` removes what we know is dead. It does not promise the
-remainder is good law.**
-
-A section survives that filter when its status is `in_force` OR when we hold no
-trustworthy repeal signal for its jurisdiction, and those two are not the same
-thing. Read `goodLawStatus` on each surviving result to tell them apart:
-`good_law` is checked, `unknown` is unchecked.
+It does not promise the remainder is good law (see the `goodLawStatus` warning above).
+A section survives that filter when its status is `in_force` or when we hold no trustworthy repeal signal for its jurisdiction, and those two are not the same thing.
+Read `goodLawStatus` on each surviving result to tell them apart: `good_law` is checked, `unknown` is unchecked.
 </Note>
 
 `actStatus` on the request scopes positively to one or more raw statuses, as a string or a list.
@@ -105,7 +92,8 @@ It is what you want for a compliance diff that asks what was lost rather than wh
 { "query": "security deposit", "state": "tx", "actStatus": ["repealed", "expired"] }
 ```
 
-The values you may pass are the values a result carries, listed above. A status we hold but cannot classify (such as `enacted` or `snapshot`) is not accepted.
+The values you may pass are the values a result carries, listed above.
+A status we hold but cannot classify (such as `enacted` or `snapshot`) is not accepted.
 An unrecognized one is rejected with a 422 rather than silently matching nothing, so read the enum on the endpoint's OpenAPI schema if you want the machine-readable set.
 
 Combining a dead status here with `excludeRepealed: true` contradicts itself and is rejected with a 422 as well.
@@ -161,39 +149,20 @@ async function section(actId) {
 let sec = await section("USC_T42_C21_S1983");
 if (sec.goodLawStatus === "not_good_law") {
   console.warn(`Do not rely on ${sec.citation}: ${sec.actStatus}`);
+} else if (sec.goodLawStatus === "unknown") {
+  console.warn(`Verify ${sec.citation} against the official source before relying on it.`);
 }
+
+// Follow a section that moved.
 if (sec.actStatus === "renumbered" && sec.renumberedTo) {
   sec = await section(sec.renumberedTo);
 }
+
+console.log(sec.citation, "-", sec.currencyNote ?? "no currency note");
 ```
 </CodeGroup>
 
-## Cross-references between statutes and regulations
-
-USC and CFR sections carry each other's citations where the source material draws the link, so you can walk from a statute to the regulations that implement it, or from a regulation back to the law that authorizes it, without a separate search.
-
-- **`statutoryAuthority`** (CFR results): the USC citation(s) the regulation cites as its authorizing statute.
-- **`implementingRegulations`** (USC results): the reverse index, which CFR sections cite this statute as their authority.
-- **`crossReferencesCfr`** / **`crossReferencesUsc`**: parsed cross-references to the other corpus found in the section's own text, as a list of section strings (e.g. `['1.6011-4']`). A section referencing itself is represented as `'self:<section>'` rather than omitted.
-
-All four are nullable and populated only where the underlying source material actually draws the connection.
-Absence does not mean no relationship exists, only that it was not extractable from the text.
-
-## Federal Register tracking fields
-
-`FEDERAL_REGISTER` results (final and proposed rules) carry rulemaking-lifecycle fields not present on statute or regulation results, useful for tracking a rule from proposal through effect:
-
-| Field | Meaning |
-|-------|---------|
-| `frEffectiveOn` | The rule's effective date. |
-| `frCommentsCloseOn` | Deadline for public comment, on a proposed rule. |
-| `frSignificant` | Whether the rule is flagged as economically or otherwise significant. |
-| `frCorrectionOf` / `frCorrections` | Links a correction notice to the rule it corrects, and vice versa. |
-| `frRelatedDocuments` | Other documents sharing the same Regulation Identifier Number (RIN). |
-| `frRegulationIdNumbers` | The RIN(s) assigned to the rulemaking. |
-| `frDocketIds` | The regulations.gov docket ID(s) for the rulemaking. |
-
-These are populated on `GET /us/statutes/section/{actId}` (not on search results) for sections under `corpusType=FEDERAL_REGISTER`.
+The cross-reference fields (`statutoryAuthority`, `implementingRegulations`, `crossReferencesCfr`, `crossReferencesUsc`) and the Federal Register tracking fields (`frEffectiveOn`, `frCommentsCloseOn` and the rest) are described on [Response fields](/api-guide/concepts/response-fields).
 
 ## Why the verdict differs by corpus
 
@@ -201,50 +170,64 @@ These are populated on `GET /us/statutes/section/{actId}` (not on search results
 It is decided by the publisher, because only a publisher that records a retirement lets us detect one.
 The rule is an allow-list: a source earns a good-law verdict only after its own rescission signal has been measured, and a new source is `unknown` until then rather than certified by default.
 
-Read these if you depend on one of the corpora named.
+| Source | `goodLawStatus` served | Why |
+|---|---|---|
+| `STATE_AGENCY_GUIDANCE`, `state_insurance_bulletin` | `good_law` | The regulator marks rescissions diligently, and the Department's own withdrawal statements set a dead `actStatus`. |
+| `STATE_AGENCY_GUIDANCE`, `state_financial_bulletin` | `unknown` | The regulator has rescinded nothing we hold, so there is no signal to certify. |
+| `STATE_AG_OPINION` | `unknown` | Only Georgia, Ohio and Wyoming print any supersession signal, and none is certified yet. |
+| `AGENCY_ADJUDICATION`, every source except CFPB (`nlrb_board_decision`, `mspb_precedential`, `mspb_nonprecedential`, `olc_opinion`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent`, `immigration_admin_precedent`) | `unknown` | No publisher in this family ships a structured overruling or supersession field. |
+| `ftc_administrative_decision` | `unknown` | The sunset is prose inside the order, with its own conditions. |
+| `ftc_hsr_interpretation` | `unknown` | The supersession relation is served, but the Commission prints no currency verdict. |
+| `ftc_advocacy_filing` | `unknown` | It binds nobody, so currency is close to the wrong question. |
+| CFPB enforcement actions | A real verdict, not `unknown`: `actStatus` is `in_force` or `terminated` | The only exception: the Bureau publishes its own lifecycle status for every action. |
+
+The reasons, per source, are below.
 
 <AccordionGroup>
 
 <Accordion title="State agency guidance: the verdict is per publisher, not per state">
 `goodLawStatus` under `corpusType=STATE_AGENCY_GUIDANCE` is decided by the publisher that issued the document, and a state can hold two publishers with different answers.
 
-**Arizona is the worked example.**
+Arizona is the worked example.
 Its insurance regulator marks rescissions diligently, so `source=state_insurance_bulletin` earns `good_law`: 15 of its 199 bulletins are served with a dead `actStatus` on the strength of the Department's own withdrawal statements.
 Its financial-institutions regulator, which shares the same index, has rescinded nothing we hold: 0 of 35.
 So `source=state_financial_bulletin` is served `unknown` in both Arizona and Oregon, and will be until a regulator actually withdraws something and we store it.
 
 The state, the `corpusType` and the `actStatus` are the same, and the verdicts differ because the publishers differ.
-Read `unknown` here as "we make no claim", not as "probably still current".
 </Accordion>
 
 <Accordion title="State AG opinions: every one is `unknown`">
-Every section under `corpusType=STATE_AG_OPINION` is served with `goodLawStatus: "unknown"`, in every jurisdiction. This is by design, not a gap.
-
-An AG opinion is not amended. It is withdrawn, overruled, modified, or left standing, and almost no publisher records which.
-Of the 52 jurisdictions surveyed, exactly three print a supersession signal of any kind: Georgia publishes an "Obsolete and Modified Opinions" ledger, Ohio publishes an Overruled Opinions list, and Wyoming annotates a withdrawn opinion in its own index with the case that overtook it.
-The other 49 publish nothing, so for them an opinion issued in 1985 and an opinion issued last month are indistinguishable on currency.
-
-None of the three has yet been measured against the criteria we require before certifying a publisher, so the allow-list is empty and nothing in this corpus is promoted.
-
-Ohio's list has been measured, and it changes less than its title suggests. Parsed in full on 2026-09-12, it has 584 rows, of which only 47 name an opinion we serve and only 20 of those 47 say the opinion is dead. That is 1.42% of Ohio's served archive. The other 27 say `followed by`, `approved`, `clarified` or `modified in part`, which mean the opinion still stands, so among the rows that name an opinion we serve, a list headed "Overruled Opinions" is 57% not overrulings (27 of 47). Most of the ledger, 536 of 584 rows, is about Ohio's 1920-1992 era, which we do not serve.
-
-Even the best supersession signal in this corpus reaches a small, mostly historical fraction of it, and reading a row requires reading its verb. That is why the measurement does not promote Ohio out of `unknown`.
-
-Here `unknown` means we make no claim about whether the Attorney General still stands behind the opinion. It does not mean "probably still current".
+Every section under `corpusType=STATE_AG_OPINION` is served with `goodLawStatus: "unknown"`, in every jurisdiction.
+Of the 52 jurisdictions surveyed, only Georgia, Ohio and Wyoming print any supersession signal, and none is certified yet, so the allow-list is empty and nothing in this corpus is promoted.
 An AG opinion is also persuasive authority, not binding law, even when it is current: see [Corpus types](/api-guide/concepts/corpus-types).
+
+<Expandable title="Why, and the Ohio measurement">
+An AG opinion is not amended.
+It is withdrawn, overruled, modified, or left standing, and almost no publisher records which.
+Georgia publishes an "Obsolete and Modified Opinions" ledger, Ohio publishes an Overruled Opinions list, and Wyoming annotates a withdrawn opinion in its own index with the case that overtook it.
+The other 49 publish nothing, so for them an opinion issued in 1985 and an opinion issued last month are indistinguishable on currency.
+None of the three has yet been measured against the criteria we require before certifying a publisher.
+
+Ohio's list has been measured, and it changes less than its title suggests.
+Parsed in full on 2026-09-12, it has 584 rows, of which only 47 name an opinion we serve and only 20 of those 47 say the opinion is dead.
+That is 1.42% of Ohio's served archive.
+The other 27 say `followed by`, `approved`, `clarified` or `modified in part`, which mean the opinion still stands, so among the rows that name an opinion we serve, a list headed "Overruled Opinions" is 57% not overrulings (27 of 47).
+Most of the ledger, 536 of 584 rows, is about Ohio's 1920-1992 era, which we do not serve.
+
+Even the best supersession signal in this corpus reaches a small, mostly historical fraction of it, and reading a row requires reading its verb.
+That is why the measurement does not promote Ohio out of `unknown`.
+</Expandable>
 </Accordion>
 
 <Accordion title="Administrative adjudications: the text is served, the doctrine is not certified">
-Every corpus under `corpusType=AGENCY_ADJUDICATION` except one is served with `goodLawStatus: "unknown"`. This is by design, not a gap.
-
-**We serve the decision exactly as the body issued it, and we have not verified that it is still good law.**
-Here `unknown` means we make no claim.
+Every corpus under `corpusType=AGENCY_ADJUDICATION` except one is served with `goodLawStatus: "unknown"`.
+We serve the decision exactly as the body issued it, and we have not verified that it is still good law.
 
 The reason is the publisher.
 An adjudication is superseded by another decision, not by an amendment to itself, so the document never changes when it stops being law and none of the ordinary currency instruments fire.
-**No publisher in this family ships a structured overruling or supersession field.**
+No publisher in this family ships a structured overruling or supersession field.
 
-`nlrb_board_decision` is the clearest case, and it is deliberately not on the allow-list.
+`nlrb_board_decision` is the clearest case, and it is not on the allow-list.
 Board doctrine swings hard with Board composition, so an overruling is the normal course rather than an edge case, and the NLRB publishes nothing machine-readable that records one.
 Its CITENET Classified Index is a subject digest, not a citator: it carries an overruling only as editorial prose on the decision doing the overruling, with no reverse edge on the decision that was overruled.
 Two independent measurements, the citenet probe and a supersession sweep over the landed corpus, both returned no signal.
@@ -252,26 +235,15 @@ So we serve the Board's text faithfully and refuse to assert what a later Board 
 
 `mspb_precedential`, `mspb_nonprecedential`, `olc_opinion`, `sec_commission_opinion`, `bia_precedent`, `ag_precedent` and `immigration_admin_precedent` are `unknown` for the same reason.
 
-<Warning>
-  Do not treat `goodLawStatus: "unknown"` under this corpusType as a soft yes.
-  On a body whose doctrine turns over with its membership, a decision served as
-  issued may have been overruled the week after it was decided, and nothing in
-  this API will tell you.
-  If your use of an adjudication depends on it still being good law, check the
-  body's own subsequent output.
-</Warning>
+On a body whose doctrine turns over with its membership, a decision served as issued may have been overruled the week after it was decided, and nothing in this API will tell you.
+If your use of an adjudication depends on it still being good law, check the body's own subsequent output.
 </Accordion>
 
 <Accordion title="FTC administrative decisions: the sunset is in the order, not in the metadata">
-`ftc_administrative_decision` is `unknown` for a related but distinct reason, because it is the one place where the document tells you something the API cannot.
-
-Since 1995 the Commission's standard consent order **terminates 20 years after it issues**, and many orders carry an explicit sunset paragraph in their own text.
-So a 2001 consent order is very likely spent today.
-
-Nothing in the FTC's published metadata says so.
-The sunset is prose inside the order, with its own conditions, exceptions and tolling, and **we deliberately do not compute an expiry from `issued_date + 20 years`**.
-Inferring a legal conclusion from arithmetic on a date is exactly the kind of invented fact this API refuses to serve.
-Read the order's own terms.
+`ftc_administrative_decision` is `unknown` because the document tells you something the API cannot.
+Since 1995 the Commission's standard consent order terminates 20 years after it issues, and many orders carry an explicit sunset paragraph in their own text, so a 2001 consent order is very likely spent today.
+Nothing in the FTC's published metadata says so: the sunset is prose inside the order, with its own conditions, exceptions and tolling.
+We do not compute an expiry from `issued_date + 20 years`, so read the order's own terms.
 
 The Commission's Case Status facet does not close that gap either, and should not be read as if it did: it says a matter is closed, not that the order which closed it stopped binding.
 It is held with the document and is never mapped to a dead `actStatus`, and it is not exposed as a response field.
@@ -280,43 +252,32 @@ It is held with the document and is never mapped to a dead `actStatus`, and it i
 <Accordion title="FTC HSR interpretations: a relation the publisher states, and a verdict it does not">
 `ftc_hsr_interpretation` is `unknown`, even though this source carries real supersession data.
 
-The Commission published Formal Interpretation No. 13 to **supersede** No. 5, and says so in the
-document's own identifier. It publishes the explanatory material for No. 15 in **three dated
-versions**, 1998, July 1999 and March 2001. Both relations are served, as `supersedes` and
-`supersededBy` carrying act ids, so you can walk from any version of an interpretation to the one
-that replaced it.
+The Commission published Formal Interpretation No. 13 to supersede No. 5, and says so in the document's own identifier.
+It publishes the explanatory material for No. 15 in three dated versions, 1998, July 1999 and March 2001.
+Both relations are served, as `supersedes` and `supersededBy` carrying act ids, so you can walk from any version of an interpretation to the one that replaced it.
+Every member of those chains is served with `actStatus: "in_force"`, including the interpretations that were superseded.
 
-We do not convert that into a currency verdict. Every member of those chains is
-served with `actStatus: "in_force"`, including the interpretations that were superseded.
+`effectiveDate` is absent on 13 of the 20 formal interpretations.
+The FTC publishes no date field for that series, and those 13 print dates only inside their own argument, where the document's own date cannot be distinguished from the dates of the rules and correspondence it discusses.
+We leave the field empty rather than guess it.
 
-The reason is the size of the series. There are 20 formal interpretations, so one wrong link is 5%
-of the corpus, and a dead `actStatus` removes a document from retrieval altogether. The earlier
-interpretation is also usually exactly what a reader of the later one needs to see. So we serve the
-sequence and let you judge it, rather than asserting a conclusion the Commission never printed.
+The informal half carries no supersession data at all, and is in any case staff views rather than Commission action: the Premerger Notification Office answering a practitioner's question, not binding on the Commission.
 
-The informal half carries no supersession data at all, and is in any case **staff views rather than
-Commission action**: the Premerger Notification Office answering a practitioner's question, not
-binding on the Commission.
-
-`effectiveDate` is absent on 13 of the 20 formal interpretations. The FTC publishes no date
-field for that series, and those 13 print dates only inside their own argument, where the
-document's own date cannot be distinguished from the dates of the rules and correspondence it
-discusses. We leave the field empty rather than guess it.
+<Expandable title="Why we do not compute a verdict">
+There are 20 formal interpretations, so one wrong link is 5% of the corpus, and a dead `actStatus` removes a document from retrieval altogether.
+The earlier interpretation is also usually exactly what a reader of the later one needs to see.
+So we serve the sequence and let you judge it, rather than asserting a conclusion the Commission never printed.
+</Expandable>
 </Accordion>
 
 <Accordion title="FTC advocacy filings: advisory, and never law to begin with">
-`ftc_advocacy_filing` is `unknown` for a reason that is different in kind from every other source
-on this page: currency is close to the wrong question.
+`ftc_advocacy_filing` is `unknown` for a reason that is different in kind from every other source on this page: currency is close to the wrong question.
 
-An advocacy filing is the Commission or its staff writing to a state legislature, a state supreme
-court, a governor or another federal agency about what a proposed measure would do to competition.
-**It binds nobody.** It decides no case, it construes no FTC rule, and the recipient is free to
-ignore it. There is no status it could lose, because it never had the force these other sources
-have.
+An advocacy filing is the Commission or its staff writing to a state legislature, a state supreme court, a governor or another federal agency about what a proposed measure would do to competition.
+It binds nobody: it decides no case, it construes no FTC rule, and the recipient is free to ignore it.
+There is no status it could lose, because it never had the force these other sources have.
 
-It is held as its own `source`, with its own `forum` value (`ftc_advocacy`), so you can scope it in
-or out of an `AGENCY_GUIDANCE` query in one parameter, and every document carries a `coverageNote`
-saying this in its own payload.
+It is held as its own `source`, with its own `forum` value (`ftc_advocacy`), so you can scope it in or out of an `AGENCY_GUIDANCE` query in one parameter, and every document carries a `coverageNote` saying this in its own payload.
 </Accordion>
 
 <Accordion title="BIA and Attorney General decisions: reading a supersession link">
@@ -325,10 +286,10 @@ The `I&N Dec.` reporter is the one place in this corpus where the publisher stat
 We resolve those statements into a graph.
 `supersedes` and `supersededBy` carry act ids.
 
-**The direction is the cited decision, not the one you are reading.**
+The direction is the cited decision, not the one you are reading.
 A headnote under `Matter of Diji, 30 I&N Dec. 1 (BIA 2026)` reading "*Matter of G-Y-R-*, 23 I&N Dec. 181 (BIA 2001), overruled" means G-Y-R- is dead and Diji is in force, not the other way round.
 
-**A link is not by itself fatal, so read `actStatus` rather than the link's presence.**
+A link is not by itself fatal, so read `actStatus` rather than the link's presence.
 Most of the relations the publisher states are `followed`, `modified`, `clarified`, `distinguished` or `reaffirmed`, and none of those kills the cited decision.
 Partial dispositions are stored distinctly and do NOT carry a dead `actStatus`, because a partly overruled decision is still law for everything else it held.
 Only an unqualified overruling, vacatur, supersession or withdrawal moves the status.
@@ -340,6 +301,7 @@ The whole corpus is still served as `goodLawStatus: "unknown"`, because the sign
 <Accordion title="CFPB enforcement actions: an agency's own status enum">
 Most of the corpus derives `goodLawStatus` from a repeal signal in the text.
 One source instead carries the issuing agency's own published lifecycle status, and it behaves differently from everything around it.
+It is the single exception in the source table above.
 
 The Consumer Financial Protection Bureau assigns every enforcement action one of three statuses and [publishes the definitions itself](https://www.consumerfinance.gov/enforcement/actions/enforcement-action-definitions/):
 
@@ -351,11 +313,11 @@ The Consumer Financial Protection Bureau assigns every enforcement action one of
 
 Two consequences follow.
 
-**185 of the 386 actions carry the dead status, so they are excluded from ordinary search results.**
+First, 185 of the 386 actions carry the dead status, so they are excluded from ordinary search results.
 That is close to half the source, and it is correct: an order that no longer binds anyone should not be returned as live law.
 Query them explicitly with `actStatus: "terminated"` if you need the historical record.
 
-**That status bundles three different endings and the Bureau does not separate them.**
+Second, that status bundles three different endings and the Bureau does not separate them.
 A matter it lost or withdrew is not the same event as an order that ran its term, and no field distinguishes them.
 Each record also carries the Bureau's raw status string verbatim in `history`, and you should read that rather than inferring an outcome from `actStatus` alone.
 
@@ -376,17 +338,8 @@ Without `supersessionActions` a caller cannot tell a modified revenue procedure 
 
 ## Related
 
-<CardGroup cols={2}>
-  <Card title="Section Identifiers" href="/api-guide/concepts/section-ids">
-    The `actId` handle and the search then section then body workflow.
-  </Card>
-  <Card title="Response Fields" href="/api-guide/concepts/response-fields">
-    Which fields each corpus populates, and point-in-time text with `asOf`.
-  </Card>
-  <Card title="Grounding LLMs" href="/api-guide/grounding-llms">
-    Cite only good-law sections and link back to the official source.
-  </Card>
-  <Card title="Coverage" href="/api-guide/coverage">
-    Which corpora are ingested and how often each refreshes, per jurisdiction.
-  </Card>
-</CardGroup>
+- Time and versions: this page covers whether a section is still law, [Point-in-time law](/api-guide/point-in-time) covers past text with `asOf`, and [Amendment history](/api-guide/concepts/amendment-history) covers when a section changed.
+- [Section identifiers](/api-guide/concepts/section-ids): the `actId` handle and the search then section then body workflow.
+- [Response fields](/api-guide/concepts/response-fields): which fields each corpus populates.
+- [Grounding LLMs](/api-guide/grounding-llms): cite only good-law sections and link back to the official source.
+- [Coverage](/api-guide/coverage): which corpora are ingested and how often each refreshes, per jurisdiction.

@@ -30,53 +30,58 @@ There are six chatbots, one per platform, and they share one architecture. Each 
 
 ## Shared architecture
 
-Every chatbot follows this flow:
+Every chatbot receives a platform message through a webhook or WebSocket, calls `POST /api/v1/us/statutes/search`, formats the response with citations, and replies in-thread when the platform supports it. The flow matches the diagram on the [Integrations overview](/integrations#common-architecture).
 
-```mermaid
-flowchart TD
-    A["User message<br/>(Slack, Discord, Teams, etc.)"] --> B["Platform webhook / WebSocket"]
-    B --> C["Bot runtime<br/>(Python or Node)"]
-    C -->|"POST /api/v1/us/statutes/search"| D["Vaquill statutes API"]
-    D --> E["Format response<br/>+ citations"]
-    E --> F["Reply in-thread<br/>(when supported)"]
+<Accordion title="Shared components">
+  All six bots share the same components:
 
-    style A fill:#dcfce7,stroke:#16a34a,color:#15803d
-    style D fill:#dcfce7,stroke:#16a34a,color:#15803d
-```
-
-All six bots share the same components:
-
-- A Vaquill client (`vaquill_client.py`) that wraps `POST /api/v1/us/statutes/search`
-- A conversation manager for per-channel or per-DM chat history
-- A rate limiter with a Redis or in-memory backend
-- Slash or prefix commands: `help`, `clear`, `examples`, `stats`
-- Citation rendering built on each platform's own primitives (Block Kit, Adaptive Cards, inline keyboards)
+  - A Vaquill client (`vaquill_client.py`) that wraps `POST /api/v1/us/statutes/search`
+  - A conversation manager for per-channel or per-DM chat history
+  - A rate limiter with a Redis or in-memory backend
+  - Slash or prefix commands: `help`, `clear`, `examples`, `stats`
+  - Citation rendering built on each platform's own primitives (Block Kit, Adaptive Cards, inline keyboards)
+</Accordion>
 
 ## Pick by deployment surface
 
-| Bot | Hosting model | Public URL required? |
-|---|---|---|
-| Slack | Socket Mode (no URL) or HTTP | HTTP mode only |
-| Discord | Outbound WebSocket (Discord gateway) | No |
-| Microsoft Teams | HTTP via Azure Bot Framework | Yes |
-| Telegram | Polling or webhook | Webhook mode only |
-| WhatsApp | HTTP via Twilio webhooks | Yes |
-| Signal | HTTP via signal-cli-rest-api | No (internal Docker network) |
+| Bot | Hosting model | Public URL required? | Documented deploy recipes |
+|---|---|---|---|
+| Slack | Socket Mode (no URL) or HTTP | HTTP mode only | Docker Compose, Docker, Railway, Render, Fly.io, VPS + nginx |
+| Discord | Outbound WebSocket (Discord gateway) | No | Docker, Railway, Render, VPS + systemd, Fly.io |
+| Microsoft Teams | HTTP via Azure Bot Framework | Yes | Docker, Azure Web App, Railway, Render |
+| Telegram | Polling or webhook | Webhook mode only | Docker, Render, Railway, VPS + systemd, Fly.io |
+| WhatsApp | HTTP via Twilio webhooks | Yes | Docker, Render, Railway, Fly.io, VPS |
+| Signal | HTTP via signal-cli-rest-api | No (internal Docker network) | Docker Compose, Dokploy |
 
 To avoid exposing any ports during development, use Slack (Socket Mode), Discord, Telegram (polling), or Signal. None of them need a public URL.
 
-## Deploy targets
+<Accordion title="Deploy targets">
+  All six bots ship with Dockerfiles and have been smoke-tested on these targets:
 
-All six bots ship with Dockerfiles and have been smoke-tested on these targets:
+  - Docker Compose (recommended for self-hosting)
+  - Railway (Git-based deploys)
+  - Render (free tier with cold starts)
+  - Fly.io (low-latency regions)
+  - VPS + systemd (full control)
+  - Azure App Service (Teams bot only)
 
-- Docker Compose (recommended for self-hosting)
-- Railway (Git-based deploys)
-- Render (free tier with cold starts)
-- Fly.io (low-latency regions)
-- VPS + systemd (full control)
-- Azure App Service (Teams bot only)
+  Each bot's page has its own deployment recipe.
+</Accordion>
 
-Each bot's page has its own deployment recipe.
+## Shared bot settings
+
+Every bot reads these variables, plus its own platform-specific ones on its page.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
+| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | API base URL |
+| `VAQUILL_MODE` | No | `standard` | Default search mode: `standard` (faster) or `deep` (more thorough). WhatsApp users switch it with `/mode`. |
+| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
+| `REDIS_URL` | No | - | Optional Redis URL. Enables distributed rate limiting (Slack, Discord, Teams) and persistent sessions and rate limits (WhatsApp). |
+
+Rate-limit variables differ per bot and are listed on each page.
+For `401`, `402` and `429` responses from the API, see the [Errors reference](/api-guide/errors).
 
 ## Source
 

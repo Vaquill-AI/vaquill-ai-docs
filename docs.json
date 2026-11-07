@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vaquill AI",
-  "description": "US primary law as a developer API: 5.4M+ sections across 56 jurisdictions. The US Code, the CFR, the Federal Register, every state and territory statute code, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
+  "description": "US primary law as a developer API. The US Code, the CFR, the Federal Register, state and territory statute codes, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
   "colors": {
     "primary": "#6E3730",
     "light": "#8C4A3F",
@@ -45,13 +45,8 @@
     "404": {
       "redirect": false,
       "title": "Page not found",
-      "description": "That page doesn't exist, or the URL changed. Try the search bar above, or head back to the [homepage](/introduction)."
+      "description": "That page doesn't exist, or the URL changed. Try the search bar above, or start from the [API overview](/api-guide/overview)."
     }
-  },
-  "banner": {
-    "content": "New: DOJ Justice Manual, USCIS Policy Manual, USPTO MPEP/TMEP, and DFARS PGI are now in the API. See [what's covered](/api-guide/coverage).",
-    "dismissible": true,
-    "type": "info"
   },
   "seo": {
     "indexing": "all",
@@ -66,39 +61,16 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Data API Guide",
+        "tab": "Guide",
         "groups": [
           {
-            "group": "DATA COVERAGE",
-            "icon": "database",
-            "pages": [
-              "api-guide/coverage",
-              "api-guide/coverage/federal",
-              "api-guide/coverage/states",
-              "api-guide/coverage/agency-guidance",
-              "api-guide/coverage/treaties",
-              "api-guide/coverage/india",
-              "api-guide/session-laws",
-              "api-guide/rulemaking",
-              "api-guide/roadmap",
-              "api-guide/changelog"
-            ]
-          },
-          {
-            "group": "USE CASES",
-            "icon": "lightbulb",
-            "pages": [
-              "api-guide/use-cases"
-            ]
-          },
-          {
-            "group": "GET STARTED",
+            "group": "Get started",
             "icon": "rocket",
             "pages": [
-              "api-guide/overview",
               "api-guide/quickstart",
+              "api-guide/overview",
               "api-guide/authentication",
-              "api-guide/data-privacy",
+              "api-guide/use-cases",
               {
                 "group": "SDKs",
                 "icon": "code",
@@ -108,24 +80,22 @@
                   "api-guide/sdks/python",
                   "api-guide/sdks/typescript",
                   "api-guide/sdks/go",
-                  "api-guide/sdks/java",
-                  "api-guide/sdks/kotlin",
+                  "api-guide/sdks/cli",
                   "api-guide/sdks/integrations",
-                  "api-guide/sdks/cli"
+                  {
+                    "group": "JVM (preview)",
+                    "expanded": false,
+                    "pages": [
+                      "api-guide/sdks/java",
+                      "api-guide/sdks/kotlin"
+                    ]
+                  }
                 ]
               }
             ]
           },
           {
-            "group": "BULK, SQL & RIGHTS",
-            "icon": "server",
-            "pages": [
-              "api-guide/bulk-and-sql",
-              "api-guide/rights-and-licensing"
-            ]
-          },
-          {
-            "group": "CORE CONCEPTS",
+            "group": "Core concepts",
             "icon": "book-open",
             "pages": [
               "api-guide/concepts/search",
@@ -133,82 +103,117 @@
               "api-guide/concepts/corpus-types",
               "api-guide/concepts/jurisdictions",
               "api-guide/concepts/hierarchy",
+              "api-guide/concepts/section-ids",
+              "api-guide/concepts/response-fields",
+              "api-guide/concepts/formats",
               "api-guide/concepts/citation-formats",
               "api-guide/concepts/pinpoints",
               "api-guide/concepts/citation-quality",
-              "api-guide/concepts/section-ids",
               "api-guide/concepts/section-intelligence",
               "api-guide/point-in-time",
               "api-guide/concepts/status-and-currency",
-              "api-guide/concepts/amendment-history",
-              "api-guide/concepts/response-fields",
-              "api-guide/concepts/formats"
+              "api-guide/concepts/amendment-history"
             ]
           },
           {
-            "group": "LAW CHANGE ALERTS",
-            "icon": "bell",
+            "group": "Guides",
+            "icon": "lightbulb",
             "pages": [
-              "api-guide/alerts"
-            ]
-          },
-          {
-            "group": "WORKING WITH THE API",
-            "icon": "code",
-            "pages": [
+              {
+                "group": "Recipes",
+                "icon": "flask",
+                "pages": [
+                  "api-guide/recipes/rag-grounding",
+                  "api-guide/recipes/statute-chatbot",
+                  "api-guide/recipes/citation-lookup",
+                  "api-guide/recipes/pinpoint-subsection",
+                  "api-guide/recipes/browse-hierarchy",
+                  "api-guide/recipes/subject-corpus",
+                  "api-guide/recipes/compliance-mapping",
+                  "api-guide/recipes/multi-state-comparison",
+                  "api-guide/recipes/coverage-monitoring",
+                  "api-guide/recipes/citation-enrichment",
+                  "api-guide/recipes/mcp-tool"
+                ]
+              },
+              "api-guide/grounding-llms",
+              "api-guide/alerts",
               "api-guide/pagination",
-              "api-guide/errors",
-              "api-guide/best-practices",
-              "api-guide/faq"
+              "api-guide/best-practices"
             ]
           },
           {
-            "group": "ERROR CODES",
+            "group": "Data",
+            "icon": "database",
+            "pages": [
+              {
+                "group": "Coverage",
+                "root": "api-guide/coverage",
+                "expanded": false,
+                "pages": [
+                  "api-guide/coverage/federal",
+                  "api-guide/coverage/treaties",
+                  "api-guide/coverage/states",
+                  "api-guide/coverage/agency-guidance"
+                ]
+              },
+              "api-guide/session-laws",
+              "api-guide/rulemaking",
+              "api-guide/bulk-and-sql",
+              "api-guide/rights-and-licensing"
+            ]
+          },
+          {
+            "group": "Reference",
             "icon": "circle-exclamation",
             "pages": [
-              "errors/codes"
+              "api-guide/errors",
+              "errors/codes",
+              "api-guide/faq",
+              "api-guide/data-privacy"
             ]
           },
           {
-            "group": "GROUNDING AI",
-            "icon": "sparkles",
+            "group": "Releases",
+            "icon": "clock",
             "pages": [
-              "api-guide/grounding-llms"
-            ]
-          },
-          {
-            "group": "RECIPES",
-            "icon": "flask",
-            "pages": [
-              "api-guide/recipes/rag-grounding",
-              "api-guide/recipes/statute-chatbot",
-              "api-guide/recipes/citation-lookup",
-              "api-guide/recipes/pinpoint-subsection",
-              "api-guide/recipes/browse-hierarchy",
-              "api-guide/recipes/subject-corpus",
-              "api-guide/recipes/compliance-mapping",
-              "api-guide/recipes/multi-state-comparison",
-              "api-guide/recipes/coverage-monitoring",
-              "api-guide/recipes/citation-enrichment",
-              "api-guide/recipes/mcp-tool"
+              "api-guide/changelog",
+              "api-guide/roadmap"
             ]
           }
         ]
       },
       {
-        "tab": "Data API Reference",
+        "tab": "US API reference",
         "openapi": "https://api.vaquill.ai/external/openapi.json"
+      },
+      {
+        "tab": "India API reference",
+        "groups": [
+          {
+            "group": "India guide",
+            "icon": "book-open",
+            "pages": [
+              "api-guide/coverage/india"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": "https://api.vaquill.ai/in/openapi.json"
+          }
+        ]
       },
       {
         "tab": "Integrations",
         "groups": [
           {
-            "group": "INTEGRATIONS",
+            "group": "Integrations",
             "icon": "plug",
             "pages": [
               "integrations/index",
               {
-                "group": "MCP SERVERS",
+                "group": "MCP servers",
+                "expanded": true,
                 "pages": [
                   "integrations/mcp/index",
                   "integrations/mcp/vaquill",
@@ -218,34 +223,8 @@
                 ]
               },
               {
-                "group": "CHATBOTS",
-                "pages": [
-                  "integrations/chatbots/index",
-                  "integrations/chatbots/slack",
-                  "integrations/chatbots/discord",
-                  "integrations/chatbots/microsoft-teams",
-                  "integrations/chatbots/telegram",
-                  "integrations/chatbots/whatsapp",
-                  "integrations/chatbots/signal"
-                ]
-              },
-              {
-                "group": "WIDGETS",
-                "pages": [
-                  "integrations/widgets/index",
-                  "integrations/widgets/embedded-chat",
-                  "integrations/widgets/docker-widget",
-                  "integrations/widgets/widget-pro"
-                ]
-              },
-              {
-                "group": "BROWSER",
-                "pages": [
-                  "integrations/browser/chrome"
-                ]
-              },
-              {
-                "group": "AUTOMATION",
+                "group": "Automation",
+                "expanded": false,
                 "pages": [
                   "integrations/automation/n8n"
                 ]
@@ -253,18 +232,33 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "India API Reference",
-        "openapi": "https://api.vaquill.ai/in/openapi.json"
       }
-    ]
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Changelog",
+          "icon": "clock",
+          "href": "/api-guide/changelog"
+        },
+        {
+          "anchor": "MCP",
+          "icon": "plug",
+          "href": "/integrations/mcp/vaquill"
+        },
+        {
+          "anchor": "GitHub",
+          "icon": "github",
+          "href": "https://github.com/Vaquill-AI/open-us-law"
+        }
+      ]
+    }
   },
   "navbar": {
     "links": [
       {
         "label": "Open US Law Dataset",
-        "href": "https://github.com/Vaquill-AI",
+        "href": "https://vaquill.ai/open-us-law",
         "icon": "github"
       },
       {
@@ -363,7 +357,7 @@
         "header": "Developers",
         "items": [
           {
-            "label": "Statutes API",
+            "label": "Data API",
             "href": "https://vaquill.ai/legal-api"
           },
           {
@@ -375,16 +369,8 @@
             "href": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
           },
           {
-            "label": "Postman Collection",
-            "href": "https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd?action=share&source=copy-link&creator=52997016"
-          },
-          {
             "label": "Open US Law Dataset",
             "href": "https://vaquill.ai/open-us-law"
-          },
-          {
-            "label": "Open US Law (GitHub)",
-            "href": "https://github.com/Vaquill-AI/open-us-law"
           }
         ]
       },
@@ -641,6 +627,30 @@
       "destination": "/errors/codes#validation_error"
     },
     {
+      "source": "/errors/bad_request",
+      "destination": "/errors/codes#bad_request"
+    },
+    {
+      "source": "/errors/insufficient_scope",
+      "destination": "/errors/codes#insufficient_scope"
+    },
+    {
+      "source": "/errors/quota_exceeded",
+      "destination": "/errors/codes#quota_exceeded"
+    },
+    {
+      "source": "/errors/method_not_allowed",
+      "destination": "/errors/codes#method_not_allowed"
+    },
+    {
+      "source": "/errors/payload_too_large",
+      "destination": "/errors/codes#payload_too_large"
+    },
+    {
+      "source": "/errors/unsupported_media_type",
+      "destination": "/errors/codes#unsupported_media_type"
+    },
+    {
       "source": "/coverage",
       "destination": "/api-guide/coverage"
     },
@@ -678,6 +688,26 @@
     },
     {
       "source": "/integrations/dms/:slug*",
+      "destination": "/integrations"
+    },
+    {
+      "source": "/integrations/chatbots",
+      "destination": "/integrations"
+    },
+    {
+      "source": "/integrations/chatbots/:slug*",
+      "destination": "/integrations"
+    },
+    {
+      "source": "/integrations/widgets",
+      "destination": "/integrations"
+    },
+    {
+      "source": "/integrations/widgets/:slug*",
+      "destination": "/integrations"
+    },
+    {
+      "source": "/integrations/browser/:slug*",
       "destination": "/integrations"
     },
     {

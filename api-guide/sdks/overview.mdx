@@ -3,6 +3,10 @@ title: "SDKs overview"
 description: "Official Python, TypeScript, Go, Java and Kotlin clients and framework integrations for the Vaquill Data API"
 ---
 
+import RetryRules from '/snippets/retry-rules.mdx';
+import IdempotencyKeys from '/snippets/idempotency-keys.mdx';
+import ChargedCallRule from '/snippets/charged-call-rule.mdx';
+
 The Vaquill SDKs are typed clients for the US Data API.
 They wrap the same endpoints described in this guide and add retries, typed errors, pagination helpers and credit awareness.
 Anything an SDK can do, you can also do with plain HTTP.
@@ -55,25 +59,50 @@ Every method also takes per-call `timeout`, `max_retries` / `maxRetries`, `heade
 
 ## Which calls cost credits
 
-A call is charged when the API declares the `Idempotency-Key` header on its operation. That is 30 of the 42 operations in the US document.
-Both SDKs apply the same rule, and a test in each repo derives the list from the API contract.
-Free calls: `statutes.coverage`, `boards.list`, every watch operation except the change diff (`create`, `list`, `update`, `delete`, `test`, changes and deliveries), `credits.balance` and `pricing.get`.
+<ChargedCallRule />
+
+That is 30 of the 42 operations in the US document, and every SDK applies the same rule.
+The table lists the 25 charged and 11 free operations that have a method in the Python and TypeScript clients, by `operationId`.
+The method name is the `operationId` with the namespace noun removed, so `search_statutes` is `statutes.search`, and `get_session_law_body` is `session_laws.get_body` in Python and `sessionLaws.getBody` in TypeScript.
+
+| Group | Charged | Free |
+| --- | --- | --- |
+| Statutes | `search_statutes`, `get_section`, `get_section_body`, `get_section_neighbors`, `get_sections_batch`, `count_statute_sections`, `list_statute_divisions`, `get_section_changes`, `get_section_enactments`, `get_section_rulemaking`, `get_part_rulemaking`, `get_section_cited_by`, `get_section_definitions`, `get_section_cross_state`, `resolve_statute_citation`, `resolve_statute_citations_batch`, `extract_statute_citations` | `list_statutes_coverage` |
+| Session laws | `search_session_laws`, `list_session_laws`, `get_session_law`, `get_session_law_body`, `get_session_law_versions`, `get_session_law_changes`, `get_session_laws_batch` | none |
+| Watches | `get_watch_change_diff` | `create_watch`, `list_watches`, `update_watch`, `delete_watch`, `test_watch`, `list_watch_changes`, `list_watch_deliveries` |
+| Boards, credits, pricing | none | `list_boards`, `get_credit_balance`, `get_pricing` |
+
+The `iter_*` / `*All` paging helpers and the batch helpers are charged when the call they repeat is charged.
+`extract_statute_citations` costs 0 credits when `resolve` is false.
+
+<Accordion title="Operations without an SDK method">
+  Six of the 42 operations have no method in the Python, TypeScript or Go clients: `list_rulemaking_dockets`, `list_rulemaking_documents`, `get_rulemaking_docket`, `get_rulemaking_by_rin` and `get_rin_agenda_history` are charged, and `get_rulemaking_coverage` is free.
+  Call them with `raw_request` / `rawRequest`, marking the charged ones, or with plain HTTP.
+</Accordion>
+
 Prices are not hard-coded in the SDKs. `client.pricing.get()` is free and returns the live price list.
 Some charged calls return 0 credits (for example a body that is not held), so read the figure from the response.
 
 ## Retries and timeouts
 
-The clients retry 408, 429 and 5xx responses, plus 409 only for `idempotency_in_progress`. Connection errors and timeouts are retried when it is safe.
-Backoff starts at 0.5 seconds, doubles to an 8 second cap and is scaled down by 0 to 25 percent jitter. The default is 2 retries; `max_retries=0` / `maxRetries: 0` turns them off.
-`retry-after-ms` wins over `Retry-After`, which wins over the body's `retryAfterSeconds`. A wait above 120 seconds is not retried.
+<RetryRules />
 
-Never retried: a 402 `insufficient_credits`, `daily_cap_exceeded`, any other 4xx, and anything the server marks `retryable: false`.
+Set the retry limit with `max_retries` (Python) or `maxRetries` (TypeScript).
+This is the one home for SDK retry behavior. The language pages link here.
 
 ## Idempotency
 
-Each charged call sends one generated `Idempotency-Key`, reused on every retry of that call.
-When the server honours the key it replays the stored response instead of charging again, and the response reports `idempotent_replayed` / `idempotentReplayed`.
+<IdempotencyKeys />
+
+The response flag is `idempotent_replayed` / `idempotentReplayed`.
 Pass `idempotency_key="..."` (Python) or `idempotencyKey: "..."` (TypeScript) to choose your own key.
+A key must be 16 to 255 visible ASCII characters, and an empty or invalid key is rejected before any request.
+
+What the server stores for a key:
+
+- Only a response with a `2xx`, `400` or `422` status is stored, and it is replayed for 24 hours.
+- Any other `4xx`, and any response whose call was refunded, is not stored. A retry with the same key runs again.
+- If the client hangs up after the call was charged, the charge is refunded automatically and the key is released. A retry runs again.
 
 <Warning>
   If you turn automatic keys off (`idempotency_keys=False` in Python, `idempotencyKey: false` in TypeScript), a charged call is no longer retried after a timeout, a connection error or a 5xx, because the first attempt may already have been billed. A 429 is still retried, since it is refused before any work.
@@ -129,7 +158,13 @@ These helpers are charged per item. The batch helpers are available in the Pytho
 
 Pass `max_credits` (Python) or `maxCredits` (TypeScript) when you create the client. Once responses on that client have reported that many credits, charged calls raise `SpendGuardExceeded` / throw `SpendGuardExceededError` before sending anything.
 It checks what is already spent, not the cost of the next call. `client.credits_spent` / `client.creditsSpent` shows the running total, shared with derived clients.
-While a guard is set, charged calls on the client run one at a time, from the check to the moment their credits are counted, so concurrent calls cannot all pass the check and overshoot the cap. Without a guard, calls keep full concurrency.
+A replayed response counts as 0 credits, and free calls are never blocked.
+
+<Accordion title="How the guard stays exact">
+  While a guard is set, charged calls on the client and its derived clients run one at a time, from the check to the moment their credits are counted, so concurrent calls cannot all pass the check and overshoot the cap.
+  Without a guard, calls keep full concurrency.
+  The Go, Java and Kotlin clients do the same.
+</Accordion>
 
 ## Logging
 
@@ -149,7 +184,7 @@ TypeScript's `rawRequest` returns the parsed value directly.
 
 Both SDKs verify the raw request body against the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance, accept several signatures and a list of secrets for rotation, and treat a `whsec_` secret as base64.
 A `whsec_` secret must be valid base64. Go, Java and Kotlin reject one that is not.
-Python and TypeScript reject it from the first release after 0.2.0; version 0.2.0 of both still uses the text as the key, so check that your secret is copied in full.
+Python and TypeScript reject it from 0.2.1; version 0.2.0 of both still uses the text as the key, so check that your secret is copied in full.
 Every client rejects an empty secret.
 They can also read the legacy `X-Vaquill-Signature: sha256=<hex>` header, but only when you opt in.
 

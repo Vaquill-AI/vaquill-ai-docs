@@ -3,17 +3,27 @@ title: "Quickstart"
 description: "Search US statutes and fetch a section in a few minutes"
 ---
 
-This guide walks through a first search, then fetches one section's metadata and full text using the `actId` from the results, and finally checks what is queryable.
+import LivePricing from '/snippets/live-pricing.mdx';
+import CreditsConsumed from '/snippets/credits-consumed.mdx';
+
+This guide walks through a first search, then fetches one section's full text using the `actId` from the results.
 
 Every path is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header.
 
-<Tip>
-  Prefer a GUI? The public [Postman collection](https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd?action=share&source=copy-link&creator=52997016) has every endpoint as a ready-to-run request. Fork it, set your API key as the bearer token, and send.
-</Tip>
-
 <Steps>
   <Step title="Get an API key">
-    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Copy it right away, because it is not shown again. See [Authentication](/api-guide/authentication) for details.
+    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Copy the key now and store it somewhere safe.
+    The dashboard can reveal keys created on or after 2026-08-03 again, but treat the key as a secret either way.
+    See [Authentication](/api-guide/authentication) for details.
+
+    A new account starts with a free signup credit balance that never refills, so your first calls need no purchase.
+    A `401` means the key is missing or invalid, and a `402` means the balance is used up. See [Errors](/api-guide/errors).
+
+    Keep the key in an environment variable so you do not paste it into commands:
+
+    ```bash
+    export VAQUILL_API_KEY="vq_key_..."
+    ```
   </Step>
 
   <Step title="Make your first search">
@@ -22,18 +32,19 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     <CodeGroup>
     ```bash cURL
     curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-      -H "Authorization: Bearer vq_key_..." \
+      -H "Authorization: Bearer $VAQUILL_API_KEY" \
       -H "Content-Type: application/json" \
       -d '{"query": "civil rights deprivation under color of law", "corpusType": "USC", "limit": 5}'
     ```
 
     ```python Python
+    import os
     import requests
 
     resp = requests.post(
         "https://api.vaquill.ai/api/v1/us/statutes/search",
         headers={
-            "Authorization": "Bearer vq_key_...",
+            "Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}",
             "Content-Type": "application/json",
         },
         json={
@@ -51,7 +62,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/search", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer vq_key_...",
+        "Authorization": `Bearer ${process.env.VAQUILL_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -66,7 +77,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
     </CodeGroup>
 
-    A trimmed response looks like this (captured 2026-10-22; fields that were null are left out of this sample, the live response lists them as `null`, and only the first of five results is shown). The top-level fields describe the page. Each `results` entry has a citation, an excerpt, and links to the official source.
+    Trimmed to the first of five results. The top-level fields describe the page. Each `results` entry has a citation, an excerpt, and links to the official source.
 
     ```json
     {
@@ -86,19 +97,15 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
           "sectionNumber": "1983",
           "breadcrumb": [
             { "type": "title", "num": "42", "label": "Title 42", "name": "THE PUBLIC HEALTH AND WELFARE" },
-            { "type": "chapter", "num": "21", "label": "Chapter 21", "name": "CIVIL RIGHTS" },
-            { "type": "subchapter", "num": "I", "label": "Subchapter I", "name": "GENERALLY" },
             { "type": "section", "num": "1983", "label": "Section 1983", "name": "Civil action for deprivation of rights" }
           ],
           "actStatus": "in_force",
           "currentThrough": "2026-09-18",
           "textUrl": "https://statutes-us.vaquill.ai/usc/olrc/119-111/sections/USC_T42_C21_S1983.txt",
-          "externalUrl": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title42-section1983&num=0&edition=prelim",
           "sourceUrl": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title42-section1983&num=0&edition=prelim"
         }
       ],
       "count": 5,
-      "total": 5,
       "offset": 0,
       "hasMore": true,
       "query": "civil rights deprivation under color of law",
@@ -107,41 +114,37 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     }
     ```
 
-    <Note>
+    <Accordion title="Reading count, total and creditsConsumed">
       `count` is the number of results on this page. It is not a corpus-wide match count, and no such total exists, because the API ranks a bounded candidate set rather than scoring the whole corpus. Use `hasMore` to decide whether to fetch the next page. See [Pagination](/api-guide/pagination).
 
-      The response also carries `total`, a deprecated alias for `count` kept for backward compatibility. Its name suggests a corpus-wide total, but it never was one. Read `count` in new code.
-    </Note>
+      The live response also carries `total`, a deprecated alias for `count` kept for backward compatibility, and it was left out of the sample above. Its name suggests a corpus-wide total, but it never was one. Read `count` in new code.
+      The sample also leaves out fields that were null. The live response lists them as `null`.
+      The sample omits `externalUrl`, which carries the same official link as `sourceUrl` for this section.
 
-    <Note>
-      `creditsConsumed` is what this call actually cost. Failed and refunded work bills 0, and `includeBody: true` bills each row that returns text on top of the search, so read the field instead of assuming a list price. `GET /api-credits/pricing` returns the live matrix.
-    </Note>
+      <CreditsConsumed />
+      `includeBody: true` bills each row that returns text on top of the search.
+
+      <LivePricing />
+    </Accordion>
   </Step>
 
-  <Step title="Fetch the section and its body">
-    Take an `actId` from the results (for example `USC_T42_C21_S1983`). Call `GET /us/statutes/section/{actId}` for metadata, and `GET /us/statutes/section/{actId}/body` for the full text.
+  <Step title="Fetch the section body">
+    Take an `actId` from the results (for example `USC_T42_C21_S1983`) and call `GET /us/statutes/section/{actId}/body` for the full text.
+    `GET /us/statutes/section/{actId}` returns the section's metadata alone.
+    To get text in the first call, send `includeBody: true` in step 2 instead.
 
     <CodeGroup>
     ```bash cURL
-    # Metadata
-    curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983 \
-      -H "Authorization: Bearer vq_key_..."
-
-    # Full text
     curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/body \
-      -H "Authorization: Bearer vq_key_..."
+      -H "Authorization: Bearer $VAQUILL_API_KEY"
     ```
 
     ```python Python
+    import os
     import requests
 
-    headers = {"Authorization": "Bearer vq_key_..."}
+    headers = {"Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}"}
     act_id = "USC_T42_C21_S1983"
-
-    meta = requests.get(
-        f"https://api.vaquill.ai/api/v1/us/statutes/section/{act_id}",
-        headers=headers,
-    ).json()
 
     body = requests.get(
         f"https://api.vaquill.ai/api/v1/us/statutes/section/{act_id}/body",
@@ -153,15 +156,8 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
 
     ```javascript JavaScript
-    const headers = { Authorization: "Bearer vq_key_..." };
+    const headers = { Authorization: `Bearer ${process.env.VAQUILL_API_KEY}` };
     const actId = "USC_T42_C21_S1983";
-
-    const meta = await (
-      await fetch(
-        `https://api.vaquill.ai/api/v1/us/statutes/section/${actId}`,
-        { headers },
-      )
-    ).json();
 
     const body = await (
       await fetch(
@@ -179,44 +175,16 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     </Tip>
   </Step>
 
-  <Step title="Discover coverage">
-    Coverage grows weekly. Call `GET /us/statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data. Pass one of those tokens back into `/us/statutes/search`.
-
-    <CodeGroup>
-    ```bash cURL
-    curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
-      -H "Authorization: Bearer vq_key_..."
-    ```
-
-    ```python Python
-    import requests
-
-    cov = requests.get(
-        "https://api.vaquill.ai/api/v1/us/statutes/coverage",
-        headers={"Authorization": "Bearer vq_key_..."},
-    ).json()["data"]
-
-    for j in cov["jurisdictions"]:
-        if j["hasData"]:
-            print(j["code"], list(j["corpora"].keys()))
-    ```
-
-    ```javascript JavaScript
-    const cov = (
-      await (
-        await fetch("https://api.vaquill.ai/api/v1/us/statutes/coverage", {
-          headers: { Authorization: "Bearer vq_key_..." },
-        })
-      ).json()
-    ).data;
-
-    for (const j of cov.jurisdictions) {
-      if (j.hasData) console.log(j.code, Object.keys(j.corpora));
-    }
-    ```
-    </CodeGroup>
-  </Step>
 </Steps>
+
+## Optional: discover coverage
+
+Coverage grows weekly. Call `GET /us/statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data (read `data.jurisdictions[].hasData` and `data.jurisdictions[].corpora`). Pass one of those tokens back into `/us/statutes/search`.
+
+```bash
+curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
+  -H "Authorization: Bearer $VAQUILL_API_KEY"
+```
 
 ## Next steps
 
@@ -227,8 +195,8 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
   <Card title="Best practices" href="/api-guide/best-practices">
     Scope queries, cache coverage, and handle errors well.
   </Card>
-  <Card title="Postman collection" href="https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd?action=share&source=copy-link&creator=52997016" icon="paper-plane">
-    Try every endpoint without writing code.
+  <Card title="Postman collection" href="https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd" icon="paper-plane">
+    Prefer a GUI? Every endpoint is a ready-to-run request. Fork it, set your API key as the bearer token, and send.
   </Card>
   <Card title="SDKs" href="/api-guide/sdks/overview">
     Prefer a client library? The official Python and TypeScript SDKs wrap these calls with retries, typed errors and a spend guard.

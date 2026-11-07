@@ -1,77 +1,46 @@
 ---
 title: "Build a statute lookup chatbot"
-description: "A minimal question-and-answer loop that searches US statutes, pulls the governing section, and replies with a grounded, cited answer"
+sidebarTitle: "Statute chatbot"
+description: "A minimal question-and-answer loop that searches US statutes, pulls the governing section, and replies with a cited answer"
 ---
 
 **What this gets you:** a support or research chatbot that answers "what does the law say" questions from statute text and a source link, where a bare model would guess.
 
-Each user message runs one search, pulls the best matching section's text, and
-returns an answer grounded in that text with a link to the official source. The
-loop does not depend on a framework, so it works the same in Slack, Discord, a
-web widget, or a terminal.
+Each user message runs one search, pulls the best matching section's text, and returns an answer grounded in that text with a link to the official source.
+The loop needs no framework, so it works the same in Slack, Discord, a web widget, or a terminal.
 
 **Endpoints used:** `POST /us/statutes/search`, `GET /us/statutes/section/{actId}/body`.
 
-<Tip>
-  A bot answers in the time its slowest call takes. Pass `"includeBody": true`
-  with `"limit": 1` on the search and the top section's full text comes back
-  inline, so a reply is one round trip instead of two, at the same price.
-  The two-call version below is the one to keep if you rank three candidates and
-  ground on one.
-</Tip>
-
-<Tip>
-  This is the compact version of the retrieve-then-ground pattern. For multi-source
-  answers, stricter citation rules, and prompt design, see
-  [Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding).
-</Tip>
+This is the compact retrieve-then-ground loop, and [Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding) covers multi-source answers, stricter citation rules and prompt design.
+To answer in one round trip, pass `"includeBody": true` with `"limit": 1` and the top section's text comes back inline at the same price.
+Keep the two-call version below if you rank three candidates and ground on one.
 
 ## The loop
 
 <Steps>
   <Step title="Search on the user's message">
-    Send the message to `POST /us/statutes/search`. Scope with `corpusType` and
-    `state` if your bot already knows the jurisdiction.
+    Send the message to `POST /us/statutes/search`.
+    Scope with `corpusType` and `state` if your bot already knows the jurisdiction.
   </Step>
   <Step title="Pull the best section's text">
-    Take the top result and fetch its full text with
-    `GET /us/statutes/section/{actId}/body`.
+    Take the top result and fetch its full text with `GET /us/statutes/section/{actId}/body`.
   </Step>
   <Step title="Reply, grounded and cited">
-    Give an LLM the section text and its citation, and have it answer only from
-    that text. Append the official source link so the user can verify.
+    Give an LLM the section text and its citation, and have it answer only from that text.
+    Append the official source link so the user can verify.
   </Step>
 </Steps>
 
-## Primary call: search
+<Accordion title="The search call on its own (cURL and JavaScript)">
+The Python version is `find_section()` in the function below.
 
 <CodeGroup>
 
 ```bash cURL
 curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-  -H "Authorization: Bearer vq_key_..." \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"query": "how much notice before a rent increase", "corpusType": "STATE", "state": "ca", "limit": 3}'
-```
-
-```python Python
-import requests
-
-BASE = "https://api.vaquill.ai/api/v1/us"
-HEADERS = {"Authorization": "Bearer vq_key_..."}
-
-resp = requests.post(
-    f"{BASE}/statutes/search",
-    headers=HEADERS,
-    json={
-        "query": "how much notice before a rent increase",
-        "corpusType": "STATE",
-        "state": "ca",
-        "limit": 3,
-    },
-)
-resp.raise_for_status()
-results = resp.json()["results"]
 ```
 
 ```javascript JavaScript
@@ -80,7 +49,7 @@ const BASE = "https://api.vaquill.ai/api/v1/us";
 const resp = await fetch(`${BASE}/statutes/search`, {
   method: "POST",
   headers: {
-    Authorization: "Bearer vq_key_...",
+    Authorization: `Bearer ${process.env.VAQUILL_API_KEY}`,
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
@@ -95,14 +64,17 @@ const { results } = await resp.json();
 ```
 
 </CodeGroup>
+</Accordion>
 
 ## The full chatbot in one function
 
 ```python Python
+import os
+
 import requests
 
 BASE = "https://api.vaquill.ai/api/v1/us"
-HEADERS = {"Authorization": "Bearer vq_key_..."}
+HEADERS = {"Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}"}
 
 
 def find_section(message, state=None, corpus_type="STATE"):
@@ -134,9 +106,8 @@ def answer(message, state=None):
         return "I found a matching section but its text is not available right now."
 
     citation = hit.get("citation") or hit["actId"]
-    # best_source_url() is the shared helper from Text Formats and Source URLs,
-    # linked below. Copy it once; do not re-derive the field order per surface.
-    source_url = best_source_url(hit)
+    # sourceUrl is the official link; the fallback order is under Related.
+    source_url = hit.get("sourceUrl")
 
     prompt = (
         "Answer the user's question using ONLY the statute text below. "
@@ -146,12 +117,9 @@ def answer(message, state=None):
         f"Statute text:\n{text}\n\n"
         f"Question: {message}\n"
     )
-    reply = call_llm(prompt)  # your LLM call; see note below
+    reply = call_llm(prompt)  # placeholder: your LLM call, prompt string in, text out
     return f"{reply}\n\nSource: {citation}\n{source_url}"
 
-
-# call_llm(prompt) is a placeholder for the LLM you run in your stack.
-# Swap in whatever you use; it takes a prompt string and returns text.
 
 # Plain terminal loop. Replace input()/print() with your Slack, Discord,
 # or web handler and the rest is unchanged.
@@ -163,49 +131,24 @@ if __name__ == "__main__":
         print("Bot:", answer(message, state="ca"))
 ```
 
-<Note>
-  The loop is the whole bot. To wire it into Slack or Discord, call `answer()`
-  from your message handler and post the return value back to the channel. The
-  retrieval and grounding code stays the same.
-</Note>
+To wire the loop into Slack or Discord, call `answer()` from your message handler and post the return value back.
 
 ## Making it feel good
 
 <AccordionGroup>
   <Accordion title="Set the jurisdiction once">
-    If your bot serves one state, pass `state` on every search so results stay
-    scoped. If users can switch jurisdictions, capture the two-letter state code
-    from the conversation and pass it through. Omit `corpusType` and `state` to
-    search the entire US corpus when the jurisdiction is unknown.
-  </Accordion>
-  <Accordion title="Always show the source link">
-    Every reply ends with the citation and the official government URL. Pick that
-    URL with the canonical preference order in
-    [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
-    rather than writing your own, so the bot and the rest of your product cite
-    the same page. Users can click through and read the law themselves. Vaquill
-    AI complements existing research tools and does not replace a lawyer.
+    If your bot serves one state, pass `state` on every search so results stay scoped.
+    If users can switch jurisdictions, capture the two-letter state code from the conversation and pass it through.
+    Omit `corpusType` and `state` to search the entire US corpus when the jurisdiction is unknown.
   </Accordion>
   <Accordion title="Handle the empty case honestly">
-    When search returns no results or the body is unavailable, say so instead of
-    guessing. A bot that reports a miss is more useful than one that invents an
-    answer.
+    When search returns no results or the body is unavailable, say so instead of guessing, as `answer()` does above.
+    A bot that reports a miss is more useful than one that invents an answer.
   </Accordion>
 </AccordionGroup>
 
 ## Related
 
-<CardGroup cols={2}>
-  <Card title="Ground an LLM answer (RAG)" href="/api-guide/recipes/rag-grounding">
-    The deeper version: multiple sources, strict citation rules, prompt design.
-  </Card>
-  <Card title="Resolve a citation" href="/api-guide/recipes/citation-lookup">
-    Turn a citation string into verified, authoritative text.
-  </Card>
-  <Card title="Grounding LLMs" href="/api-guide/grounding-llms">
-    Why grounding on retrieved text prevents hallucinated law.
-  </Card>
-  <Card title="Vaquill MCP server" href="/integrations/mcp/vaquill">
-    Expose these same tools to an AI agent over MCP.
-  </Card>
-</CardGroup>
+- [Pick the best source URL](/api-guide/concepts/formats#picking-the-best-available-format): every reply ends with the citation and the official URL, so use the shared preference order and the bot cites the same page as the rest of your product.
+- [Grounding LLMs](/api-guide/grounding-llms): why grounding on retrieved text prevents hallucinated law.
+- [Resolve a citation](/api-guide/recipes/citation-lookup) and [Vaquill MCP server](/integrations/mcp/vaquill).

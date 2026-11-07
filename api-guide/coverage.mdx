@@ -1,14 +1,15 @@
 ---
-title: "API Coverage"
-description: "Exactly which US jurisdictions and corpus types the Vaquill statutes API has ingested, with live section counts"
+title: "Coverage"
+description: "Which US jurisdictions and corpus types the Vaquill API holds, with measured section counts and refresh cadence"
 ---
 
-**5.4M+ distinct sections, indexed as 20M+ retrieval passages**, across federal law and all 56
-states and territories.
+import GoodLawUnknown from '/snippets/good-law-unknown.mdx';
 
-The corpus grows continuously, so this page gives magnitudes and the table below gives the
-measured split. For a number you can put in a contract, call the endpoint. It is free and
-self-describing, and it overrides anything written here by hand.
+**6.0M+ distinct sections, indexed as 21M+ retrieval passages**, across federal law and all 56 states and territories.
+
+The corpus grows continuously, so this page gives magnitudes and the table below gives the measured split.
+For a number you can put in a contract, call the endpoint.
+It is free, self-describing and authoritative over anything written here by hand.
 
 ```bash
 # The live, self-describing answer. Free, and authoritative over this page.
@@ -16,327 +17,164 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
   -H "Authorization: Bearer vq_key_..."
 ```
 
+<Note>
+  Counts are **distinct sections**, one per provision or document, matching what `GET /us/statutes/coverage` returns.
+  Longer documents split into several passages for retrieval, so the index holds more passages than sections.
+  A citation lookup still resolves to one section with its full text.
+  Past editions held for point-in-time lookups are counted too, and `statusBreakdown.superseded` gives that share per corpus.
+</Note>
+
 <CardGroup cols={3}>
   <Card title="Federal" href="/api-guide/coverage/federal">
-    **1.5M+ sections**, 16 corpora. US Code, CFR, Statutes at Large, Federal Register,
-    adjudications, federal local court rules, and per-corpus scope limits.
+    **1.5M+ sections**, 16 corpora.
+    US Code, CFR, Statutes at Large, Federal Register, adjudications, federal local court rules, and per-corpus scope limits.
   </Card>
   <Card title="States and territories" href="/api-guide/coverage/states">
-    **3.8M+ sections** across 56 jurisdictions. Statutes, regulations, constitutions, court
-    rules, state registers, state agency guidance and AG opinions.
+    **4.5M+ sections** across 56 jurisdictions.
+    Statutes, regulations, constitutions, court rules, state registers, state agency guidance and AG opinions.
   </Card>
   <Card title="Agency guidance" href="/api-guide/coverage/agency-guidance">
     **97K+ documents** from 53 named federal sources, each filterable with `source`.
   </Card>
   <Card title="State session laws" href="/api-guide/session-laws">
-    **321,628 laws** across 52 jurisdictions, 1975 to 2026, as enacted, with dates,
-    veto outcome and text.
+    Session laws for the 50 states, DC and Puerto Rico, from 1975, as enacted, with dates, veto outcome and text.
+    Counts per jurisdiction and session are on `GET /us/statutes/coverage`.
   </Card>
 </CardGroup>
 
 ## What's in the corpus
 
-This is the only table on the page with exact counts, so each fact has a single number. The
-statutes, regulations, court rules, constitutions and registers, agency guidance and AG opinion rows were measured **2026-10-26**, and the federal row
-on **2026-10-26**, except the state court rules and state constitutions rows, which were re-measured **2026-11-04**. The endpoint above is live.
+Counts measured **2026-11-07**.
 
-| Corpus | Jurisdictions | Sections | `corpusType` |
-|---|---|---:|---|
-| State statutes | 56 | 2,092,582 | `STATE` |
-| State regulations | 56 | 1,497,346 | `REGULATION` |
-| State court rules | 56 | 69,935 | `STATE_RULES` |
-| State constitutions | 53 | 13,059 | `STATE_CONSTITUTION` |
-| State registers (notices, not codified law) | 24 | 153,269 | `STATE_REGISTER` |
-| State agency guidance | 49 | 13,382 | `STATE_AGENCY_GUIDANCE` |
-| State AG opinions | 45 | 109,398 | `STATE_AG_OPINION` |
-| Federal, 16 corpora | Federal | 1,528,990 | See [Federal](/api-guide/coverage/federal) |
+| Corpus | Jurisdictions | Sections | `corpusType` | Refresh |
+|---|---|---:|---|---|
+| State statutes | 56 | 2,642,636 | `STATE` | Monthly, quarterly for AR, GA, TN and VI |
+| State regulations | 56 | 1,504,702 | `REGULATION` | Monthly where the publisher supports one, per state |
+| State court rules | 56 | 69,931 | `STATE_RULES` | Monthly |
+| State constitutions | 53 | 13,057 | `STATE_CONSTITUTION` | Monthly |
+| State registers (notices, not codified law) | 24 | 153,850 | `STATE_REGISTER` | Not stated |
+| State agency guidance | 49 | 13,402 | `STATE_AGENCY_GUIDANCE` | Monthly, per state, in rotation |
+| State AG opinions | 45 | 109,438 | `STATE_AG_OPINION` | Monthly, per jurisdiction, new opinions only |
+| Federal, 16 corpora | Federal | 1,534,416 | See [Federal](/api-guide/coverage/federal) and [Treaties](/api-guide/coverage/treaties) | Daily to weekly, on amendment for the Constitution |
+| [State session laws](/api-guide/session-laws) | 52 | Live on the endpoint | Own endpoints | Not stated |
 
-State session laws are held apart from the table above and served by their own endpoints: 321,628 laws across 52 jurisdictions, sessions 1975 to 2026.
-See [State Session Laws](/api-guide/session-laws).
+The 56 jurisdictions are the 50 states, DC, Puerto Rico, Guam, the Northern Mariana Islands, the US Virgin Islands and American Samoa.
+All 56 carry statutes, regulations and court rules, and 53 carry constitutions.
+Guam, the Virgin Islands and DC have no constitution of their own, and the organic acts of Guam and the Virgin Islands are federal law.
+Session laws cover the 50 states, DC and Puerto Rico from 1975, and the count held per jurisdiction and session changes as collection proceeds, so the live counts are on `GET /us/statutes/coverage`.
 
-Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats
-(HTML, PDF, XML, plain text, DOCX) where the source provides them.
-
-<Note>
-  Counts here are **distinct sections**, one per provision or document, matching what
-  `GET /us/statutes/coverage` returns. Longer documents split into several passages for retrieval,
-  so the index holds more entries than sections, over half of them Federal Register rules at 13 to
-  15 passages each. That does not change what you get back: a citation lookup still resolves to
-  one section with its full text.
-</Note>
+Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats (HTML, PDF, XML, plain text, DOCX) where the source provides them.
 
 ## Federal
 
-Federal law is split into 16 corpus types: the US Code and the Statutes at Large, the CFR (as a
-live compilation and as 31 published annual editions), Federal Register rules and a curated slice
-of its notices, Executive Orders, agency guidance from 53 named sources, seven bodies of
-administrative adjudication, the Federal Rules, the local rules of 52 federal courts, the
-Constitution, the Sentencing Guidelines, US income tax treaties, the Senate treaty record, and GovInfo
-statute compilations.
+Federal law is split into 16 corpus types, from the US Code, the CFR and the Federal Register to agency guidance, adjudications, the Federal Rules and treaties.
+The [federal table](/api-guide/coverage/federal) lists every one with its scope limits, and [treaty coverage](/api-guide/coverage/treaties) covers the two treaty tokens.
+Congressional bills are not held, and the planned `FEDERAL_BILL` token is described on the federal page and the [Roadmap](/api-guide/roadmap).
 
-**[Full federal table with per-corpus scope limits →](/api-guide/coverage/federal)**
+Agency guidance is the one corpus with a registry behind it: **53 named sources across 26 agencies** behind the single `corpusType=AGENCY_GUIDANCE` token, each narrowable with `source`.
+See the [source registry](/api-guide/coverage/agency-guidance).
 
-Congressional bills (introduced, pending, reported or enrolled, with their status) are not held.
-A bill corpus is planned as an opt-in token, `corpusType=FEDERAL_BILL`: proposed text only, labelled proposed, never law and never part of an unscoped search, with no date set. The token is registered but returns no results today.
-The enacted text of a bill that became law is served as a public law under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, as a section of `corpusType=USC`.
+## State corpora
 
-Agency guidance is the one corpus with a registry behind it: **53 named sources across 26
-agencies** behind the single `corpusType=AGENCY_GUIDANCE` token, each narrowable with `source`.
-**[Source registry →](/api-guide/coverage/agency-guidance)**
+Per-jurisdiction counts for all 56 are in the [matrix](/api-guide/coverage/states).
+A few sets, mainly professional-conduct and bar rules and all of American Samoa's Code, Constitution and court rules, are read from a bar association's site, and the states page [says which](/api-guide/coverage/states#where-bar-associations-supply-the-text).
 
-## State and territory matrix
+### State administrative registers
 
-**56 jurisdictions**: the 50 states, DC, Puerto Rico, Guam, the Northern Mariana Islands, the US
-Virgin Islands and American Samoa. All 56 carry statutes, regulations and court rules, and 53
-carry constitutions.
+`corpusType=STATE_REGISTER` holds the notices a state printed in its official register: proposed, adopted and emergency rule text, one document per item, cited by register volume and page.
+It is not codified law, it is never ranked as primary law, and it is served with `goodLawStatus: "unknown"`.
+See [per-jurisdiction counts](/api-guide/coverage/states#state-administrative-registers).
 
-Guam, the Virgin Islands and DC have no constitution of their own. Guam's and the Virgin Islands'
-organic acts are federal law.
+### State agency guidance
 
-**[Per-jurisdiction counts for all 56 →](/api-guide/coverage/states)**
+State-issued regulatory guidance that interprets state law, almost all of it insurance-regulator bulletins.
+Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
+It is not a full rollout: it lands state by state, and some states may never be built.
+See [per-state sources and counts](/api-guide/coverage/states#state-agency-guidance).
 
-Most of this is read from government sites. A few sets, mainly professional-conduct and bar rules and
-all of American Samoa's Code, Constitution and court rules, are read from a bar association's site,
-and the states page says which:
-**[Where bar associations supply the text →](/api-guide/coverage/states#where-bar-associations-supply-the-text)**
+### State attorney general opinions
 
-## State administrative registers
-
-`corpusType=STATE_REGISTER` holds the notices a state printed in its official register: proposed,
-adopted and emergency rule text, one document per item, cited by register volume and page.
-**It is not codified law**, it is served with `goodLawStatus: "unknown"`, and it is never ranked as
-primary law. 24 jurisdictions are loaded, mostly Pennsylvania and New York. The count is in
-[the table above](#whats-in-the-corpus).
-
-**[Per-jurisdiction counts →](/api-guide/coverage/states#state-administrative-registers)**
-
-## State agency guidance
-
-State-issued regulatory guidance that interprets state law, almost all of it insurance-regulator
-bulletins, across most jurisdictions. Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired
-with `state`. The count is in [the table above](#whats-in-the-corpus).
-
-Unlike statutes and regulations, this is not a full rollout. It lands state by state, and some
-states may never be built.
-
-**[Per-state sources and counts →](/api-guide/coverage/states#state-agency-guidance)**
-
-## State Attorney General opinions
-
-Formal written opinions of a state Attorney General, construing that state's own statutes,
-constitution and regulations for a state officer, legislator or local government who asked.
+Formal written opinions of a state Attorney General, construing that state's own statutes, constitution and regulations for an officer, legislator or local government who asked.
 Queryable with `corpusType=STATE_AG_OPINION` paired with `state`.
+The rollout is by jurisdiction: 45 of the 52 jurisdictions surveyed are live, and the survey measured roughly 184,600 individually addressable opinions, so what is live is a fraction of what exists.
 
 <Warning>
-  **These are persuasive authority, not binding law.** Officials follow them in practice, and an
-  AG opinion is very often the only interpretive authority that exists for a provision no court
-  has reached. Every section in this corpus is served with `goodLawStatus: "unknown"` by
-  construction: only three of the 52 jurisdictions surveyed publish any supersession signal at all, so we
-  do not certify an opinion as current. See
-  [Status and currency](/api-guide/concepts/status-and-currency).
+  **AG opinions are persuasive authority, not binding law.**
+  An AG opinion is often the only interpretive authority for a provision no court has reached.
+
+  <GoodLawUnknown />
+
+  See [Status and currency](/api-guide/concepts/status-and-currency).
 </Warning>
 
-Like state agency guidance, this is not a full rollout. It lands jurisdiction by jurisdiction, and
-it is early. The 52-jurisdiction survey behind this corpus measured roughly
-**184,600 individually addressable opinions**, so what is live today is a low single-digit
-percentage of what exists. Use `GET /us/statutes/coverage` for the jurisdictions and counts that
-are actually live right now rather than relying on this page, which is written by hand and lags
-the rollout.
-
-Delaware is described first because it is the reference build. It is not the only jurisdiction
-live.
-
-**Delaware, 843 opinions, 1995-2026.** Its composition needs some explanation:
-
-- Delaware runs one numbered series and does not separate its opinion types. Only about 17 of the
-  numbered items are substantive Attorney General opinions. The rest are FOIA opinion letters
-  interleaved in the same numbering. Both are formal opinions of the Attorney General under
-  Delaware law, so both are here, but if you are looking for statutory interpretation you will
-  mostly find open-records adjudication.
-- 173 of the 843 are served as the state's letter recovered from a reporter print. Delaware
-  publishes those posts in a commercial reporter's rendering, wrapping the Attorney General's own
-  letter in that publisher's citation and page-break marks. The opinion underneath is a government
-  work, so we remove the wrapper and serve the letter; we do not reproduce the reporter's citation
-  or its pagination. 150 of the 173 exist in no other form in Delaware's archive and span
-  1995-2011, so the alternative was to publish no Delaware opinion older than 2011.
-- 50 further posts carry no opinion number and are excluded. They are press releases, job
-  postings and notices that share the archive but are not opinions.
-
-**Montana, 3,527 opinions, volumes 15-44 (roughly 1933-1992).** What is served is a deliberate
-subset. The date range is derived from the latest year appearing in each opinion's text. Montana
-publishes no structured issue date for these, so they carry no `year` and are not reachable by a
-year filter.
-
-- Montana's Judicial Branch publishes 8,516 opinion PDFs spanning 1899-2024. Volumes 1 to 14 are
-  cited by page, not by opinion number, and the publisher prints two opinions on one page, so
-  there is no per-opinion identifier to key on. Those 3,969 are not served.
-- The per-opinion PDFs are page extracts, so an untrimmed document carries the opinion that
-  follows it. Each body is cut to its own `OPINION NO.` header; the 1,010 where that header cannot
-  be read, or where the opinion's own continuation is not in its PDF, are withheld rather than
-  served with a neighbour's text under the wrong citation.
-- Opinions from volume 45 onward (1991 to date) are published by a different Montana office and are
-  not included here.
-
-**Arkansas, 10,295 opinions, 1984-2026.** The largest jurisdiction in this corpus.
-
-- 334 further opinions are listed by the Attorney General but not served by it. Arkansas's own
-  index carries a row for each, and the document behind it has never been published. Those are
-  recorded as a coverage limit rather than counted, so the 10,295 is what we actually hold. They
-  cluster in 1985-1998.
-- Six opinions run to 100,000 characters or more. Those are ballot-title certifications, where
-  Arkansas requires the Attorney General to reproduce the entire proposed initiated act or
-  constitutional amendment inside the opinion, and they are served whole.
-
-**Indiana, 9,759 opinions, 1906-2026.** The earliest start of any jurisdiction here, with one limitation.
-
-- Indiana publishes in two citation forms, and both are carried as the state prints them:
-  numbered opinions (`2026 Ind. Op. Att'y Gen. 02`) from 1944, and page cites into the annual and
-  biennial report volumes (`1909-1910 Ind. Op. Att'y Gen. p. 284`) before that.
-- **In the scanned eras, the state cut its bound volumes into per-opinion PDFs by page, so an
-  opinion that runs past its page cut is severed in Indiana's own file.** We serve the full text of
-  every document the state publishes, but for those opinions that text is the opening pages rather
-  than the whole opinion. It affects roughly a quarter of the pre-1944 page cites and a third of
-  the 1940s numbered opinions. The 1960s, 1970s and 2000 onward are unaffected. The continuation
-  is usually present in the adjacent page cite, under its own citation.
-- Every opinion also carries the statutes it construes, the Attorney General who signed it, and
-  Indiana's own summary, all from the state's published catalogue rather than mined from the text.
-
-**Idaho, 151 opinions, 1985-2026.** Idaho publishes Guidelines, Certificates of Review, Annual
-Reports and Tables of Citations in the same feed as its opinions. Only the opinions are here; the
-other 602 documents are a different instrument and are excluded. Opinions from 1881-1984 exist only
-inside annual report volumes and are not yet extracted.
-
-**Oklahoma, 68 opinions, 2023-2026.** This is deliberately a 2023-onward corpus. Oklahoma's older
-opinions are published on a network whose publisher has not permitted us to hold them, so we do
-not hold them and do not intend to without permission.
-
-**Florida, 20,923 opinions, 1913-2026.** Florida is the largest AG archive we carry, and its
-publisher serves it in two forms that are different products:
-
-- 1971-2026, 4,166 opinions, full text. The state publishes these as HTML with its own
-  number, issue date and subject, and they are indexed and retrievable like any other opinion.
-- 1913-1991, 16,757 opinions, citation and metadata only, with no opinion text. The state
-  publishes this era only as scanned pages of the bound *Biennial Report of the Attorney General*,
-  and those page images carry several opinions each: measured across the archive, 27% of them hold
-  two or more opinions and only 55% print their own opinion number, so no per-opinion text can be
-  extracted from them without splitting the volumes. Rather than serve one opinion's number over
-  another opinion's words, these records carry the citation, the publisher's own topic and a link to
-  the publisher's page. Every one of them is marked `textAvailability: "metadata_only"`, so you
-  can filter them out or in. The full-text records are marked `"full"`.
-
-Two further limits apply. 80 opinions are withheld: 44 because Florida gave two
-genuinely different opinions the same citation and we will not guess which is which, 32 whose
-printed citation we cannot parse, and 4 whose citation prints no date. And the state's own archive
-**lists no opinions at all for 2024**, with four in 2023 and four in 2025; whether none were issued
-or none are listed is not something the archive answers.
-
-**Kentucky, 692 opinions, 1992-2026.** Every year from 1992 onward is represented.
-Kentucky's earlier opinions were never published online, and the Attorney General's office supplies
-them by phone or mail on request, so we do not hold them.
-
-**Louisiana, 3,720 opinions, 1991-2025.** Where the office issued several opinions under one number
-it adds a letter (`92-0505A`, `92-0505B`), and each is its own opinion here.
-About half of the office's archive is posted as page scans with no text layer.
-Roughly 3,550 such documents are excluded until they are processed, rather than absent from the
-office's own archive.
-
-**Maryland, 601 opinions, 1993-2025.** Two series, both carried as the state publishes them: 565
-published opinions, cited by volume as `110 Op. Att'y Gen. 3`, and 36 unpublished ones that the
-office numbers `00-123` and posts separately.
-Opinions from 1916 to 1992 exist only inside 77 bound-volume compendia, each a single file holding a
-whole volume rather than one opinion.
-Those volumes are not split into individual opinions and are not included.
-
-**Puerto Rico, 81 opinions, 2003-2010, in Spanish.** The text is Spanish as published, and
-`language_code` is `es`.
-The served range ends in 2010 because every later opinion, and a handful from 2008 to 2010, is
-posted as a page image with no text layer: 50 documents we can see are excluded until they are
-processed, rather than absent from the office's own archive.
-
-Where a jurisdiction runs more than one series, the `series` field carries the publisher's own
-label so you can filter them apart. Washington's formal `AGO` and its `AGLO` letter opinions are
-one example, and Georgia's Official and Unofficial series are another.
+Per-state ranges, scope limits and notes (Delaware, Montana, Arkansas, Indiana, Florida and others) are on [state coverage](/api-guide/coverage/states#state-attorney-general-opinions).
 
 ## Refresh cadence
 
-How often each corpus is re-pulled from its official source. Counts grow between updates, so call
-`GET /us/statutes/coverage` for a live figure.
-
-| Corpus | Cadence |
-|---|---|
-| Federal | Daily to weekly, and on amendment for the Constitution. See the [federal table](/api-guide/coverage/federal). |
-| State statutes | Monthly for 46 jurisdictions and quarterly for 4. See below. |
-| State regulations | Monthly where the publisher supports one. Treat cadence as per-state, not uniform. |
-| State court rules | Monthly, for the jurisdictions that carry them. |
-| State constitutions | Monthly. Constitutions change on the order of years, via ballot measure. |
-| State AG opinions | Monthly, per jurisdiction. An opinion is issued once and not revised, so a refresh looks for NEW opinions rather than changed ones. |
-| State agency guidance | Monthly, per state. Almost all of this is insurance-regulator bulletins, and states are refreshed in rotation, about two a day, rather than all at once each week. |
-
-For the age of any single source, call [`GET /boards`](/api-guide/alerts). It is free and carries
-`lastRetrievedAt` and `cadence` per source. `GET /us/statutes/coverage` reports
-what each corpus is *current through* in the publisher's own words, which is a different question
-and is not available for every state.
+The Refresh column of the table above says how often each corpus is re-pulled from its official source.
+State statutes refresh monthly, except Arkansas, Georgia, Tennessee and the US Virgin Islands, which refresh quarterly.
+For the age of any single source, call [`GET /boards`](/api-guide/alerts).
+It is free and carries `lastRetrievedAt` and `cadence` per source.
+`GET /us/statutes/coverage` reports what each corpus is *current through* in the publisher's own words, which is a different question and is not available for every state.
 
 ### Which statute cadence applies where
 
-**Monthly, 46 jurisdictions.** These state statute boards report `cadence: "monthly"` on
-`GET /boards`.
+Compare `lastRetrievedAt` against `cadence` on `GET /boards` to see how recently a source was pulled.
+The sections stay queryable at the `currentThrough` the coverage response reports.
 
-**Quarterly, 4 jurisdictions.** Arkansas, Georgia, Tennessee and the US Virgin Islands are
-pulled on a quarterly slot, tracking legislatures that sit for part of the year. They report
-`cadence: "quarterly"` on `GET /boards`.
+<Accordion title="Cadence details">
 
-`GET /boards` returns `lastRetrievedAt` and `cadence` per source, so you can read this off
-directly. A cadence is a schedule, so compare `lastRetrievedAt` against `cadence` to see how
-recently a source was pulled. The sections stay queryable at the `currentThrough` the coverage
-response reports.
+**Monthly, 46 jurisdictions.**
+These state statute boards report `cadence: "monthly"` on `GET /boards`.
 
-**Five jurisdictions are covered but not watchable**: Delaware, Hawaii, Mississippi, New Mexico and
-Utah. Their statutes are live, complete and queryable.
-What is held back is the automated re-pull, so they are absent from `GET /boards` rather than
-listed as idle. A board is switched on only once its refresh has been shown to work, so
-`GET /boards` lists what can be watched, never what is covered. For these five, read currency from
-`GET /us/statutes/coverage`.
+**Quarterly, 4 jurisdictions.**
+Arkansas, Georgia, Tennessee and the US Virgin Islands are pulled on a quarterly slot, tracking legislatures that sit for part of the year.
+They report `cadence: "quarterly"`.
 
-<Note>
-  The Colorado Revised Statutes are published once a year with no process for periodic updates,
-  so a Colorado re-pull of all 46 titles changes the stored text only when a new edition appears.
-</Note>
+Read the `cadence` field on `/us/statutes/coverage` and `/boards` as the declared staleness window a board is alerted against, not as a ceiling on how often the corpus is re-pulled.
 
-<Note>
-  The `cadence` field on `/us/statutes/coverage` and `/boards` reports `monthly` for every state
-  statute board except Arkansas, Georgia, Tennessee and the US Virgin Islands, which report
-  `quarterly`. Read the field as the declared staleness window a board is alerted against, not as
-  a ceiling on how often the corpus is re-pulled.
-</Note>
+**Five jurisdictions are covered but not watchable**: Delaware, Hawaii, Mississippi, New Mexico and Utah.
+Their statutes are live, complete and queryable.
+What is held back is the automated re-pull, so they are absent from `GET /boards` rather than listed as idle.
+A board is switched on only once its refresh has been shown to work, so `GET /boards` lists what can be watched, never what is covered.
+For these five, read currency from `GET /us/statutes/coverage`.
 
-<Note>
-  Pennsylvania's Consolidated Statutes are complete. Of its older unconsolidated statutes only
-  35 P.S. ch. 780 (54 sections) is held, and the rest is prioritized for backfill.
-</Note>
+State AG opinions are issued once and not revised, so a refresh looks for new opinions rather than changed ones.
+Constitutions change on the order of years, via ballot measure.
+State agency guidance is almost all insurance-regulator bulletins, and states are refreshed in rotation, about two a day, rather than all at once each week.
 
-## Point-in-time and change history
+</Accordion>
 
-Every corpus here can be asked what it said on a past date, and the answer states whether it is a
-published edition or a reconstruction. See [Point-in-time law](/api-guide/point-in-time).
+<Accordion title="Statute exceptions">
 
-## Detecting a change
+The Colorado Revised Statutes are published once a year with no process for periodic updates, so a Colorado re-pull of all 46 titles changes the stored text only when a new edition appears.
 
-`GET /us/statutes/coverage` is self-describing, so new corpora appear there as they land. To find
-sections that moved rather than corpora that appeared, use the `changedSince` filter on
-`POST /us/statutes/search`. See
-[Coverage monitoring](/api-guide/recipes/coverage-monitoring) for both patterns, and
-[Law change alerts](/api-guide/alerts) to be pushed a change instead of polling for one.
+Pennsylvania's Consolidated Statutes are complete.
+Of its older unconsolidated statutes only 35 P.S. ch. 780 (54 sections) is held, and the rest is prioritized for backfill.
 
-Corpora that are planned but not yet served, and what is deliberately out of scope, are on the
-[Roadmap](/api-guide/roadmap).
+</Accordion>
+
+## Related
 
 <CardGroup cols={2}>
   <Card title="Corpus types" href="/api-guide/concepts/corpus-types">
     Every `corpusType` token, and how `source` and `state` combine with it.
   </Card>
+  <Card title="Point-in-time law" href="/api-guide/point-in-time">
+    Every corpus can be asked what it said on a past date, and the answer states whether it is a published edition or a reconstruction.
+  </Card>
+  <Card title="Coverage monitoring" href="/api-guide/recipes/coverage-monitoring">
+    New corpora appear on `GET /us/statutes/coverage` as they land.
+    To find sections that moved, use the `changedSince` filter on `POST /us/statutes/search`.
+  </Card>
+  <Card title="Law change alerts" href="/api-guide/alerts">
+    Be pushed a change instead of polling for one.
+  </Card>
+  <Card title="Roadmap" href="/api-guide/roadmap">
+    Corpora that are planned but not yet served, and what is deliberately out of scope.
+  </Card>
   <Card title="Open source: Vaquill-AI/open-us-law" href="https://github.com/Vaquill-AI/open-us-law">
-    The ingestion pipeline behind this corpus is open source under a permissive license. Build your
-    own copy, or contribute a source.
+    The ingestion pipeline behind this corpus is open source under a permissive license.
+    Build your own copy, or contribute a source.
   </Card>
 </CardGroup>

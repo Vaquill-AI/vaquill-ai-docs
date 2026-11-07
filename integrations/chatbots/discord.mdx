@@ -105,17 +105,14 @@ The main environment variables are below. The [repo's `.env.example`](https://gi
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `DISCORD_BOT_TOKEN` | Yes | - | Bot token from the Developer Portal |
-| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
-| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | API base URL |
-| `VAQUILL_MODE` | No | `standard` | `standard` (faster) or `deep` (more thorough) |
-| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
 | `DISCORD_COMMAND_PREFIX` | No | `!` | Command prefix |
 | `RATE_LIMIT_PER_USER` | No | `10` | Per-user limit per window |
 | `RATE_LIMIT_PER_CHANNEL` | No | `30` | Per-channel limit per window |
 | `RATE_LIMIT_WINDOW` | No | `60` | Sliding window in seconds |
 | `ALLOWED_CHANNELS` | No | - | Comma-separated channel IDs (empty = all) |
 | `ALLOWED_ROLES` | No | - | Comma-separated role IDs (empty = all) |
-| `REDIS_URL` | No | - | Optional Redis URL for distributed rate limiting |
+
+The Vaquill variables (`VAQUILL_API_KEY`, `VAQUILL_API_URL`, `VAQUILL_MODE`, `VAQUILL_COUNTRY_CODE`) and `REDIS_URL` are in the [shared bot settings](/integrations/chatbots#shared-bot-settings).
 
 ## Commands
 
@@ -150,40 +147,40 @@ Then `docker compose up -d`.
 
 ### Cloud hosts
 
-<CardGroup cols={2}>
-  <Card title="Railway">
+<AccordionGroup>
+  <Accordion title="Railway">
     `railway init && railway up`. Set `DISCORD_BOT_TOKEN` and `VAQUILL_API_KEY` in the Variables tab.
-  </Card>
-  <Card title="Render">
+  </Accordion>
+  <Accordion title="Render">
     New Web Service. Build: `pip install -r requirements.txt`. Start: `python bot.py`.
-  </Card>
-  <Card title="VPS + systemd">
+  </Accordion>
+  <Accordion title="VPS + systemd">
     Run under a systemd unit with `Restart=always`. The bot does not need an open port.
-  </Card>
-  <Card title="Fly.io">
+
+    Example systemd unit:
+
+    ```ini
+    [Unit]
+    Description=Vaquill Discord Bot
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=botuser
+    WorkingDirectory=/opt/vaquill-discord-bot
+    ExecStart=/opt/vaquill-discord-bot/venv/bin/python bot.py
+    EnvironmentFile=/opt/vaquill-discord-bot/.env
+    Restart=always
+    RestartSec=10
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+  </Accordion>
+  <Accordion title="Fly.io">
     `fly launch`, set secrets, `fly deploy`. The bot connects outbound to the Discord gateway over a WebSocket, so no public URL is required.
-  </Card>
-</CardGroup>
-
-Example systemd unit:
-
-```ini
-[Unit]
-Description=Vaquill Discord Bot
-After=network.target
-
-[Service]
-Type=simple
-User=botuser
-WorkingDirectory=/opt/vaquill-discord-bot
-ExecStart=/opt/vaquill-discord-bot/venv/bin/python bot.py
-EnvironmentFile=/opt/vaquill-discord-bot/.env
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
+  </Accordion>
+</AccordionGroup>
 
 ## Troubleshooting
 

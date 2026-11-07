@@ -1,7 +1,7 @@
 ---
 title: "Chrome Extension"
 sidebarTitle: "Chrome"
-description: "Statute search assistant as a Manifest V3 Chrome extension. Calls the Vaquill API directly with the user's own API key, with no proxy server required."
+description: "A Manifest V3 Chrome extension for statute search. It calls the Vaquill API with the user's own key, with no proxy server."
 keywords: ["vaquill chrome extension", "statute search chrome extension", "chrome extension legal AI", "browser statute search", "manifest v3 legal extension", "edge brave legal extension"]
 ---
 
@@ -92,7 +92,7 @@ Request body:
 }
 ```
 
-Full schema in the [Statute search API reference](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions).
+Optional filters include `corpusType`, `state` and `code`. Full schema in the [Statute search API reference](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions).
 
 ## Project layout
 
@@ -112,9 +112,15 @@ extension/
     options.js           Settings page logic
 ```
 
-## Branding and theming
+## Fork and publish your own
 
-### Name and description
+These sections are for forking the extension and shipping your own build. Users of the integration can skip them.
+
+<AccordionGroup>
+
+<Accordion title="Branding and theming">
+
+**Name and description**
 
 Edit `extension/manifest.json`:
 
@@ -126,7 +132,7 @@ Edit `extension/manifest.json`:
 }
 ```
 
-### Icons
+**Icons**
 
 Place PNGs in `extension/icons/`:
 
@@ -134,7 +140,7 @@ Place PNGs in `extension/icons/`:
 - `icon48.png` (48x48) for the extensions page
 - `icon128.png` (128x128) for the Chrome Web Store listing
 
-### Colors
+**Colors**
 
 Edit CSS custom properties at the top of `extension/css/popup.css`:
 
@@ -146,7 +152,9 @@ Edit CSS custom properties at the top of `extension/css/popup.css`:
 }
 ```
 
-## Host permissions
+</Accordion>
+
+<Accordion title="Host permissions">
 
 `host_permissions` in `manifest.json` must match the API domain the extension calls.
 
@@ -179,14 +187,16 @@ Edit CSS custom properties at the top of `extension/css/popup.css`:
   List specific domains and avoid wildcards (`https://*/*`). The Chrome Web Store reviews extensions with broad host permissions more aggressively and may reject them.
 </Warning>
 
-## Publishing to the Chrome Web Store
+</Accordion>
 
-### Prerequisites
+<Accordion title="Publishing to the Chrome Web Store">
+
+**Prerequisites**
 
 1. A Google Developer account ($5 USD one-time fee)
 2. Register at [chrome.google.com/webstore/devconsole](https://chrome.google.com/webstore/devconsole/)
 
-### Preparation checklist
+**Preparation checklist**
 
 - Set the production `API_URL` in `config.js`
 - Update `manifest.json` with name, description, version, and `host_permissions`
@@ -194,14 +204,14 @@ Edit CSS custom properties at the top of `extension/css/popup.css`:
 - Prepare at least one screenshot (1280x800 px)
 - Prepare a privacy policy URL (required by Google)
 
-### Package the extension
+**Package the extension**
 
 ```bash
 cd extension/
 zip -r vaquill-extension.zip . -x "*.DS_Store" "*.git*"
 ```
 
-### Upload
+**Upload**
 
 <Steps>
   <Step title="Open the dashboard">
@@ -224,6 +234,10 @@ zip -r vaquill-extension.zip . -x "*.DS_Store" "*.git*"
     Typical review time: 1-3 business days.
   </Step>
 </Steps>
+
+</Accordion>
+
+</AccordionGroup>
 
 ## Development
 

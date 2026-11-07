@@ -3,9 +3,13 @@ title: "Go SDK"
 description: "The Vaquill Go client for the US Data API: quickstart, errors, retries, spend guard, pagination and webhooks"
 ---
 
+import RetryRules from '/snippets/retry-rules.mdx';
+import IdempotencyKeys from '/snippets/idempotency-keys.mdx';
+
 {/* Every sample on this page is copied from go/README.md of vaquill-sdks. */}
 
-The Go client covers all 42 operations of the US Data API and mirrors the behavior of the [Python SDK](/api-guide/sdks/python).
+The Go client covers the statutes, session law, watch, board, credit and pricing operations of the US Data API and mirrors the behavior of the [Python SDK](/api-guide/sdks/python).
+The operations without a method yet are listed in the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits).
 For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
 
 ## Install
@@ -84,15 +88,17 @@ A 422 message ends with the first validation reasons from `errors[]`.
 
 ## Retries and idempotency
 
-The default is 2 retries with exponential backoff (0.5 s doubling to 8 s) and jitter.
-`Retry-After-Ms` and `Retry-After` are honoured, up to 120 seconds.
+<RetryRules />
 
-- 408, 429 and 5xx are retried, except 501.
-- `insufficient_credits` and `daily_cap_exceeded` are never retried.
+Go specifics:
+
+- 501 is not retried.
 - A transport error that may have reached the server is retried only for GET and HEAD, or when an idempotency key is set.
 - A 5xx on a charged call is not retried without an idempotency key.
 
-Charged POSTs get a generated UUID `Idempotency-Key` unless you pass one.
+<IdempotencyKeys />
+
+Charged POSTs get a generated UUID key unless you pass one.
 
 ```go
 client.Statutes.Search(ctx, req, vaquill.WithIdempotencyKey("report-2026-10-29-search"))
@@ -107,8 +113,8 @@ Keys must be 16 to 255 visible ASCII characters. An empty or invalid key is reje
 client, _ := vaquill.NewClient(vaquill.WithMaxCredits(25))
 ```
 
-The guard is exact. While a cap is set, charged calls run one at a time, and the credits each response reports are added before the next call is allowed.
 Once the cap is reached, the next charged call fails with `*vaquill.SpendGuardError` without sending a request.
+The guard is exact: [how it stays exact](/api-guide/sdks/overview#spend-guard) is on the overview.
 `client.CreditsSpent()` reads the running total.
 
 ## Pagination and batch helpers
@@ -170,7 +176,8 @@ See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
 
 ## Versioning
 
-The SDK follows semantic versioning. `vaquill.Version` is `0.1.0` and requests carry `User-Agent: vaquill-go/0.1.0`.
+The SDK follows semantic versioning, and `vaquill.Version` holds the version. Requests carry `User-Agent: vaquill-go/<version>`.
+The released version is in the [SDKs overview](/api-guide/sdks/overview) table.
 While the major version is 0, minor releases may change the API.
 A server `Deprecation` or `Sunset` header makes the client log one warning per route.
 `vaquill.Operations` lists every operation with its method, path and whether it is charged.

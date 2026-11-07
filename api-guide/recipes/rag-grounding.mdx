@@ -1,62 +1,36 @@
 ---
 title: "Ground an LLM answer in statutes (RAG)"
-description: "Retrieve authoritative US statutes and regulations, then make an LLM answer only from that text with citations that link back to the official government source"
+sidebarTitle: "Ground an LLM"
+description: "Retrieve US statutes and regulations, then make an LLM answer only from that text, with links to the official source"
 ---
 
-**What this gets you:** an AI assistant that answers legal questions from statute text instead of its own memory. Each claim carries a citation and a link to the official source, so users can check it.
+**What this gets you:** an AI assistant that answers legal questions from statute text instead of its own memory.
+Each claim carries a citation and a link to the official source, so users can check it.
 
-The recipe turns a user question into a grounded, citable answer. You retrieve the
-governing sections from Vaquill AI, pull their full text, and pass that text to an
-LLM in your stack with strict instructions: answer only from the provided sources,
-cite every claim, and link back to the official government source. This is the
-standard retrieve-then-ground (RAG) loop. The model can only draw on text you
-supplied, so there is less room for invented law.
+You retrieve the governing sections, pull their full text, and pass it to an LLM in your stack with strict rules: answer only from the sources, cite every claim, link to the official source.
+This is the standard retrieve-then-ground (RAG) loop, and the model can only draw on text you supplied.
 
 **Endpoints used:** `POST /us/statutes/search` (retrieve), `GET /us/statutes/section/{actId}/body` (full text).
 
-<Tip>
-  **You can collapse the two calls into one.** Pass `"includeBody": true` on the
-  search and every hit comes back with its full text on `body`, so three grounded
-  sources take one round trip instead of four. The cost is the search plus the
-  ordinary price for each row that actually returns text. A row whose text cannot
-  be resolved comes back with `body: null` and is not charged. This saves
-  latency, not money, and the cost multiplies with `limit`, so page deliberately.
-  The two-call version below is the one to use when you rank more candidates than
-  you ground on.
-</Tip>
-
-<Info>
-  Vaquill AI provides the authoritative text and the source links. The LLM in your
-  stack does the reasoning. Vaquill AI does not replace a lawyer or a licensed
-  research service, and every answer should carry a link back to the official
-  government text so a reader can verify it.
-</Info>
+The text and links come from Vaquill AI and the reasoning from your LLM.
+Vaquill AI does not replace a lawyer or a licensed research service, so carry the official link on every answer.
 
 ## The pattern in four steps
 
-<Steps>
-  <Step title="Retrieve candidate sections">
-    Send the user question to `POST /us/statutes/search`. Scope the search with
-    `corpusType` and `state` when you know them (for example `USC` for federal
-    statutes, or `STATE` with `state: "ca"` for California). Take the top few
-    results.
-  </Step>
-  <Step title="Fetch the full text of each section">
-    Search returns an `excerpt` (up to 500 chars). That is enough to rank, not to
-    ground on. For each result you want to cite, call
-    `GET /us/statutes/section/{actId}/body` to get the complete `plain` text.
-  </Step>
-  <Step title="Build a grounded prompt">
-    Assemble a prompt that contains the retrieved sections, each labeled with its
-    `citation` and its official source URL. Instruct the model to answer only from
-    those sources, to cite each claim, and to say it cannot find the answer if the
-    sources do not support one.
-  </Step>
-  <Step title="Answer with links back to the source">
-    Return the model's answer plus the list of cited sources, each linking to the
-    official government text (`sourceUrl`, which every section carries when we hold an official link).
-  </Step>
-</Steps>
+1. **Retrieve.**
+   `POST /us/statutes/search` with the user question.
+   Scope with `corpusType` and `state` when you know them (`USC` for federal statutes, or `STATE` with `state: "ca"`).
+   Take the top few results.
+2. **Fetch full text.**
+   Search returns an `excerpt` of 500 characters by default (raisable to 600 with `excerptChars`), which is enough to rank but not to ground on.
+   Call `GET /us/statutes/section/{actId}/body` for each result you cite and use the complete `plain` text.
+3. **Build a grounded prompt.**
+   Label each section with its `citation` and official source URL.
+   Tell the model to answer only from those sources, cite each claim, and say so when the sources do not support an answer.
+4. **Answer with links.**
+   Return the answer plus the cited sources, each linking to the official text through `sourceUrl`, which every section carries when we hold an official link.
+
+`includeBody` collapses steps 1 and 2 into one call: see the one-call tab below.
 
 ## Step 1 and 2: retrieve, then fetch full text
 
@@ -65,20 +39,22 @@ supplied, so there is less room for invented law.
 ```bash cURL
 # 1. Retrieve candidate sections (scope to USC when the question is federal)
 curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-  -H "Authorization: Bearer vq_key_..." \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"query": "employer retaliation whistleblower protection", "corpusType": "USC", "limit": 3}'
 
 # 2. Fetch the full text of one result by its actId
 curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T31_C53_S5323/body \
-  -H "Authorization: Bearer vq_key_..."
+  -H "Authorization: Bearer $VAQUILL_API_KEY"
 ```
 
 ```python Python
+import os
+
 import requests
 
 BASE = "https://api.vaquill.ai/api/v1/us"
-HEADERS = {"Authorization": "Bearer vq_key_..."}
+HEADERS = {"Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}"}
 
 
 def search(query, corpus_type=None, state=None, limit=3):
@@ -101,10 +77,21 @@ def fetch_body(act_id):
     return data.get("plain") or data.get("html")
 ```
 
+```python Python (one call)
+# includeBody returns each hit's full text on `body` (null when unavailable).
+def search_with_body(query, corpus_type=None, limit=3):
+    body = {"query": query, "limit": limit, "includeBody": True}
+    if corpus_type:
+        body["corpusType"] = corpus_type
+    resp = requests.post(f"{BASE}/statutes/search", headers=HEADERS, json=body)
+    resp.raise_for_status()
+    return [r for r in resp.json()["results"] if r.get("body")]
+```
+
 ```javascript JavaScript
 const BASE = "https://api.vaquill.ai/api/v1/us";
 const HEADERS = {
-  Authorization: "Bearer vq_key_...",
+  Authorization: `Bearer ${process.env.VAQUILL_API_KEY}`,
   "Content-Type": "application/json",
 };
 
@@ -134,8 +121,13 @@ async function fetchBody(actId) {
 
 </CodeGroup>
 
-A trimmed search result for that query looks like this (captured 2026-10-26, first of three results). Note the `actId` (used to fetch the
-body), the `citation`, and the source URLs.
+The one-call version returns three grounded sources in one round trip instead of four.
+It saves latency, not money: the cost is the search plus the ordinary body price per row that returns text, so it multiplies with `limit`.
+Use the two-call version when you rank more candidates than you ground on.
+[What a search costs](/api-guide/concepts/search#what-a-search-costs) defines `includeBody` billing.
+
+A trimmed search result for that query looks like this.
+Note the `actId` (used to fetch the body), the `citation`, and the source URLs.
 
 ```json
 {
@@ -147,7 +139,7 @@ body), the `citation`, and the source URLs.
       "title": "Whistleblower incentives and protections",
       "corpusType": "USC",
       "relevanceScore": 0.901,
-      "excerpt": "...(1) Prohibition against retaliation.— No employer may, directly or indirectly, discharge, demote, s...",
+      "excerpt": "...(1) Prohibition against retaliation. No employer may, directly or indirectly, discharge, demote, s...",
       "textUrl": "https://statutes-us.vaquill.ai/usc/olrc/119-108/sections/USC_T31_C53_S5323.txt",
       "externalUrl": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title31-section5323&num=0&edition=prelim",
       "sourceUrl": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title31-section5323&num=0&edition=prelim"
@@ -158,11 +150,12 @@ body), the `citation`, and the source URLs.
 }
 ```
 
+`results` is cut to its first entry here, so `count` is 3 and one result is shown.
+
 ## Step 3 and 4: build the grounded prompt and answer
 
-The prompt is where grounding happens. Give the model the retrieved text, a
-stable label per source, and rules it cannot skip: answer only from the sources,
-cite by citation and link, and refuse when the text does not support an answer.
+The prompt is where grounding happens.
+Give the model the retrieved text, a stable label per source, and rules it cannot skip: answer only from the sources, cite by citation and link, and refuse when the text does not support an answer.
 
 ```python Python
 def build_grounded_prompt(question, sources):
@@ -180,7 +173,7 @@ def build_grounded_prompt(question, sources):
         "the numbered sources below. Do not use outside knowledge.\n\n"
         "Rules:\n"
         "1. Every factual claim must cite the source it comes from, using the "
-        "citation and its Source link, e.g. (42 U.S.C. section 1983, "
+        "citation and its Source link, e.g. (42 U.S.C. § 1983, "
         "https://uscode.house.gov/...).\n"
         "2. If the sources do not answer the question, say exactly: 'The provided "
         "sources do not answer this question.' Do not guess.\n"
@@ -200,8 +193,6 @@ def answer_question(question, corpus_type=None, state=None):
         text = fetch_body(r["actId"])
         if not text:
             continue  # skip sections whose text is unavailable
-        # best_source_url() is the shared helper from Text Formats and Source
-        # URLs, linked below. Copy it once; do not re-derive the field order.
         source_url = best_source_url(r)
         sources.append(
             {
@@ -215,11 +206,17 @@ def answer_question(question, corpus_type=None, state=None):
         return "The provided sources do not answer this question."
 
     prompt = build_grounded_prompt(question, sources)
-    return call_llm(prompt)  # your LLM call; returns the grounded, cited answer
+    return call_llm(prompt)  # placeholder: your LLM call, prompt string in, answer text out
 
 
-# call_llm(prompt) is a placeholder for whatever LLM you run in your stack.
-# It takes the prompt string and returns the model's text answer.
+def best_source_url(result):
+    # First non-null link in the order sourceUrl, htmlUrl, textUrl, externalUrl.
+    # The full order is under Related, "Pick the best source URL".
+    for field in ("sourceUrl", "htmlUrl", "textUrl", "externalUrl"):
+        if result.get(field):
+            return result[field]
+    return None
+
 
 if __name__ == "__main__":
     print(answer_question(
@@ -228,53 +225,20 @@ if __name__ == "__main__":
     ))
 ```
 
-<Warning>
-  Ground on the full section text from `/body`, not on the `excerpt` from search.
-  The excerpt defaults to 500 characters (raisable to 4000 via `excerptChars`) and
-  is meant for ranking, not for quoting. Passing only excerpts to the model invites
-  partial or misleading answers.
-</Warning>
+## Scope
 
-## Why this holds up
+<Accordion title="Scope narrows retrieval, and narrow retrieval grounds better">
+  When you know the question is federal, pass `corpusType: "USC"` or `"CFR"`.
+  When it is about one state, pass `corpusType: "STATE"` with the two-letter `state` code.
 
-<AccordionGroup>
-  <Accordion title="The model cannot cite what it was not given">
-    Because the prompt forbids outside knowledge and every source carries a
-    citation plus a link, the model's claims are traceable. A reader can click the
-    official government URL and confirm the text. If retrieval returns nothing
-    relevant, the model returns the refusal string instead of inventing law.
-  </Accordion>
-  <Accordion title="Scope narrows retrieval, and narrow retrieval grounds better">
-    When you know the question is federal, pass `corpusType: "USC"` or `"CFR"`.
-    When it is about one state, pass `corpusType: "STATE"` with the two-letter
-    `state` code.
+  Tighter scope means the top results are more likely to be the governing sections, which makes the grounded answer more precise.
+  Omit both to search the whole corpus.
+</Accordion>
 
-    Tighter scope means the top results are more likely to be the governing
-    sections, which makes the grounded answer more precise. Omit both to search
-    the whole corpus.
-  </Accordion>
-  <Accordion title="Always link back to the official source">
-    Every result carries several optional source URL fields and any may be null.
-    Use the canonical preference order in
-    [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
-    rather than writing your own, so the same section links to the same official
-    page everywhere in your product. Users can then verify the law themselves.
-  </Accordion>
-</AccordionGroup>
+Why this holds up, and why the model cannot cite what it was not given: [Grounding LLMs](/api-guide/grounding-llms).
 
 ## Related
 
-<CardGroup cols={2}>
-  <Card title="Grounding LLMs" href="/api-guide/grounding-llms">
-    The concepts behind grounding and why it prevents hallucinated law.
-  </Card>
-  <Card title="Statute lookup chatbot" href="/api-guide/recipes/statute-chatbot">
-    A simpler Q&A loop built on the same retrieve-then-ground pattern.
-  </Card>
-  <Card title="Resolve a citation" href="/api-guide/recipes/citation-lookup">
-    Turn a citation string into authoritative, verified text.
-  </Card>
-  <Card title="Vaquill MCP server" href="/integrations/mcp/vaquill">
-    Give an AI agent these same tools over MCP.
-  </Card>
-</CardGroup>
+- [Grounding LLMs](/api-guide/grounding-llms): the concepts behind grounding and why it prevents hallucinated law.
+- [Pick the best source URL](/api-guide/concepts/formats#picking-the-best-available-format): the full preference order, so the same section links to the same official page everywhere.
+- [Statute lookup chatbot](/api-guide/recipes/statute-chatbot) and [Vaquill MCP server](/integrations/mcp/vaquill): the same loop as a chatbot, or as tools for an AI agent.

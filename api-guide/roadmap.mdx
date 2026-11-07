@@ -1,162 +1,120 @@
 ---
 title: "Roadmap"
-description: "Corpora Vaquill AI has not built yet, what is deliberately out of scope, and how to detect new coverage programmatically"
+description: "What Vaquill has not built yet, what is deliberately out of scope, and how to detect new coverage programmatically"
 ---
 
 This page lists only what is not built yet.
+It is direction only, and no date on it is a commitment.
 
 For what is queryable right now, `GET /us/statutes/coverage` is the live answer and this page is not.
 It reports every jurisdiction, every corpus and every section count at the moment you call it, it is free, and it needs no authentication beyond your key.
-The human-readable version is [Coverage](/api-guide/coverage), and what has already shipped is in the [Changelog](/api-guide/changelog).
+Poll it to detect new corpora.
 
 Everything below would ship the way the current data does: from an official government source, citation-linked and refreshed on a schedule.
 Each corpus lands behind the same `corpusType` filter, so there is nothing to integrate.
 
-<Note>
-  This page is maintained by hand and the corpus is not, so treat it as direction rather than as a manifest. Poll `GET /us/statutes/coverage` to detect new corpora, and see [Coverage monitoring](/api-guide/recipes/coverage-monitoring) for a scheduled diff. No date on this page is a commitment.
-</Note>
+## Not built yet
 
-## Completing existing coverage
-
-State regulations reached all 52 jurisdictions on 2026-08-27, and state agency guidance is effectively complete at 49.
-Gaps remain inside corpora that are otherwise live.
-
-| Corpus | Gap | Position |
-|---|---|---|
-| State agency guidance (`STATE_AGENCY_GUIDANCE`) | Pennsylvania, Colorado, Louisiana | Not currently planned |
-| State statutes (`STATE`) | Pennsylvania's unconsolidated statutes beyond 35 P.S. ch. 780 (54 sections held) | Prioritized for backfill |
-
-The three missing agency-guidance jurisdictions publish no cleanly scopable insurance-only archive.
-Pennsylvania's Consolidated Statutes are complete; only the older unconsolidated material beyond 35 P.S. ch. 780 is outstanding.
-
-## Point-in-time and as-applied federal law
-
-The current text of a rule answers what it says today.
-It does not answer what it said on the date of the conduct, which is the question most compliance disputes actually turn on.
-
-The CFR annual editions, 1996 to 2026, are live under `corpusType=CFR_ANNUAL`, and the Statutes at Large are live under `SESSION_LAW`.
-These are what is still missing around them.
-
-| Source | What it adds | Official source |
-|---|---|---|
-| List of Sections Affected (LSA), monthly, 1997 to 2026 | See below | govinfo |
-| FAR and DFARS class deviation text | See below | acquisition.gov |
-
-The **LSA** is the official month-by-month map from a CFR section to the change that hit it and the Federal Register page that made it.
-It is the join key between the `CFR` and `FEDERAL_REGISTER` corpora already in the API, and it answers "what changed this month" directly.
-With the annual editions live, the LSA is what would explain why a section differs between two adjacent editions.
-
-**FAR and DFARS class deviations** matter because, since the Federal Acquisition Regulation overhaul, agencies have been applying model deviation text that 48 C.F.R. does not yet reflect.
-FAR and DFARS are already served inside `CFR`; the deviations are what a contracting officer is operating under in the meantime.
-
-## Federal court rules
-
-| Source | What it adds | Official source |
-|---|---|---|
-| Federal local rules | The 61 district courts not yet held, and the bankruptcy courts | uscourts.gov and each court's own site |
-
-Federal local rules are live under `corpusType=FEDERAL_LOCAL_RULES` for 52 courts: the 13 courts of appeals, the habeas rules, six national bodies and 32 district-court rule sets covering 33 of the 94 district courts.
-What is outstanding is the other 61 district courts and the local bankruptcy rules, adopted under 28 U.S.C. 2071 and Federal Rule of Civil Procedure 83.
-These modify the national Federal Rules in every district, so the national rules alone are an incomplete picture of what governs a filing.
-They are citable in their own form, for example `N.D. Cal. Civ. L.R. 7-2`.
-
-This is a large item: each remaining court publishes its own set, mostly as PDFs, with no common schema.
-
-## Tax
-
-The Internal Revenue Manual is live under `AGENCY_GUIDANCE`, as are IRS notices, revenue procedures, revenue rulings and announcements.
-Two IRS corpora are not.
-
-| Source | What it adds |
+| Status | Meaning |
 |---|---|
-| Chief Counsel Advice | Written determinations issued by IRS Chief Counsel to field offices. |
-| Private Letter Rulings | Taxpayer-specific rulings on the application of tax law to a proposed transaction. |
+| Planned | Intended, with no date. |
+| On demand | Added if customers ask for it. |
+| Evaluating | Under consideration. |
+| Not planned | No current plan. |
 
-## Administrative adjudication
+| Area | Source | What it adds | Status |
+|---|---|---|---|
+| Existing coverage | State agency guidance (`STATE_AGENCY_GUIDANCE`): Pennsylvania, Colorado, Louisiana | Three jurisdictions that publish no cleanly scopable insurance-only archive. | Not planned |
+| Existing coverage | State statutes (`STATE`): Pennsylvania | Unconsolidated statutes beyond 35 P.S. ch. 780 (54 sections held). The Consolidated Statutes are complete. | Planned |
+| Point-in-time federal law | List of Sections Affected (LSA), monthly, 1997 to 2026, from govinfo | The month-by-month map from a CFR section to the change that hit it. Details below. | Planned |
+| Point-in-time federal law | FAR and DFARS class deviation text, from acquisition.gov | Model deviation text that 48 C.F.R. does not yet reflect. Details below. | Planned |
+| Federal court rules | Federal local rules, from uscourts.gov and each court's own site | The 61 district courts not yet held, and the local bankruptcy rules. Details below. | Planned |
+| Tax | Chief Counsel Advice | Written determinations issued by IRS Chief Counsel to field offices. | Planned |
+| Tax | Private Letter Rulings | Taxpayer-specific rulings on the application of tax law to a proposed transaction. | Planned |
+| Administrative adjudication | DOL OALJ, ARB and BRB | Decisions of the Office of Administrative Law Judges, the Administrative Review Board and the Benefits Review Board. Details below. | Planned |
+| Administrative adjudication | FDIC, OCC and Federal Reserve | Enforcement actions and consent orders. Extends the guidance from these agencies already in the corpus. | Planned |
+| Administrative adjudication | SEC ALJ initial decisions | A separate series from the Commission opinions already served, which the current SEC source does not carry. | Planned |
+| Administrative adjudication | OSHRC, FMSHRC, FERC, CFTC reparations, US Tax Court, ASBCA and CBCA, EPA Environmental Appeals Board, HHS Departmental Appeals Board | Decisions of each body. | On demand |
+| Federal regulatory dockets | regulations.gov | Federal rulemaking dockets, documents, and public comments across participating agencies. | Planned |
+| Federal regulatory dockets | FCC ECFS | Telecom proceeding filings from the FCC Electronic Comment Filing System, with filers, documents and submission types. | Planned |
+| Federal regulatory dockets | SEC EDGAR comment letters | SEC staff comment letters (`UPLOAD`) and filer correspondence (`CORRESP`), from EDGAR. | Planned |
+| Agencies not yet covered | Customs and Border Protection (CBP) | Import classification, valuation, and admissibility. | Planned |
+| Agencies not yet covered | Food and Drug Administration (FDA) | Guidance documents and warning letters. | Planned |
+| Agencies not yet covered | Department of Housing and Urban Development (HUD) | Fair housing guidance. | Planned |
+| Agencies not yet covered | Department of Justice (DOJ) Civil Rights Division | Americans with Disabilities Act guidance. | Planned |
+| Pending federal legislation | Congressional bills (`corpusType=FEDERAL_BILL`) | Proposed text of introduced, pending, reported or enrolled bills, with their status. Opt-in only. Details below. | Planned |
+| Case law pagination | United States Reports | Official star pagination for Supreme Court opinions, so a pin cite such as `576 U.S. 644, 681` survives into a brief. Pagination only, not general case law. | Evaluating |
 
-`corpusType=AGENCY_ADJUDICATION` is live and currently serves seven bodies: FTC Part 3 administrative filings, SEC opinions and adjudicatory orders, MSPB, BIA and Attorney General precedent decisions, NLRB Board decisions, DOJ Office of Legal Counsel opinions, and CFPB enforcement actions.
-Each body has its own scope limits. Read [Federal coverage](/api-guide/coverage/federal) before relying on this corpus.
+Agencies already covered include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
+Per-source detail is in [Agency guidance coverage](/api-guide/coverage/agency-guidance), and the adjudication bodies already served are in [Federal coverage](/api-guide/coverage/federal).
 
-These bodies are not in it yet.
+<AccordionGroup>
+  <Accordion title="Point-in-time and as-applied federal law">
+    The current text of a rule answers what it says today.
+    It does not answer what it said on the date of the conduct, which is the question most compliance disputes actually turn on.
 
-| Body | What it adds |
-|---|---|
-| DOL OALJ, ARB and BRB | Decisions of the Office of Administrative Law Judges, the Administrative Review Board and the Benefits Review Board. See below. |
-| FDIC, OCC and Federal Reserve | Enforcement actions and consent orders. Extends the guidance from these agencies already in the corpus. |
-| SEC ALJ initial decisions | A separate series from the Commission opinions already served, which the current SEC source does not carry. |
+    The **LSA** is the official month-by-month map from a CFR section to the change that hit it and the Federal Register page that made it.
+    It is the join key between the `CFR` and `FEDERAL_REGISTER` corpora already in the API, and it answers "what changed this month" directly.
+    With the annual editions live, the LSA is what would explain why a section differs between two adjacent editions.
 
-The DOL bodies span an 80+ case-type taxonomy: SOX, AIR21, STAA, ERA, OSH, OFCCP, LCA, black lung and longshore, among others.
+    **FAR and DFARS class deviations** matter because, since the Federal Acquisition Regulation overhaul, agencies have been applying model deviation text that 48 C.F.R. does not yet reflect.
+    FAR and DFARS are already served inside `CFR`; the deviations are what a contracting officer is operating under in the meantime.
+  </Accordion>
 
-The following would be added on customer demand: the Occupational Safety and Health Review Commission (OSHRC), the Federal Mine Safety and Health Review Commission (FMSHRC), the Federal Energy Regulatory Commission (FERC), Commodity Futures Trading Commission (CFTC) reparations, the US Tax Court, the Armed Services and Civilian Boards of Contract Appeals (ASBCA and CBCA), the EPA Environmental Appeals Board, and the Departmental Appeals Board (DAB) of the Department of Health and Human Services (HHS).
+  <Accordion title="Federal local rules">
+    Federal local rules are adopted under 28 U.S.C. 2071 and Federal Rule of Civil Procedure 83.
+    They modify the national Federal Rules in every district, so the national rules alone are an incomplete picture of what governs a filing.
+    They are citable in their own form, for example `N.D. Cal. Civ. L.R. 7-2`.
 
-## Federal regulatory dockets
+    This is a large item: each remaining court publishes its own set, mostly as PDFs, with no common schema.
+    What is already served is in [Federal coverage](/api-guide/coverage/federal).
+  </Accordion>
 
-Rulemaking dockets and the public comment record behind a rule, sourced from three official, documented government APIs.
+  <Accordion title="DOL adjudication bodies">
+    The DOL bodies span an 80+ case-type taxonomy: SOX, AIR21, STAA, ERA, OSH, OFCCP, LCA, black lung and longshore, among others.
+  </Accordion>
 
-| Source | What it adds |
-|---|---|
-| regulations.gov | Federal rulemaking dockets, documents, and public comments across participating agencies. |
-| FCC ECFS | Telecom proceeding filings from the FCC Electronic Comment Filing System, with filers, documents and submission types. |
-| SEC EDGAR comment letters | SEC staff comment letters (`UPLOAD`) and filer correspondence (`CORRESP`), from EDGAR. |
-
-## Agencies not yet covered
-
-No documents from these agencies are in the corpus today.
-
-| Agency | Domain |
-|---|---|
-| Customs and Border Protection (CBP) | Import classification, valuation, and admissibility |
-| Food and Drug Administration (FDA) | Guidance documents and warning letters |
-| Department of Housing and Urban Development (HUD) | Fair housing guidance |
-| Department of Justice (DOJ) Civil Rights Division | Americans with Disabilities Act guidance |
-
-Covered agencies include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
-Their per-source detail is in [Agency guidance coverage](/api-guide/coverage/agency-guidance).
-
-## Pending federal legislation
-
-Congressional bills (introduced, pending, reported or enrolled, with their status) are not held today, and no date is set for them.
-A bill corpus is planned as an opt-in token, `corpusType=FEDERAL_BILL`: proposed text only, labelled proposed, never law and never part of an unscoped search. The token is registered but returns no results today.
-The enacted text of a bill that became law is served under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, under `corpusType=USC`.
-
-## Under evaluation
-
-**United States Reports, for official star pagination.**
-
-The text of Supreme Court opinions is available in many places.
-The bound volumes are the only place the official page numbers live, and a pin cite in the form `576 U.S. 644, 681` is what survives into a brief.
-This is the one case law item we are weighing, and only for the pagination anchor.
-It would not change the position immediately below on general case law and dockets.
+  <Accordion title="Pending federal legislation">
+    Congressional bills are not held today, and no date is set for them.
+    The `FEDERAL_BILL` token holds proposed text only, labelled proposed, never law and never part of an unscoped search.
+    The token is reserved: it is registered but returns no results today.
+    The enacted text of a bill that became law is served under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, under `corpusType=USC`.
+  </Accordion>
+</AccordionGroup>
 
 ## Out of scope
 
-These are deliberate exclusions. If you need one of them, we are not your supplier.
+These are deliberate exclusions.
 
 | Not building | Why |
 |---|---|
-| General case law and court dockets | We are a primary-law corpus: statutes, regulations, constitutions, court rules, agency material. |
-| GAO and Comptroller General decisions | See below. |
-| Judge-specific procedural material (standing orders, chambers procedures, individual practice rules) | See the court-material line below. |
+| General case law and court dockets | The corpus is primary law: statutes, regulations, constitutions, court rules, agency material. |
+| GAO and Comptroller General decisions | GAO does not permit automated access to its decisions and offers no feed or API. |
+| Judge-specific procedural material (standing orders, chambers procedures, individual practice rules) | It has no stable location, citation form or amendment cycle. |
 | Practice notes and practice directions | A Commonwealth instrument with no direct US federal equivalent. The closest analogues are local rules and court-wide general orders. |
 | Municipal and county ordinances | Public-domain text, but locked in three commercial publisher platforms with no comprehensive source. |
 | Standards incorporated by reference into the CFR (ASTM, NFPA, ISO) | Published by private standards bodies. Courts have held only non-commercial dissemination is fair use, which is incompatible with a paid API. |
 | NAIC model law text | A copyrighted, commercially sold publication, not open government primary law. Each state's own insurance bulletins are in scope under `STATE_AGENCY_GUIDANCE`. |
 
-### GAO
+<AccordionGroup>
+  <Accordion title="GAO decisions">
+    GAO decisions of the Comptroller General on appropriations law and bid protests are a deliberate no.
 
-GAO decisions of the Comptroller General on appropriations law and bid protests are a deliberate no.
+    GAO does not permit automated access to its decisions, and it offers no feed or API either.
+    The only bulk source is govinfo's `GAOREPORTS` collection, which runs from 1989 to 2008 and then stops.
+    A bid-protest corpus that ends 18 years ago invites a customer to read absence as a finding, which is worse than not serving it.
+  </Accordion>
 
-GAO does not permit automated access to its decisions, and we honor that. It offers no feed or API either.
-The only bulk source is govinfo's `GAOREPORTS` collection, which runs from 1989 to 2008 and then stops.
-A bid-protest corpus that ends 18 years ago invites a customer to read absence as a finding, which is worse than not serving it.
+  <Accordion title="The line on court material">
+    The corpus carries rules a court formally adopts and publishes as binding on everyone appearing before it, not an individual judge's preferences.
 
-### The line on court material
+    Formally adopted rules are stable, citable, published under statutory authority, and amended on a visible cycle.
+    That covers the Federal Rules and Supreme Court Rules today, the state court rules in the [Coverage](/api-guide/coverage) matrix, and the federal local rules.
 
-We carry rules a court formally adopts and publishes as binding on everyone appearing before it. We do not carry an individual judge's preferences.
-
-Formally adopted rules are stable, citable, published under statutory authority, and amended on a visible cycle. That covers the Federal Rules and Supreme Court Rules today, the state court rules in the [Coverage](/api-guide/coverage) matrix, and the federal local rules above.
-
-Judge-specific material fails every one of those tests: over 1,500 judges, no consistent location, no citation form, revised or voided silently on rotation. We could collect it, but we could not keep it current, and a confidently stale answer is worse than none.
+    Judge-specific material fails every one of those tests: over 1,500 judges, no consistent location, no citation form, revised or voided silently on rotation.
+    It could be collected but not kept current, and a confidently stale answer is worse than none.
+  </Accordion>
+</AccordionGroup>
 
 ## Related
 

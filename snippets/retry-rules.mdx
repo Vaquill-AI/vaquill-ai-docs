@@ -1,0 +1,7 @@
+The SDKs retry `408`, `429` and `5xx` responses, plus a `409` only for `idempotency_in_progress`.
+Connection errors and timeouts are retried when it is safe to do so.
+The default is 2 retries, and setting the retry limit to 0 turns retries off.
+Backoff starts at 0.5 seconds, doubles to an 8 second cap and is scaled down by 0 to 25 percent jitter.
+The wait comes from the `retry-after-ms` header first, then `Retry-After` (seconds or an HTTP date), then the body's `retryAfterSeconds`.
+A wait above 120 seconds is not slept: the error is raised at once.
+Never retried: a `402` `insufficient_credits`, `daily_cap_exceeded`, any other `4xx`, and anything the server marks `retryable: false`.

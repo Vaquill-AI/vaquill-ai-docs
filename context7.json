@@ -1,6 +1,20 @@
 {
-  "projectTitle": "Vaquill AI",
-  "description": "Legal AI suite for in-house counsel, with a US statutes API for the US Code, the CFR, and all 50 state statute codes.",
+  "projectTitle": "Vaquill",
+  "description": "US primary law data API, MCP servers and open corpus: statutes, regulations, court rules, constitutions and session laws with Bluebook citation resolution.",
   "folders": ["."],
-  "excludeFolders": ["logo", "images", "product ss", ".claude", ".mintlify", "node_modules"]
+  "excludeFolders": [
+    "logo",
+    "images",
+    "product ss",
+    ".claude",
+    ".github",
+    ".mintlify",
+    "node_modules",
+    "scripts",
+    "guides",
+    "workflows",
+    "workspace-api",
+    "integrations/dms"
+  ],
+  "excludeFiles": ["introduction.mdx", "api-guide/translation.mdx", "CLAUDE.md"]
 }

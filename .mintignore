@@ -1,9 +1,20 @@
+# Repo tooling, never published.
 CLAUDE.md
 .cursor
 .github
+scripts/
+
+# Unpublished legacy areas (redirected in docs.json).
 introduction.mdx
 guides/
 workflows/
 workspace-api/
 integrations/dms/
 api-guide/translation.mdx
+
+# Unpublished 2026-11-07, kept in the repo (redirected to /integrations in docs.json).
+integrations/chatbots/
+integrations/widgets/
+integrations/browser/
+
+# Do NOT ignore snippets/: published pages import from it.

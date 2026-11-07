@@ -1,187 +1,157 @@
 ---
-title: "Section Intelligence"
-description: "Four routes that answer questions about a section you already have: what cites it, what its terms mean, how other states word it, and what has changed"
+title: "Section intelligence"
+description: "Four routes about a section you already hold: what cites it, what its terms mean, how other states word it, what changed."
 ---
 
 A section lookup tells you what one provision says.
-These four routes answer the questions you ask next, each starting from an
-`actId` you already hold.
+These four routes answer the questions you ask next, each starting from an `actId` you already hold.
 
-| Route | Answers | Credits |
-|---|---|:---:|
-| `/section/{actId}/changes` | Has this moved since we last looked at it? | 1 |
-| `/section/{actId}/cited-by` | What else breaks if this changes? | 2 |
-| `/section/{actId}/definitions` | What do this section's terms of art actually mean? | 4 |
-| `/section/{actId}/cross-state` | How do other states word the same rule? | 6 |
+| Route | Answers | Credits | Scope | Empty answer |
+|---|---|:---:|---|---|
+| `/section/{actId}/changes` | Has this moved since we last looked at it? | 1 | Any section, as far as change capture reaches | An empty `changes` list means none was captured. Read `coverage` |
+| `/section/{actId}/cited-by` | What else breaks if this changes? | 2 | USC and CFR | Empty with a `note`, refunded |
+| `/section/{actId}/definitions` | What do this section's terms of art actually mean? | 4 | Strongest on USC. CFR and state codes are best effort | Empty with a `note`, refunded |
+| `/section/{actId}/cross-state` | How do other states word the same rule? | 6 | State statute sections | Empty with a `note`, refunded |
 
-All four are `GET`, all sit under `https://api.vaquill.ai/api/v1/us/statutes`,
-and all refund a call that cannot answer.
-Each carries a `note` explaining an empty answer that is not a real zero, so an
-empty result with `note: null` is a genuine "nothing here".
+All four are `GET`, all sit under `https://api.vaquill.ai/api/v1/us/statutes`, and all refund a call that cannot answer.
+Each carries a `note` explaining an empty answer that is not a real zero, so an empty result with `note: null` is a genuine "nothing here".
 
 ## Changes: what has moved
 
-`GET /us/statutes/section/{actId}/changes` returns every change our refreshes
-have observed to one section: when it was added, each time its text was
-replaced, and whether it has since been removed.
+`GET /us/statutes/section/{actId}/changes` returns every change our refreshes have observed to one section: when it was added, each time its text was replaced, and whether it has since been removed.
 
 | Parameter | Default | Notes |
 |---|---|---|
-| `limit` | 50 | Max 200. |
-| `order` | `desc` | `desc` is newest first. `asc` replays a section's life forward. |
-| `changeKind` | all | `added`, `amended`, `removed`. Repeat the parameter for several. |
-| `sinceId` | - | Poll forward: return changes with an `id` above this. Carry `cursor`. |
-| `beforeId` | - | Walk back: return changes with an `id` below this. |
+| `limit` | 50 | Max 200 |
+| `order` | `desc` | `desc` is newest first. `asc` replays a section's life forward |
+| `changeKind` | All | `added`, `amended`, `removed`. Repeat the parameter for several |
+| `sinceId` | None | Poll forward: return changes with an `id` above this. Carry `cursor` |
+| `beforeId` | None | Walk back: return changes with an `id` below this |
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/changes?limit=10" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-Each event carries `changeKind`, `detectedAt`, `displayCitation`, `hasDiff` and
-the `corpusType` board it was captured on.
+Each event carries `changeKind`, `detectedAt`, `displayCitation`, `hasDiff` and the `corpusType` board it was captured on.
 
 <Warning>
-  These are OBSERVED changes. `detectedAt` is when our refresh saw the
-  difference, an upper bound on when it took effect, never the effective date
-  itself. For the publisher's own dates read `amendmentHistory` on
-  `GET /us/statutes/section/{actId}`.
-
-  Coverage depends on capture, not on the age of the law. Change capture
-  began long after the corpus did, runs per source, and events are swept after 5
-  years. An empty `changes` list means no change was captured. It does not
-  mean the section was never amended. The `coverage` field on the response says
-  so in prose. Surface it rather than rendering an empty list as "unchanged".
+  These are observed changes, not effective dates: `detectedAt` is when our refresh saw the difference, an upper bound on when it took effect.
+  An empty `changes` list means no change was captured, not that the section is unchanged.
 </Warning>
 
-A `removed` as the newest change means the section is gone from the corpus, so
-`section` comes back null.
-That is a successful, charged response rather than a 404: learning that a
-provision was repealed is the point.
+<Accordion title="Capture coverage and the publisher's own dates">
+  For the publisher's own dates read `amendmentHistory` on `GET /us/statutes/section/{actId}`.
+
+  Coverage depends on capture, not on the age of the law.
+  Change capture began long after the corpus did, runs per source, and events are swept after 5 years.
+  An empty `changes` list does not mean the section was never amended.
+  The `coverage` field on the response says so in prose.
+  Surface it rather than rendering an empty list as "unchanged".
+</Accordion>
+
+A `removed` as the newest change means the section is gone from the corpus, so `section` comes back null.
+That is a successful, charged response rather than a 404, because learning that a provision was repealed is the point.
 
 ## Cited-by: the reverse index
 
-`GET /us/statutes/section/{actId}/cited-by` returns the sections whose text
-cross-references the one you asked about.
+`GET /us/statutes/section/{actId}/cited-by` returns the sections whose text cross-references the one you asked about.
+A section lookup already tells you what a section cites, and this route goes the other direction: which provisions elsewhere depend on this one.
 
 | Parameter | Default | Notes |
 |---|---|---|
-| `limit` | 25 | Page size. Max 100. |
-| `offset` | 0 | Rows to skip, max 5,000. Pass the previous response's `nextOffset` to read the next page. |
-
-A section lookup already tells you what a section cites.
-This route goes the other direction, which you cannot get by reading the
-section: which provisions elsewhere depend on this one.
-It answers "if this changes, what else is affected".
+| `limit` | 25 | Page size. Max 100 |
+| `offset` | 0 | Rows to skip, max 5,000. Pass the previous response's `nextOffset` to read the next page |
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/cited-by?limit=50" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-Results are one row per citing section, in statutory order, never one row per
-matching chunk.
-`total` is the size of `citers` on this page, not a corpus-wide count.
-`truncated` and `hasMore` are true when another page follows, and `nextOffset` is the `offset` that resumes after this one (null on the last page).
-`totalCiters` is the number of distinct citing sections, and it is the whole count only when `totalCitersIsLowerBound` is false.
-When it is true the count stopped at a ceiling and more exist.
-`verifiedCiters` is how many of the leading rows had their own text read and confirmed to name this section.
-They always come first, so the first `verifiedCiters` rows across all pages are confirmed and the rest are listed in the cross-reference index only.
+Results are one row per citing section, in statutory order, never one row per matching chunk.
+To page, pass `nextOffset` as `offset` until `hasMore` is false.
 A page past the end is empty and not charged.
+State codes and Federal Register rules carry no section-level cross-reference index, so a section from either returns an empty list with a `note` and is refunded.
 
-**Scope: USC and CFR.**
-State codes and Federal Register rules carry no section-level cross-reference
-index, so a section from either returns an empty list with a `note` and is
-refunded.
+<Expandable title="Response fields">
+
+| Field | Meaning |
+|---|---|
+| `total` | The true count of distinct citing sections across all pages, the same number as `totalCiters` |
+| `returned` | How many rows this page holds |
+| `truncated`, `hasMore` | True when another page follows |
+| `nextOffset` | The `offset` that resumes after this page. Null on the last page |
+| `totalCiters` | The number of distinct citing sections. It is the whole count only when `totalCitersIsLowerBound` is false |
+| `totalCitersIsLowerBound` | When true, the count stopped at a ceiling and more exist |
+| `verifiedCiters` | How many of the leading rows had their own text read and confirmed to name this section. They always come first, so the first `verifiedCiters` rows across all pages are confirmed and the rest are listed in the cross-reference index only |
+
+</Expandable>
 
 <Note>
-  This reads references as the publisher wrote them. A citation the source never
-  recorded in machine-readable form cannot appear here, so a missing row does
-  not prove a section is uncited.
+  This reads references as the publisher wrote them.
+  A citation the source never recorded in machine-readable form cannot appear here, so a missing row does not prove a section is uncited.
 </Note>
 
 ## Definitions: the terms that govern a section
 
-`GET /us/statutes/section/{actId}/definitions` returns the defined terms that
-apply to a section, parsed from its chapter's definitions section.
-No parameters.
-
-Statutes often depart from ordinary English.
-"Person" routinely includes corporations, "employee" routinely excludes
-independent contractors, and the section you are reading almost never says so:
-the definition lives in a separate section elsewhere in the chapter.
-Reading a provision without it is how a clause gets misread.
+`GET /us/statutes/section/{actId}/definitions` returns the defined terms that apply to a section, parsed from its chapter's definitions section.
+It takes no parameters.
+The definition usually lives in a separate section elsewhere in the chapter, so reading a provision without it is how a clause gets misread.
 
 ```bash
-curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T15_C1_S1/definitions \
+curl "https://api.vaquill.ai/api/v1/us/statutes/section/USC_T15_C1_S1/definitions" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-Each entry in `terms` carries the `term` as the statute writes it, the
-`definition` verbatim, and the `marker` it sits under where the source numbers
-its definitions.
-`definitionsSection` names where the terms came from, so a definition can be
-quoted and cited to the provision that actually carries it.
+Each entry in `terms` carries the `term` as the statute writes it, the `definition` verbatim, and the `marker` it sits under where the source numbers its definitions.
+`definitionsSection` names where the terms came from, so a definition can be quoted and cited to the provision that actually carries it.
 
-**Scope**: strongest on the U.S. Code, where a chapter's definitions section is
-conventionally structured and parses reliably.
-CFR and state codes are best-effort, because publishers format definitions
-inconsistently.
-A definitions section we can locate but not parse returns empty with a `note`
-and is refunded, with `definitionsSection` still populated so you can fetch its
-text from `/section/{actId}/body` and read it yourself.
+Scope is strongest on the U.S. Code, where a chapter's definitions section is conventionally structured and parses reliably.
+CFR and state codes are best effort, because publishers format definitions inconsistently.
+A definitions section we can locate but not parse returns empty with a `note` and is refunded, with `definitionsSection` still populated so you can fetch its text from `/section/{actId}/body` and read it yourself.
+
+<Accordion title="Definitions that declare their own scope">
+  A definitions section that declares its own scope ("As used in this subchapter") is checked against the section you asked about.
+  If it is scoped to a different chapter, subchapter or part, it is refused: the answer is empty, the `note` says so and the call is not charged.
+  If the container on either side cannot be established, the terms are kept and the `note` says the scope could not be verified.
+  If the scan itself fails, the call answers `500` and is refunded.
+</Accordion>
 
 ## Cross-state: the same rule elsewhere
 
-`GET /us/statutes/section/{actId}/cross-state` returns provisions in other
-states that address the same subject as a state statute section.
+`GET /us/statutes/section/{actId}/cross-state` returns provisions in other states that address the same subject as a state statute section.
+It starts from one section you already have, so you do not run the same search once per state.
 
 | Parameter | Default | Notes |
 |---|---|---|
-| `limit` | 5 | Max 25. Counts STATES, one provision each. |
-
-Answering "how does this rule differ across the states we operate in" normally
-means running the same search 50 times and reconciling by hand, because every
-state words and numbers its provisions differently.
-This starts from one section you already have.
+| `limit` | 5 | Max 25. Counts states, one provision each |
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/statutes/section/STATE_TX_Cpr_C93_S93.005/cross-state?limit=10" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-At most one provision per state, most similar first, so the response reads as a
-jurisdiction comparison rather than a relevance list.
-`statesCovered` says how many distinct states are represented.
-Fewer than you asked for means no provision in the remaining states cleared the
-similarity floor, not that those states are missing from the corpus.
+At most one provision per state, most similar first, so the response reads as a jurisdiction comparison rather than a relevance list.
+USC, CFR, regulations and court rules return empty with a `note`, refunded, since a federal section has no state analogue by definition.
+When `rankingDegraded` is true the neighbors are in retrieval order, `note` says so, and the call is refunded.
 
-**Scope**: state statute sections.
-USC, CFR, regulations and court rules return empty with a `note`, refunded,
-since a federal section has no state analogue by definition.
+<Accordion title="statesCovered and neighbors">
+  `statesCovered` is how many other states were actually examined, not how many appear in `neighbors`.
+  A state counts when its own search held something to consider, so `neighbors` can be shorter than `statesCovered`.
+  It is shorter when a state's best provision is not on the same subject, or when `limit` caps the list.
+  Historical editions and dead law are excluded from every search, so they never count.
+</Accordion>
 
 <Warning>
-  `similarity` is a retrieval score between 0 and 1 describing how closely two
-  provisions read. It is not a legal opinion.
-
-  A high score means the provisions cover the same ground. It does not mean they
-  impose the same obligation, and the differences are usually the point. Use
-  the results as a shortlist to read.
+  `similarity` is a retrieval score between 0 and 1 describing how closely two provisions read. It is not a legal opinion.
+  A high score means the provisions cover the same ground, not that they impose the same obligation, and the differences are usually the point.
+  Use the results as a shortlist to read.
 </Warning>
 
-## Related
+## See also
 
-<CardGroup cols={2}>
-  <Card title="Section Identifiers" href="/api-guide/concepts/section-ids">
-    Where an `actId` comes from, and what to do when one misses.
-  </Card>
-  <Card title="Status & Currency" href="/api-guide/concepts/status-and-currency">
-    Whether the section you are analysing is still good law.
-  </Card>
-  <Card title="Response Fields" href="/api-guide/concepts/response-fields">
-    Point-in-time text with `asOf`, and which fields each corpus populates.
-  </Card>
-  <Card title="Law Change Alerts" href="/api-guide/alerts">
-    Be told about future changes instead of polling a section's history.
-  </Card>
-</CardGroup>
+- [Section identifiers](/api-guide/concepts/section-ids): where an `actId` comes from, and what to do when one misses.
+- [Status and currency](/api-guide/concepts/status-and-currency): whether the section you are analysing is still good law.
+- [Response fields](/api-guide/concepts/response-fields): point-in-time text with `asOf`, and which fields each corpus populates.
+- [Pinpoints](/api-guide/concepts/pinpoints) and [Citation formats](/api-guide/concepts/citation-formats): the other routes that start from a citation or an `actId`.
+- [Law change alerts](/api-guide/alerts): be told about future changes instead of polling a section's history.

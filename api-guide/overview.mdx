@@ -1,7 +1,10 @@
 ---
-title: "API Overview"
-description: "The deepest US statutes and regulations API, built for grounding AI and compliance"
+title: "API overview"
+description: "What the Vaquill Data API serves: US primary law, its endpoints and its corpora"
 ---
+
+import LivePricing from '/snippets/live-pricing.mdx';
+import CreditsConsumed from '/snippets/credits-consumed.mdx';
 
 <img
   src="/images/art/banner-intro-v1.webp"
@@ -12,17 +15,21 @@ description: "The deepest US statutes and regulations API, built for grounding A
   style={{ width: '100%', height: 'auto', borderRadius: '0.5rem', margin: '0 0 1.5rem' }}
 />
 
-The Vaquill Developer API is the deepest US statutes and regulations API. Search and retrieve the US Code, the Code of Federal Regulations, all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance.
+The Vaquill Data API searches and retrieves the US Code, the Code of Federal Regulations, all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance.
 
-Every section comes back with a citation, full text in more than one format, and a link to the official government source. Typical uses are grounding AI (RAG and agents), compliance and RegTech work, and putting authoritative legal text inside your own product.
+Every section comes back with a citation, status and currency signals, full text in more than one format, and a link to the official government source.
+Typical uses are grounding AI (RAG and agents), compliance and RegTech work, and putting authoritative legal text inside your own product.
+
+**Start here:** the [Quickstart](/api-guide/quickstart) makes a first call, and [Authentication](/api-guide/authentication) covers keys.
+To pick a recipe by what you are building, see [Use cases](/api-guide/use-cases).
 
 ## Capabilities
 
-Every path is prefixed with `/api/v1`. Every result carries a citation, status and currency signals, and a link to the official government source.
+Every path is prefixed with `/api/v1`.
 
 | Capability | Endpoint |
 |---|---|
-| Hybrid semantic and keyword search, scoped by corpus, jurisdiction, and code | `POST /us/statutes/search` |
+| Hybrid semantic and keyword search, scoped by corpus, jurisdiction, and code. `includeBody: true` returns each hit's text in the same call | `POST /us/statutes/search` |
 | Resolve a Bluebook citation to its exact section | `GET /us/statutes/resolve` |
 | Browse the hierarchy (titles to chapters or parts to sections) in statutory order | `GET /us/statutes/divisions` |
 | Section metadata, full text, and neighboring sections | `GET /us/statutes/section/{actId}`, `.../body`, `.../related` |
@@ -34,83 +41,60 @@ Every path is prefixed with `/api/v1`. Every result carries a citation, status a
 | State session laws as enacted: list by state and date, search the text, fetch by id or citation, read the text | `GET /us/session-laws/list`, `POST /us/session-laws/search`, `GET /us/session-laws/{sessionLawId}`, `.../body` |
 | Subscribe to a jurisdiction or corpus and get a webhook or email when it changes, section by section, with before/after text on amendments | `GET /boards`, `POST /watches`, `GET /watches/{id}/changes`, `.../diff` |
 
-### Search with `includeBody`
+<Accordion title="Search with includeBody">
+  `POST /us/statutes/search` accepts `includeBody: true`, which attaches each hit's full text on the result's `body` instead of making you call `/section/{actId}/body` once per hit.
+  A row whose text cannot be resolved comes back with `body: null` and is not charged.
+  This saves round trips. It does not lower the cost of the rows that return text.
+</Accordion>
 
-`POST /us/statutes/search` accepts `includeBody: true`, which attaches each hit's full text on the result's `body` instead of making you call `/section/{actId}/body` once per hit.
-A row whose text cannot be resolved comes back with `body: null` and is not charged.
-This saves round trips. It does not lower the cost of the rows that return text.
+### What a call costs
 
-<Note>
-  `GET /api-credits/pricing` returns the live per-endpoint credit matrix, needs
-  no authentication and costs nothing. `creditsConsumed` on every response
-  reports what was actually billed, which can be less on a partial or refunded
-  result (for example, a `404` on `/us/statutes/section/{actId}` is not
-  charged). Use these two to know what a call costs.
-</Note>
+<LivePricing />
+
+<CreditsConsumed />
+
+A `404` on `/us/statutes/section/{actId}` is not charged.
 
 ### Corpora
 
-**Federal:** US Code (`USC`), Code of Federal Regulations (`CFR`), the CFR annual editions 1996 to 2026 (`CFR_ANNUAL`), Federal Register agency rules (`FEDERAL_REGISTER`), a curated slice of Federal Register notices (`FEDERAL_REGISTER_NOTICE`), agency guidance (`AGENCY_GUIDANCE`), executive orders (`EXECUTIVE_ACTION`), Federal Rules of Procedure (`FEDERAL_RULES`), the local rules of 52 federal courts (`FEDERAL_LOCAL_RULES`), the US Constitution (`CONSTITUTION`), session laws as enacted (`SESSION_LAW`), statute compilations as amended (`STATUTE_COMPILATION`), US Sentencing Guidelines (`SENTENCING_GUIDELINES`), administrative adjudications (`AGENCY_ADJUDICATION`), US income tax treaties and their Treasury explanations (`US_TAX_TREATY`), and the Senate treaty record, including resolutions of advice and consent (`US_TREATY`).
+Scope any search with the `corpusType` token. [Corpus types](/api-guide/concepts/corpus-types) lists what each holds.
 
-**State, across 56 jurisdictions:** statutory codes (`STATE`), administrative regulations (`REGULATION`), constitutions (`STATE_CONSTITUTION`), court rules (`STATE_RULES`), state register notices (`STATE_REGISTER`, not codified law), and state regulator guidance (`STATE_AGENCY_GUIDANCE`).
+| Scope | `corpusType` | What it is |
+|---|---|---|
+| Federal | `USC` | US Code |
+| Federal | `CFR` | Code of Federal Regulations |
+| Federal | `CFR_ANNUAL` | CFR annual editions |
+| Federal | `FEDERAL_REGISTER` | Federal Register agency rules |
+| Federal | `FEDERAL_REGISTER_NOTICE` | A curated slice of Federal Register notices |
+| Federal | `AGENCY_GUIDANCE` | Agency guidance |
+| Federal | `EXECUTIVE_ACTION` | Executive orders |
+| Federal | `FEDERAL_RULES` | Federal Rules of Procedure |
+| Federal | `FEDERAL_LOCAL_RULES` | Local rules of federal courts |
+| Federal | `CONSTITUTION` | US Constitution |
+| Federal | `SESSION_LAW` | Session laws as enacted |
+| Federal | `STATUTE_COMPILATION` | Statute compilations as amended |
+| Federal | `SENTENCING_GUIDELINES` | US Sentencing Guidelines |
+| Federal | `AGENCY_ADJUDICATION` | Administrative adjudications |
+| Federal | `US_TAX_TREATY` | US income tax treaties and their Treasury explanations |
+| Federal | `US_TREATY` | Senate treaty record, including resolutions of advice and consent |
+| State, across 56 jurisdictions | `STATE` | Statutory codes |
+| State | `REGULATION` | Administrative regulations |
+| State | `STATE_CONSTITUTION` | Constitutions |
+| State | `STATE_RULES` | Court rules |
+| State | `STATE_REGISTER` | State register notices (not codified law) |
+| State | `STATE_AGENCY_GUIDANCE` | State regulator guidance (insurance bulletins), not itself law |
 
-**State session laws:** 321,628 laws, sessions 1975 to 2026, across 52 jurisdictions, served by `/us/session-laws` rather than a `corpusType`. See [State Session Laws](/api-guide/session-laws).
-
-`STATE_AGENCY_GUIDANCE` is the newest corpus. It holds 13,000+ state Department of Insurance bulletins and circular letters across 49 jurisdictions, going back to 1924. A bulletin interprets the law and is not itself the law, so it has its own token rather than sharing `REGULATION`. Use it for insurance compliance and 50-state survey questions.
-
-Scope any search with the `corpusType` token. See [Corpus Types](/api-guide/concepts/corpus-types) for what each holds.
+State session laws cover the 50 states, DC and Puerto Rico, sessions from 1975, and are served by `/us/session-laws` rather than a `corpusType`.
+Coverage is partial for many sessions, and `GET /us/statutes/coverage` reports it live.
+See [State session laws](/api-guide/session-laws).
 
 <Note>
   Coverage expands weekly. Call `/us/statutes/coverage` at runtime to see exactly what is queryable rather than hardcoding jurisdiction counts.
 </Note>
 
-## What you can build
-
-<CardGroup cols={2}>
-  <Card title="Use cases" href="/api-guide/use-cases">
-    Grounding AI, compliance mapping, legal research tools, and more.
-  </Card>
-  <Card title="Resolve a citation" href="/api-guide/recipes/citation-lookup">
-    Turn a Bluebook citation into the exact section, verified, with full text and an official link.
-  </Card>
-  <Card title="RAG grounding" href="/api-guide/recipes/rag-grounding">
-    Feed authoritative statute text to an LLM in your stack, with citations and source links.
-  </Card>
-  <Card title="Compliance mapping" href="/api-guide/recipes/compliance-mapping">
-    Map obligations to the statutes and regulations that govern them.
-  </Card>
-  <Card title="Statute chatbot" href="/api-guide/recipes/statute-chatbot">
-    Answer statute questions in your product, grounded in official text.
-  </Card>
-  <Card title="Law Change Alerts" href="/api-guide/alerts">
-    Get a webhook or email the moment a jurisdiction or corpus changes, with the exact sections and a before/after diff.
-  </Card>
-</CardGroup>
-
-## Get started
-
-<CardGroup cols={2}>
-  <Card title="Quickstart" href="/api-guide/quickstart">
-    Make your first search and fetch a section in a few minutes.
-  </Card>
-  <Card title="Authentication" href="/api-guide/authentication">
-    Create an API key and authenticate every request.
-  </Card>
-  <Card title="Postman collection" href="https://www.postman.com/priyansh-57bdb803-2033693/vaquill-ai/collection/52997016-b3a325eb-3545-42be-8f37-3282708a12dd?action=share&source=copy-link&creator=52997016" icon="paper-plane">
-    Every endpoint as a ready-to-run request. Fork it and add your API key.
-  </Card>
-  <Card title="Data & Privacy" href="/api-guide/data-privacy">
-    What the API stores about your requests, and for how long.
-  </Card>
-</CardGroup>
-
 ## Related
 
-<CardGroup cols={2}>
-  <Card title="Coverage" href="/api-guide/coverage">
-    The jurisdiction matrix in human-readable form.
-  </Card>
-  <Card title="SDKs" href="/api-guide/sdks/overview">
-    Official Python and TypeScript clients for this API, plus a CLI.
-  </Card>
-</CardGroup>
+- [Use cases](/api-guide/use-cases): a recipe for grounding AI, citation checks, compliance mapping, chatbots and Law Change Alerts.
+- [Coverage](/api-guide/coverage): the jurisdiction matrix in human-readable form.
+- [SDKs](/api-guide/sdks/overview): official Python and TypeScript clients, plus a CLI.
+- [Data and privacy](/api-guide/data-privacy): what the API stores about your requests, and for how long.

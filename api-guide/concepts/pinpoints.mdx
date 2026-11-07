@@ -1,6 +1,6 @@
 ---
 title: "Pinpoints"
-description: "Get the text of one subsection, paragraph or clause instead of the whole section: how to ask, what comes back, how far to trust it, and what a miss looks like"
+description: "Get the text of one subsection, paragraph or clause instead of the whole section, and learn how far to trust it."
 ---
 
 A statute section can run to dozens of subsections.
@@ -13,7 +13,18 @@ curl "https://api.vaquill.ai/api/v1/us/statutes/resolve?cite=625%20ILCS%205/11-6
   -H "Authorization: Bearer vq_key_..."
 ```
 
-The response carries the whole section as before, and a `pinpoint` object beside it:
+The response carries the whole section as before, and a `pinpoint` object beside it.
+
+| Field | Meaning |
+|---|---|
+| `requested`, `path`, `label`, `level` | The pinpoint as sent, its path (outermost label first), the unit's own label and its level |
+| `matched`, `matchLevel` | Whether the unit exists. See [Always read `matched`](#always-read-matched) |
+| `text`, `leadIn`, `fullText` | The unit's own text, the text it completes, and the unit as printed with its sub-units |
+| `children`, `siblings` | The sub-units, and the labels of the previous and next unit at the same level |
+| `charStart`, `charEnd` | The unit's character offsets in the section `plain` text |
+| `structure` | Where the outline came from and how far to trust it. See [How far to trust it](#how-far-to-trust-it-structure) |
+
+<Expandable title="Full response for 625 ILCS 5/11-601(c)">
 
 ```json
 {
@@ -42,18 +53,19 @@ The response carries the whole section as before, and a `pinpoint` object beside
 }
 ```
 
+</Expandable>
+
 ## Where it works
 
 | Route | How to ask | What you get |
 |---|---|---|
 | `GET /us/statutes/resolve`, `POST /us/statutes/resolve` | Put the pinpoint in the citation | `pinpoint` on the response, and on each item of a batch |
-| `POST /us/statutes/extract-citations` | Send `resolve: true`. A pinpoint in the text is read | `pinpointMatch` on each resolved row that carried a pinpoint |
+| `POST /us/statutes/extract-citations` | Send `resolve: true`. A pinpoint in the text is read | `pinpointMatch` on each resolved row that carried a pinpoint, and `charStart` / `charEnd` giving the row's span in your text. A range returns its two ends (`rangeRole`, `rangePartner`), not every section between |
 | `GET /us/statutes/section/{actId}/body` | `pinpoint=(c)(1)` | `pinpoint` beside the full body |
 | `POST /us/statutes/search` | `includePinpoint: true` | `pinpoints`, keyed by `actId`: which subsection each hit matched |
 
-**The price does not change.**
-A resolve with a pinpoint is the resolve price, a body with a pinpoint is the body price, and `includePinpoint` adds nothing to a search.
-A pinpoint that finds no such unit is still a resolved section and is charged like one.
+Pinpoints add no cost: a resolve with a pinpoint is the resolve price, a body with a pinpoint is the body price, and `includePinpoint` adds nothing to a search.
+Charging for a miss is in the [Errors table](#errors).
 
 ## What a pinpoint can look like
 
@@ -116,13 +128,23 @@ Every pinpoint says where its outline came from and how far to trust it.
 We never present a guess as exact.
 A section whose outline we cannot recover is reported as `none`, not as a section with no subsections.
 
+Three examples, all exact matches:
+
+| Citation | `path` | `structure.quality` | `structure.source` |
+| --- | --- | --- | --- |
+| `Wis. Stat. 940.01(1)(a)` | `["1", "a"]` | `verified` | `request_time` |
+| `Iowa Code 422.5(1)(b)` | `["1", "b"]` | `verified` | `request_time` |
+| `Minn. Stat. 609.02 subd. 2` | `["2"]` | `native` | `artifact` |
+
+When a unit's `text` is empty and `children` is not (Iowa 422.5(1)(b) opens with two numbered paragraphs), read the children.
+
 `structure.source` is `artifact` when a pre-built outline of this section was used, which is only done after its hash matched the exact text we serve, and `request_time` when the outline was parsed from the text on this request.
 `structure.textSha256` is the SHA-256 of the `plain` text that `charStart` and `charEnd` index into.
 Hash your copy of `plain` to confirm the offsets apply to it.
 
-Coverage varies by state and by section.
 Long definitions sections and sections with tables are the most likely to be `heuristic`.
 Check `matched` and `structure.quality` on every call and treat them as part of the answer.
+Measured rates by state are under [Coverage by state](#coverage-by-state).
 
 ## Search: which subsection matched
 
@@ -143,37 +165,31 @@ It never changes which sections are returned, their order or their scores, and t
 
 ## Coverage by state
 
-Coverage varies by state, so this table gives the measured rates where we have them and says where we do not.
-The percentages come from a full build of outlines over every section of the state, graded by `structure.quality` as described above.
-
-*As of 2026-10-26.*
+Coverage varies by state.
+Measured on 2026-10-26, from a full build of outlines over every section of the state, graded by `structure.quality` as described above.
+Those percentages measure the build, not a given call, so read `structure.source` and `structure.quality` on every response.
 
 | State | Sections measured | Native or verified | Heuristic | None |
 |---|---|---|---|---|
 | Illinois | 72,251 | 98.7% | 1.2% | 0.1% |
 | Minnesota | 27,747 | 99.3% | 0.7% | 0.0% |
-| Missouri | Not published | Not published | Not published | Not published |
-| Wisconsin | Not published | Not published | Not published | Not published |
-| Iowa | Not published | Not published | Not published | Not published |
 
-Those percentages measure the build, not a given call.
-Where the outline for a response came from is in `structure.source`, and the grade is in `structure.quality`.
-Read both on every response.
+Missouri, Wisconsin and Iowa: no percentage is published, so read `structure.quality` on each response.
 
-- **Illinois.** In the build, 68,219 of the 72,251 sections have an outline taken from the publisher's own markup.
-  Sections that hold several versions of the text in one record, and long sections whose enumerations run inside a sentence, are the likeliest to be `heuristic`.
-  Inserted labels such as `(d-1)` and `(1.5)` are kept as single labels.
-  A call can instead parse the outline from the section text, and that parse is graded on its own, so read `structure.quality`.
-- **Minnesota.** In the build, 26,325 of the 27,747 sections have an outline taken from the publisher's own markup, and a call can use a pre-built outline of the section.
-  A subdivision may open at `(1)` without a paragraph (a) before it.
-- **Missouri.** The outline is parsed from the text of the section, one paragraph per line.
-  A definitions section has no numbered subsection level, so in `Mo. Rev. Stat. 556.061(1)` the unit (1) sits directly under the section.
-- **Wisconsin.** The outline is parsed from the text of the section.
-  Letter inserts such as `(1m)`, `(2g)` and `(am)` are each one label, and repealed provisions leave gaps in the sequence, which is normal.
-- **Iowa.** The outline is parsed from the text of the section, where each paragraph is printed with the labels of the units above it.
-  A unit that only introduces numbered paragraphs can have an empty `text`, with the content in its `children`.
-
-For Missouri, Wisconsin and Iowa we do not publish a percentage, so use the grade on each response.
+<Accordion title="How each state's outline is built">
+  - **Illinois.** In the build, 68,219 of the 72,251 sections have an outline taken from the publisher's own markup.
+    Sections that hold several versions of the text in one record, and long sections whose enumerations run inside a sentence, are the likeliest to be `heuristic`.
+    Inserted labels such as `(d-1)` and `(1.5)` are kept as single labels.
+    A call can instead parse the outline from the section text, and that parse is graded on its own, so read `structure.quality`.
+  - **Minnesota.** In the build, 26,325 of the 27,747 sections have an outline taken from the publisher's own markup, and a call can use a pre-built outline of the section.
+    A subdivision may open at `(1)` without a paragraph (a) before it.
+  - **Missouri.** The outline is parsed from the text of the section, one paragraph per line.
+    A definitions section has no numbered subsection level, so in `Mo. Rev. Stat. 556.061(1)` the unit (1) sits directly under the section.
+  - **Wisconsin.** The outline is parsed from the text of the section.
+    Letter inserts such as `(1m)`, `(2g)` and `(am)` are each one label, and repealed provisions leave gaps in the sequence, which is normal.
+  - **Iowa.** The outline is parsed from the text of the section, where each paragraph is printed with the labels of the units above it.
+    A unit that only introduces numbered paragraphs can have an empty `text`, with the content in its `children`.
+</Accordion>
 
 ## Errors
 

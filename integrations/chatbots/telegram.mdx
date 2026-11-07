@@ -121,16 +121,14 @@ The main environment variables are below. The full list is in the [repo `.env.ex
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `TELEGRAM_BOT_TOKEN` | Yes | - | Token from @BotFather |
-| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
-| `VAQUILL_API_URL` | No | `https://api.vaquill.ai/api/v1` | API base URL |
-| `VAQUILL_MODE` | No | `standard` | `standard` or `deep` |
-| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
 | `RATE_LIMIT_PER_USER_PER_DAY` | No | `100` | Per-user daily limit |
 | `RATE_LIMIT_PER_USER_PER_MINUTE` | No | `5` | Per-user minute limit |
 | `ALLOWED_USERS` | No | - | Comma-separated Telegram user IDs (empty = open) |
 | `MAX_CONVERSATION_HISTORY` | No | `10` | Exchange pairs kept in chat history |
 | `MAX_SOURCES_PER_RESPONSE` | No | `5` | Max source cards per reply |
 | `LOG_LEVEL` | No | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+
+The Vaquill variables (`VAQUILL_API_KEY`, `VAQUILL_API_URL`, `VAQUILL_MODE`, `VAQUILL_COUNTRY_CODE`) are in the [shared bot settings](/integrations/chatbots#shared-bot-settings).
 
 To find your own Telegram user ID, message [@userinfobot](https://t.me/userinfobot).
 
@@ -169,50 +167,50 @@ services:
 
 ### Cloud hosts
 
-<CardGroup cols={2}>
-  <Card title="Render">
+<AccordionGroup>
+  <Accordion title="Render">
     Deploy as a **Background Worker** (not a Web Service), since polling does not need an HTTP port. `render.yaml` is included in the repo.
-  </Card>
-  <Card title="Railway">
+
+    Example `render.yaml`:
+
+    ```yaml
+    services:
+      - type: worker
+        name: vaquill-telegram-bot
+        runtime: python
+        buildCommand: pip install -r requirements.txt
+        startCommand: python bot.py
+        envVars:
+          - key: TELEGRAM_BOT_TOKEN
+            sync: false
+          - key: VAQUILL_API_KEY
+            sync: false
+          - key: VAQUILL_COUNTRY_CODE
+            value: US
+    ```
+  </Accordion>
+  <Accordion title="Railway">
     `railway init && railway up`. Add `TELEGRAM_BOT_TOKEN` and `VAQUILL_API_KEY` in the Variables tab.
-  </Card>
-  <Card title="VPS + systemd">
+  </Accordion>
+  <Accordion title="VPS + systemd">
     Plain systemd unit with `Restart=always`. No reverse proxy needed.
-  </Card>
-  <Card title="Fly.io">
+  </Accordion>
+  <Accordion title="Fly.io">
     `fly launch`, `fly secrets set ...`, `fly deploy`.
-  </Card>
-</CardGroup>
-
-Example `render.yaml`:
-
-```yaml
-services:
-  - type: worker
-    name: vaquill-telegram-bot
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python bot.py
-    envVars:
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
-      - key: VAQUILL_API_KEY
-        sync: false
-      - key: VAQUILL_COUNTRY_CODE
-        value: US
-```
+  </Accordion>
+</AccordionGroup>
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
 | Bot does not respond | Confirm the process is running, the token is correct, and only one process is polling that token. |
-| "Unauthorized" / 401 from Vaquill | `VAQUILL_API_KEY` is invalid or expired. Generate a new one. |
-| "Insufficient credits" / 402 | Top up at [app.vaquill.ai](https://app.vaquill.ai). |
 | Rate limit immediately | You hit the per-minute cap. Wait 60 seconds or raise `RATE_LIMIT_PER_USER_PER_MINUTE`. |
 | Tables render as text, not images | Pillow or fonts missing. In Docker the bot installs `fonts-dejavu-core` automatically; on macOS it falls back to Helvetica or the Pillow default. |
 | HTML parse errors in Telegram | The bot catches `BadRequest` and falls back to plain text. No action needed unless it happens on every message. |
 | Webhook set but no replies | Check `getWebhookInfo` for `pending_update_count`. If growing, the endpoint is unreachable. Delete the webhook to go back to polling. |
+
+For `401`, `402` and `429` responses from the Vaquill API, see the [Errors reference](/api-guide/errors).
 
 ## Related
 

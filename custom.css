@@ -1,8 +1,8 @@
 /* Vaquill docs: match the vaquill.ai redesign (commit 97f8fc2 in vaquill-ai-site).
    Ivory ground, maroon accent, hairline rules, 6px panels, serif display at 400.
    Fonts for headings and body come from docs.json (fonts.*). Source Code Pro is
-   not configurable there, so it is imported here. */
-@import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&display=swap");
+   not configurable there, so code uses the system monospace stack (no
+   render-blocking font request). */
 
 :root {
   --vq-ink: #1c1a17;
@@ -78,12 +78,12 @@ footer img {
   border-color: #a4123c;
 }
 
-/* Code: Source Code Pro, white panel with a hairline, matching the marketing
+/* Code: system monospace, white panel with a hairline, matching the marketing
    site's code panel. github-light (docs.json) supplies the token colours. */
 code,
 pre,
 .shiki {
-  font-family: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 [data-component-part="code-block-root"] {
   border: 1px solid var(--vq-hairline);

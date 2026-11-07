@@ -5,18 +5,10 @@ description: "Connect US primary law to Claude with a Connect button. OAuth, no 
 keywords: ["claude connector", "claude custom connector", "vaquill oauth", "claude cowork mcp", "remote mcp oauth", "claude desktop connector"]
 ---
 
-The Vaquill connector adds US primary law to Claude through a **Connect** button. You sign in with your Vaquill account and Claude gets the tools. There is no API key to create, paste, or store.
+import ConnectedNotProof from '/snippets/connected-not-proof.mdx';
 
-<CardGroup cols={1}>
-  <Card
-    title="Available in the Claude Connectors Directory"
-    href="https://claude.ai/directory/vaquill-ai-primary-law"
-    horizontal
-  >
-    Add Vaquill AI Primary Law in one click from Claude. No API key to paste. Works in claude.ai,
-    Claude Desktop, Claude Code and Cowork.
-  </Card>
-</CardGroup>
+The Vaquill connector adds US primary law to Claude through a **Connect** button. You sign in with your Vaquill account and Claude gets the tools. There is no API key to create, paste, or store.
+It is also listed in the [Claude Connectors Directory](https://claude.ai/directory/vaquill-ai-primary-law) as Vaquill AI Primary Law.
 
 <Note>
   **This is the only path that works in Cowork.** A Cowork session runs in an Anthropic cloud container that never sees your machine's environment, so a key held in `~/.zshenv` cannot reach it. See [Claude Code plugin](/integrations/mcp/claude-plugin) for the difference, and [why the plugin cannot cover Cowork on its own](#which-one-should-i-use).
@@ -48,7 +40,9 @@ The Vaquill connector adds US primary law to Claude through a **Connect** button
 ## Verify it works
 
 <Warning>
-  **A connected status is not proof of a working credential.** The server completes the MCP handshake and lists all of its tools with **no credential at all**. Authentication is enforced at the API call behind each tool, not at the protocol layer, so "Connected" and a full tool list are both consistent with a completely broken credential.
+  **A connected status is not proof of a working credential.**
+
+  <ConnectedNotProof />
 </Warning>
 
 The only real test is one live call. The cheapest is free:
@@ -59,24 +53,24 @@ The only real test is one live call. The cheapest is free:
 
 Test each surface separately. Claude Code, claude.ai, Claude Desktop and Cowork take different code paths, and Cowork syncs its tooling at session start, so start a **fresh** Cowork session rather than reloading an open one.
 
-## What happens to your API key
-
-You do not create one. On your first connect, Vaquill provisions a key for the connector automatically and holds it server-side. Claude never sees it.
-
-This has two consequences:
-
-- **It does not count against your plan's key cap.** Connector keys are tracked separately from the keys you create by hand, so connecting does not consume one of your 2 (or 5, on Business) active-key slots, and it cannot lock you out of creating one.
-- **It does not appear in your dashboard key list.** That list shows only keys you created, so the connector's key cannot be seen or revoked from there. Disconnecting the connector in Claude stops Claude using it, but does not itself revoke the key; contact support if you need it revoked outright.
+## API key and billing
 
 Billing is unchanged: the connector draws on the same credit balance as any other key. Check your balance before a long session.
 
+<Accordion title="What happens to my API key">
+  You do not create one. On your first connect, Vaquill provisions a key for the connector automatically and holds it server-side. Claude never sees it.
+
+  This has two consequences:
+
+  - **It does not count against your plan's key cap.** Connector keys are tracked separately from the keys you create by hand, so connecting does not consume one of your 2 (or 5, on Business) active-key slots, and it cannot lock you out of creating one.
+  - **It does not appear in your dashboard key list.** That list shows only keys you created, so the connector's key cannot be seen or revoked from there. Disconnecting the connector in Claude stops Claude using it, but does not itself revoke the key; contact support if you need it revoked outright.
+</Accordion>
+
 ## Scope: United States only
 
-The connector serves the **US** corpus: the US Code, all 50 state codes plus DC and Puerto Rico, federal and state regulations, court rules, constitutions, agency guidance and adjudications, session laws and the Federal Register.
+The connector serves the **US** corpus. See [API coverage](/api-guide/coverage) for what it holds.
 
-**India is not available over OAuth.** The India corpus is served from a separate document at `https://mcp.vaquill.ai/in/mcp`, and it authenticates with a `vq_key_` API key in an `Authorization` header instead of a Connect button. There is no consent flow for it yet. See [Vaquill MCP](/integrations/mcp/vaquill) for the key-based setup.
-
-A US connection never exposes India tools, and an India connection never exposes US ones. Connect only the corpus you need, because every connected server keeps its tool definitions in context for the whole conversation.
+**India is not available over OAuth.** The India corpus is served from a separate document at `https://mcp.vaquill.ai/in/mcp`, and it authenticates with a `vq_key_` API key in an `Authorization` header instead of a Connect button. There is no consent flow for it yet. See [Vaquill MCP](/integrations/mcp/vaquill#india-mount) for the key-based setup and the rule for connecting only the mount you need.
 
 ## Which one should I use
 

@@ -147,15 +147,13 @@ The main environment variables are below. The [repo `.env.example`](https://gith
 | `TEAMS_APP_ID` | Yes | - | Application (client) ID from Azure App Registration |
 | `TEAMS_APP_PASSWORD` | Yes | - | Client secret **Value** from the registration |
 | `TEAMS_APP_TYPE` | No | `MultiTenant` | `SingleTenant` or `MultiTenant` |
-| `VAQUILL_API_KEY` | Yes | - | Vaquill API key (`vq_key_...`) |
-| `VAQUILL_MODE` | No | `standard` | `standard` or `deep` |
-| `VAQUILL_COUNTRY_CODE` | No | - | Jurisdiction filter, e.g. `US` |
 | `ALLOWED_TENANTS` | No | - | Comma-separated tenant IDs (production safety) |
 | `RATE_LIMIT_PER_USER` | No | `20` | Per-user limit per minute |
 | `RATE_LIMIT_PER_CHANNEL` | No | `100` | Per-channel limit per hour |
 | `RATE_LIMIT_PER_TENANT` | No | `500` | Per-org limit per hour |
-| `REDIS_URL` | No | - | Optional Redis URL |
 | `PORT` | No | `3978` | HTTP server port |
+
+The Vaquill variables (`VAQUILL_API_KEY`, `VAQUILL_MODE`, `VAQUILL_COUNTRY_CODE`) and `REDIS_URL` are in the [shared bot settings](/integrations/chatbots#shared-bot-settings).
 
 ## Commands
 
@@ -191,14 +189,14 @@ Set environment variables under **Web App > Configuration > Application settings
 
 ### Other cloud hosts
 
-<CardGroup cols={2}>
-  <Card title="Railway">
+<AccordionGroup>
+  <Accordion title="Railway">
     Fork the repo, connect on [railway.app](https://railway.app), add env vars, deploy, copy the URL, update the Azure messaging endpoint.
-  </Card>
-  <Card title="Render">
+  </Accordion>
+  <Accordion title="Render">
     New Web Service, connect GitHub, set env vars, deploy. Use the `.onrender.com` URL as the messaging endpoint.
-  </Card>
-</CardGroup>
+  </Accordion>
+</AccordionGroup>
 
 <Tip>
   Always end the messaging endpoint with `/api/messages` and use HTTPS. HTTP endpoints will be rejected by the Bot Framework.
@@ -210,9 +208,9 @@ Set environment variables under **Web App > Configuration > Application settings
 |---|---|
 | Bot not responding in Teams | Confirm messaging endpoint ends with `/api/messages`. Confirm the app is installed in Teams. Try personal chat first to isolate channel-permission issues. |
 | Authentication errors | Verify `TEAMS_APP_ID` matches Azure Portal > Bot > Configuration. Regenerate the client secret if expired. Restart the bot after credential changes. |
-| Vaquill API 401 | `VAQUILL_API_KEY` is invalid. Generate a new one. |
-| Vaquill API 402 | Insufficient credits. Top up at [app.vaquill.ai/settings](https://app.vaquill.ai/settings). |
 | Rate-limit hits | Raise `RATE_LIMIT_PER_USER` / `RATE_LIMIT_PER_CHANNEL`, or set `REDIS_URL` for shared state. |
+
+For `401`, `402` and `429` responses from the Vaquill API, see the [Errors reference](/api-guide/errors).
 
 Test the Vaquill API directly to isolate bot issues:
 
@@ -220,7 +218,7 @@ Test the Vaquill API directly to isolate bot issues:
 curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
   -H "Authorization: Bearer vq_key_your_key" \
   -H "Content-Type: application/json" \
-  -d '{"query": "civil action for deprivation of rights", "country_code": "US"}'
+  -d '{"query": "civil action for deprivation of rights", "limit": 5}'
 ```
 
 ## Related

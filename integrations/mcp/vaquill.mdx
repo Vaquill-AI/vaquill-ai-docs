@@ -1,14 +1,14 @@
 ---
 title: "Vaquill MCP Server"
 sidebarTitle: "Vaquill MCP"
-description: "US primary law MCP for Claude, Cursor, VS Code, and Windsurf. Statutes, regulations, court rules, constitutions, agency guidance and state session laws, read-only."
+description: "Read-only US primary law MCP server for Claude, Cursor, VS Code and Windsurf, set up with your Vaquill API key."
 keywords: ["vaquill mcp", "legal mcp server", "claude legal mcp", "us law mcp", "usc mcp", "cfr mcp", "cursor legal research", "vs code legal mcp"]
 ---
 
-The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client (Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf) direct access to the Vaquill AI Developer API. It covers the full US corpus: the US Code, the CFR, every state and territory statutory code, state and federal regulations, court rules, constitutions, agency guidance and adjudications, session laws and the Federal Register. Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
+The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client (Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf) direct access to the Vaquill AI Developer API. It covers the full US corpus, listed on the [MCP overview](/integrations/mcp) and in [API coverage](/api-guide/coverage). Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
 
 <Note>
-  **Two separate mounts.** `https://mcp.vaquill.ai/s/_` serves the US corpus and `https://mcp.vaquill.ai/in/s/_` serves Indian legislation. Each is built from its own OpenAPI document, so a US connection never exposes India tools and an India connection never exposes US ones. The same `vq_key_` works on both. Connect only the one you need, because every connected server keeps its tool definitions in context for the whole conversation.
+  **This page covers the US mount**, `https://mcp.vaquill.ai/s/_`. A separate mount exists for another corpus, described under [India mount](#india-mount).
 </Note>
 
 <CardGroup cols={3}>
@@ -80,7 +80,7 @@ If anything fails, show me the exact error and the output of `claude mcp list`.
 
 ## Client setup
 
-Pick your client below. The remote endpoint needs no install. The local `uvx` package reads the variables in [Environment variables](#environment-variables).
+Pick your client below. The remote endpoint needs no install. The local `uvx` package reads the variables listed under [Self-hosting](#self-hosting).
 
 <CodeGroup>
 ```json Claude Desktop
@@ -224,75 +224,69 @@ claude mcp add --scope user vaquill -e VAQUILL_API_KEY=vq_key_your_key_here \
 
 ## Tools
 
-Tools are generated from the OpenAPI document at startup, so the catalogue follows the API, not the package version. The US mount publishes **26 tools**, one per API operation plus the `search` and `fetch` pair; the India mount publishes 22. Every tool is read-only: none creates, changes or deletes anything.
+Tools are generated from the OpenAPI document at startup, so the catalogue follows the API, not the package version. There is one tool per API operation plus the `search` and `fetch` pair. Every tool is read-only: none creates, changes or deletes anything.
 
 <Warning>
   Never assemble an `act_id` by hand. The title and section can be derived from a citation but the chapter cannot, so a constructed id usually 404s and the failure looks like missing coverage. Take it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section Identifiers](/api-guide/concepts/section-ids).
 </Warning>
 
-### Discovery
+| Group | Tool | Description | Credits |
+|-------|------|-------------|---------|
+| Discovery | `list_statutes_coverage` | The live coverage matrix: corpus legend and per-jurisdiction counts. | Free |
+| Discovery | `get_pricing` | Current credit pricing per endpoint. No auth required. | Free |
+| Discovery | `get_credit_balance` | The credits your key can spend now, by source, the next expiry and your rate limits. | Free |
+| Discovery | `list_statute_divisions` | Walk the statutory hierarchy one level down. | 1 |
+| Search and retrieval | `search_us_statutes` | Hybrid semantic and keyword search across every US corpus. | 4 |
+| Search and retrieval | `get_us_statute_section` | Section metadata by `act_id`. | 2 |
+| Search and retrieval | `get_us_statute_section_text` | Full text of a section. | 6 |
+| Search and retrieval | `get_sections_batch` | Metadata for up to 50 `act_id`s in one call. | 2 per section returned |
+| Search and retrieval | `resolve_statute_citation` | Turn one citation string into the exact section. | 2 |
+| Search and retrieval | `resolve_statute_citations_batch` | The same verdict for up to 50 citations at once. | 2 per citation |
+| Search and retrieval | `extract_statute_citations` | Find and resolve every statute, regulation, court rule and constitution citation in pasted text. | 2 per distinct citation |
+| Search and retrieval | `count_statute_sections` | How many sections a filter scope holds, before you page through it. | 1 |
+| Section intelligence | `get_section_changes` | Every observed add, amend and remove for one section, cursor-paged. | 1 |
+| Section intelligence | `get_section_neighbors` | The sections immediately before and after, in statutory order. | 2 |
+| Section intelligence | `get_section_cited_by` | Which USC and CFR sections cross-reference this one. | 2 |
+| Section intelligence | `get_section_definitions` | The defined terms from the chapter's definitions section that govern this one. | 4 |
+| Section intelligence | `get_section_cross_state` | At most one comparable provision per other state, most similar first. | 6 |
+| State session laws | `list_session_laws` | One state's session laws (acts as enacted). | 1 per page |
+| State session laws | `get_session_law` | One law's record. | 2 |
+| State session laws | `get_session_law_body` | The law's text as printed, about 30,000 characters per page. | 6 per page |
+| State session laws | `search_session_laws` | Find laws by what they say. | 4 per page |
+| State session laws | `get_session_laws_batch` | Up to 50 laws by id or citation in one call. | 2 per law, plus 6 per page of text |
+| State session laws | `get_session_law_changes` | A cursor feed of every law served, corrected, withdrawn or merged. | 1 per page |
+| State session laws | `get_section_enactments` | The session laws a publisher's tables print against one code section. | 1 |
+| Aliases | `search` | Single-string search, for clients that require this exact interface. | 4 |
+| Aliases | `fetch` | Single-string fetch by id, URL or citation, same constraint. | 8, plus 2 for a citation |
 
-| Tool | Description | Credits |
-|------|-------------|---------|
-| `list_statutes_coverage` | The live coverage matrix: corpus legend and per-jurisdiction counts. Call this before treating an empty result as an absence. | Free |
-| `get_pricing` | Current credit pricing per endpoint. No auth required. | Free |
-| `list_statute_divisions` | Walk the statutory hierarchy one level down. Refunded on an empty level. | 1 |
+Federal session laws are on the statute tools. Law change alerts are not MCP tools. Manage them in the console or over the REST API: see [Law Change Alerts](/api-guide/alerts).
 
-### Search and retrieval
+Prefer the typed tools to the `search` and `fetch` aliases: they take filters these two cannot express. The aliases exist for clients whose retrieval interface is matched by name and shape, and [ChatGPT and Codex](/integrations/mcp/chatgpt) explains when to use them.
 
-| Tool | Description | Credits |
-|------|-------------|---------|
-| `search_us_statutes` | Hybrid semantic and keyword search across every US corpus, with filters for `corpusType`, `state`, `code`, `source`, status, year and Federal Register facets. | 4 |
-| `get_us_statute_section` | Section metadata by `act_id`: citation, hierarchy, breadcrumb, status and every format link. | 2 |
-| `get_us_statute_section_text` | Full text. Supports `format=content` (operative text only, USC), `structured=true` for a subsection tree, and `asOf` for point-in-time. | 6 |
-| `get_sections_batch` | Metadata for up to 50 `act_id`s in one call, with a diagnosis for each miss. | 2 per section returned |
-| `resolve_statute_citation` | Turn one citation string into the exact section, confirmed against the corpus. | 2 |
-| `resolve_statute_citations_batch` | The same verdict for up to 50 citations at once. | 2 per citation |
-| `extract_statute_citations` | Paste a brief, memo or model answer and get every statute, regulation, court rule and constitution citation in it, each resolved. Case citations are not extracted. `resolve=false` lists them for free. | 2 per distinct citation |
-| `count_statute_sections` | How many sections a filter scope holds, before you page through it. | 1 |
-
-### Section intelligence
-
-| Tool | Description | Credits |
-|------|-------------|---------|
-| `get_section_changes` | Every observed add, amend and remove for one section, cursor-paged. | 1 |
-| `get_section_neighbors` | The sections immediately before and after, in statutory order. | 2 |
-| `get_section_cited_by` | Which USC and CFR sections cross-reference this one. | 2 |
-| `get_section_definitions` | The defined terms from the chapter's definitions section that govern this one. | 4 |
-| `get_section_cross_state` | At most one comparable provision per other state, most similar first. | 6 |
-
-Each of these refunds a call it cannot answer, and returns a `note` explaining why. An empty result **with** a note is an explanation; without one it is a real answer.
-
-### State session laws
-
-| Tool | Description | Credits |
-|------|-------------|---------|
-| `list_session_laws` | One state's session laws (acts as enacted), filtered by session, approval date or effective date. `jurisdiction` is required. An empty page is charged. | 1 per page |
-| `get_session_law` | One law's record: citation, session, dates, code sections affected, official sources and `textStatus`. Takes a `sessionLawId` or a citation (a citation adds the resolve price). | 2 |
-| `get_session_law_body` | The law's text exactly as printed, about 30,000 characters per page. Check `amendatoryMarkup`: if `lost`, struck language may read as law. | 6 per page |
-| `search_session_laws` | Find laws by what they say: plain words, a quoted phrase, a citation, a code section or a bill number. Keyword ranking, so a question has to share vocabulary with the act. Only enacted text is searched. An empty result is charged. | 4 per page |
-| `get_session_laws_batch` | Up to 50 laws by id or citation in one call; `includeBody` adds each law's first page of text. | 2 per law, plus 6 per page of text |
-| `get_session_law_changes` | A cursor feed of every law served, corrected, withdrawn or merged. | 1 per page |
-| `get_section_enactments` | The session laws a publisher's tables print against one code section, in CA, DC, HI, KY, MO, MS, NE, UT and WA. | 1 |
-
-Federal session laws are on the statute tools.
-
-### Account
-
-| Tool | Description | Credits |
-|------|-------------|---------|
-| `get_credit_balance` | The credits your key can spend now, by source, the next expiry and your rate limits. | Free |
-
-Law change alerts are not MCP tools. Manage them in the console or over the REST API: see [Law Change Alerts](/api-guide/alerts).
-
-### Generic aliases
-
-| Tool | Description | Credits |
-|------|-------------|---------|
-| `search` | Single-string search, for clients that require this exact interface. | 4 |
-| `fetch` | Single-string fetch by id, URL or citation, same constraint. | 8, plus 2 for a citation |
-
-These exist for clients whose retrieval interface is matched by name and shape. Prefer the typed tools above: they take filters these two cannot express.
+<AccordionGroup>
+  <Accordion title="Search and retrieval details">
+    - `list_statutes_coverage`: call it before treating an empty result as an absence.
+    - `search_us_statutes` filters by `corpusType`, `state`, `code`, `source`, status, year and Federal Register facets.
+    - `get_us_statute_section` returns citation, hierarchy, breadcrumb, status and every format link.
+    - `get_us_statute_section_text` supports `format=content` (operative text only, USC), `structured=true` for a subsection tree, and `asOf` for point-in-time.
+    - `get_sections_batch` adds a diagnosis for each miss.
+    - `resolve_statute_citation` confirms the section against the corpus.
+    - `extract_statute_citations` takes a pasted brief, memo or model answer and resolves each citation in it. Case citations are not extracted. `resolve=false` lists them for free.
+  </Accordion>
+  <Accordion title="Refunds and empty results">
+    - `list_statute_divisions` is refunded on an empty level.
+    - Each section intelligence tool refunds a call it cannot answer, and returns a `note` explaining why. An empty result **with** a note is an explanation; without one it is a real answer.
+    - An empty page from `list_session_laws` is charged, and so is an empty result from `search_session_laws`.
+  </Accordion>
+  <Accordion title="Reading session-law bodies">
+    - `list_session_laws` filters by session, approval date or effective date, and `jurisdiction` is required.
+    - `get_session_law` returns citation, session, dates, code sections affected, official sources and `textStatus`. It takes a `sessionLawId` or a citation, and a citation adds the resolve price.
+    - `get_session_law_body` returns the text exactly as printed. Check `textReliability` and `notice`, and `amendatoryMarkup`: if `lost`, struck language may read as law.
+    - `search_session_laws` accepts plain words, a quoted phrase, a citation, a code section or a bill number. It ranks by keyword, so a question has to share vocabulary with the act. Only enacted text is searched.
+    - `get_session_laws_batch` with `includeBody` adds each law's first page of text.
+    - `get_section_enactments` covers CA, DC, HI, KY, MO, MS, NE, UT and WA.
+  </Accordion>
+</AccordionGroup>
 
 ## Resources and prompts
 
@@ -305,29 +299,39 @@ Beyond tools, the server publishes MCP resources and prompts. Clients that suppo
 | `vaquill://guide` | How to use the corpus correctly: identifier rules, what "still good law" actually means here, what an empty change list does and does not tell you, and where the cost is. Read before a first substantive query. |
 | `vaquill://us/coverage` | The live coverage matrix as a resource. |
 | `vaquill://pricing` | Live per-endpoint credit pricing. |
-| `vaquill://in/filters` | India mount: available act filters. |
 
-**Prompts** (US mount): `good_law_check`, `fifty_state_survey`, `whats_changed`, `cite_check`.
-**Prompts** (India mount): `old_code_citation`, `indian_provision_check`.
+**Prompts**: `good_law_check`, `fifty_state_survey`, `whats_changed`, `cite_check`.
 
 ## India mount
 
-`https://mcp.vaquill.ai/in/s/_` publishes the Indian legislation surface. It shares nothing with the US tools but the credential. The main tools:
+India is a separate mount with its own tools, resource and prompts. A US connection never exposes India tools, and an India connection never exposes US ones. Connect only the mount you need, because every connected server keeps its tool definitions in context for the whole conversation.
 
-| Tool | Description | Credits |
-|------|-------------|---------|
-| `search_acts` | Semantic search across Indian central and state enactments. | 2 |
-| `list_acts` | Browse acts to discover identifiers. | 1 |
-| `list_act_filters` | The filter vocabulary available for the two above. | Free |
-| `get_act_text` | Full text of an act or provision. | 3 |
-| `get_act_amendments` | Amendment history: substitutions, insertions, omissions. | 5 |
-| `get_corresponding_provisions` | Map a provision in a repealed code to its successor. | 1 |
+<Accordion title="India mount: URL, tools, prompts and resource">
+  `https://mcp.vaquill.ai/in/s/_` publishes the Indian legislation surface. It shares nothing with the US tools but the credential: the same `vq_key_` works on both mounts, and each is built from its own OpenAPI document. The main tools:
 
-Plus the `search` and `fetch` aliases.
+  | Tool | Description | Credits |
+  |------|-------------|---------|
+  | `search_acts` | Semantic search across Indian central and state enactments. | 2 |
+  | `list_acts` | Browse acts to discover identifiers. | 1 |
+  | `list_act_filters` | The filter vocabulary available for the two above. | Free |
+  | `get_act_text` | Full text of an act or provision. | 3 |
+  | `get_act_amendments` | Amendment history: substitutions, insertions, omissions. | 5 |
+  | `get_corresponding_provisions` | Map a provision in a repealed code to its successor. | 1 |
+
+  Plus the `search` and `fetch` aliases.
+
+  **Resource**: `vaquill://in/filters` lists the available act filters.
+
+  **Prompts**: `old_code_citation`, `indian_provision_check`.
+</Accordion>
 
 ## Authentication
 
-On the US endpoint `https://mcp.vaquill.ai/mcp`, the default is **OAuth 2.1**: the client opens a browser, you sign in with your Vaquill AI account and approve access, and there is no key to paste. It is the authorization code flow with PKCE (S256), discovered from `/.well-known/oauth-protected-resource/mcp`, with dynamic client registration and client ID metadata documents both supported. The access token lasts about an hour and is refreshed automatically.
+On the US endpoint `https://mcp.vaquill.ai/mcp`, the default is **OAuth 2.1**: the client opens a browser, you sign in with your Vaquill AI account and approve access, and there is no key to paste.
+
+<Accordion title="OAuth details">
+  It is the authorization code flow with PKCE (S256), discovered from `/.well-known/oauth-protected-resource/mcp`, with dynamic client registration and client ID metadata documents both supported. The access token lasts about an hour and is refreshed automatically.
+</Accordion>
 
 Clients that cannot run OAuth authenticate with your Vaquill API key instead. Three options, in priority order:
 
@@ -343,29 +347,31 @@ Keys are scoped per workspace and revocable from the [dashboard](https://app.vaq
 
 ## Self-hosting
 
-The MCP server is a thin wrapper around the public Vaquill API, so most users do not need to self-host. Run from source if you want to pin a version, add custom telemetry or change tool descriptions.
+The MCP server is a thin wrapper around the public Vaquill API, so most users do not need to self-host.
 
-```bash
-git clone https://github.com/Vaquill-AI/vaquill-mcp.git
-cd vaquill-mcp
-uv sync --all-extras
+<Accordion title="Run from source">
+  Run from source if you want to pin a version, add custom telemetry or change tool descriptions.
 
-# Run locally over stdio
-VAQUILL_API_KEY=vq_key_... uv run vaquill-mcp
+  ```bash
+  git clone https://github.com/Vaquill-AI/vaquill-mcp.git
+  cd vaquill-mcp
+  uv sync --all-extras
 
-# Inspect tools interactively
-uv run fastmcp dev src/vaquill_mcp/server.py
-```
+  # Run locally over stdio
+  VAQUILL_API_KEY=vq_key_... uv run vaquill-mcp
 
-The package fetches the OpenAPI spec from `https://api.vaquill.ai` at startup and auto-generates MCP tools with [FastMCP](https://github.com/jlowin/fastmcp). New API endpoints appear as tools automatically without a package upgrade.
+  # Inspect tools interactively
+  uv run fastmcp dev src/vaquill_mcp/server.py
+  ```
 
-## Environment variables
+  The package fetches the OpenAPI spec from `https://api.vaquill.ai` at startup and auto-generates MCP tools with [FastMCP](https://github.com/jlowin/fastmcp). New API endpoints appear as tools automatically without a package upgrade.
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `VAQUILL_API_KEY` | Yes | - | Your API key (`vq_key_...`) from [app.vaquill.ai/settings](https://app.vaquill.ai/settings) |
-| `VAQUILL_BASE_URL` | No | `https://api.vaquill.ai` | API base URL. Override for staging or self-hosted API instances. |
-| `VAQUILL_TIMEOUT` | No | `120` | Per-request timeout in seconds. Increase for large section-text fetches. |
+  Environment variables:
+
+  - `VAQUILL_API_KEY` (required): your API key (`vq_key_...`) from [app.vaquill.ai/settings](https://app.vaquill.ai/settings).
+  - `VAQUILL_BASE_URL` (optional, default `https://api.vaquill.ai`): API base URL. Override for staging or self-hosted API instances.
+  - `VAQUILL_TIMEOUT` (optional, default `120`): per-request timeout in seconds. Increase for large section-text fetches.
+</Accordion>
 
 ## Usage examples
 

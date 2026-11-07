@@ -1,0 +1,22 @@
+name: docs-lint
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate docs.json
+        run: python3 -m json.tool docs.json > /dev/null
+      - name: Lint docs
+        run: python3 scripts/lint_docs.py
+      - name: Check llms.txt is current
+        run: python3 scripts/gen_llms_txt.py --check

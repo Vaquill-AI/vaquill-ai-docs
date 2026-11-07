@@ -1,11 +1,13 @@
 ---
 title: "Citation resolution quality"
-description: "How often a citation resolves to the right section, how often it resolves to the wrong one, and where coverage is thinner, measured on 26,687 researched citations"
+description: "How often a citation resolves to the right section, how often to the wrong one, and where coverage is thinner."
 ---
 
 This page reports how well `GET` and `POST /us/statutes/resolve` read real citations.
 The figures are measured, not estimated, and the gaps are listed next to the strengths.
-They were taken on 2026-10-08 against the live corpus.
+
+Measured on 2026-10-08 against the live corpus, on 26,687 researched citations.
+Text marked as after the measurement describes the corpus today.
 
 ## The headline
 
@@ -13,53 +15,60 @@ We test two kinds of citation.
 25,112 citations should resolve to one section.
 1,575 should not: a whole chapter, a run of sections, a string that fits more than one law, or law we do not hold.
 
-| Citations that should resolve (25,112) | Share |
-|---|---:|
-| Resolved to the right section | **94.9%** (23,843) |
-| Resolved to the **wrong** section | **0** |
-| No answer | 5.1% (1,269) |
-
-| Citations that should not resolve (1,575) | Count |
-|---|---:|
-| Refused | 1,428 |
-| Answered, and marked so you can tell (`matchLevel`) | 144 |
-| Answered with a wrong section | 3 |
+| Set | Count | Right | Wrong section | No answer or refused |
+|---|---:|---|---:|---|
+| Should resolve | 25,112 | 94.9% (23,843) resolved to the right section | **0** | 5.1% (1,269) no answer |
+| Should not resolve | 1,575 | 1,428 refused, and 144 answered and marked so you can tell (`matchLevel`) | 3 | Not applicable |
 
 The wrong-section count matters most.
 A missed citation costs a retry, but a wrong section can end up in a brief, so the resolver is built to refuse when it is unsure.
+All 3 wrong answers were citations to law we do not hold (see the first table under [What is refused on purpose](#what-is-refused-on-purpose)).
 Every figure below shows wrong answers beside right ones.
-
-## By area
-
-| Area | Citations | Right section | Wrong section | No answer |
-|---|---:|---:|---:|---:|
-| Court rules | 10,653 | 89.0% | 0 | 1,171 |
-| State statutes, Nebraska to Wyoming | 4,518 | 99.2% | 0 | 36 |
-| US Code, CFR, Federal Rules, Statutes at Large | 3,520 | 98.9% | 0 | 39 |
-| State statutes, Alabama to Montana | 2,587 | 100.0% | 0 | 0 |
-| State regulations | 2,217 | 100.0% | 0 | 0 |
-| State constitutions | 1,617 | 98.6% | 0 | 23 |
 
 ## By corpus
 
-| Corpus | Citations | Right section | Wrong section | No answer |
-|---|---:|---:|---:|---:|
-| State court rules | 10,128 | 88.7% | 0 | 1,148 |
-| State statutes | 7,099 | 99.3% | 0 | 53 |
-| US Code | 2,193 | 98.3% | 0 | 37 |
-| State constitutions | 1,583 | 98.5% | 0 | 24 |
-| State regulations | 1,267 | 99.8% | 0 | 2 |
-| Statutes at Large | 993 | 100.0% | 0 | 0 |
-| Code of Federal Regulations | 980 | 99.9% | 0 | 1 |
-| Federal Rules of Procedure | 524 | 99.2% | 0 | 4 |
-| Other federal sources | 329 | 100.0% | 0 | 0 |
-| Administrative register citations | 16 | 100.0% | 0 | 0 |
+Measured on 2026-10-08.
+Wrong section is 0 in every row of this table and of the by-area table, so the column is left out.
+
+| Corpus | Citations | Right section | No answer |
+|---|---:|---:|---:|
+| State court rules | 10,128 | 88.7% | 1,148 |
+| State statutes | 7,099 | 99.3% | 53 |
+| US Code | 2,193 | 98.3% | 37 |
+| State constitutions | 1,583 | 98.5% | 24 |
+| State regulations | 1,267 | 99.8% | 2 |
+| Statutes at Large | 993 | 100.0% | 0 |
+| Code of Federal Regulations | 980 | 99.9% | 1 |
+| Federal Rules of Procedure | 524 | 99.2% | 4 |
+| Other federal sources | 329 | 100.0% | 0 |
+| Administrative register citations | 16 | 100.0% | 0 |
+
+1,116 citations carried a pinpoint (`(a)(2)`, `at 12`), and 1,015 of them resolved to the right section.
+That measures resolving the section, not locating the subsection.
+The unit itself is returned in the `pinpoint` object, graded by `structure.quality`.
+See [Pinpoints](/api-guide/concepts/pinpoints).
+
+<Accordion title="By area (same citations cut a second way)">
+  Measured on 2026-10-08.
+
+  | Area | Citations | Right section | No answer |
+  |---|---:|---:|---:|
+  | Court rules | 10,653 | 89.0% | 1,171 |
+  | State statutes, Nebraska to Wyoming | 4,518 | 99.2% | 36 |
+  | US Code, CFR, Federal Rules, Statutes at Large | 3,520 | 98.9% | 39 |
+  | State statutes, Alabama to Montana | 2,587 | 100.0% | 0 |
+  | State regulations | 2,217 | 100.0% | 0 |
+  | State constitutions | 1,617 | 98.6% | 23 |
+</Accordion>
 
 ## By jurisdiction
 
-56 jurisdictions.
 Territories added recently have small test sets, so read their percentages with that in mind.
 "Distinct citation forms read" counts the different ways a lawyer writes a citation in that jurisdiction that we resolved at least once in this test.
+
+<Accordion title="Per-jurisdiction results (56)">
+
+Measured on 2026-10-08.
 
 | Jurisdiction | Citations tested | Right section | No answer | Distinct citation forms read |
 |---|---:|---:|---:|---:|
@@ -120,6 +129,8 @@ Territories added recently have small test sets, so read their percentages with 
 | Wisconsin | 276 | 90.9% | 25 | 72 |
 | Wyoming | 354 | 99.2% | 3 | 111 |
 
+</Accordion>
+
 ## What is refused on purpose
 
 Some citations have no single correct section.
@@ -134,17 +145,9 @@ We refuse these, or answer and say what kind of answer it is, instead of guessin
 | Not a citation to US primary law | 81 | 44 | 37 | 0 |
 
 When we answer a chapter or a run of sections with its first section, the response carries `matchLevel` so you can tell.
-See [Citation Formats](/api-guide/concepts/citation-formats).
+See [Citation formats](/api-guide/concepts/citation-formats).
 
 A bare rule-set abbreviation that several states print (`CR 56`, `RAP 2.5`) is refused unless you pass `state`.
-
-## Pinpoints
-
-1,116 citations carried a pinpoint (`(a)(2)`, `at 12`).
-1,015 of them resolved to the right section.
-That is a measurement of resolving the section, not of locating the subsection.
-The unit itself is returned in the `pinpoint` object, graded by `structure.quality`.
-See [Pinpoints](/api-guide/concepts/pinpoints) for what comes back and how far to trust it.
 
 ## Where coverage is thinner
 
@@ -155,25 +158,23 @@ Outside court rules, no area misses more than 1.4% of its citations.
 - About 649 of the 1,171 court-rule misses resolve as soon as the caller passes `state`.
   Several states print the same abbreviation (`DCR`, `SCR`, `CR`), so we refuse it without a state.
   This test set sends many of them without one, and counts each as a miss.
-- When this set was measured, Vermont's court rules and the Virgin Islands Code were not held, so citations to them counted as misses. Both are held now. Most district and county local rules outside those we list on the [coverage page](/api-guide/coverage) are still not held.
+- When this set was measured, Vermont's court rules and the Virgin Islands Code were not held, so citations to them counted as misses. After the measurement, both are held. Most district and county local rules outside those we list on the [coverage page](/api-guide/coverage) are still not held.
 - State session laws are served by their own endpoints and are not part of this resolver.
 - State administrative registers resolve only where a held rule cites the register page.
 
-## How this is measured
+<Accordion title="How this is measured">
+  The test set was built by research passes that catalogued how citations are written for each jurisdiction and form, attested each against a court rule, a legislature page or an opinion where one could be fetched, and resolved the expected section from the live corpus.
+  Every score compares the resolver's answer with that expected section.
 
-The test set was built by research passes that catalogued how citations are written for each jurisdiction and form, attested each against a court rule, a legislature page or an opinion where one could be fetched, and resolved the expected section from the live corpus.
-Every score compares the resolver's answer with that expected section.
+  The figures have limits:
 
-The figures have limits:
+  - The set is our own research, not an independent benchmark, and the forms we thought of are over-represented compared with forms we did not.
+  - It measures the resolver in isolation. Real traffic includes malformed and incomplete strings that a clean test set does not.
+  - Some entries were corrected after the corpus grew, with the evidence recorded, so a citation that now resolves correctly is not scored as a miss.
+  - The set is rerun before any change to citation parsing ships, and this page is refreshed from the latest full run.
+</Accordion>
 
-- The set is our own research, not an independent benchmark, and the forms we thought of are over-represented compared with forms we did not.
-- It measures the resolver in isolation.
-  Real traffic includes malformed and incomplete strings that a clean test set does not.
-- Some entries were corrected after the corpus grew, so that a citation that now resolves correctly is not scored as a miss.
-  Each correction is recorded with its evidence.
-- The set is rerun before any change to citation parsing ships, and this page is refreshed from the latest full run.
+## Related
 
-## Found a citation that did not resolve?
-
-Send it to us with the jurisdiction.
-Each report becomes a new test entry, and a fix has to pass the full set before it ships.
+- [Citation formats](/api-guide/concepts/citation-formats) and [Pinpoints](/api-guide/concepts/pinpoints).
+- Found a citation that did not resolve? Send it to us with the jurisdiction. Each report becomes a new test entry, and a fix has to pass the full set before it ships.

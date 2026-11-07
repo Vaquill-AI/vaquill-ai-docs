@@ -1,11 +1,12 @@
 ---
 title: "Monitor corpus coverage and changes"
-description: "Poll changedSince for sections that moved since your last sync, and diff coverage snapshots to catch a jurisdiction gaining a whole new corpus"
+description: "Poll changedSince for sections that moved since your last sync, and diff coverage snapshots to catch a new corpus in a jurisdiction"
 ---
 
-**What this gets you:** an early-warning check for your own product. It tells you when the law you depend on has moved, and when a state or agency you depend on gains coverage.
+import FreeRateLimited from '/snippets/free-rate-limited.mdx';
 
-Which tool to use depends on the question.
+**What this gets you:** an early-warning check for your own product.
+It tells you when the law you depend on has moved, and when a state or agency you depend on gains coverage.
 
 | Question | Use |
 |---|---|
@@ -45,14 +46,15 @@ def changed_since(query: str, since: str, **scope) -> list[dict]:
             "query": query,
             "changedSince": since,
             "limit": 50,
-            # Ask for only what your sync writes back. A result carries 40+
-            # fields, most null on any row; actId and citation always come back.
+            # Ask for only what your sync writes back (see Best practices);
+            # actId and citation always come back.
             "fields": ["title", "state", "lastAmendedDate", "actStatus"],
             **scope,
         },
     )
     if resp.status_code == 422:
         # The window matched too many sections to answer safely. Narrow it.
+        # The error body names the cause; see Errors for the 422 shape.
         raise RuntimeError(resp.json())
     resp.raise_for_status()
     return resp.json()["results"]
@@ -62,7 +64,9 @@ def changed_since(query: str, since: str, **scope) -> list[dict]:
 Then read each hit's history with `GET /us/statutes/section/{actId}/changes` when you need to know what actually moved.
 `changedSince` and that endpoint are the same event stream, so a hit here always has a history there.
 
-### Four things that decide whether your job is correct
+A `422` means the window is too broad: narrow it with a later date, `corpusType` or `state` (see [Errors](/api-guide/errors)).
+
+<Accordion title="What changedSince does and does not guarantee">
 
 - **These are observed changes, not effective dates.**
   A refresh compared the publisher against the copy we held and found it different.
@@ -78,20 +82,15 @@ Then read each hit's history with `GET /us/statutes/section/{actId}/changes` whe
   `changedSince` narrows a search and does not list everything that moved.
   Run it once per topic you track, which keeps each result small enough to act on.
 
-<Note>
-  Paging is bounded in the ranked modes: `limit` caps at 50 and `offset` at 70, so the deepest
-  reachable result is 120. If a window is returning full pages, tighten it with a
-  later date, a `state` list, or a narrower `corpusType` rather than trying to
-  page through it.
-  Boolean mode (`matchType: "boolean"`) is the exception: it pages to the end of
-  the matches, with `offset` up to 10,000.
-</Note>
+Paging is bounded in the ranked modes: `limit` caps at 50 and `offset` at 70, so the deepest reachable result is 120.
+If a window is returning full pages, tighten it with a later date, a `state` list, or a narrower `corpusType` rather than trying to page through it.
+Boolean mode (`matchType: "boolean"`) is the exception: it pages to the end of the matches, with `offset` up to 10,000.
+See [Search](/api-guide/concepts/search) for the ranked modes.
 
-<Note>
-  An empty window is a valid answer and is charged the ordinary 4-credit search
-  price, so a nightly job can do nothing when nothing moved. Read
-  `creditsConsumed` rather than assuming.
-</Note>
+An empty window is a valid answer and is charged the ordinary 4-credit search price, so a nightly job can do nothing when nothing moved.
+Read `creditsConsumed` rather than assuming.
+
+</Accordion>
 
 ### A nightly job
 
@@ -126,134 +125,99 @@ if __name__ == "__main__":
 `changedSince` tells you a section moved.
 It cannot tell you that a state you do not yet query has just gained regulations, because there was nothing there to change.
 For that, snapshot `GET /us/statutes/coverage` on a schedule and diff the snapshots.
-Coverage is free and rate limited, so daily or weekly is plenty.
+<FreeRateLimited /> Daily or weekly is plenty.
 
-<Steps>
-  <Step title="Fetch and flatten the coverage matrix">
-    The response is wrapped as `{ "data": {...}, "meta": {...} }`. Inside `data`
-    you get a `corpusTypes` legend and a `jurisdictions` array, where each
-    jurisdiction carries a `corpora` object mapping a corpusType token to its
-    ingested section count (the same distinct-section count
-    [Coverage](/api-guide/coverage) shows, not the larger passage count used
-    internally for retrieval).
+<Accordion title="Snapshot and diff code">
 
-    ```python Python
-    def fetch_coverage() -> dict:
-        resp = requests.get(
-            f"{BASE_URL}/statutes/coverage",
-            headers={"Authorization": HEADERS["Authorization"]},
-        )
-        resp.raise_for_status()
-        return resp.json()["data"]
+The response is wrapped as `{ "data": {...}, "meta": {...} }`.
+Inside `data`
+you get a `corpusTypes` legend and a `jurisdictions` array, where each jurisdiction carries a `corpora` object mapping a corpusType token to its ingested section count (the same distinct-section count [Coverage](/api-guide/coverage) shows, not the larger passage count used internally for retrieval).
+The full shape is in the coverage endpoint reference.
+
+**1.
+Fetch and flatten the coverage matrix**
+
+```python Python
+def fetch_coverage() -> dict:
+    resp = requests.get(
+        f"{BASE_URL}/statutes/coverage",
+        headers={"Authorization": HEADERS["Authorization"]},
+    )
+    resp.raise_for_status()
+    return resp.json()["data"]
 
 
-    def to_snapshot(coverage_data: dict) -> dict:
-        """Flatten coverage into {code: {corpusToken: count}}."""
-        return {
-            j["code"]: dict(j["corpora"])
-            for j in coverage_data["jurisdictions"]
-            if j["hasData"]
-        }
-    ```
-
-    An abridged `data` payload. The real response lists every `corpusTypes` token (federal and state) and every jurisdiction; this sample shows two state-scoped tokens and one state:
-
-    ```json
-    {
-      "corpusTypes": [
-        {"token": "STATE", "description": "State statutory codes", "scope": "state"},
-        {"token": "REGULATION", "description": "State administrative regulations", "scope": "state"}
-      ],
-      "jurisdictions": [
-        {
-          "code": "wa",
-          "name": "Washington",
-          "kind": "state",
-          "sectionCount": 104795,
-          "hasData": true,
-          "corpora": {"STATE": 53595, "REGULATION": 51053, "STATE_CONSTITUTION": 147}
-        }
-      ],
-      "totalSections": 3840955,
-      "stateCountWithData": 50
+def to_snapshot(coverage_data: dict) -> dict:
+    """Flatten coverage into {code: {corpusToken: count}}."""
+    return {
+        j["code"]: dict(j["corpora"])
+        for j in coverage_data["jurisdictions"]
+        if j["hasData"]
     }
-    ```
-  </Step>
+```
 
-  <Step title="Persist and diff">
-    Save each snapshot as JSON so the next run has a baseline, then compare the
-    two maps for a new jurisdiction, a new corpus within a known jurisdiction, or
-    an existing corpus whose count grew.
+**2.
+Persist and diff**
 
-    ```python Python
-    import json
-    from datetime import datetime, timezone
-    from pathlib import Path
+Save each snapshot as JSON so the next run has a baseline, then compare the two maps for a new jurisdiction, a new corpus within a known jurisdiction, or an existing corpus whose count grew.
 
-    SNAPSHOT_DIR = Path("coverage_snapshots")
+```python Python
+import json
+from datetime import datetime, timezone
+from pathlib import Path
 
-
-    def save_snapshot(snapshot: dict) -> Path:
-        SNAPSHOT_DIR.mkdir(exist_ok=True)
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        path = SNAPSHOT_DIR / f"coverage-{stamp}.json"
-        path.write_text(json.dumps(snapshot, indent=2, sort_keys=True))
-        return path
+SNAPSHOT_DIR = Path("coverage_snapshots")
 
 
-    def load_latest_snapshot() -> dict | None:
-        files = sorted(SNAPSHOT_DIR.glob("coverage-*.json"))
-        return json.loads(files[-1].read_text()) if files else None
+def save_snapshot(snapshot: dict) -> Path:
+    SNAPSHOT_DIR.mkdir(exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    path = SNAPSHOT_DIR / f"coverage-{stamp}.json"
+    path.write_text(json.dumps(snapshot, indent=2, sort_keys=True))
+    return path
 
 
-    def diff_snapshots(old: dict, new: dict) -> list[str]:
-        changes: list[str] = []
-        for code, corpora in new.items():
-            if code not in old:
-                changes.append(f"NEW jurisdiction {code}: {sorted(corpora)}")
-                continue
-            prev = old[code]
-            for token, count in corpora.items():
-                if token not in prev:
-                    changes.append(f"{code}: new corpus {token} ({count} sections)")
-                elif count > prev[token]:
-                    changes.append(
-                        f"{code}: {token} grew by {count - prev[token]} "
-                        f"({prev[token]} -> {count})"
-                    )
-        return changes
-    ```
+def load_latest_snapshot() -> dict | None:
+    files = sorted(SNAPSHOT_DIR.glob("coverage-*.json"))
+    return json.loads(files[-1].read_text()) if files else None
 
-    Example output on a run where a state gained regulations:
 
-    ```text
-    2 coverage change(s) detected:
-      - va: new corpus REGULATION (22400 sections)
-      - tx: STATE grew by 1840 (120967 -> 122807)
-    ```
-  </Step>
-</Steps>
+def diff_snapshots(old: dict, new: dict) -> list[str]:
+    changes: list[str] = []
+    for code, corpora in new.items():
+        if code not in old:
+            changes.append(f"NEW jurisdiction {code}: {sorted(corpora)}")
+            continue
+        prev = old[code]
+        for token, count in corpora.items():
+            if token not in prev:
+                changes.append(f"{code}: new corpus {token} ({count} sections)")
+            elif count > prev[token]:
+                changes.append(
+                    f"{code}: {token} grew by {count - prev[token]} "
+                    f"({prev[token]} -> {count})"
+                )
+    return changes
+```
+
+Example output on a run where a state gained regulations (counts here are round placeholders):
+
+```text
+2 coverage change(s) detected:
+  - va: new corpus REGULATION (20000 sections)
+  - tx: STATE grew by 2000 (120000 -> 122000)
+```
+
+</Accordion>
 
 <Warning>
-  A growing count is a coarse signal. It says the corpus got bigger, not which
-  sections moved, and a re-ingest that replaces sections one for one leaves the
-  count flat. Use the diff to decide that something happened, then use
-  `changedSince` to find out what.
+  A growing count is a coarse signal.
+  It says the corpus got bigger, not which sections moved, and a re-ingest that replaces sections one for one leaves the count flat.
+  Use the diff to decide that something happened, then use `changedSince` to find out what.
 </Warning>
 
 ## Related
 
-<CardGroup cols={2}>
-  <Card title="Law Change Alerts" href="/api-guide/alerts">
-    Section-level change notifications with a webhook or email, no polling.
-  </Card>
-  <Card title="Compare a rule across states" href="/api-guide/recipes/multi-state-comparison">
-    Get the comparable provision in other states in one call.
-  </Card>
-  <Card title="Enrich a citation database" href="/api-guide/recipes/citation-enrichment">
-    Attach canonical citations, excerpts, and source links to a batch of rows.
-  </Card>
-  <Card title="Coverage matrix" href="/api-guide/coverage">
-    The human-readable jurisdiction and corpus matrix.
-  </Card>
-</CardGroup>
+- [Law Change Alerts](/api-guide/alerts): section-level change notifications with a webhook or email, no polling.
+- [Coverage matrix](/api-guide/coverage): the human-readable jurisdiction and corpus matrix.
+- [Enrich a citation database](/api-guide/recipes/citation-enrichment): attach canonical citations, excerpts and source links to a batch of rows.

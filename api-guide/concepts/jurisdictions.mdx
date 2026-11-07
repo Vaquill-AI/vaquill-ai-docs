@@ -1,47 +1,97 @@
 ---
-title: "Jurisdictions & State Codes"
-description: "The jurisdictions the API accepts, how state codes and the federal jurisdiction work, and the two endpoints that tell you what is actually there"
+title: "Jurisdictions and state codes"
+description: "The jurisdictions the API accepts, how state codes and the federal jurisdiction work, and how to see what is actually there"
 ---
 
-`state` accepts 56 US jurisdictions: all 50 states, plus the District of
-Columbia, Puerto Rico, Guam (`gu`), the Northern Mariana Islands (`mp`), the US
-Virgin Islands (`vi`) and American Samoa (`as`).
+`state` accepts 56 US jurisdictions: all 50 states, plus the District of Columbia, Puerto Rico, Guam (`gu`), the Northern Mariana Islands (`mp`), the US Virgin Islands (`vi`) and American Samoa (`as`).
 Federal law lives under its own `federal` jurisdiction, separate from the states.
 
-The API accepting a jurisdiction does not mean it holds every corpus for it, so
-read `GET /us/statutes/coverage` before you scope a search.
+Accepting a jurisdiction does not mean it holds every corpus for it.
+A state may have its statutory code (`STATE`) and constitution (`STATE_CONSTITUTION`) but no administrative regulations (`REGULATION`) or court rules (`STATE_RULES`) yet.
+Read `GET /us/statutes/coverage` before you scope a search.
 
 ## How jurisdictions are keyed
 
-- State codes are 2-letter strings: `ca`, `tx`, `ny`, `fl`, and so on.
-  They are case-insensitive, and an unrecognized value is rejected with a 422
-  rather than silently matching nothing.
-- Pass a list to search several at once (`"state": ["ca", "ny", "tx"]`),
-  which is one call instead of one per jurisdiction.
-- `federal` is the jurisdiction for the federal corpora. A federal search
-  needs only a `corpusType`, no `state`.
-- Each jurisdiction row from `/us/statutes/coverage` carries a `kind`:
-  `federal`, `state`, or `territory`. DC, Puerto Rico, Guam, the Northern Mariana
-  Islands, the Virgin Islands and American Samoa are `territory`.
+- **Codes:** 2-letter strings (`ca`, `tx`, `ny`, `fl`), case-insensitive.
+  An unrecognized value is rejected with a 422 rather than silently matching nothing.
+- **Lists:** pass several at once (`"state": ["ca", "ny", "tx"]`), which is one call instead of one per jurisdiction.
+- **Federal and kind:** `federal` is the jurisdiction for the federal corpora, and a federal search needs only a `corpusType`, no `state`.
+  Each jurisdiction row from `/us/statutes/coverage` carries a `kind` of `federal`, `state` or `territory`, and DC plus the five territories above are `territory`.
 
-<Warning>
-  Not every corpus type exists for every jurisdiction. A state may have its
-  statutory code (`STATE`) and constitution (`STATE_CONSTITUTION`) but no
-  administrative regulations (`REGULATION`) or court rules (`STATE_RULES`) yet.
+<Accordion title="All 56 state codes">
 
-  Check coverage before you scope a search.
-</Warning>
+| Code | Name | Kind |
+|---|---|---|
+| `al` | Alabama | state |
+| `ak` | Alaska | state |
+| `as` | American Samoa | territory |
+| `az` | Arizona | state |
+| `ar` | Arkansas | state |
+| `ca` | California | state |
+| `co` | Colorado | state |
+| `ct` | Connecticut | state |
+| `de` | Delaware | state |
+| `dc` | District of Columbia | territory |
+| `fl` | Florida | state |
+| `ga` | Georgia | state |
+| `gu` | Guam | territory |
+| `hi` | Hawaii | state |
+| `id` | Idaho | state |
+| `il` | Illinois | state |
+| `in` | Indiana | state |
+| `ia` | Iowa | state |
+| `ks` | Kansas | state |
+| `ky` | Kentucky | state |
+| `la` | Louisiana | state |
+| `me` | Maine | state |
+| `md` | Maryland | state |
+| `ma` | Massachusetts | state |
+| `mi` | Michigan | state |
+| `mn` | Minnesota | state |
+| `ms` | Mississippi | state |
+| `mo` | Missouri | state |
+| `mt` | Montana | state |
+| `ne` | Nebraska | state |
+| `nv` | Nevada | state |
+| `nh` | New Hampshire | state |
+| `nj` | New Jersey | state |
+| `nm` | New Mexico | state |
+| `ny` | New York | state |
+| `nc` | North Carolina | state |
+| `nd` | North Dakota | state |
+| `mp` | Northern Mariana Islands | territory |
+| `oh` | Ohio | state |
+| `ok` | Oklahoma | state |
+| `or` | Oregon | state |
+| `pa` | Pennsylvania | state |
+| `pr` | Puerto Rico | territory |
+| `ri` | Rhode Island | state |
+| `sc` | South Carolina | state |
+| `sd` | South Dakota | state |
+| `tn` | Tennessee | state |
+| `tx` | Texas | state |
+| `ut` | Utah | state |
+| `vt` | Vermont | state |
+| `vi` | Virgin Islands | territory |
+| `va` | Virginia | state |
+| `wa` | Washington | state |
+| `wv` | West Virginia | state |
+| `wi` | Wisconsin | state |
+| `wy` | Wyoming | state |
+
+</Accordion>
 
 ## The two discovery endpoints
 
 <CardGroup cols={2}>
   <Card title="GET /us/statutes/coverage">
-    Which corpora exist in which jurisdiction, with document counts. For the
-    age of a source, read `GET /boards`. Free, no credits.
+    Which corpora exist in which jurisdiction, with document counts.
+    For the age of a source, read `GET /boards`.
+    Free, no credits.
   </Card>
   <Card title="GET /us/statutes/divisions">
-    Walk the hierarchy one level at a time: a state's codes, then its chapters,
-    then its sections. Refunded on an empty level.
+    Walk the hierarchy one level at a time: a state's codes, then its chapters, then its sections.
+    Refunded on an empty level.
   </Card>
 </CardGroup>
 
@@ -52,19 +102,14 @@ Read it at request time rather than baking counts into your app.
 
 `GET /us/statutes/coverage` returns a wrapped `{ "data": ..., "meta": ... }`
 response.
-Each jurisdiction in `data.jurisdictions` has a `corpora` object whose keys are
-the `corpusType` tokens that actually have data, mapped to the ingested document
-count.
+Each jurisdiction in `data.jurisdictions` has a `corpora` object whose keys are the `corpusType` tokens that actually have data, mapped to the ingested document count.
 Read those keys to know which searches you can scope.
 
-The same response carries `data.corpusTypes`, a legend naming every token and
-whether it is federal or state-scoped, so you never need a hardcoded list.
+The same response carries `data.corpusTypes`, a legend naming every token and whether it is federal or state-scoped, so you never need a hardcoded list.
 
-A jurisdiction that holds [state session laws](/api-guide/session-laws) also carries a
-`sessionLaws` block: its sessions with `status` (`complete` or `partial`), the counts served,
-withheld and still open, the numbering `series` and `instrumentTypes` it holds (the values
-the list and search endpoints accept) and the span of approval dates. A jurisdiction with no
-session laws has no block. Session laws are not a `corpusType`.
+A jurisdiction that holds [state session laws](/api-guide/session-laws) also carries a `sessionLaws` block: its sessions with `status` (`complete` or `partial`), the counts served, withheld and still open, the numbering `series` and `instrumentTypes` it holds (the values the list and search endpoints accept) and the span of approval dates.
+A jurisdiction with no session laws has no block.
+Session laws are not a `corpusType`.
 
 <CodeGroup>
 
@@ -89,6 +134,10 @@ print("available corpora:", list(ca["corpora"].keys()))
 # e.g. ['STATE', 'REGULATION', 'STATE_CONSTITUTION', 'STATE_RULES']
 ```
 
+</CodeGroup>
+
+<Accordion title="JavaScript">
+
 ```javascript JavaScript
 const resp = await fetch("https://api.vaquill.ai/api/v1/us/statutes/coverage", {
   headers: { Authorization: "Bearer vq_key_..." },
@@ -102,20 +151,17 @@ console.log("available corpora:", Object.keys(ca.corpora));
 // e.g. ['STATE', 'REGULATION', 'STATE_CONSTITUTION', 'STATE_RULES']
 ```
 
-</CodeGroup>
+</Accordion>
 
-<Note>
-  This response gives counts but does not say how recently a corpus was
-  refreshed. `GET /boards` is free and carries `lastRetrievedAt` (left out
-  of a board that has no successful retrieval yet, 9 of 312 on 2026-11-04) and
-  `cadence` per source, so read it alongside the counts here to tell a
-  maintained corpus from a frozen one.
+This response does not say how recently a corpus was refreshed.
+Read the free `GET /boards` alongside it (see [Law change alerts](/api-guide/alerts)).
 
-  A board names a `(jurisdiction, corpusType)` pair, never a whole
-  jurisdiction: a state can be frozen in one corpus and current in another.
-  Where a publisher states its own currency, it rides on each section as
-  `currentThrough`.
-</Note>
+<Accordion title="Freshness: lastRetrievedAt, cadence and currentThrough">
+  `GET /boards` is free and carries `lastRetrievedAt` (left out of a board that has no successful retrieval yet) and `cadence` per source, so read it alongside the counts here to tell a maintained corpus from a frozen one.
+
+  A board names a `(jurisdiction, corpusType)` pair, never a whole jurisdiction: a state can be frozen in one corpus and current in another.
+  Where a publisher states its own currency, it rides on each section as `currentThrough`.
+</Accordion>
 
 ## Listing a state's codes
 
@@ -146,30 +192,18 @@ for node in resp.json()["divisions"]:
 
 </CodeGroup>
 
-Each node's `identifier` is what `code` on `POST /us/statutes/search` takes, so
-browse output feeds straight back in.
+Each node's `identifier` is what `code` on `POST /us/statutes/search` takes, so browse output feeds straight back in.
 Drill one level further by passing it back to `/us/statutes/divisions`
-(`corpusType=STATE&state=tx&code=tx_pe` returns that code's chapters), and keep
-going until `isLeaf` is true, where each node carries an `actId`.
+(`corpusType=STATE&state=tx&code=tx_pe` returns that code's chapters), and keep going until `isLeaf` is true, where each node carries an `actId`.
 
-Browse supports `USC`, `CFR`, `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
-Each corpus in the `/us/statutes/coverage` legend carries a `browsable` flag that says the same thing, so you never need to probe for it.
+Browse supports the tokens with `browsable: true` in the `/us/statutes/coverage` legend, so you never need to probe for it (the list is on [Corpus types](/api-guide/concepts/corpus-types#tokens)).
 The rest are dated series or share no tree, so reach those with `/us/statutes/search`.
 
 <Tip>
-  The discovery pattern is: `/us/statutes/coverage` to see which corpora a
-  jurisdiction has, `/us/statutes/divisions` to see how that jurisdiction is
-  structured, then `POST /us/statutes/search` with the `corpusType`, `state` and
-  `code` you confirmed.
+  Check coverage first, then structure, then search: `/us/statutes/coverage` for the corpora a jurisdiction has, `/us/statutes/divisions` for how it is structured, then `POST /us/statutes/search` with the `corpusType`, `state` and `code` you confirmed.
 </Tip>
 
 ## Related
 
-<CardGroup cols={2}>
-  <Card title="Corpus Types" href="/api-guide/concepts/corpus-types">
-    The corpusType tokens and how to pair them with a state.
-  </Card>
-  <Card title="API Coverage" href="/api-guide/coverage">
-    The full jurisdiction matrix with current section counts.
-  </Card>
-</CardGroup>
+- [Corpus types](/api-guide/concepts/corpus-types): the corpusType tokens and how to pair them with a state.
+- [API Coverage](/api-guide/coverage): the full jurisdiction matrix with current section counts.

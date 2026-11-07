@@ -1,23 +1,22 @@
 ---
 title: "Get one subsection"
-description: "Resolve a citation that carries a subsection, such as 625 ILCS 5/11-601(c), and get exactly that unit's text back: how to read it, how to handle a miss, and the same lookup from a body, a document or a search"
+sidebarTitle: "Get a subsection"
+description: "Get the text of one subsection from a citation like 625 ILCS 5/11-601(c)"
 ---
 
 **What this gets you:** exactly the text of the subsection a citation names, with no second model call and no parsing on your side.
 You also get the sentence it completes, the units inside it and beside it, and a grade that says how far to trust the outline.
 
 A citation such as `625 ILCS 5/11-601(c)` names one subsection of a section that can run to dozens.
-Send it to `/us/statutes/resolve` and the response carries the whole section as before, plus a `pinpoint` object holding unit (c) itself.
-This recipe shows the call, how to read the result, what a miss looks like, and the three other routes that return the same object.
+Add the pinpoint to the resolve call you already make and the response carries the whole section as before, plus a `pinpoint` object holding unit (c) itself.
+[Resolve and verify a statute citation](/api-guide/recipes/citation-lookup) covers the resolve call itself, including batch resolve of up to 50 citations and citations that do not resolve.
 
 **Endpoints used:** `GET` and `POST /us/statutes/resolve`, `POST /us/statutes/extract-citations`, `GET /us/statutes/section/{actId}/body`, `POST /us/statutes/search`.
 
-<Info>
-  The concept page, [Pinpoints](/api-guide/concepts/pinpoints), has the full field reference, the citation forms that are read, the error table and coverage by state.
-  This page is the working example.
-</Info>
+The concept page, [Pinpoints](/api-guide/concepts/pinpoints), has the full field reference, the citation forms that are read, the error table and coverage by state.
+This page is the working example.
 
-## Resolve a citation with a pinpoint
+## Add a pinpoint to the resolve call
 
 Put the pinpoint in the citation, exactly as a court or a statute book prints it.
 A resolve with a pinpoint costs the resolve price, 2 credits per citation.
@@ -25,17 +24,19 @@ A resolve with a pinpoint costs the resolve price, 2 credits per citation.
 <CodeGroup>
 ```bash cURL
 curl -G https://api.vaquill.ai/api/v1/us/statutes/resolve \
-  -H "Authorization: Bearer vq_key_..." \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
   --data-urlencode "cite=625 ILCS 5/11-601(c)" \
   --data-urlencode "state=il"
 ```
 
 ```python Python
+import os
+
 import requests
 
 resp = requests.get(
     "https://api.vaquill.ai/api/v1/us/statutes/resolve",
-    headers={"Authorization": "Bearer vq_key_..."},
+    headers={"Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}"},
     params={"cite": "625 ILCS 5/11-601(c)", "state": "il"},
 )
 resp.raise_for_status()
@@ -58,7 +59,7 @@ url.searchParams.set("cite", "625 ILCS 5/11-601(c)");
 url.searchParams.set("state", "il");
 
 const resp = await fetch(url, {
-  headers: { Authorization: "Bearer vq_key_..." },
+  headers: { Authorization: `Bearer ${process.env.VAQUILL_API_KEY}` },
 });
 if (!resp.ok) throw new Error(`resolve failed: ${resp.status}`);
 const data = await resp.json();
@@ -112,8 +113,10 @@ A trimmed response (the `section` object is cut to two fields):
 }
 ```
 
+This is the full `structure` object, shown once on this page: `source` and `quality` are covered under Read the result, `builder` names the parser, and `textSha256` is the hash of the text the offsets index into.
 `subsection` still echoes the dot-joined pinpoint (`c`).
 Read `pinpoint.path` when you need the unit itself.
+`creditsConsumed` is a float in every response, so `2.0` is the real wire form.
 
 ## Read the result
 
@@ -129,7 +132,11 @@ Five fields decide what you do with the answer.
 
 Some units are a few words that finish a sentence started above them.
 `leadIn` carries those parent sentences, outermost first, so you can quote the unit in context.
-Here is `Mo. Rev. Stat. 565.021.1(1)`, the first paragraph of the Missouri offense of murder in the second degree:
+The unit's own `text` is a fragment.
+To quote it in full, join the `leadIn` text and the unit's `text`.
+
+<Expandable title="Example with a lead-in: Mo. Rev. Stat. 565.021.1(1)">
+This is the first paragraph of the Missouri offense of murder in the second degree:
 
 ```json
 {
@@ -152,21 +159,12 @@ Here is `Mo. Rev. Stat. 565.021.1(1)`, the first paragraph of the Missouri offen
   "siblings": { "previous": null, "next": "2" },
   "charStart": 120,
   "charEnd": 282,
-  "structure": {
-    "source": "request_time",
-    "quality": "verified",
-    "builder": "text-grammar/1:mo",
-    "textSha256": "69fc6122328912da85501e29313e3fc00c2baec59ea5d655009372c11a4b2a3a"
-  }
+  "structure": {...}
 }
 ```
+</Expandable>
 
-The unit's own `text` is a fragment.
-To quote it in full, join the `leadIn` text and the unit's `text`.
-
-Here is what three of the other citations returned.
-Each one was an exact match.
-
+<Expandable title="Three more citations, all exact matches">
 | Citation | `path` | `structure.quality` | `structure.source` |
 |---|---|---|---|
 | `Wis. Stat. 940.01(1)(a)` | `["1", "a"]` | `verified` | `request_time` |
@@ -177,6 +175,7 @@ The Wisconsin unit has `leadIn` text `Offenses.`, which is the heading of subsec
 The Iowa unit (b) opens with two numbered paragraphs, so its own `text` is empty and the content is in its two `children`.
 When `text` is empty and `children` is not, read the children.
 The Minnesota unit is a whole subdivision, `Subd. 2.` with the heading `Felony.`
+</Expandable>
 
 `structure.source` says where the outline came from.
 `artifact` means a pre-built outline of this section was used, and `request_time` means the outline was parsed from the section text on this call.
@@ -186,10 +185,10 @@ Neither is a grade.
 ## Handle a miss
 
 A pinpoint can name a unit the section does not have.
-The call still succeeds and is charged, because the section resolved.
-The block says what happened instead of returning the whole section.
+The call still succeeds and is charged, because the section resolved, and the block says what happened.
 
-`Minn. Stat. 609.02 subd. 2(1)` asks for paragraph (1) inside subdivision 2, which has none.
+<Expandable title="Example miss: Minn. Stat. 609.02 subd. 2(1)">
+Subdivision 2 has no paragraph (1).
 This is the `pinpoint` object of that item from `POST /us/statutes/resolve`:
 
 ```json
@@ -218,10 +217,10 @@ This is the `pinpoint` object of that item from `POST /us/statutes/resolve`:
   }
 }
 ```
+</Expandable>
 
-Note that `matched` is `false` while the `text` is real text.
-It is the deepest unit that exists (`path` is `["2"]`), not the one you asked for.
-Never present it as the answer to `(2)(1)`.
+Here `matched` is `false` while the `text` is real text.
+It is the deepest unit that exists (`path` is `["2"]`), not the one you asked for, so never present it as the answer to `(2)(1)`.
 
 <CodeGroup>
 ```python Python
@@ -268,15 +267,22 @@ The reasons:
 If the response has `pinpointNote` and no `pinpoint`, the unit could not be looked up this time.
 The section resolved and is charged as usual, and a retry usually answers.
 
-## Pinpoints in a document
+## Other ways to get a pinpoint
+
+The same `pinpoint` object comes back from three more routes.
+The detail under each heading is collapsed.
+
+### Pinpoints in a document
 
 `POST /us/statutes/extract-citations` finds every citation in a block of text and, with `resolve: true`, resolves each one.
 It is priced per distinct citation.
+
+<Accordion title="Request, response and range rules">
 The two citations below cost 4 credits.
 
 ```bash
 curl -X POST https://api.vaquill.ai/api/v1/us/statutes/extract-citations \
-  -H "Authorization: Bearer vq_key_..." \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "text": "The speed limit in an urban district is set by 625 ILCS 5/11-601(c). Intentional homicide is covered by Wis. Stat. 940.01(1)(a).",
@@ -304,7 +310,7 @@ A trimmed response, keeping the fields used here:
       "actId": "STATE_IL_C625_A5_S11-601"
     }
   ],
-  "counts": { "found": 2, "resolved": 2, "unresolved": 0, "skipped": 0 },
+  "counts": { "found": 2, "distinctSections": 2, "resolved": 2, "unresolved": 0, "skipped": 0 },
   "creditsConsumed": 4.0
 }
 ```
@@ -313,25 +319,33 @@ Each row keeps the pinpoint exactly as it was printed in your text (`pinpoint`) 
 A row also carries `pinpointMatch`, the same block as `pinpoint` above, when the unit could be located in the same call.
 Read `pinpointMatch.matched` first, as you would on a resolve.
 
+Each row also carries `charStart` and `charEnd`, the span of the first mention of `raw` in your `text`, so `text[charStart:charEnd] == raw`.
+Offsets count Unicode code points, which differ from JavaScript string indexes only past the Basic Multilingual Plane.
+Both are null for a row that has no span of its own, such as one section taken from a list like `§§ 1981, 1983`.
+
+A range returns its two ends as resolved rows, and the sections between them as `interior` rows.
+`18 U.S.C. §§ 2510 through 2523` gives rows marked `rangeRole` `start` and `end`, each with `rangePartner` naming the other end.
+Each end is resolved and charged as its own section.
+For a range written with a word (`§§ 101 through 105`), the sections between come back as rows with `rangeRole` `interior`, `skipped` `range_interior` and `rangePartner` set to the range start.
+Interior rows are never resolved and never charged, at most 25 are listed per range and 500 per call, and `counts.interior` counts them.
+`counts.found` counts rows, and `counts.distinctSections` counts sections, which is the unit the price and the per-call cap use.
+
+If the corpus is unavailable, or half or more of the citations cannot be read, the call answers 503 and the whole charge is refunded.
+
 When a row has no `pinpointMatch`, resolve its `raw` to get the unit.
-That is one more resolve call at the resolve price, and you can batch up to 50 of them:
+That is one more resolve call at the resolve price, and the raw values can go in one batch of up to 50 (see [batch resolve](/api-guide/recipes/citation-lookup#resolve-a-whole-documents-citations-at-once)).
+</Accordion>
 
-```bash
-curl -X POST https://api.vaquill.ai/api/v1/us/statutes/resolve \
-  -H "Authorization: Bearer vq_key_..." \
-  -H "Content-Type: application/json" \
-  -d '{"citations": ["Wis. Stat. 940.01(1)(a)", "625 ILCS 5/11-601(c)"]}'
-```
-
-## Pinpoints from an act ID you already hold
+### Pinpoints from an act ID you already hold
 
 If you already have an `actId`, ask the body route for the unit.
 You get the full section body and the unit side by side.
 A body with a pinpoint is the body price, 6 credits.
 
+<Accordion title="Request, response and offset check">
 ```bash
 curl -G https://api.vaquill.ai/api/v1/us/statutes/section/STATE_IL_C625_A5_S11-601/body \
-  -H "Authorization: Bearer vq_key_..." \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
   --data-urlencode "pinpoint=(c)(1)"
 ```
 
@@ -363,12 +377,7 @@ A trimmed response (`html` and `plain` carry the whole section and are cut here)
     "siblings": { "previous": null, "next": "2" },
     "charStart": 1634,
     "charEnd": 1659,
-    "structure": {
-      "source": "request_time",
-      "quality": "verified",
-      "builder": "text-grammar/1:il",
-      "textSha256": "dfbee96a02574de186178e776364f8557f6e2ed760a31ae5df7232d1f27104b0"
-    }
+    "structure": {...}
   },
   "creditsConsumed": 6.0
 }
@@ -388,16 +397,18 @@ if hashlib.sha256(plain.encode("utf-8")).hexdigest() != pin["structure"]["textSh
 ```
 
 A malformed `pinpoint`, or a `pinpoint` sent together with `asOf`, is a `422` and is not charged.
+</Accordion>
 
-## Which subsection did a search hit match
+### Which subsection did a search hit match
 
 Search ranks whole sections.
 Set `includePinpoint: true` and each hit also names the subsection it matched, in a `pinpoints` object keyed by `actId`.
 It adds nothing to the price of the search.
 
+<Accordion title="Request, response and how to read it">
 ```bash
 curl -X POST https://api.vaquill.ai/api/v1/us/statutes/search \
-  -H "Authorization: Bearer vq_key_..." \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"query": "30 mph urban district speed limit", "state": "il", "includePinpoint": true, "limit": 2}'
 ```
@@ -430,12 +441,7 @@ The first of the two hits, trimmed to the `pinpoints` entry that goes with it:
       "matchedBy": "passage",
       "scope": "unit",
       "matchedTerms": ["30", "urban", "district", "speed", "limit"],
-      "structure": {
-        "source": "request_time",
-        "quality": "verified",
-        "builder": "text-grammar/1:il",
-        "textSha256": "dfbee96a02574de186178e776364f8557f6e2ed760a31ae5df7232d1f27104b0"
-      }
+      "structure": {...}
     }
   }
 }
@@ -448,20 +454,10 @@ The second hit in the same response, `625 ILCS 5/11-604`, came back with `scope:
 
 A hit that cannot be named says why in `reason`.
 That is a verdict about the hit and never changes which sections are returned, their order or their scores.
+</Accordion>
 
 ## Related
 
-<CardGroup cols={2}>
-  <Card title="Pinpoints" href="/api-guide/concepts/pinpoints">
-    Every field, the citation forms that are read, errors and coverage by state.
-  </Card>
-  <Card title="Resolve and verify a statute citation" href="/api-guide/recipes/citation-lookup">
-    Resolve a citation to its section, one at a time or a document at a time.
-  </Card>
-  <Card title="Citation formats" href="/api-guide/concepts/citation-formats">
-    Which citation strings resolve, and which are refused on purpose.
-  </Card>
-  <Card title="Ground an LLM answer (RAG)" href="/api-guide/recipes/rag-grounding">
-    Feed the unit, not the whole section, to your model as its source.
-  </Card>
-</CardGroup>
+- [Pinpoints](/api-guide/concepts/pinpoints): every field, the citation forms that are read, errors and coverage by state.
+- [Resolve and verify a statute citation](/api-guide/recipes/citation-lookup): the resolve call itself, batch resolve and unresolved citations.
+- [Citation formats](/api-guide/concepts/citation-formats): which citation strings resolve, and which are refused on purpose.

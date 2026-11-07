@@ -1,24 +1,16 @@
 ---
 title: "Integrations"
 sidebarTitle: "Overview"
-description: "MCP servers, chatbots, widgets, browser extensions, and automation templates that connect Vaquill AI to the tools your team already uses."
-keywords: ["vaquill integrations", "legal AI integrations", "slack legal bot", "discord legal bot", "whatsapp legal bot", "chrome extension legal AI", "mcp server legal", "n8n legal research"]
+description: "MCP servers and automation templates that connect Vaquill AI to the tools your team already uses."
+keywords: ["vaquill integrations", "legal AI integrations", "mcp server legal", "n8n legal research"]
 ---
 
-Use Vaquill AI from the tools your team already has open: Claude, Slack, a marketing site, a Google Sheet. Every integration is open-source and self-hostable, and all of them call the same [Vaquill statutes API](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions).
+Use Vaquill AI from the tools your team already has open: Claude, ChatGPT, an IDE, a Google Sheet.
+The integrations in the GitHub repo are open-source and self-hostable, and all of them call the same [Vaquill statutes API](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions).
 
 <CardGroup cols={2}>
   <Card title="MCP Servers" href="/integrations/mcp">
     Connect Vaquill AI's US statute corpus (US Code, CFR, all 50 state codes) to Claude, Cursor, VS Code, or any MCP client.
-  </Card>
-  <Card title="Chatbots" href="/integrations/chatbots">
-    Legal Q&A in Slack, Discord, Microsoft Teams, Telegram, WhatsApp, or Signal with thread memory and cited sources.
-  </Card>
-  <Card title="Widgets" href="/integrations/widgets">
-    Embed a chat widget on any site with one script tag, an iframe, or a full Next.js deployment that adds voice and history.
-  </Card>
-  <Card title="Browser Extensions" href="/integrations/browser/chrome">
-    Research from any browser tab without leaving the page. Works in Chrome, Edge, Brave, Arc, and Opera.
   </Card>
   <Card title="Automation" href="/integrations/automation/n8n">
     n8n and Make.com templates that read questions from a Google Sheet and write back matching statute sections and citations.
@@ -33,25 +25,16 @@ Use Vaquill AI from the tools your team already has open: Claude, Slack, a marke
 | If you want to... | Use |
 |---|---|
 | Search US statutes from Claude / Cursor / VS Code | [Vaquill MCP](/integrations/mcp/vaquill) |
-| Add legal Q&A to your Slack workspace | [Slack bot](/integrations/chatbots/slack) |
-| Add legal Q&A to your Discord server | [Discord bot](/integrations/chatbots/discord) |
-| Add legal Q&A to Microsoft Teams | [Microsoft Teams bot](/integrations/chatbots/microsoft-teams) |
-| Add legal Q&A to Telegram | [Telegram bot](/integrations/chatbots/telegram) |
-| Add legal Q&A to WhatsApp | [WhatsApp bot](/integrations/chatbots/whatsapp) |
-| Add legal Q&A to Signal | [Signal bot](/integrations/chatbots/signal) |
-| Embed a chat widget on a marketing site | [Embedded Chat Widget](/integrations/widgets/embedded-chat) |
-| Self-host a chat widget with Docker | [Docker Widget](/integrations/widgets/docker-widget) |
-| Run a feature-rich widget with voice + history sidebar | [Widget Pro](/integrations/widgets/widget-pro) |
-| Research from any browser tab | [Chrome Extension](/integrations/browser/chrome) |
 | Batch-process legal questions from a Google Sheet | [n8n / Make.com](/integrations/automation/n8n) |
 
 ## Common architecture
 
-Each integration is a thin wrapper. It takes input from its surface (a Slack message, browser popup, or webhook), calls the statutes search endpoint, and renders the matching statute sections.
+Each integration is a thin wrapper.
+It takes input from its surface (an MCP tool call or a webhook), calls the statutes search endpoint, and renders the matching statute sections.
 
 ```mermaid
 flowchart LR
-    A["**User surface**<br/>Slack, Discord, Teams,<br/>browser, webhook"] --> B["**Integration runtime**<br/>Python / Node / Edge"]
+    A["**User surface**<br/>MCP client,<br/>webhook"] --> B["**Integration runtime**<br/>Python / Node / Edge"]
     B -->|"POST /api/v1/us/statutes/search"| C["**Vaquill statutes API**"]
     C --> D["**Statute retrieval**<br/>US Code · CFR · 50 state codes"]
     D -.->|"matching sections"| B
@@ -62,15 +45,16 @@ flowchart LR
     style D fill:#f0fdf4,stroke:#16a34a,color:#15803d
 ```
 
-One API key (`vq_key_...`) from your [dashboard](https://app.vaquill.ai/settings) works for all of them. Configuration is through environment variables, and every integration ships with a Dockerfile and at least one cloud-deploy recipe.
+One API key (`vq_key_...`) from your [dashboard](https://app.vaquill.ai/settings) works for all of them, except the Claude connector, which signs in with OAuth instead.
+Configuration is through environment variables, and every integration ships with a Dockerfile and at least one cloud-deploy recipe.
 
 ## Build your own
 
-To add a surface we do not ship (Outlook, Notion, a CRM, an internal portal):
+To add a surface we do not ship (Slack, Outlook, Notion, a CRM, an internal portal):
 
 1. Generate a key in your [dashboard](https://app.vaquill.ai/settings).
 2. `POST /api/v1/us/statutes/search` with `{ "query": "..." }` and `Authorization: Bearer vq_key_...`.
-3. Render the returned statute sections (title, code, section number, text).
-4. Pass filters (jurisdiction, code) to narrow results.
+3. Render the returned results (citation, title, excerpt and `actId`).
+4. Pass filters (`corpusType`, `state`, `code`) to narrow results.
 
 See [Authentication](/api-guide/authentication) for key setup and [Errors](/api-guide/errors) for status-code handling.

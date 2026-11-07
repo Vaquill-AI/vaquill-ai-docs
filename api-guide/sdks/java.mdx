@@ -1,56 +1,63 @@
 ---
 title: "Java SDK"
 description: "The Vaquill Java client for the US Data API: quickstart, errors, retries, spend guard, pagination and webhooks"
+tag: "Preview"
 ---
+
+import RetryRules from '/snippets/retry-rules.mdx';
+import IdempotencyKeys from '/snippets/idempotency-keys.mdx';
+import ChargedCallRule from '/snippets/charged-call-rule.mdx';
 
 {/* Every sample on this page is copied from java/README.md of vaquill-sdks. */}
 
-The Java client covers all 42 operations of the US Data API and matches the behavior of the [Python SDK](/api-guide/sdks/python).
+The Java client covers the statutes, session law, watch, board, credit and pricing operations of the US Data API and matches the behavior of the [Python SDK](/api-guide/sdks/python).
+The operations without a method yet are listed in the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits).
 It needs Java 11 or newer and has one runtime dependency, Jackson (`jackson-databind`).
 HTTP goes through the JDK `java.net.http.HttpClient`, so you can pass your own configured client.
 Every call has a blocking form, a `...WithResponse` form (status, headers, request id, credits) and a `...Async` form.
 For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
 
 <Warning>
-  Not yet published. The Maven coordinates below are the intended ones, and they do not resolve today.
-  Until the first release, build from the [`java/` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/java) of the repository.
+  Preview. Not yet published to Maven Central, so build from source until the first release.
 </Warning>
 
 ## Install
 
-Once the artifact is released on Maven Central, the coordinates will be as follows.
-
-Maven:
-
-```xml
-<dependency>
-  <groupId>ai.vaquill</groupId>
-  <artifactId>vaquill-sdk</artifactId>
-  <version>0.1.0</version>
-</dependency>
-```
-
-Gradle (Kotlin DSL):
-
-```kotlin
-dependencies {
-    implementation("ai.vaquill:vaquill-sdk:0.1.0")
-}
-```
-
-Gradle (Groovy):
-
-```groovy
-dependencies {
-    implementation 'ai.vaquill:vaquill-sdk:0.1.0'
-}
-```
-
-To build from source, check out the repository, change into `java/` and run the build and tests.
+Check out the [repository](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/java), change into `java/` and run the build and tests.
 
 ```bash
 mvn verify
 ```
+
+<Accordion title="After release: Maven and Gradle coordinates">
+  These are the intended coordinates. They do not resolve today.
+
+  Maven:
+
+  ```xml
+  <dependency>
+    <groupId>ai.vaquill</groupId>
+    <artifactId>vaquill-sdk</artifactId>
+    <version>0.1.0</version>
+  </dependency>
+  ```
+
+  Gradle (Kotlin DSL):
+
+  ```kotlin
+  dependencies {
+      implementation("ai.vaquill:vaquill-sdk:0.1.0")
+  }
+  ```
+
+  Gradle (Groovy):
+
+  ```groovy
+  dependencies {
+      implementation 'ai.vaquill:vaquill-sdk:0.1.0'
+  }
+  ```
+</Accordion>
 
 Source: [`Vaquill-AI/vaquill-sdks`, `java/`](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/java) on GitHub.
 
@@ -151,15 +158,19 @@ try {
 
 ## Retries and idempotency
 
-- Exponential backoff from 0.5 s doubling to an 8 s cap, plus 0 to 25 percent jitter.
-- `retry-after-ms`, then `Retry-After` (seconds or an HTTP date) are honoured. A wait over 120 s is raised at once instead of slept.
-- Retried: the codes `rate_limited`, `idempotency_in_progress`, `upstream_timeout`, `service_unavailable` and `internal_error`, and otherwise statuses 408, 429 and 5xx. A response that says `retryable: false` is not retried, and neither is 501.
-- Never retried: `insufficient_credits` and `daily_cap_exceeded`.
+<RetryRules />
+
+Java specifics:
+
+- Retried by code: `rate_limited`, `idempotency_in_progress`, `upstream_timeout`, `service_unavailable` and `internal_error`, and otherwise by status 408, 429 and 5xx. 501 is not retried.
 - Connect failures are always retried. Any other transport error is retried only for GET and HEAD, or when the request carries an Idempotency-Key, because the server may already have done the work.
 - A 5xx on a charged call is not retried without a key, for the same reason.
 
-The 30 charged operations accept an `Idempotency-Key`.
-The SDK generates one for every charged POST unless you pass your own with `RequestOptions.builder().idempotencyKey("...")`, so a retried call is charged once.
+<ChargedCallRule />
+
+<IdempotencyKeys />
+
+The SDK generates a key for every charged POST unless you pass your own with `RequestOptions.builder().idempotencyKey("...")`.
 A key must be 16 to 255 visible ASCII characters. An empty or malformed key is rejected before anything is sent.
 `Response.isIdempotentReplayed()` is true when the server answered from a stored result, and a replay counts as 0 credits against the spend guard.
 
@@ -169,8 +180,8 @@ A key must be 16 to 255 visible ASCII characters. An empty or malformed key is r
 Vaquill client = Vaquill.builder().maxCredits(50).build();
 ```
 
-Charged calls are serialised. The guard checks the running total, sends the request and adds the credits actually consumed while holding one lock.
-When the total has reached the cap, the next charged call raises `SpendGuardExceededException` and is never sent, so the cap is exact even with many threads.
+Charged calls are serialised under one lock, so the cap is exact even with many threads. See [how the guard stays exact](/api-guide/sdks/overview#spend-guard).
+When the total has reached the cap, the next charged call raises `SpendGuardExceededException` and is never sent.
 `client.getCreditsSpent()` returns the total. Free endpoints are never blocked.
 
 ## Pagination and batch helpers
@@ -228,6 +239,9 @@ See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
 ## Versioning
 
 The SDK follows semantic versioning, and the first release is planned as `0.1.0`.
-Releases will be cut by pushing a `java-vX.Y.Z` tag, which signs and publishes to Maven Central.
-The signing and upload steps have not run yet, so the first release is the first time they are exercised.
 The library targets Java 11 (`--release 11`).
+
+<Accordion title="Release workflow status">
+  Releases will be cut by pushing a `java-vX.Y.Z` tag, which signs and publishes to Maven Central.
+  The signing and upload steps have not run yet, so the first release is the first time they are exercised.
+</Accordion>

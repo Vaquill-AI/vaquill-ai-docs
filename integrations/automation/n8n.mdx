@@ -1,7 +1,7 @@
 ---
 title: "n8n and Make.com"
 sidebarTitle: "n8n / Make.com"
-description: "Pre-built n8n and Make.com templates that read statute queries from a Google Sheet, call the Vaquill statutes search API, and write matching sections back."
+description: "Pre-built n8n and Make.com templates that read statute queries from a Google Sheet and write matching sections back."
 keywords: ["n8n legal research", "make.com legal automation", "google sheets legal AI", "batch statute search", "n8n vaquill", "legal automation workflow", "statute lookup pipeline"]
 ---
 
@@ -39,12 +39,7 @@ Source: [github.com/Vaquill-AI/integrations/n8n](https://github.com/Vaquill-AI/i
 
 ## Google Sheet setup
 
-Create a Google Sheet with these column headers in row 1:
-
-| A | B | C | D | E |
-|---|---|---|---|---|
-| query | results | citations | jurisdiction | status |
-
+Create a Google Sheet with the headers `query`, `results`, `citations`, `jurisdiction` and `status` in columns A to E of row 1.
 Put your queries in column A. Leave B-E empty, since the automation fills them in.
 
 Example rows:
@@ -68,7 +63,7 @@ Request body:
 ```json
 {
   "query": "civil action for deprivation of rights",
-  "jurisdiction": "us",
+  "corpusType": "USC",
   "limit": 10
 }
 ```
@@ -76,42 +71,38 @@ Request body:
 | Field | Type | Description |
 |---|---|---|
 | `query` | string | The statute search query |
-| `jurisdiction` | string | `"us"` for federal (US Code, CFR), or a state code (e.g. `"ca"`, `"ny"`) |
+| `corpusType` | string or array | Which corpus to search, for example `"USC"` or `"CFR"`. Omit it to search every corpus. |
+| `state` | string or array | A state code such as `"ca"` or `"ny"` to restrict the search to that state |
 | `limit` | integer | Maximum sections to return (page through larger result sets) |
 
-Successful response (200):
+The endpoint rejects fields it does not define, so a body with an unknown key such as `jurisdiction` fails instead of being ignored.
+
+A trimmed successful response (200):
 
 ```json
 {
   "data": {
     "results": [
       {
+        "actId": "USC_T42_C21_S1983",
         "citation": "42 U.S.C. 1983",
-        "title": "Civil action for deprivation of rights",
-        "code": "United States Code"
+        "title": "Civil action for deprivation of rights"
       }
-    ]
+    ],
+    "count": 1
   },
   "meta": {
-    "creditsUsed": 1,
-    "creditsRemaining": 99
+    "creditsConsumed": 4
   }
 }
 ```
 
-Error responses:
+Each result carries more fields than shown. The full response shape, the credit price and every filter are in the [Statutes Search API reference](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions). Status codes `401`, `402` and `429` are covered under Troubleshooting below and in the [Errors reference](/api-guide/errors).
 
-| Status | Meaning | What to do |
-|---|---|---|
-| 401 | Invalid API key | Check the key starts with `vq_key_` and the `Bearer ` prefix is present |
-| 402 | Insufficient credits | Top up at [app.vaquill.ai/settings/billing](https://app.vaquill.ai/settings/billing) |
-| 429 | Rate limit exceeded | Wait and retry (the templates handle this automatically) |
+## Quickstart
 
-See the [Errors reference](/api-guide/errors) for the full list.
-
-## Option 1: n8n
-
-### Quickstart
+<Tabs>
+<Tab title="n8n">
 
 <Steps>
   <Step title="Import the workflow">
@@ -146,7 +137,7 @@ See the [Errors reference](/api-guide/errors) for the full list.
   </Step>
 </Steps>
 
-### Workflow shape
+**Workflow shape**
 
 ```
 [New Query Added] -> [Filter Unanswered] -> [Vaquill Statutes Search] -> [Extract Response] -> [Write Results]
@@ -169,9 +160,9 @@ See the [Errors reference](/api-guide/errors) for the full list.
 | **Write Answer to Sheet** | Updates the original row with results |
 | **Insufficient Credits?** | On 402, stops the workflow; on other errors, marks the row as `error` |
 
-## Option 2: Make.com
+</Tab>
 
-### Quickstart
+<Tab title="Make.com">
 
 <Steps>
   <Step title="Import the blueprint">
@@ -212,11 +203,14 @@ See the [Errors reference](/api-guide/errors) for the full list.
   </Step>
 </Steps>
 
+</Tab>
+</Tabs>
+
 ## Configuration
 
 ### Scope by jurisdiction
 
-Change the request body `jurisdiction` field to target a specific code: `"us"` covers federal sources (the US Code and the CFR), and any state code (e.g. `"ca"`, `"ny"`, `"tx"`) restricts the search to that state's statutes. The corpus spans all 56 states and territories, the US Code (60,494 sections), and the CFR (222,311 sections across 49 titles).
+Set `corpusType` in the request body to target federal sources (`"USC"` for the US Code, `"CFR"` for the CFR), and set `state` (e.g. `"ca"`, `"ny"`, `"tx"`) to restrict the search to that state. See [API coverage](/api-guide/coverage) for the states, territories and corpora held and their current section counts.
 
 ### Page through large result sets
 
@@ -225,7 +219,7 @@ For broad queries, raise the `limit` field and page through results:
 ```json
 {
   "query": "overtime exemption for executive employees",
-  "jurisdiction": "us",
+  "corpusType": "USC",
   "limit": 25,
   "offset": 0
 }
@@ -253,24 +247,23 @@ Google Sheets -> Vaquill statutes search -> Write Results
 
 ## Deployment
 
-### n8n self-hosted vs n8n Cloud
+<AccordionGroup>
+  <Accordion title="n8n self-hosted vs n8n Cloud">
+    | Option | Best for |
+    |---|---|
+    | **n8n self-hosted** (Docker) | Teams that want full data control and unlimited workflow runs. Free, but you operate the infrastructure. |
+    | **n8n Cloud** | Teams that want a managed UI and no servers to run. Paid plans start around $20 USD/month. |
 
-| Option | Best for |
-|---|---|
-| **n8n self-hosted** (Docker) | Teams that want full data control and unlimited workflow runs. Free, but you operate the infrastructure. |
-| **n8n Cloud** | Teams that want a managed UI and no servers to run. Paid plans start around $20 USD/month. |
+    The same `n8n-workflow.json` import works for both.
+  </Accordion>
+  <Accordion title="Make.com tiers">
+    Make.com is cloud-only. The free tier covers ~1,000 operations per month, which is enough for small batches. Paid plans raise that limit.
 
-The same `n8n-workflow.json` import works for both.
+    Make.com counts each HTTP module call and each sheet row read or written. A single Vaquill AI search typically uses 3 operations (read row, call API, write row).
 
-### Make.com tiers
-
-Make.com is cloud-only. The free tier covers ~1,000 operations per month, which is enough for small batches. Paid plans raise that limit.
-
-Make.com counts each HTTP module call and each sheet row read or written. A single Vaquill AI search typically uses 3 operations (read row, call API, write row).
-
-<Tip>
-  For large nightly batches, n8n is usually more economical because pricing is per workflow execution, not per node operation.
-</Tip>
+    For large nightly batches, n8n is usually more economical because pricing is per workflow execution, not per node operation.
+  </Accordion>
+</AccordionGroup>
 
 ## Troubleshooting
 
@@ -279,7 +272,7 @@ Make.com counts each HTTP module call and each sheet row read or written. A sing
 | 401 Unauthorized | Invalid or missing API key | Verify the key starts with `vq_key_` and the `Bearer ` prefix is included |
 | 402 Payment Required | No credits remaining | Top up at [app.vaquill.ai/settings/billing](https://app.vaquill.ai/settings/billing) |
 | 429 Too Many Requests | Rate limit hit | Add delays between requests; the n8n template retries automatically |
-| Empty results | Query too vague or out of scope | Rephrase; check that `jurisdiction` is set correctly |
+| Empty results | Query too vague or out of scope | Rephrase; check that `corpusType` and `state` are set correctly |
 | Google Sheets auth error | OAuth token expired | Re-authenticate the Google Sheets connection |
 | Workflow not triggering | Trigger not activated | In n8n, toggle the workflow to **Active**; in Make.com, click **Schedule** |
 

@@ -1,0 +1,3 @@
+Each charged call sends one generated `Idempotency-Key`, reused on every retry of that call.
+When the server honours the key it replays the stored response instead of charging again, and the response reports that it was replayed.
+Pass your own key to choose it.
