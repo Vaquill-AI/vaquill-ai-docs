@@ -4,6 +4,16 @@
 
 Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization: Bearer vq_key_...`. Coverage and counts live on the [Coverage](https://www.vaquill.ai/docs/api-guide/coverage) page.
 
+## Data coverage
+
+- [Coverage](https://www.vaquill.ai/docs/api-guide/coverage): Which US jurisdictions and corpus types the Vaquill API holds, with measured section counts and refresh cadence
+- [Federal coverage](https://www.vaquill.ai/docs/api-guide/coverage/federal): Every federal corpus the statutes API serves, with refresh cadence, corpusType tokens and per-corpus scope limits
+- [Treaty coverage](https://www.vaquill.ai/docs/api-guide/coverage/treaties): The two treaty corpus tokens: US_TAX_TREATY for IRS income tax treaties, US_TREATY for treaty text and the Senate treaty record
+- [State and territory coverage](https://www.vaquill.ai/docs/api-guide/coverage/states): Per-jurisdiction coverage of state and territory statutes, regulations, constitutions, court rules, registers and agency guidance
+- [Federal agency guidance sources](https://www.vaquill.ai/docs/api-guide/coverage/agency-guidance): Sub-regulatory federal guidance sources, each filterable with corpusType=AGENCY_GUIDANCE and source
+- [State session laws](https://www.vaquill.ai/docs/api-guide/session-laws): State session laws as enacted, with dates, veto outcome, sources, text and search
+- [US rulemaking](https://www.vaquill.ai/docs/api-guide/rulemaking): Regulations.gov dockets and documents, Unified Agenda history, OIRA review and CRA links, tied together by the RIN
+
 ## Get started
 
 - [Quickstart](https://www.vaquill.ai/docs/api-guide/quickstart): Search US statutes and fetch a section in a few minutes
@@ -64,20 +74,10 @@ Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization
 - [Enrich a citation database with source text](https://www.vaquill.ai/docs/api-guide/recipes/citation-enrichment): Batch-resolve a column of citations, search the topic-only rows, and attach a canonical citation, excerpt and official source URL
 - [Add the corpus as an AI agent tool (MCP)](https://www.vaquill.ai/docs/api-guide/recipes/mcp-tool): Give an AI agent authoritative statute search, either through the hosted Vaquill MCP server or by wrapping the REST API as your own tool
 
-## Data
+## Bulk data and licensing
 
-- [State session laws](https://www.vaquill.ai/docs/api-guide/session-laws): State session laws as enacted, with dates, veto outcome, sources, text and search
-- [US rulemaking](https://www.vaquill.ai/docs/api-guide/rulemaking): Regulations.gov dockets and documents, Unified Agenda history, OIRA review and CRA links, tied together by the RIN
 - [Bulk and SQL access](https://www.vaquill.ai/docs/api-guide/bulk-and-sql): Query the US primary-law corpus as a database: Parquet snapshots readable over HTTPS with DuckDB, or loaded into Postgres.
 - [Rights and licensing](https://www.vaquill.ai/docs/api-guide/rights-and-licensing): What you may do with the data: cache it, build indexes, show it to your users, redistribute it, and what you keep if you stop paying.
-
-## Coverage
-
-- [Coverage](https://www.vaquill.ai/docs/api-guide/coverage): Which US jurisdictions and corpus types the Vaquill API holds, with measured section counts and refresh cadence
-- [Federal coverage](https://www.vaquill.ai/docs/api-guide/coverage/federal): Every federal corpus the statutes API serves, with refresh cadence, corpusType tokens and per-corpus scope limits
-- [Treaty coverage](https://www.vaquill.ai/docs/api-guide/coverage/treaties): The two treaty corpus tokens: US_TAX_TREATY for IRS income tax treaties, US_TREATY for treaty text and the Senate treaty record
-- [State and territory coverage](https://www.vaquill.ai/docs/api-guide/coverage/states): Per-jurisdiction coverage of state and territory statutes, regulations, constitutions, court rules, registers and agency guidance
-- [Federal agency guidance sources](https://www.vaquill.ai/docs/api-guide/coverage/agency-guidance): Sub-regulatory federal guidance sources, each filterable with corpusType=AGENCY_GUIDANCE and source
 
 ## Reference
 

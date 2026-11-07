@@ -64,6 +64,19 @@
         "tab": "Guide",
         "groups": [
           {
+            "group": "Data coverage",
+            "icon": "database",
+            "pages": [
+              "api-guide/coverage",
+              "api-guide/coverage/federal",
+              "api-guide/coverage/treaties",
+              "api-guide/coverage/states",
+              "api-guide/coverage/agency-guidance",
+              "api-guide/session-laws",
+              "api-guide/rulemaking"
+            ]
+          },
+          {
             "group": "Get started",
             "icon": "rocket",
             "pages": [
@@ -143,22 +156,9 @@
             ]
           },
           {
-            "group": "Data",
-            "icon": "database",
+            "group": "Bulk data and licensing",
+            "icon": "box-archive",
             "pages": [
-              {
-                "group": "Coverage",
-                "root": "api-guide/coverage",
-                "expanded": false,
-                "pages": [
-                  "api-guide/coverage/federal",
-                  "api-guide/coverage/treaties",
-                  "api-guide/coverage/states",
-                  "api-guide/coverage/agency-guidance"
-                ]
-              },
-              "api-guide/session-laws",
-              "api-guide/rulemaking",
               "api-guide/bulk-and-sql",
               "api-guide/rights-and-licensing"
             ]
