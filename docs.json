@@ -194,7 +194,8 @@
             "group": "India guide",
             "icon": "book-open",
             "pages": [
-              "api-guide/coverage/india"
+              "api-guide/coverage/india",
+              "api-guide/translation"
             ]
           },
           {
@@ -532,11 +533,7 @@
     },
     {
       "source": "/guides/tools/translation",
-      "destination": "/api-guide/overview"
-    },
-    {
-      "source": "/api-guide/translation",
-      "destination": "/api-guide/overview"
+      "destination": "/api-guide/translation"
     },
     {
       "source": "/guides/tools/company-lookup",

@@ -10,7 +10,6 @@ guides/
 workflows/
 workspace-api/
 integrations/dms/
-api-guide/translation.mdx
 
 # Unpublished 2026-11-07, kept in the repo (redirected to /integrations in docs.json).
 integrations/chatbots/

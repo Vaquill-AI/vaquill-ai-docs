@@ -89,6 +89,7 @@ Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization
 ## India guide
 
 - [India legislation coverage](https://www.vaquill.ai/docs/api-guide/coverage/india): What the India legislation API holds, how deep its amendment and repeal record goes, and its known limits
+- [Legal translation](https://www.vaquill.ai/docs/api-guide/translation): Translate legal text and documents between English and the 22 Eighth Schedule languages. Billed in pages, from a pool of its own.
 
 ## Integrations
 

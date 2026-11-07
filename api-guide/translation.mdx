@@ -15,13 +15,17 @@ Read the sections below in order before you send your first charged request.
 
 | Route | What it does | Cost |
 | --- | --- | --- |
-| `GET /api/v1/translation/languages` | Lists every language you can translate from and to | Free |
-| `GET /api/v1/translation/balance` | Reports your translation and OCR page balances | Free |
-| `GET /api/v1/translation/packs` | Lists the page packs on sale and their INR prices | Free |
+| `GET /api/v1/in/translation/languages` | Lists every language you can translate from and to | Free |
+| `GET /api/v1/in/translation/balance` | Reports your translation and OCR page balances | Free |
+| `GET /api/v1/in/translation/packs` | Lists the page packs on sale and their INR prices | Free |
+| `POST /api/v1/in/translation/translations` | Translates a block of text and returns it in the same response | Pages |
+| `POST /api/v1/in/translation/files` | Uploads a source file and returns a `fileId` | Free |
+| `POST /api/v1/in/translation/documents` | Starts translating an uploaded file as an asynchronous job | Pages, on completion |
+| `GET /api/v1/in/translation/documents/{id}` | Reports the status of a document job | Free |
+| `GET /api/v1/in/translation/documents/{id}/content` | Downloads the translated document | Free |
 
-Text translation, file translation and document jobs are coming.
-Their request and response shapes are not published yet, so this page does not document them.
-The sections on billing below already apply to them.
+Every route lives under `/api/v1/in/`, the India API.
+The full request and response schemas are in the India API reference tab.
 
 ## Authentication
 
@@ -35,13 +39,14 @@ Translation uses two scopes:
 
 | Scope | Grants |
 | --- | --- |
-| `translate:read` | The language list, the page balance and reading the status or result of a job |
-| `translate:write` | Starting a translation, which spends pages. Implies `translate:read` |
+| `translate:read` | The language list, the packs, the page balance, and the status and content of a document job |
+| `translate:write` | Translating text, uploading a file and starting a document job, which spend pages. Implies `translate:read` |
 
 <Warning>
-  A wildcard `*` key does not grant translation scopes.
-  Translation spends pages that are paid for separately from credits, so a key issued before this product existed cannot spend them by accident.
-  Grant `translate:read` and `translate:write` to the key by name.
+  A wildcard `*` key holds both translation scopes, and so does a legacy `research:read` key.
+  A key that can read primary law can therefore spend translation pages.
+  Pages are paid for separately from credits, so an account with no pages receives a `402` rather than a surprise bill.
+  To limit a key, grant it only the scopes it needs by name.
 </Warning>
 
 A key without the scope receives a `403` that names the scope it is missing.
@@ -77,7 +82,7 @@ Budget from `pagesRemaining`, which is `free` plus `paid`.
 Pages are bought in packs, priced in Indian rupees with GST, and the pack list is live:
 
 ```bash
-curl https://api.vaquill.ai/api/v1/translation/packs \
+curl https://api.vaquill.ai/api/v1/in/translation/packs \
   -H "Authorization: Bearer $VAQUILL_API_KEY"
 ```
 
@@ -99,6 +104,9 @@ curl https://api.vaquill.ai/api/v1/translation/packs \
 }
 ```
 
+The list is abbreviated here.
+The live response holds every pack on sale, for both pools.
+
 `priceInr`, `baseInr` and `gstInr` are in **paise** (1/100 of a rupee), the unit the payment is charged in.
 `priceInr` is GST-inclusive and is what you pay.
 `pricePerPageInr` is in rupees and is a display figure.
@@ -110,7 +118,7 @@ Read the list rather than hardcoding a price.
 <Note>
   Translation pages are sold in INR only.
   They are not bought with API credits and there is no USD price for a page.
-  The pricing matrix at `GET /api/v1/api-credits/pricing` lists the translation routes with `unit: "page"` and a `usdCost` of `0`.
+  The pricing matrix at `GET /api/v1/in/api-credits/pricing` lists the translation routes with `unit: "page"` and a `usdCost` of `0`.
   That `0` means "not priced in dollars", not "free": the `credits` figure on those rows counts pages, and one page is what the call spends.
 </Note>
 
@@ -118,7 +126,7 @@ Read the list rather than hardcoding a price.
 
 Your balance holds two separate pools of pages.
 
-- **`translation`** pays for translating text, and is the only pool these endpoints spend.
+- **`translation`** pays for translating text and documents, and is the only pool these endpoints spend.
 - **`ocr`** pays for standalone text extraction, which this API surface does not currently expose.
 
 Translating a document spends translation pages only, whether or not it is a scan.
@@ -128,8 +136,8 @@ Budget from the `translation` pool.
 The `ocr` figure is reported so it is visible to an account that holds OCR pages, not because a translation call will draw on it.
 
 Pages are also separate from API credits.
-`GET /api/v1/credits/balance` reports credits and says nothing about pages.
-`GET /api/v1/translation/balance` reports pages and says nothing about credits.
+`GET /api/v1/in/credits/balance` reports credits and says nothing about pages.
+`GET /api/v1/in/translation/balance` reports pages and says nothing about credits.
 Neither pays for the other.
 
 ## Pages are pooled at the organization
@@ -144,7 +152,7 @@ A language code you invent is refused with a `422` before any page is charged, a
 Regional tags are narrowed to the language, so `hi-IN` is read as `hi`.
 
 ```bash
-curl https://api.vaquill.ai/api/v1/translation/languages \
+curl https://api.vaquill.ai/api/v1/in/translation/languages \
   -H "Authorization: Bearer $VAQUILL_API_KEY"
 ```
 
@@ -170,7 +178,7 @@ The live response holds all 24 entries: `auto`, English and the 22 scheduled lan
 ## Check your balance
 
 ```bash
-curl https://api.vaquill.ai/api/v1/translation/balance \
+curl https://api.vaquill.ai/api/v1/in/translation/balance \
   -H "Authorization: Bearer $VAQUILL_API_KEY"
 ```
 
@@ -201,15 +209,203 @@ It still answers when the balance is zero.
 Budget from `pagesRemaining`, which is `free` plus `paid`.
 A charge spends `free` first, so a job can run while `paid` stays untouched.
 
+## Translate text
+
+`POST /api/v1/in/translation/translations` translates a block of text and returns the result in the same response.
+It needs `translate:write`.
+The text is 1 to 50,000 characters.
+Longer text is a `422`, never a silent truncation, so send longer work through the document routes.
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `text` | Yes | The text to translate |
+| `targetLanguage` | Yes | A code from the language list with `target: true`. `auto` is not a target |
+| `sourceLanguage` | No | The language of `text`, or `auto` (the default) to detect it |
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/in/translation/translations \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "The petitioner submits that the impugned order is contrary to law.", "targetLanguage": "hi", "sourceLanguage": "en"}'
+```
+
+```json
+{
+  "translatedText": "याचिकाकर्ता का निवेदन है कि आक्षेपित आदेश विधि के विरुद्ध है।",
+  "detectedLanguage": "en",
+  "targetLanguage": "hi",
+  "pagesCharged": 1,
+  "charCount": 66
+}
+```
+
+Everything that can be checked up front is checked before the charge, and a refusal costs nothing.
+That covers an unsupported language, text over 50,000 characters and empty text.
+
+## Upload a file
+
+`POST /api/v1/in/translation/files` stores a source file for your account and returns a `fileId`.
+It needs `translate:write`, is free, and takes a multipart form with one `file` field.
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/in/translation/files \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
+  -F "file=@petition.pdf"
+```
+
+```json
+{
+  "fileId": "3f2c9a52-8d2e-4a43-9e0b-5b6a1c7d9f10",
+  "filename": "petition.pdf",
+  "sizeBytes": 482113,
+  "pageCount": 12,
+  "expiresAt": "2026-11-02T12:34:56Z"
+}
+```
+
+- **Types:** `pdf`, `docx`, `txt`, `jpg`, `jpeg`, `png`, `tif`, `tiff`, `webp` and `bmp`. Any other type is a `400`.
+- **Size:** at most 150 MB, and not empty. A file over the limit or an empty file is a `400`.
+- **Lifetime:** a `fileId` is valid for 24 hours. You can translate one file into several languages by starting more than one document job with the same `fileId`.
+- **`pageCount`:** the physical page count for `pdf` and `docx`, which is what you will be charged. It is `null` for images and plain text, whose page count is only known when the job runs.
+
+The API never fetches a URL you name.
+A document job accepts only a `fileId`, and a `fileId` from another account is a `404`.
+
+## Translate a document
+
+`POST /api/v1/in/translation/documents` starts translating an uploaded file.
+It needs `translate:write` and answers `202 Accepted` with a `documentId` and a `Location` header.
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `fileId` | Yes | The `fileId` from the upload |
+| `targetLanguage` | Yes | A code from the language list with `target: true` |
+| `sourceLanguage` | No | The language of the document, or `auto` (the default) |
+| `outputFormat` | No | `pdf` (the default), `docx` or `text` |
+| `courtStyle` | No | An Indian court formatting profile, listed below. Omit it for the compact reader-friendly layout |
+| `handwritten` | No | `true` for a scanned or handwritten document. Page billing does not change. Default `false` |
+| `engine` | No | `gpt54` (the default and recommended), `gpt54mini` for simple text, or `sarvam` for Indic languages. Billing does not change with the engine |
+
+`courtStyle` is one of `supreme`, `delhi`, `bombay`, `calcutta_original`, `calcutta_appellate`, `madras`, `karnataka`, `allahabad`, `kerala` and `punjab_haryana`.
+It renders the output to that court's paper, font, margins and line spacing.
+The font mandate applies when `targetLanguage` is English.
+An Indic target is always set in Noto Sans, while paper size, margins and spacing still apply.
+Tables, figures and document structure are preserved on every job, so there is no flag for it.
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/in/translation/documents \
+  -H "Authorization: Bearer $VAQUILL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"fileId": "3f2c9a52-8d2e-4a43-9e0b-5b6a1c7d9f10", "targetLanguage": "hi", "sourceLanguage": "en", "outputFormat": "pdf"}'
+```
+
+```json
+{
+  "documentId": "9b1d5c0e-7a64-4f0a-8d3b-2c5e6f7a8b90",
+  "status": "pending",
+  "progress": 0,
+  "sourceLanguage": "en",
+  "targetLanguage": "hi",
+  "outputFormat": "pdf",
+  "createdAt": "2026-11-01T12:34:56Z"
+}
+```
+
+Submitting costs nothing.
+The job spends one translation page per physical page of the document, once, when it completes.
+A job that fails spends nothing.
+
+An unsupported language, an unknown `outputFormat`, `courtStyle` or `engine`, and a `sourceFileUrl` field are each a `422`.
+An unknown, expired or foreign `fileId` is a `404`.
+The balance check uses the page count recorded at upload.
+For `pdf` and `docx` that is exact, and an insufficient balance is a `402`.
+For images and plain text it only confirms you hold at least one page.
+If the real count is higher than your balance, the job ends `failed` with `INSUFFICIENT_TRANSLATION_PAGES` and you are not charged.
+
+Submitting the same `fileId` with the same languages and output format while the first job is still running returns that job, still with `202`, instead of starting a second one.
+Once it has finished, the same request starts a new job.
+
+### Check the status
+
+Poll `GET /api/v1/in/translation/documents/{id}` every 2 to 5 seconds until `status` is `completed` or `failed`.
+It needs `translate:read` and is free.
+
+| `status` | Meaning |
+| --- | --- |
+| `pending` | Queued, not started |
+| `processing` | Being translated. `progress` runs from 0 to 100 |
+| `completed` | Done. Download it from `/content`. `pagesCharged` is set |
+| `failed` | Not translated and not charged. See `error.code` |
+
+`pagesCharged` is `null` until the job completes.
+`error.code` is `INSUFFICIENT_TRANSLATION_PAGES` or `TRANSLATION_FAILED`, and neither charges you.
+A document id that is not yours, or does not exist, is a `404`.
+
+```json
+{
+  "documentId": "9b1d5c0e-7a64-4f0a-8d3b-2c5e6f7a8b90",
+  "status": "completed",
+  "progress": 100,
+  "sourceLanguage": "en",
+  "targetLanguage": "hi",
+  "outputFormat": "pdf",
+  "pagesCharged": 12,
+  "createdAt": "2026-11-01T12:34:56Z",
+  "completedAt": "2026-11-01T12:36:10Z"
+}
+```
+
+### Download the result
+
+`GET /api/v1/in/translation/documents/{id}/content` streams the translated file.
+It needs `translate:read`, is free, and downloading again never charges again.
+
+```bash
+curl -o translated.pdf \
+  https://api.vaquill.ai/api/v1/in/translation/documents/$DOCUMENT_ID/content \
+  -H "Authorization: Bearer $VAQUILL_API_KEY"
+```
+
+The response body is the file.
+There is no URL to follow and nothing that expires.
+Send the same `Authorization` header you use for every other call.
+
+By default you get the format you asked for in `outputFormat`.
+A job submitted with `outputFormat` set to `pdf` also produces a Word copy when one could be generated.
+Add `?format=docx` to download it, or `?format=pdf` to ask for the PDF explicitly.
+Any other `format` value is a `422`, and a format that does not exist for the job is a `404`.
+While the job is not `completed` this route is a `404`, so poll the status route first.
+
+`ETag` is supported, and `If-None-Match` answers `304`.
+`Range` is supported for plain, unencrypted files and answers `206`, so an interrupted download can resume.
+
 ## Retries and `Idempotency-Key`
 
-Routes that charge pages accept an `Idempotency-Key` header.
+`POST /api/v1/in/translation/translations` accepts an `Idempotency-Key` header.
 Send a fresh unique value for each logical request and reuse it on a retry.
-A retry with the same key returns the original response and does not charge again.
+The key is 16 to 255 visible ASCII characters, and a UUIDv4 works.
+A retry with the same key returns the original response for 24 hours and does not charge again.
 
 ```bash
 -H "Idempotency-Key: $(uuidgen)"
 ```
+
+The document routes do not take the header.
+Starting a document job does not charge, and a duplicate that is still running is collapsed into the first job.
+
+## Rate limits
+
+Every translation route is rate limited per key, per minute and per hour.
+
+| Route | Per minute | Per hour |
+| --- | --- | --- |
+| Languages, packs, balance, text translation | 30 | 600 |
+| Document status | 60 | 3,000 |
+| Document content | 20 | 600 |
+| File upload, document start | 10 | 200 |
+
+A request over the limit receives a `429`.
 
 ## When you run out of pages
 
@@ -232,13 +428,5 @@ Nothing is translated and nothing is charged.
 - `pagesAvailable` is what the pool holds.
 - `shortfall` is how many pages you are short.
 
-If a charged translation fails or comes back empty, the pages are refunded.
+If a charged text translation fails or comes back empty, the pages are refunded.
 You are not billed for a translation you did not receive.
-
-## Coming next
-
-- Translate a block of text, up to 50,000 characters per request.
-- Translate an uploaded file.
-- Start a document job, poll its status and fetch the translated content.
-
-Watch the [changelog](/api-guide/changelog) for the routes as they ship.
