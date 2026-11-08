@@ -18,22 +18,24 @@ Treaty text is served one document per article, so one instrument is many docume
 |---|---|---:|---|---|
 | `US_TAX_TREATY` | `us_tax_treaty` | 102 | Bilateral income tax conventions, protocols, exchanges of notes, the memorandum of understanding and the negotiation statement | The IRS tax treaty pages |
 | `US_TAX_TREATY` | `us_tax_treaty_technical_explanation` | 71 | Treasury Technical Explanations | The IRS tax treaty pages |
-| `US_TREATY` | `us_treaty` | 100,435 | Treaty and international agreement text, one document per article, from five printed series (see the next table) | GPO, the Library of Congress, the Treasury and USTR |
+| `US_TREATY` | `us_treaty` | 134,444 | Treaty and international agreement text, one document per article, from seven series (see the next table) | GPO, the Library of Congress, the State Department, the Treasury and USTR |
 | `US_TREATY` | `senate_treaty` | 782 | One record for each treaty the Senate has considered since 1949, tax and non-tax: title, parties, subject index and dated procedural history | The Senate treaty record |
 | `US_TREATY` | `senate_treaty_resolution` | 407 | The resolution of advice and consent, where the reservations, understandings and declarations live | The Senate treaty record |
 | `US_TREATY` | `senate_treaty_document` | 303 | The President's transmittal text, for treaties sent to the Senate from 1995 (the 104th Congress) on | GPO, the Government Publishing Office |
 
-Counts for `us_treaty` measured 2026-11-07; the others 2026-11-06.
+Counts for `us_treaty` measured 2026-11-08; the others 2026-11-06.
 
 ### Treaty text by series
 
 | Series | Instruments | Documents (articles) | Retrieval passages | Cite as |
 |---|---:|---:|---:|---|
-| Statutes at Large, volumes 1 to 64 (1776 to 1949) | 2,779 | 31,839 | 44,251 | `49 Stat. 3000` |
-| U.S.T., volumes 1 to 35 (1950 to 1984) | 8,936 | 57,424 | 115,644 | `20 U.S.T. 361` |
-| Bevans, instruments not also printed in the Statutes at Large | 610 | 2,073 | 4,182 | `5 Bevans 123` |
-| FATCA intergovernmental agreements | 192 | 1,850 | 10,808 | Search by country |
-| U.S. free trade agreements, with their tariff schedules | 361 | 7,249 | 27,646 | Search by agreement |
+| Statutes at Large, volumes 1 to 64 (1776 to 1949) | 2,778 | 31,787 | 43,505 | `49 Stat. 3000` |
+| U.S.T., volumes 1 to 35 (1950 to 1984) | 8,936 | 56,277 | 114,328 | `20 U.S.T. 361` |
+| T.I.A.S., from 1984 on | 3,003 | 35,188 | 75,674 | `T.I.A.S. No. 24-815.1` |
+| Bevans, instruments not also printed in the Statutes at Large | 610 | 2,048 | 4,160 | `5 Bevans 123` |
+| Social Security totalization agreements | 24 | 629 | 740 | `Social security totalization agreement, Norway, agreement, art. 2`, or its T.I.A.S. number |
+| FATCA intergovernmental agreements | 192 | 1,784 | 10,800 | Search by country |
+| U.S. free trade agreements, with their tariff schedules | 360 | 6,731 | 27,285 | Search by agreement |
 
 A Bevans citation to an instrument that the Statutes at Large also printed answers with the Statutes at Large printing.
 
@@ -96,16 +98,20 @@ The full list of accepted forms is in [Treaty citations](/api-guide/concepts/cit
 | U.S.T., such as `20 U.S.T. 361` | Resolves to the instrument that begins at that page: its opening section, with every article listed in `container.children` |
 | Statutes at Large pages in volumes 1 to 64, such as `49 Stat. 3000` | Resolves to the treaty or the session law printed at that page |
 | Bevans, such as `1 Bevans 631` | Resolves to the instrument, from its Statutes at Large printing where both exist |
+| T.I.A.S. from 1984 on, such as `T.I.A.S. No. 95-1121` or `T.I.A.S. No. 24-815.1` | Resolves to the instrument with that number. An older number, such as `T.I.A.S. No. 6638`, resolves through its U.S.T. printing |
+| A totalization agreement, such as `Social security totalization agreement, Norway, agreement, art. 2` | Resolves to that article. The agreement cite alone resolves to the instrument |
 | Any of the above with an article, such as `Hague Service Convention art. 10, Nov. 15, 1965, 20 U.S.T. 361` | Resolves to that article. An article the instrument does not print is refused, never answered with another |
 | Senate Treaty Document, such as `S. Treaty Doc. No. 98-9` | Resolves to the Senate record for that treaty: the Treaty Document text when the treaty went to the Senate from 1995 on, otherwise the ratification record |
-| T.I.A.S., T.S., E.A.S., U.N.T.S., L.N.T.S., such as `T.I.A.S. No. 6638`, and Senate Executive Reports, such as `S. Exec. Rep. No. 102-23` | `resolved: false`, `missReason: "not_held"`, with a `missReasonHint` |
+| T.S., E.A.S., U.N.T.S., L.N.T.S., such as `658 U.N.T.S. 163`, and Senate Executive Reports, such as `S. Exec. Rep. No. 102-23` | `resolved: false`, `missReason: "not_held"`, with a `missReasonHint` |
 
 The `missReasonHint` states that the form was recognized and lists the treaty material we hold.
-A miss on a series we hold says so, and asks you to check the volume and page.
+A miss on a series we hold says so, and asks you to check the volume and page, or the T.I.A.S. number.
+A citation that two instruments we hold share is refused, never answered with one of them.
 
 ## Limits
 
-- Text printed only in T.I.A.S. (from 1985), and Senate Executive Reports, are not held.
+- Senate Executive Reports are not held, and neither is text printed only in T.S., E.A.S., U.N.T.S. or L.N.T.S.
+- A T.I.A.S. number from before 1984 resolves only where we hold its U.S.T. printing.
 - Treaty text is the printed text, read from page scans for U.S.T. and Bevans. A bilingual printing can carry the other authentic language next to the English.
 - About 60% of the Senate record is metadata with no instrument text. `source` tells you which records those are.
 - `goodLawStatus` is `unknown` on every treaty document. No source we hold states termination.

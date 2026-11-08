@@ -42,7 +42,7 @@ Each corpus lands behind the same `corpusType` filter, so there is nothing to in
 | Agencies not yet covered | Food and Drug Administration (FDA) | Guidance documents and warning letters. | Planned |
 | Agencies not yet covered | Department of Housing and Urban Development (HUD) | Fair housing guidance. | Planned |
 | Agencies not yet covered | Department of Justice (DOJ) Civil Rights Division | Americans with Disabilities Act guidance. | Planned |
-| Pending federal legislation | Congressional bills (`corpusType=FEDERAL_BILL`) | Proposed text of introduced, pending, reported or enrolled bills, with their status. Opt-in only. Details below. | Planned |
+| Pending federal legislation | Congressional bills (`corpusType=FEDERAL_BILL`) | Bill text is held for the 119th Congress; status (actions, sponsors, committees) is the part still to come. Opt-in only. Details below. | Text held, status planned |
 | Case law pagination | United States Reports | Official star pagination for Supreme Court opinions, so a pin cite such as `576 U.S. 644, 681` survives into a brief. Pagination only, not general case law. | Evaluating |
 
 Agencies already covered include the FTC, the SEC, the CFPB, the DOJ Antitrust Division, the DOL Wage and Hour Division, the EEOC, CMS, OFAC and the IRS.
@@ -75,9 +75,10 @@ Per-source detail is in [Agency guidance coverage](/api-guide/coverage/agency-gu
   </Accordion>
 
   <Accordion title="Pending federal legislation">
-    Congressional bills are not held today, and no date is set for them.
-    The `FEDERAL_BILL` token holds proposed text only, labelled proposed, never law and never part of an unscoped search.
-    The token is reserved: it is registered but returns no results today.
+    The text of bills and resolutions of the 119th Congress is held under `corpusType=FEDERAL_BILL`: the latest printed version of each measure, as GPO publishes it.
+    It is proposed text only, labelled proposed, never law and never part of an unscoped search, a browse or a total.
+    What is not held yet is status: actions, sponsors, committees and whether a bill is still alive.
+    No date is set for status, and the stage on a row describes the text version, not where the bill stands now.
     The enacted text of a bill that became law is served under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, under `corpusType=USC`.
   </Accordion>
 </AccordionGroup>

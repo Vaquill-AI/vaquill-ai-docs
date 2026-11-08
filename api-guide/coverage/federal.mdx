@@ -55,9 +55,9 @@ Each corpus has an entry below that lists what is held and what is not, so read 
 | Administrative Adjudications | `AGENCY_ADJUDICATION` | Administrative adjudications |
 | Statute Compilations | `STATUTE_COMPILATION` | Statute Compilations |
 
-Congressional bills (introduced, pending, reported or enrolled, with their status) are not held.
-A bill corpus is planned as an opt-in token, `corpusType=FEDERAL_BILL`: proposed text only, labelled proposed, never law and never part of an unscoped search, with no date set.
-The token is registered but returns no results today.
+The text of Congressional bills and resolutions of the 119th Congress is held under the opt-in token `corpusType=FEDERAL_BILL`: the latest printed version of each measure.
+It is proposed text only: `actStatus` is `proposed` and `goodLawStatus` is `not_good_law` on every row, even for an enrolled bill, and it is never part of an unscoped search, a browse or a total.
+Status (actions, sponsors, committees) is not held yet, so the stage on a row describes the text version, not where the bill stands now.
 The enacted text of a bill that became law is served as a public law under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, as a section of `corpusType=USC`.
 
 <AccordionGroup>

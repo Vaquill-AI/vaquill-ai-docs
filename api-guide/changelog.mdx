@@ -27,6 +27,246 @@ The documented routes are under `/us/statutes/`.
   See [SDKs](/api-guide/sdks/overview).
 - To be told when the law changes, not when the API changes, use [Law change alerts](/api-guide/alerts).
 
+<Update label="2026-11-07" description="Null policy, error codes, per-key limits, refunds" tags={["Breaking", "Endpoint", "Fix"]}>
+
+### Changed: statute rows omit conditional fields that do not apply
+
+This is the change most likely to affect clients.
+Statute responses now follow one null policy.
+
+- **Core fields:** always present, and `null` when the value is unknown (for example `citation`, `state` and `effectiveDate`).
+- **Conditional extras:** omitted from the response when they do not apply, such as a note or diagnostic that explains an unusual outcome and the blocks of fields that only one corpus carries.
+  Before this change some of these keys were sent as `null`.
+- **What to do:** treat a missing conditional key as "not applicable" and do not require it.
+  A client that reads `row["note"]` without a default now fails on rows where it used to get `null`.
+  Each field's description in the API reference says which kind it is.
+
+See [Treat a missing optional key as not applicable](/api-guide/best-practices#treat-a-missing-optional-key-as-not-applicable).
+
+<AccordionGroup>
+
+<Accordion title="Changed: cross-state `statesCovered`">
+
+`statesCovered` on `GET /us/statutes/section/{actId}/cross-state` is the number of other states actually examined, meaning their own search held something to consider.
+It counts a state whether or not that state appears in `neighbors`.
+Historical editions and dead law are excluded from every search, so they never count.
+A response with `rankingDegraded: true` is refunded (`creditsConsumed` 0).
+
+See [multi-state comparison](/api-guide/recipes/multi-state-comparison).
+
+</Accordion>
+
+<Accordion title="Changed: cited-by `total` and new `returned`">
+
+On `GET /us/statutes/section/{actId}/cited-by`, `total` is now the true count of citing sections across all pages (the same number as `totalCiters`) and no longer the size of the page.
+The new `returned` field is the number of rows on this page.
+
+See [section intelligence](/api-guide/concepts/section-intelligence#cited-by-the-reverse-index).
+
+</Accordion>
+
+<Accordion title="Changed: extract-citations spans, ranges and outages">
+
+- **Spans:** each row carries `charStart` and `charEnd`, the span of its first mention in your `text`, so `text[charStart:charEnd] == raw`.
+  Both are null when the row has no span of its own.
+- **Ranges:** a range such as `18 U.S.C. §§ 2510 through 2523` returns its two ends as two rows, marked `rangeRole` (`start` or `end`) with `rangePartner` naming the other end.
+  The sections between come back as `interior` rows, described below, and are never charged.
+- **Counts:** `counts.distinctSections` is the number of distinct sections, the unit the price and the per-call cap count in.
+  `counts.found` still counts rows.
+- **Outage:** when the corpus is unavailable, or half or more of the citations cannot be read, the call answers `503` and the whole charge is refunded.
+
+See [pinpoints in a document](/api-guide/recipes/pinpoint-subsection#pinpoints-in-a-document).
+
+</Accordion>
+
+<Accordion title="Changed: search billing and `excerptChars`">
+
+- **Charged:** a search with `noGoodMatch: true` is still charged, because the ranking ran.
+- **Refunded:** a filtered search whose page is empty, because no section matches the filters or the `offset` is past the last result, is refunded with a note naming the filters.
+  An empty page with no filters set is charged.
+- **Ranking degraded:** a page served with `rankingDegraded: true` has its search charge refunded and says so in `notes`.
+  Bodies already delivered by `includeBody` on that page stay charged.
+- **`includeBody`:** it adds the body price for each row that returns text.
+  A row whose text cannot be resolved, an image-only section, or a row your balance cannot cover comes back without a body and is not charged for it.
+- **Pinpoints:** `includePinpoint` lookups are never charged on their own, on any page.
+- **Read the charge:** use `creditsConsumed` for what was billed.
+- **`excerptChars`:** the range is 100 to 600, and a value outside it is a `422`.
+- **`fields`:** `includeBody: true` now always adds `body` to `fields`, and `notes` says "body was added to fields because includeBody=true."
+- **`rankingPartial`:** a page served from a ranking built from only part of the candidate pool carries `rankingPartial: true`, including pages 2 and later.
+  Such a ranking is not cached, so repeating the call may return the full one.
+
+See [what a search costs](/api-guide/concepts/search#what-a-search-costs).
+
+</Accordion>
+
+<Accordion title="Changed: validation and routes">
+
+- **API keys:** `POST /api-keys` with `scopes: []` is a `422`, where an empty list used to be passed through.
+  `allowedIps` is removed and is a `422`, because the allowlist is no longer supported.
+- **Batch sections:** `POST /us/statutes/sections` rejects unknown request fields with a `422` naming the field you probably meant.
+  Inline bodies in one response are capped at 4,000,000 characters in total.
+  Bodies past the cap come back `null` with `bodyNote: response_size_cap` and are not charged.
+- **Section body:** `asOf` in the future is a `422`, and `structured` combined with `asOf` is a `422`.
+- **Session laws list:** `order` accepts `asc` (default) or `desc`, and anything else is a `422`.
+  A blank `jurisdiction` is a `422`.
+  A date filter the data cannot satisfy answers an empty page with `coverage.status: filter_unavailable`, naming `unavailableFilters`, and is not charged.
+- **Resolve:** a proposed Treasury regulation (`Prop. Treas. Reg.` or a notice of proposed rulemaking) answers `missReason: out_of_scope_corpus` with a `missReasonHint`, because a proposed rule is a Federal Register document and not Code of Federal Regulations text.
+
+</Accordion>
+
+<Accordion title="Changed: extract-citations ranges list the interior sections">
+
+- **Interior rows:** the sections between the two ends of a range written with a word, such as `§§ 101 through 105`, come back as rows with `rangeRole: "interior"`, `skipped: "range_interior"` and `rangePartner` set to the `citation` of the range start.
+  A range written with a hyphen stays two ends.
+- **Limits:** a range lists at most 25 interior sections, and one call returns at most 500.
+  A wider range returns its two ends only, with an entry in `notes`.
+- **Billing:** interior rows are never resolved and never billed.
+  Resolve one with `GET /us/statutes/resolve` if you need it.
+- **Counts:** `counts.interior` is the number of interior rows, and they are not counted in `counts.found`.
+
+See [pinpoints in a document](/api-guide/recipes/pinpoint-subsection#pinpoints-in-a-document).
+
+</Accordion>
+
+<Accordion title="Changed: resolve rejects malformed input before any charge">
+
+`GET` and `POST /us/statutes/resolve` answer `422` with code `invalid_citation_input` for a `corpusType` or `state` they do not accept.
+This was a `400` that refunded the charge. Nothing is charged now.
+
+</Accordion>
+
+<Accordion title="Changed: coverage, divisions and count">
+
+- **`GET /us/statutes/coverage`:** an unknown `state` is a `422` and no longer an empty `200`.
+- **`GET /us/statutes/divisions`:** a backend outage answers `503` and is not charged.
+- **`POST /us/statutes/count`:** a backend outage answers `503` and is refunded, and a count of zero is refunded.
+
+</Accordion>
+
+<Accordion title="Changed: error codes and the `402` body">
+
+- **New codes:** `method_not_allowed` (`405`, with an `Allow` header listing the right methods), `payload_too_large` (`413`), `unsupported_media_type` (`415`) and `upstream_timeout` (`504`).
+- **Renamed defaults:** a generic `400` has code `bad_request`, a session-law `404` has code `section_not_found`, and the watch-cap `429` has code `quota_exceeded` with `retryable: false`.
+- **Every `404` and `405`:** the body carries `code` and `requestId`.
+- **Test delivery:** the cooldown `429` sends `Retry-After: 30`.
+- **`402`:** the body adds `creditsRequired`, `creditsAvailable` and `topUpHint` when the shortfall is known.
+
+See [Errors](/api-guide/errors).
+
+</Accordion>
+
+<Accordion title="Changed: rate limits are per key">
+
+- **Own bucket:** a valid API key has its own bucket at your plan limit, and no longer shares it with everyone behind the same IP address.
+- **IP backstop:** a per-address ceiling of 10 times that limit also applies.
+- **Invalid keys:** a key that does not validate falls into the shared per-address bucket.
+- **New header:** `X-RateLimit-Scope` is `key` or `ip` and says which bucket the other `X-RateLimit-*` numbers describe.
+  It is sent on API-key requests only.
+
+See [Rate limiting](/api-guide/errors#rate-limiting).
+
+</Accordion>
+
+<Accordion title="Changed: refunds are tied to the charge">
+
+- **Exact charge:** a refund reverses one specific charge, so it can never repeat and never exceed what that charge took.
+- **Same bucket:** refunded credits return to the bucket they came from.
+- **Expired bucket:** credit whose bucket has expired returns as a new bucket that lasts 30 days.
+
+</Accordion>
+
+<Accordion title="Changed: session-law change feed fills `mergedInto`">
+
+On `GET /us/session-laws/changes`, a change of kind `merged` now carries `mergedInto`, the `sessionLawId` of the law it was merged into.
+It was always `null`.
+
+See [session laws](/api-guide/session-laws).
+
+</Accordion>
+
+<Accordion title="Changed: what an `Idempotency-Key` stores">
+
+- **Stored:** only a response with a `2xx`, `400` or `422` status is stored, and it is replayed for 24 hours.
+- **Not stored:** any other `4xx`, and any response whose call was refunded, is not stored, so a retry with the same key runs again.
+- **Disconnects:** if you hang up after the call was charged, the charge is refunded automatically and the key is released, so a retry runs again.
+
+See [Idempotency](/api-guide/sdks/overview#idempotency).
+
+</Accordion>
+
+<Accordion title="Changed: watch `corpusType` is an enum">
+
+- **Published values:** `corpusType` on `POST /watches` now publishes the list of boards that can be watched.
+- **Accepted forms:** the board key (`state_regulation`) or the search-style token for the same body of law (`REGULATION` becomes `state_regulation`, `USC` becomes `usc`). Case does not matter.
+- **Anything else:** a `422` that lists the allowed values.
+- **Not watchable:** `constitution`, `executive_action` and `agency_action`, and also `cfr_annual`, `usc_annual`, `federal_rules_annual`, `federal_rules_proposed`, `us_treaty`, `state_session_law`, `state_register` and `federal_bill`.
+
+See [Law Change Alerts](/api-guide/alerts).
+
+</Accordion>
+
+<Accordion title="Changed: empty rulemaking pages are refunded">
+
+- **Refunded:** an empty page of `GET /us/rulemaking/dockets/list`, an empty page of `GET /us/rulemaking/dockets/{docketId}/documents` for a docket we hold, and an empty page of `GET /us/rulemaking/committee-records/list` answer `creditsConsumed: 0` with a `note` naming the filters.
+- **Past the end:** a `pageFrom` past the last page of a committee record sets `textNotice`.
+
+See [rulemaking](/api-guide/rulemaking).
+
+</Accordion>
+
+<Accordion title="Changed: session-law search billing and the `session` filter">
+
+- **Refunded:** a filtered `POST /us/session-laws/search` whose first page is empty is refunded, with a `note` naming the filters.
+- **Charged:** an unfiltered search that finds nothing stays charged, and carries a `note`.
+- **`session`:** the filter now applies to text, phrase and citation searches too.
+  It used to reach only title, bill and code-section searches.
+
+See [searching the text](/api-guide/session-laws#filters-and-paging).
+
+</Accordion>
+
+<Accordion title="Changed: section lookups, neighbours and Boolean paging">
+
+- **Section lookup:** if the Federal Register related-documents scan fails on `GET /us/statutes/section`, the call is not charged (`creditsConsumed` 0) and the note says to repeat it.
+- **Neighbours:** `GET /us/statutes/section/{actId}/related` now finds siblings whose records lack a state or a title number.
+- **Alone:** when a wider scan was cut before it could rule out a sibling, the `note` says that "alone in its container" is not proven.
+- **Boolean search:** a page with selective filters now comes back full, using up to 5 extra candidate reads.
+  `hasMore` is `false` once every candidate has been judged.
+
+</Accordion>
+
+<Accordion title="Changed: the `StatuteResult` schema and `amendmentsCount`">
+
+- **Required fields:** the published `StatuteResult` schema lists its 49 core fields as required.
+  Each is nullable where the value can be null.
+- **`fields`:** with a `fields` projection, only the keys you requested come back.
+- **`amendmentsCount`:** it is capped at the length of `amendmentYears`. eCFR, state regulations, and state and federal court rules are the exception, because they count amendment events.
+
+</Accordion>
+
+<Accordion title="Changed: definitions scope and errors">
+
+- **Refused:** `GET /us/statutes/section/{actId}/definitions` refuses a definitions section scoped to a different chapter, subchapter or part than the section you asked about.
+  The call is not charged and the `note` names the kind of container that differs.
+- **Unverified:** when the container on either side is unknown, the terms are kept and a `note` says the scope could not be verified.
+- **Errors:** when the scan fails, the call answers `500` and is refunded.
+  It used to keep the credits.
+
+See [definitions](/api-guide/concepts/section-intelligence#definitions-the-terms-that-govern-a-section).
+
+</Accordion>
+<Accordion title="Fixed: cross-references and citation resolution">
+- **Cross-references:** `crossReferencesUsc` and `crossReferencesCfr` were re-extracted from the section text on 20,274 US Code sections and 14,567 eCFR sections.
+  References that were missing, cut off by an old list cap, filed under the wrong key or stored with trailing punctuation are now correct, and `GET /us/statutes/section/{actId}/cited-by` reads the corrected lists.
+- **Temporary Treasury regulations:** `Temp. Treas. Reg.` cited without the `T` suffix resolves to the held, current `T` section as a `repaired` match.
+  When no current `T` section is held, the answer stays `not_held`.
+- **Chapter cites:** a chapter cite such as `M.G.L. c. 265` or `Minn. Stat. ch. 609` answers `matchLevel: container` again, where dated edition records of the same chapter made it answer `multiple`.
+- **Georgia JQC rules:** `Ga JQC R 17` and `Ga JQC R 17(a)` resolve to the Judicial Qualifications Commission rule, and no longer to a 1910 code edition.
+- **Search reference:** the `corpusType` description on `POST /us/statutes/search` names every value in its enum, with a one-line description of each.
+</Accordion>
+</AccordionGroup>
+</Update>
+
 <Update label="2026-11-06" description="Federal Rules past texts, pending amendments, committee notes" tags={["Corpus", "Endpoint", "Fix"]}>
 
 ### New: `FEDERAL_RULES_ANNUAL` and `FEDERAL_RULES_PROPOSED`

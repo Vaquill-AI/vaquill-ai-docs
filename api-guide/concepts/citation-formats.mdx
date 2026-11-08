@@ -381,7 +381,8 @@ A treaty citation is recognized as a treaty. It is never read as a U.S. Code sec
 | Statutes at Large | `49 Stat. 3000` | Yes, in volumes 1 to 64. The treaty or the session law printed at that page |
 | Bevans | `1 Bevans 631` | Yes. Answered from the Statutes at Large printing of the same instrument where both exist, so `1 Bevans 631` returns `36 Stat. 2277` |
 | Senate Executive Report | `S. Exec. Rep. No. 102-23` | `not_held` |
-| Treaties and Other International Acts Series | `T.I.A.S. No. 6638` | `not_held` |
+| Treaties and Other International Acts Series | `T.I.A.S. No. 95-1121`, `T.I.A.S. No. 24-815.1` | Yes, from 1984 on. The instrument with that number. An older number, such as `T.I.A.S. No. 6638`, answers from its U.S.T. printing |
+| Social Security totalization agreement | `Social security totalization agreement, Norway, agreement, art. 2` | Yes. That article, or the instrument when no article is given |
 | Treaty Series, Executive Agreement Series | `T.S. No. 993`, `E.A.S. No. 12` | `not_held` |
 | United Nations Treaty Series | `658 U.N.T.S. 163` | `not_held` |
 | League of Nations Treaty Series | `137 L.N.T.S. 11` | `not_held` |
@@ -393,7 +394,9 @@ A pinpoint to an article the instrument does not print is refused, never answere
 
 A `not_held` answer carries `resolved: false`, `missReason: "not_held"` and a `missReasonHint` that says the form was recognized and lists the treaty material we hold.
 For U.S.T., Bevans and Statutes at Large cites the hint says that the series is held and no instrument we hold begins at or spans that volume and page, so check the citation.
-Text printed only in T.I.A.S., T.S., E.A.S., U.N.T.S. or L.N.T.S. is not held. Cite such an instrument by its U.S.T. or Statutes at Large citation where it has one.
+For a T.I.A.S. cite it says that no instrument we hold carries that number, so check the number.
+A citation that two instruments we hold share is refused, never answered with one of them, and the hint says so.
+Text printed only in T.S., E.A.S., U.N.T.S. or L.N.T.S. is not held. Cite such an instrument by its U.S.T., T.I.A.S. or Statutes at Large citation where it has one.
 
 To find an instrument by topic or party, search `corpusType=US_TREATY`, or `US_TAX_TREATY` for the IRS income tax treaties.
 See [Treaty coverage](/api-guide/coverage/treaties) for what each holds.
@@ -424,7 +427,7 @@ An unresolved answer can carry a `missReason`.
 
 | `missReason` | Meaning | Fix |
 |---|---|---|
-| `not_held` | The citation reads as one to a jurisdiction and corpus we serve, and we do not hold that section. A `T.I.A.S.` cite is an example | Read `missReasonHint` for what we do hold |
+| `not_held` | The citation reads as one to a jurisdiction and corpus we serve, and we do not hold that section. A `U.N.T.S.` cite is an example | Read `missReasonHint` for what we do hold |
 | `ambiguous_jurisdiction` | The form is one several jurisdictions print, or names none, and no `state` was given | Pass `state`. `candidates` lists the held sections it could mean when we can name them |
 | `former_law` | It names a repealed, renumbered or retired compilation we do not serve as current law | Read `missReasonHint` for the successor where one is known |
 | `malformed` | No parser reads it: a docket or database token, a case or treatise citation, a string with no section number | Fix the string, or search for it instead |

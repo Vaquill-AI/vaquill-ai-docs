@@ -75,8 +75,8 @@ They are served by [`/us/session-laws`](/api-guide/session-laws), not `/us/statu
 The OpenAPI enum also accepts two more values that are not tokens to search today:
 
 - `USC_ANNUAL` is GPO's retired annual edition of the US Code, kept only so a past date can be answered from a printed edition.
-- `FEDERAL_BILL` is registered for Congressional bills, which are proposed text and never law.
-  It is opt in only, never part of an unscoped search, and currently returns no results because no bills are loaded yet.
+- `FEDERAL_BILL` holds the text of Congressional bills of the 119th Congress, which is proposed text and never law.
+  It is opt in only and never part of an unscoped search, a browse or a total.
   Enacted text is served under `SESSION_LAW` and, once codified, `USC`.
 
 `STATE_AGENCY_GUIDANCE` is the newest corpus.
