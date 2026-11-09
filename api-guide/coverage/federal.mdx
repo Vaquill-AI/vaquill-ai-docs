@@ -59,6 +59,7 @@ The text of Congressional bills and resolutions of the 119th Congress is held un
 It is proposed text only: `actStatus` is `proposed` and `goodLawStatus` is `not_good_law` on every row, even for an enrolled bill, and it is never part of an unscoped search, a browse or a total.
 Status (actions, sponsors, committees) is not held yet, so the stage on a row describes the text version, not where the bill stands now.
 The enacted text of a bill that became law is served as a public law under `corpusType=SESSION_LAW` (Statutes at Large) and, once codified, as a section of `corpusType=USC`.
+`POST /us/statutes/resolve` resolves a bill by its citation with the Congress named, such as `H.R. 1, 119th Cong.` or `S.J.Res. 81, 119th Cong. (2025)`.
 
 <AccordionGroup>
 

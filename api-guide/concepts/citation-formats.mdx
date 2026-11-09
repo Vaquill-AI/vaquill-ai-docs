@@ -377,13 +377,14 @@ A treaty citation is recognized as a treaty. It is never read as a U.S. Code sec
 | Form | Example | Resolves |
 |---|---|---|
 | Senate Treaty Document | `S. Treaty Doc. No. 98-9`, `Treaty Doc. 105-1A` | Yes. The Treaty Document text when the treaty went to the Senate from 1995 on, otherwise the ratification record |
-| United States Treaties | `20 U.S.T. 361` | Yes. The instrument that begins at that page (volumes 1 to 35, 1950 to 1984) |
+| United States Treaties | `20 U.S.T. 361` | Yes. The instrument that begins at that page, or the one instrument whose pages span it (volumes 1 to 35, 1950 to 1984) |
 | Statutes at Large | `49 Stat. 3000` | Yes, in volumes 1 to 64. The treaty or the session law printed at that page |
 | Bevans | `1 Bevans 631` | Yes. Answered from the Statutes at Large printing of the same instrument where both exist, so `1 Bevans 631` returns `36 Stat. 2277` |
 | Senate Executive Report | `S. Exec. Rep. No. 102-23` | `not_held` |
 | Treaties and Other International Acts Series | `T.I.A.S. No. 95-1121`, `T.I.A.S. No. 24-815.1` | Yes, from 1984 on. The instrument with that number. An older number, such as `T.I.A.S. No. 6638`, answers from its U.S.T. printing |
-| Social Security totalization agreement | `Social security totalization agreement, Norway, agreement, art. 2` | Yes. That article, or the instrument when no article is given |
-| Treaty Series, Executive Agreement Series | `T.S. No. 993`, `E.A.S. No. 12` | `not_held` |
+| Social Security totalization agreement | `Social security totalization agreement, Norway, agreement, art. 2` | Yes. That article, or the instrument when no article is given. A supplementary agreement or protocol is cited by its own kind, such as `Social security totalization agreement, Austria, supplementary agreement` |
+| IRS income tax treaty document | `U.S.-Canada Income Tax Treaty (1980)`, `U.S.-Spain Tax Treaty Technical Explanation (2014)` | Yes. The document that prints that citation. `U.S.-U.K. Income Tax Convention` without a year resolves only when we hold one convention for that country |
+| Treaty Series, Executive Agreement Series | `T.S. No. 993`, `E.A.S. No. 12` | Yes, through the instrument's Statutes at Large printing, so `T.S. No. 993` returns `59 Stat. 1031`. A number whose Statutes at Large printing we do not hold is `not_held` |
 | United Nations Treaty Series | `658 U.N.T.S. 163` | `not_held` |
 | League of Nations Treaty Series | `137 L.N.T.S. 11` | `not_held` |
 
@@ -396,7 +397,8 @@ A `not_held` answer carries `resolved: false`, `missReason: "not_held"` and a `m
 For U.S.T., Bevans and Statutes at Large cites the hint says that the series is held and no instrument we hold begins at or spans that volume and page, so check the citation.
 For a T.I.A.S. cite it says that no instrument we hold carries that number, so check the number.
 A citation that two instruments we hold share is refused, never answered with one of them, and the hint says so.
-Text printed only in T.S., E.A.S., U.N.T.S. or L.N.T.S. is not held. Cite such an instrument by its U.S.T., T.I.A.S. or Statutes at Large citation where it has one.
+Text printed only in U.N.T.S. or L.N.T.S. is not held, and a T.S. or E.A.S. number resolves only where we hold its Statutes at Large printing.
+Cite such an instrument by its U.S.T., T.I.A.S. or Statutes at Large citation where it has one.
 
 To find an instrument by topic or party, search `corpusType=US_TREATY`, or `US_TAX_TREATY` for the IRS income tax treaties.
 See [Treaty coverage](/api-guide/coverage/treaties) for what each holds.
