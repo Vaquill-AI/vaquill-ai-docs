@@ -1,0 +1,132 @@
+---
+title: "India regulatory publications quickstart"
+sidebarTitle: "Quickstart"
+description: "Find an Indian regulator's circular, read it, and follow what changes, in five requests"
+---
+
+Five `GET` routes, one key, one scope.
+If you can send an HTTP request you have everything you need.
+
+<Note>
+  This is the **India regulatory publications** corpus: what regulators issued.
+  For Indian acts and sections, see [India legislation](/api-guide/coverage/india).
+</Note>
+
+## 1. What is in there
+
+Start free.
+`/sources` costs nothing and needs no filters.
+
+```bash
+curl https://api.vaquill.ai/api/v1/in/reg/sources \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+You get every publisher, every source under it, and when each was last checked.
+Read this first rather than guessing publisher names: the ids it returns are what the other routes filter on.
+
+## 2. Search
+
+```bash
+curl -G https://api.vaquill.ai/api/v1/in/reg/documents \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "q=insider trading" \
+  --data-urlencode "docType=circular" \
+  --data-urlencode "limit=20"
+```
+
+Filter by publisher, source, document type, and date.
+To select more than one value, **repeat the key**:
+
+```bash
+  --data-urlencode "publisherId=4" \
+  --data-urlencode "publisherId=7"
+```
+
+A comma list is rejected with a 400.
+That is deliberate: a comma that parsed as one meaningless id would return a confident empty page, and an empty page is indistinguishable from "nothing matched".
+
+## 3. Read one document
+
+```bash
+curl "https://api.vaquill.ai/api/v1/in/reg/documents/48211/detail?include=body" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+`include` accepts `body` (the extracted text), `versions` (every observation of this document) and `diff` (what changed between the last two).
+
+## 4. Get the file
+
+```bash
+curl -L "https://api.vaquill.ai/api/v1/in/reg/documents/48211/file" \
+  -H "Authorization: Bearer vq_key_..." \
+  -o circular.pdf
+```
+
+Check `fileAvailability` on the document first.
+Two failures look similar and mean opposite things:
+
+| Code | Status | Means | Retry? |
+|---|---|---|---|
+| `content_not_archived` | 404 | We never held these bytes. | No, never. |
+| `archive_unavailable` | 502 | We hold them, and our archive failed. | Yes. |
+
+Collapsing these is the most common integration mistake here.
+A client that treats the 404 as transient retries forever.
+One that treats the 502 as permanent discards a document it could have had a second later.
+
+## 5. Follow what changes
+
+This is what the corpus is for.
+The feed is resumable: store the cursor, send it back, and you get exactly what you have not seen.
+
+```bash
+# first call
+curl -G https://api.vaquill.ai/api/v1/in/reg/changes \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "limit=50"
+
+# later: resume from where you stopped
+curl -G https://api.vaquill.ai/api/v1/in/reg/changes \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "cursor=<nextCursor from the last call>"
+```
+
+Keep calling while `hasMore` is true.
+Do not poll with a date filter instead.
+Regulators publish out of order and edit in place, so a date window silently misses anything that arrived late or changed quietly.
+The cursor does not.
+
+<Warning>
+  `total` on the changes feed is always `null`.
+  That means **not counted**, not zero.
+  An empty feed has `total: null` and `items: []`, so read `items` and `hasMore`, never `total`, to decide whether there is anything new.
+</Warning>
+
+## Scopes
+
+One scope, `reg:read`.
+It reads everything in this corpus: every publisher, every document, every route above.
+There is no per-publisher scope, no separate scope for files, and no read/write split, because nothing here writes.
+
+A key that works for one of these routes works for all five.
+
+## Errors
+
+| Code | Status | Means |
+|---|---|---|
+| `invalid_request` | 400 | A parameter is malformed. The message says which. |
+| `unauthorized` | 401 | The key is missing, wrong, or lacks `reg:read`. |
+| `not_found` | 404 | No document with that id. |
+| `content_not_archived` | 404 | The document exists; we never held its bytes. |
+| `rate_limited` | 429 | Slow down. `Retry-After` says how long. |
+| `archive_unavailable` | 502 | Our archive failed on a document we do hold. |
+
+<CardGroup cols={2}>
+  <Card title="Coverage" href="/api-guide/coverage/india-regulatory">
+    What the corpus holds, how fresh it is, and its known limits.
+  </Card>
+  <Card title="Authentication" href="/api-guide/authentication">
+    Getting a `vq_key_` credential.
+  </Card>
+</CardGroup>

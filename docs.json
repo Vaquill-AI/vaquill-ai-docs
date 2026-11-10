@@ -191,11 +191,19 @@
         "tab": "India API reference",
         "groups": [
           {
-            "group": "India guide",
+            "group": "Legislation",
             "icon": "book-open",
             "pages": [
               "api-guide/coverage/india",
               "api-guide/translation"
+            ]
+          },
+          {
+            "group": "Regulatory publications",
+            "icon": "bell",
+            "pages": [
+              "api-guide/india-regulatory-quickstart",
+              "api-guide/coverage/india-regulatory"
             ]
           },
           {
