@@ -39,32 +39,34 @@ The CCI is a regulator, the IBBI a board, RERA an authority and the GST AAR an a
 
 Matters per forum, as measured on 2026-11-11. `code` is the value the `tribunal` filter takes.
 `firstDecisionYear` is the earliest year for which a decision date is served.
-The two right-hand columns are the ones to read before you build on a forum.
 
-| Forum | `code` | Matters | Judgments | `firstDecisionYear` | Order list | No document |
-|---|---|---:|---:|---:|:---:|---:|
-| Central Administrative Tribunal (Orders) | `cat_cis` | 181,429 | 0 | 2021 | Yes | 0 |
-| Central Administrative Tribunal | `cat` | 162,439 | 162,439 | 1985 | No | 0 |
-| Customs, Excise and Service Tax Appellate Tribunal | `cestat` | 122,612 | 122,612 | 2000 | No | 0 |
-| Income Tax Appellate Tribunal | `itat` | 115,074 | 115,074 | 2021 | No | 0 |
-| Debt Recovery Tribunal | `drt` | 108,395 | 52,339 | 2000 | Yes | 807 |
-| National Company Law Tribunal | `nclt` | 63,487 | 47,970 | 2014 | Yes | 27,407 |
-| National Green Tribunal | `ngt` | 34,350 | 34,350 | 2011 | No | 0 |
-| Securities Appellate Tribunal | `sat` | 9,296 | 9,296 | 2006 | No | 0 |
-| Armed Forces Tribunal | `atfp` | 3,359 | 456 | 2016 | No | 0 |
-| Competition Commission of India (regulator) | `cci` | 2,944 | 2,944 | 2010 | No | 0 |
-| Appellate Tribunal for Electricity | `aptel` | 2,707 | 2,707 | 2008 | No | 0 |
-| GST Authority for Advance Rulings (advance-ruling) | `gst_aar` | 2,618 | 2,618 | 2017 | No | 0 |
-| Insolvency and Bankruptcy Board of India (board) | `ibbi` | 1,580 | 1,533 | 2017 | No | 0 |
-| Real Estate Regulatory Authority (authority) | `rera` | 1,530 | 1,530 | 2018 | No | 0 |
-| Telecom Disputes Settlement and Appellate Tribunal | `tdsat` | 1,348 | 1,348 | 2001 | No | 0 |
+| Forum | `code` | Matters | Judgments | `firstDecisionYear` | Order list |
+|---|---|---:|---:|---:|:---:|
+| Central Administrative Tribunal (Orders) | `cat_cis` | 181,429 | 0 | 2021 | Yes |
+| Central Administrative Tribunal | `cat` | 162,439 | 162,439 | 1985 | No |
+| Customs, Excise and Service Tax Appellate Tribunal | `cestat` | 122,612 | 122,612 | 2000 | No |
+| Income Tax Appellate Tribunal | `itat` | 115,074 | 115,074 | 2021 | No |
+| Debt Recovery Tribunal | `drt` | 108,395 | 52,339 | 2000 | Yes |
+| National Company Law Tribunal | `nclt` | 63,487 | 47,970 | 2014 | Yes |
+| National Green Tribunal | `ngt` | 34,350 | 34,350 | 2011 | No |
+| Securities Appellate Tribunal | `sat` | 9,296 | 9,296 | 2006 | No |
+| Armed Forces Tribunal | `atfp` | 3,359 | 456 | 2016 | No |
+| Competition Commission of India (regulator) | `cci` | 2,944 | 2,944 | 2010 | No |
+| Appellate Tribunal for Electricity | `aptel` | 2,707 | 2,707 | 2008 | No |
+| GST Authority for Advance Rulings (advance-ruling) | `gst_aar` | 2,618 | 2,618 | 2017 | No |
+| Insolvency and Bankruptcy Board of India (board) | `ibbi` | 1,580 | 1,533 | 2017 | No |
+| Real Estate Regulatory Authority (authority) | `rera` | 1,530 | 1,530 | 2018 | No |
+| Telecom Disputes Settlement and Appellate Tribunal | `tdsat` | 1,348 | 1,348 | 2001 | No |
 
 `firstDecisionYear` reflects what we hold.
 For `cat_cis` and `itat` it is 2021, and it is not the year the forum began.
 
+Every forum holds a document for every matter except two: NCLT, where 27,407 of 63,487 have none, and DRT, where 807 do.
+`files` on `GET /forums` carries the live figure per forum.
+
 ## How to read a forum
 
-- **Documents.** 3.5% of matters corpus-wide have no document, and almost all of that is NCLT. A missing document is a 404 `matter_file_unavailable` on `/file`, and it does not mean the matter is missing. Check `hasFile`.
+- **Documents.** Check `hasFile` before calling `/file`. A missing document is a 404 `matter_file_unavailable`, and it does not mean the matter is missing.
 - **Orders.** Only `cat_cis`, `drt` and `nclt` keep an order list. The other 12 answer `not_applicable`, which is a 200. In DRT, 2,694 matters answer `unjoinable`, which means unknown.
 - **`isJudgment`.** In CAT CIS, `false` means an order sheet we hold. In NCLT, `false` means a case listing with no document.
 - **`docType`.** It is informational and is not a filter. CCI uses three values (`combination`, `antitrust`, `press_releases`) and ATFP uses two (`order`, `judgment`), so read it on the matter. `isJudgment` is `true` on every CCI press release.

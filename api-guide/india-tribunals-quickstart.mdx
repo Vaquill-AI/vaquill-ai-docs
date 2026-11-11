@@ -44,44 +44,11 @@ curl https://api.vaquill.ai/api/v1/in/tribunals/forums \
 ```
 
 You get the 15 forums.
-The `code` of each, such as `cat_cis`, `nclt` or `drt`, is what the `tribunal` filter and the first path segment of every matter route take.
+Each one's `code`, such as `cat_cis`, `nclt` or `drt`, is what the `tribunal` filter and the first path segment of every matter route take.
+Each also carries its own `files` and `hasOrderList`, worth reading per forum because the corpus-wide averages hide the forums where they matter.
 
 Four of the 15 are not tribunals: the CCI is a regulator, the IBBI a board, RERA an authority and the GST AAR an advance-ruling body.
 `forumType` says which, and the path is `/tribunals` for all of them.
-
-One entry, abridged:
-
-```json
-{
-  "data": [
-    {
-      "code": "cat_cis",
-      "name": "Central Administrative Tribunal (Orders)",
-      "forumType": "tribunal",
-      "subjectArea": "Central government service matters",
-      "recordCount": 181429,
-      "countedAt": null,
-      "firstDecisionYear": 2021,
-      "judgmentCount": 0,
-      "nonJudgmentCount": 181429,
-      "docType": "order",
-      "hasOrderList": true,
-      "files": {
-        "archived": 181429,
-        "publisherLink": 0,
-        "missing": 0,
-        "coverage": "complete",
-        "nonJudgmentsMissing": 0
-      }
-    }
-  ],
-  "meta": { "requestId": "00000000000000000000000000000001", "processingTimeMs": 12.4, "creditsConsumed": 0 }
-}
-```
-
-Each forum carries its own figures for matters held, the judgment split and document availability.
-`countedAt` is null when `recordCount` is a figure we measured rather than a live count.
-Read `files` and `hasOrderList` per forum, because the corpus-wide averages hide the forums where they matter.
 
 ## 2. Browse
 
@@ -128,20 +95,8 @@ A row looks like this. Example values are illustrative:
 
 `links.file` is present only when `hasFile` is `true`.
 `judges` is null on about two thirds of matters, and is never an empty list.
-
-The envelope around a page carries the paging fields:
-
-```json
-"meta": {
-  "requestId": "00000000000000000000000000000001",
-  "processingTimeMs": 48.2,
-  "creditsConsumed": 1,
-  "hasMore": true,
-  "nextCursor": "eyJjIjoiQ0FUXzEyMyJ9"
-}
-```
-
-There is deliberately no `total`. See [Paging](#paging).
+The page's `meta` carries `hasMore` and `nextCursor`, and deliberately no `total`.
+See [Paging](#paging).
 
 ## 3. Search
 
@@ -163,22 +118,10 @@ It takes the same `tribunal`, `year`, `decidedFrom`, `decidedTo`, `isJudgment` a
   Never conclude that no Indian tribunal has considered an issue because a search came back empty.
 </Warning>
 
-Every search page says what it searched, in fields a client can branch on:
+Every search page says what it searched, in fields a client can branch on: `searchScope` is `metadata` and `searchedFields` is `["title", "petitioner", "respondent"]`.
 
-```json
-"meta": {
-  "requestId": "00000000000000000000000000000001",
-  "processingTimeMs": 211.6,
-  "creditsConsumed": 2,
-  "hasMore": true,
-  "nextCursor": "eyJjIjoiQ0FUXzEyMyJ9",
-  "searchScope": "metadata",
-  "searchedFields": ["title", "petitioner", "respondent"]
-}
-```
-
-`caseNumber` is not searched.
-No index supports a partial match on it, so to find a case number you already have, use `caseNumber` on [browse](#filters-and-what-they-match).
+`caseNumber` is not searched: no index supports a partial match on it.
+To find a case number you already have, use the `caseNumber` filter on [browse](#filters-worth-a-warning).
 
 ## 4. Read one matter
 
@@ -292,35 +235,19 @@ Keep calling while `meta.hasMore` is true.
 - A cursor belongs to one query. Change any filter and you need a fresh cursor, or you get a 400 `invalid_cursor`.
 - There is no `total`. Counting every matter on every request would cost more than it tells you. Use `hasMore`, and use `/forums` for per-forum counts.
 
-## Filters and what they match
+## Filters worth a warning
 
-| Filter | Matches |
-|---|---|
-| `tribunal` | A forum `code` from `/forums`. An unknown code is a 400, never an empty page. |
-| `year` | The stored decision year. A matter can match a `year` and still have `decisionDate: null`. |
-| `decidedFrom`, `decidedTo` | Decision dates, inclusive, as `YYYY-MM-DD`. A bare number is a 422. Before `1800-01-01` is a 400. |
-| `isJudgment` | The forum's own classification. It means different things by forum. See below. |
-| `bench` | The bench exactly as the forum spells it. See below. |
-| `caseNumber` | Browse only. The forum's case number, matched exactly. |
+Browse and search take `tribunal`, `year`, `decidedFrom`, `decidedTo`, `isJudgment`, `bench` and, on browse, `caseNumber`.
+The API Reference tab carries each one's type and bounds.
+Four of them behave in a way the schema cannot tell you:
 
-**`bench` is matched exactly, and is usually a slug.**
-Values look like `cat_cis_guwahati` and `nclt_ahmedabad`. DRT and DRAT are the exception, with values such as `DRAT Allahabad`.
-Copy a `bench` from a matter you already hold.
-There is no list of benches, and a composed name such as `Principal Bench` matches nothing. It matched 0 of 813,168 matters when we checked.
+- **`bench` is matched exactly**, and is usually a slug such as `cat_cis_guwahati`. DRT and DRAT are the exception, spelling theirs `DRAT Allahabad`. There is no list of benches, so copy one from a matter you hold: a composed name such as `Principal Bench` matched 0 of 813,168 matters when we checked.
+- **`caseNumber` is exact too**, and forums punctuate their own numbers. CAT CIS writes `O.A./796/2024`, and `OA/796/2024` matches nothing.
+- **`isJudgment` means different things by forum.** In CAT CIS, `false` means an order sheet we hold. In NCLT, it means a case listing with no document. It never promises that a document decides anything.
+- **`docType` is not a filter.** Sending it is a 422 that says so.
 
-**`caseNumber` is an exact filter on browse and is not a search target.**
-Forums punctuate their own numbers, so copy the `caseNumber` from a matter rather than retyping it. CAT CIS writes `O.A./796/2024`, and `OA/796/2024` matches nothing.
-
-**`docType` is informational and is not a filter.**
-It is on every matter and on `/forums`. Sending it as a parameter is a 422 that says so.
-
-**`isJudgment` means different things by forum.**
-In CAT CIS, `false` means an order sheet we hold, and all 181,429 have a document.
-In NCLT, `false` means a case listing with no document.
-It is the forum's classification, and it does not promise that a document decides anything.
-
-An unknown query parameter is a 422 that names the likely one, and it is not charged.
-An ignored filter would otherwise be billed as an unfiltered answer.
+An unknown parameter is a 422 that names the likely one, and it is not charged:
+an ignored filter would otherwise be billed as an unfiltered answer.
 
 ## Dates
 
