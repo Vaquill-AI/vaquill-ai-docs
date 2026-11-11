@@ -12,7 +12,7 @@ It uses the same `VAQUILL_API_KEY` variable as the SDKs.
 pip install vaquill
 ```
 
-The CLI ships inside the `vaquill` Python package, requires Python 3.11 or later and adds no dependencies.
+The CLI ships inside the `vaquill` Python package and requires Python 3.11 or later.
 Check the install with `vaquill version`.
 
 ## Quickstart
@@ -36,7 +36,7 @@ See the [SDKs overview](/api-guide/sdks/overview) for retry and credit behavior,
 ## Global options
 
 The key comes from `--api-key` or the `VAQUILL_API_KEY` variable.
-It is never stored on disk and never printed: error text and `--debug` logs have any `vq_key_` value replaced with `vq_key_[redacted]`.
+It is never stored on disk or printed.
 
 | Option | Meaning |
 | --- | --- |
@@ -95,19 +95,15 @@ Run `vaquill COMMAND --help` for the flags of any command.
 | `session-laws batch` | Fetch many session laws at once | charged |
 | `session-laws changes [--since-id N] [--jurisdiction S] [--limit N]` | Changes since a cursor, oldest first | charged |
 
-Prices are not repeated here: run `vaquill pricing` for the live table.
-The `statutes` and `session-laws` groups cover the rest of the API, and every command in them is charged.
-`search`, `resolve`, `section` and `coverage` also exist inside `statutes`.
-Each command accepts the same global options.
+Run `vaquill pricing` for the live prices.
+Every command in the `statutes` and `session-laws` groups is charged.
 The batch commands (`statutes resolve-batch`, `statutes sections`, `session-laws batch`) take their inputs as arguments or with `--file PATH` (one per line, `-` for stdin).
 Run `vaquill statutes --help` or `vaquill session-laws --help` for the full flag list of each.
 
 ## Pages and cost
 
-By default the CLI does not paginate or loop.
-`search`, `watches list` and `watches changes` make exactly one request.
+`search`, `watches list` and `watches changes` make one request by default.
 When the server reports more results, a notice on stderr names the flag that continues (`--offset N`, `--before-id N`, `--since-id N`).
-Each continued search call is charged again.
 Add `--all` to `search` to fetch every page, or `--max-pages N` or `--max-items N` (each implies `--all`) to stop early.
 Every page is charged, so set a limit or `--max-credits` before you use `--all`.
 
@@ -119,7 +115,6 @@ Every page is charged, so set a limit or `--max-credits` before you use `--all`.
 `--limit N` sets the `limit` query parameter.
 The CLI cannot know which paths are charged, so pass `--charged` for one that is.
 That adds an idempotency key, applies `--max-credits` and counts the credits in `credits used`.
-When the body says `hasMore`, a notice names the next page value if the body has one (`nextCursor` or `nextOffset`).
 
 ## Webhook verification
 
@@ -130,11 +125,10 @@ vaquill webhook verify --secret "$WEBHOOK_SECRET" \
 ```
 
 It makes no network call and needs no API key.
-The body must be the exact bytes received: a trailing newline added by `echo` makes the signature fail, so use `--file`, a redirect (`< body.json`) or `printf %s`.
+The body must be the exact bytes received. A trailing newline added by `echo` makes the signature fail, so use `--file`, a redirect (`< body.json`) or `printf %s`.
 `--secret` falls back to the `VAQUILL_WEBHOOK_SECRET` variable.
 Timestamps more than `--tolerance` seconds (default 300) from the current time are rejected.
-Only Standard Webhooks headers are accepted; the legacy header has no replay protection.
-The signature is checked before the body is parsed, so a body that is not a Vaquill event still passes with `"event": null`.
+Only Standard Webhooks headers are accepted.
 
 ## Exit codes
 

@@ -5,7 +5,7 @@ description: "Pre-built n8n and Make.com templates that read statute queries fro
 keywords: ["n8n legal research", "make.com legal automation", "google sheets legal AI", "batch statute search", "n8n vaquill", "legal automation workflow", "statute lookup pipeline"]
 ---
 
-This integration automates batch statute lookups, with a Google Sheet on one side and the Vaquill statutes search API on the other. It ships two pre-built templates that implement the same flow: one for [n8n](https://n8n.io) (open-source, self-hostable) and one for [Make.com](https://make.com) (cloud, no-code).
+These templates run batch statute lookups from a Google Sheet. One is for [n8n](https://n8n.io) (open source, self-hostable) and one is for [Make.com](https://make.com) (cloud, no-code).
 
 ```
 Google Sheet (queries) -> Vaquill statutes search API -> Google Sheet (matching sections)
@@ -17,18 +17,12 @@ Source: [github.com/Vaquill-AI/integrations/n8n](https://github.com/Vaquill-AI/i
 
 - `n8n-workflow.json`: import into any n8n instance
 - `make-blueprint.json`: import into any Make.com scenario
-- A trigger on new rows in a Google Sheet, with matching statute sections written back automatically
-- Automatic retry on 429 / 5xx, and a stop on 402 (insufficient credits)
-- Per-query scoping by jurisdiction (US Code, CFR, or any of the 50 state codes) through the request body
-- Paging through results for broad queries
+- A trigger on new rows in a Google Sheet, with matching sections written back
+- Retry on 429 and 5xx, and a stop on 402 (insufficient credits)
+- Per-query scoping by corpus or state through the request body
+- Paging for broad queries
 
-### Use cases
-
-- Batch statute search: put 50 queries in a sheet and get matching US Code, CFR, and state sections in minutes.
-- Automated lookup pipelines: connect a form to Vaquill AI to return statute citations.
-- Regulatory monitoring: schedule periodic queries against a corpus refreshed daily to monthly, depending on the source.
-- Due-diligence checklists: process compliance lookups in bulk.
-- Client-intake triage: route incoming statute questions through Vaquill AI, then forward the results to your team.
+Typical uses are batch statute search, due-diligence checklists, client-intake triage and scheduled monitoring.
 
 ## Prerequisites
 
@@ -40,7 +34,7 @@ Source: [github.com/Vaquill-AI/integrations/n8n](https://github.com/Vaquill-AI/i
 ## Google Sheet setup
 
 Create a Google Sheet with the headers `query`, `results`, `citations`, `jurisdiction` and `status` in columns A to E of row 1.
-Put your queries in column A. Leave B-E empty, since the automation fills them in.
+Put your queries in column A. Leave B to E empty. The automation fills them in.
 
 Example rows:
 
@@ -75,7 +69,7 @@ Request body:
 | `state` | string or array | A state code such as `"ca"` or `"ny"` to restrict the search to that state |
 | `limit` | integer | Maximum sections to return (page through larger result sets) |
 
-The endpoint rejects fields it does not define, so a body with an unknown key such as `jurisdiction` fails instead of being ignored.
+The endpoint rejects unknown fields such as `jurisdiction`.
 
 A trimmed successful response (200):
 
@@ -97,7 +91,7 @@ A trimmed successful response (200):
 }
 ```
 
-Each result carries more fields than shown. The full response shape, the credit price and every filter are in the [Statutes Search API reference](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions). Status codes `401`, `402` and `429` are covered under Troubleshooting below and in the [Errors reference](/api-guide/errors).
+Each result has more fields than shown. See the [Statutes Search API reference](/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions) for the full response and filters, and [Errors](/api-guide/errors) for status codes.
 
 ## Quickstart
 
@@ -127,7 +121,7 @@ Each result carries more fields than shown. The full response shape, the credit 
     5. Save
   </Step>
   <Step title="Point at your sheet">
-    On the **New Query Added**, **Write Answer to Sheet**, and **Write Error to Sheet** nodes, select your spreadsheet and sheet (e.g. `Sheet1`) from the dropdowns.
+    On the **New Query Added**, **Write Answer to Sheet**, and **Write Error to Sheet** nodes, select your spreadsheet and sheet (for example `Sheet1`).
   </Step>
   <Step title="Test and activate">
     1. Add a test query to column A of your sheet
@@ -210,7 +204,7 @@ Each result carries more fields than shown. The full response shape, the credit 
 
 ### Scope by jurisdiction
 
-Set `corpusType` in the request body to target federal sources (`"USC"` for the US Code, `"CFR"` for the CFR), and set `state` (e.g. `"ca"`, `"ny"`, `"tx"`) to restrict the search to that state. See [API coverage](/api-guide/coverage) for the states, territories and corpora held and their current section counts.
+Set `corpusType` to `"USC"` or `"CFR"` for federal sources. Set `state` (for example `"ca"`, `"ny"`, `"tx"`) to restrict the search to one state. See [API coverage](/api-guide/coverage) for what is held.
 
 ### Page through large result sets
 
@@ -229,41 +223,22 @@ Increase `offset` in steps of `limit` to fetch subsequent pages.
 
 ### Rate-limit handling
 
-- n8n: the template retries automatically on 429 and 5xx (up to 2 retries with 5-second intervals).
-- Make.com: for large batches, add a **Sleep** module (e.g. 2 seconds) between iterations, or enable the built-in error handler with retry.
+- n8n: the template retries on 429 and 5xx, up to 2 times at 5-second intervals.
+- Make.com: for large batches, add a **Sleep** module (for example 2 seconds) between iterations, or enable the error handler with retry.
 
 ### Extending the workflow
 
-Both templates can feed other n8n / Make.com nodes and modules:
-
-```
-Google Sheets -> Vaquill statutes search -> Write Results
-                                    |
-                                    +-> Slack notification
-                                    +-> Email summary
-                                    +-> Airtable record
-                                    +-> Webhook to your app
-```
+Both templates can feed other nodes, such as Slack, email, Airtable or a webhook to your app.
 
 ## Deployment
 
-<AccordionGroup>
-  <Accordion title="n8n self-hosted vs n8n Cloud">
-    | Option | Best for |
-    |---|---|
-    | **n8n self-hosted** (Docker) | Teams that want full data control and unlimited workflow runs. Free, but you operate the infrastructure. |
-    | **n8n Cloud** | Teams that want a managed UI and no servers to run. Paid plans start around $20 USD/month. |
+| Option | Best for |
+|---|---|
+| n8n self-hosted (Docker) | Full data control and unlimited runs. Free, but you run the servers. |
+| n8n Cloud | A managed UI with no servers. |
+| Make.com | Cloud only. Counts each HTTP call and each sheet row read or written, so one search uses about 3 operations. |
 
-    The same `n8n-workflow.json` import works for both.
-  </Accordion>
-  <Accordion title="Make.com tiers">
-    Make.com is cloud-only. The free tier covers ~1,000 operations per month, which is enough for small batches. Paid plans raise that limit.
-
-    Make.com counts each HTTP module call and each sheet row read or written. A single Vaquill AI search typically uses 3 operations (read row, call API, write row).
-
-    For large nightly batches, n8n is usually more economical because pricing is per workflow execution, not per node operation.
-  </Accordion>
-</AccordionGroup>
+The same `n8n-workflow.json` imports into both n8n options.
 
 ## Troubleshooting
 
@@ -271,7 +246,7 @@ Google Sheets -> Vaquill statutes search -> Write Results
 |---|---|---|
 | 401 Unauthorized | Invalid or missing API key | Verify the key starts with `vq_key_` and the `Bearer ` prefix is included |
 | 402 Payment Required | No credits remaining | Top up at [app.vaquill.ai/settings/billing](https://app.vaquill.ai/settings/billing) |
-| 429 Too Many Requests | Rate limit hit | Add delays between requests; the n8n template retries automatically |
+| 429 Too Many Requests | Rate limit hit | Add delays between requests |
 | Empty results | Query too vague or out of scope | Rephrase; check that `corpusType` and `state` are set correctly |
 | Google Sheets auth error | OAuth token expired | Re-authenticate the Google Sheets connection |
 | Workflow not triggering | Trigger not activated | In n8n, toggle the workflow to **Active**; in Make.com, click **Schedule** |

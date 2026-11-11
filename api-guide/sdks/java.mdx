@@ -10,12 +10,10 @@ import ChargedCallRule from '/snippets/charged-call-rule.mdx';
 
 {/* Every sample on this page is copied from java/README.md of vaquill-sdks. */}
 
-The Java client covers the statutes, session law, watch, board, credit and pricing operations of the US Data API and matches the behavior of the [Python SDK](/api-guide/sdks/python).
-The operations without a method yet are listed in the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits).
-It needs Java 11 or newer and has one runtime dependency, Jackson (`jackson-databind`).
-HTTP goes through the JDK `java.net.http.HttpClient`, so you can pass your own configured client.
+The Java client covers the statutes, session law, watch, board, credit and pricing operations of the US Data API and behaves like the [Python SDK](/api-guide/sdks/python).
+It needs Java 11 or newer.
 Every call has a blocking form, a `...WithResponse` form (status, headers, request id, credits) and a `...Async` form.
-For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
+For shared options and the operations without a method yet, see the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits).
 
 <Warning>
   Preview. Not yet published to Maven Central, so build from source until the first release.
@@ -75,13 +73,13 @@ try (Vaquill client = Vaquill.builder().build()) {   // reads VAQUILL_API_KEY
 
 Resources: `client.statutes()`, `client.sessionLaws()`, `client.watches()`, `client.boards()`, `client.credits()`, `client.pricing()`.
 Request bodies are built with `Model.builder()`, and optional query parameters with `...Params.builder()`.
-Responses are plain models. Members this SDK version does not know about are kept in `getAdditionalProperties()` and survive a round trip.
+Responses are plain models. Unknown members are kept in `getAdditionalProperties()`.
 
 ### Client options
 
 | Builder method | Meaning |
 | --- | --- |
-| `apiKey(String)` | Defaults to the `VAQUILL_API_KEY` environment variable. Must start with `vq_key_`. The key is never echoed in an error message or a log line. |
+| `apiKey(String)` | Defaults to the `VAQUILL_API_KEY` environment variable. Must start with `vq_key_`. |
 | `baseUrl(String)` | Defaults to `VAQUILL_BASE_URL`, then `https://api.vaquill.ai`. |
 | `timeout(Duration)` | Per-request timeout. `Duration.ZERO` disables it. |
 | `maxRetries(int)` | Default 2. |
@@ -93,7 +91,6 @@ Responses are plain models. Members this SDK version does not know about are kep
 
 Per call, pass `RequestOptions` as the last argument: `timeout`, `maxRetries`, `idempotencyKey` and extra `header`s.
 `client.toBuilder()` derives a client that shares the same spend guard.
-The User-Agent is `vaquill-java/<version>`.
 
 ### Response metadata
 
@@ -102,7 +99,7 @@ Response<StatuteCountResponse> r = client.statutes().countWithResponse(request);
 r.getData();              // the model
 r.getStatusCode();
 r.getRequestId();
-r.getCreditsConsumed();   // from the body, falling back to meta.creditsConsumed
+r.getCreditsConsumed();
 r.isIdempotentReplayed(); // the server replayed a stored answer, nothing was charged
 r.getRateLimit();
 ```
@@ -113,7 +110,7 @@ r.getRateLimit();
 CompletableFuture<StatuteCountResponse> f = client.statutes().countAsync(request);
 ```
 
-Async calls run on an SDK-owned daemon pool and use the same retries and spend guard as blocking calls.
+Async calls use the same retries and spend guard as blocking calls.
 
 ## Errors
 
@@ -139,10 +136,9 @@ VaquillException
     InternalServerException (5xx)
 ```
 
-`IdempotencyConflict` is a marker interface implemented by the three idempotency exceptions, so a `catch` block can match them with an `instanceof` check.
-The 422 message is `Validation failed: ` followed by the first rejected fields, for example `body: Field required`.
+`IdempotencyConflict` is an interface implemented by the three idempotency exceptions.
+The 422 message lists the first rejected fields, for example `body: Field required`.
 A 2xx whose body is not the documented JSON raises `ResponseParseException`.
-A `Deprecation` or `Sunset` response header logs one warning per endpoint.
 
 ```java
 try {
@@ -162,17 +158,17 @@ try {
 
 Java specifics:
 
-- Retried by code: `rate_limited`, `idempotency_in_progress`, `upstream_timeout`, `service_unavailable` and `internal_error`, and otherwise by status 408, 429 and 5xx. 501 is not retried.
-- Connect failures are always retried. Any other transport error is retried only for GET and HEAD, or when the request carries an Idempotency-Key, because the server may already have done the work.
-- A 5xx on a charged call is not retried without a key, for the same reason.
+- 501 is not retried.
+- Connect failures are always retried. Any other transport error is retried only for GET and HEAD, or when the request carries an Idempotency-Key.
+- A 5xx on a charged call is not retried without a key.
 
 <ChargedCallRule />
 
 <IdempotencyKeys />
 
 The SDK generates a key for every charged POST unless you pass your own with `RequestOptions.builder().idempotencyKey("...")`.
-A key must be 16 to 255 visible ASCII characters. An empty or malformed key is rejected before anything is sent.
-`Response.isIdempotentReplayed()` is true when the server answered from a stored result, and a replay counts as 0 credits against the spend guard.
+A key must be 16 to 255 visible ASCII characters.
+`Response.isIdempotentReplayed()` is true when the server answered from a stored result. A replay counts as 0 credits against the spend guard.
 
 ## Spend guard
 
@@ -180,9 +176,8 @@ A key must be 16 to 255 visible ASCII characters. An empty or malformed key is r
 Vaquill client = Vaquill.builder().maxCredits(50).build();
 ```
 
-Charged calls are serialised under one lock, so the cap is exact even with many threads. See [how the guard stays exact](/api-guide/sdks/overview#spend-guard).
 When the total has reached the cap, the next charged call raises `SpendGuardExceededException` and is never sent.
-`client.getCreditsSpent()` returns the total. Free endpoints are never blocked.
+`client.getCreditsSpent()` returns the total. Free endpoints are never blocked. See [the spend guard](/api-guide/sdks/overview#spend-guard).
 
 ## Pagination and batch helpers
 
@@ -202,8 +197,8 @@ client.statutes().iterSearch(request).toListAsync();
   Charged pages spend credits and count against the spend guard like any other call. Set `maxPages` or `maxItems`.
 </Warning>
 
-- `maxPages(n)` and `maxItems(n)` set limits before iteration starts. Afterwards they throw `IllegalStateException`. `isTruncated()` reports that a limit stopped the walk.
-- `isStuck()` is true when the server repeated a cursor or offset, or returned an empty page claiming more. Iteration stops instead of looping forever.
+- `maxPages(n)` and `maxItems(n)` must be set before iteration starts. `isTruncated()` is true when a limit stopped the walk.
+- `isStuck()` is true when the server repeated a cursor or offset. Iteration then stops.
 - `pages()` iterates page by page.
 - A paginator is single use and not thread safe.
 
@@ -230,8 +225,8 @@ System.out.println(event.getEvent());
 
 - Pass the raw request body, not re-serialised JSON.
 - `headers` is any `Map<String, ?>`. Names are matched case-insensitively and values may be a string or a list.
-- The secret is the `whsec_` base64 form or a plain string. An empty, blank or `whsec_`-only secret, and invalid base64 after `whsec_`, throw `IllegalArgumentException`, so an unset environment variable can never verify a forged event.
-- Tolerance is 300 seconds either side of now. Use the longer overloads for another tolerance, several secrets (rotation) or the legacy `X-Vaquill-Signature` scheme (off by default, no replay protection).
+- The secret is the `whsec_` base64 form or a plain string. An empty secret, or invalid base64 after `whsec_`, throws `IllegalArgumentException`.
+- Tolerance is 300 seconds. Use the longer overloads for another tolerance, several secrets (rotation) or the legacy `X-Vaquill-Signature` scheme (off by default, no replay protection).
 - `WebhookVerificationException` means do not trust the delivery. `WebhookPayloadException` means the signature was valid but the body is not an event.
 
 See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
@@ -239,9 +234,3 @@ See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
 ## Versioning
 
 The SDK follows semantic versioning, and the first release is planned as `0.1.0`.
-The library targets Java 11 (`--release 11`).
-
-<Accordion title="Release workflow status">
-  Releases will be cut by pushing a `java-vX.Y.Z` tag, which signs and publishes to Maven Central.
-  The signing and upload steps have not run yet, so the first release is the first time they are exercised.
-</Accordion>

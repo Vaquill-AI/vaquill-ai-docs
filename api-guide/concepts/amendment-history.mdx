@@ -3,39 +3,28 @@ title: "Amendment history"
 description: "When a section changed, from the publisher's credit line: amendmentYears, lastAmendedYear, amendmentsCount and amendmentHistory."
 ---
 
-Most statute sections carry a credit line that records the acts which enacted and amended them.
-We parse that line into structured fields so you can filter and sort on when a section changed, instead of reading it out of prose.
+Most statute sections carry a credit line that lists the acts that enacted and amended them.
+We turn that line into fields you can filter and sort on.
 
 These fields appear on `POST /us/statutes/search`, `GET /us/statutes/section/{actId}`, and `POST /us/statutes/sections`.
-
-They are populated for statute corpora, where the publisher prints a credit line.
-Two corpora differ by nature:
-
-- Final rules in `FEDERAL_REGISTER` carry the year the rule was published, because that is the year it amended the CFR.
-- Proposed rules carry no amendment years at all. A proposal amended nothing, so a year window returns none of them.
-
-See [Response fields](/api-guide/concepts/response-fields) for which fields apply to which corpus.
+See [Response fields](/api-guide/concepts/response-fields) for which fields each corpus fills.
 
 ## The fields
 
 | Field | Meaning |
 |-------|---------|
-| `amendmentYears` | Distinct years credited to the section, newest first, so `amendmentYears[0]` and `lastAmendedYear` agree. Do not rely on `amendmentYears[-1]` being the latest. The year is the enactment year of the crediting act, not its effective date, and the two differ when an act takes effect in a later year. |
-| `amendmentsCount` | How many changes the publisher recorded. Not always the length of `amendmentYears`: see the warning below. |
+| `amendmentYears` | Distinct years credited to the section, newest first. The year is the enactment year of the amending act, not its effective date. |
+| `amendmentsCount` | How many changes the publisher recorded. |
 | `lastAmendedYear` | The most recent year in `amendmentYears`. |
-| `amendmentHistory` | Structured entries, where the publisher records them separately from the credit line. |
-| `currentThrough` | The date the publisher states the text is current through. |
+| `amendmentHistory` | Structured entries, where the publisher records them apart from the credit line. |
+| `currentThrough` | The date the publisher says the text is current through. |
 
-Where a publisher prints an effective date, we expose it separately: see [Status and currency](/api-guide/concepts/status-and-currency).
+Where a publisher prints an effective date, we serve it separately. See [Status and currency](/api-guide/concepts/status-and-currency).
 
 <Warning>
-`amendmentsCount` is a count of amending events, not a count of years.
-
-For statutes the two almost always agree.
-For regulations and court rules they often do not, because those publishers record one entry per amending action and two actions can fall in the same year.
-A section amended twice in 2019 reports `amendmentYears: [2019]` with `amendmentsCount: 2`.
-
-Use `amendmentsCount` for how many times a section changed, and `amendmentYears.length` for how many distinct years it changed in.
+`amendmentsCount` counts amending events, not years.
+Two amendments in 2019 give `amendmentYears: [2019]` and `amendmentsCount: 2`.
+Use `amendmentsCount` for how many times a section changed, and `amendmentYears.length` for how many years.
 </Warning>
 
 ```json
@@ -48,92 +37,16 @@ Use `amendmentsCount` for how many times a section changed, and `amendmentYears.
 }
 ```
 
-### Whether the enactment year is included depends on the corpus
+## Differences by corpus
 
-For statutes, `amendmentYears` includes the original enactment, so a section enacted in 1991 and never amended reports `[1991]` with `amendmentsCount: 1`.
+- Statutes include the original enactment year. A section enacted in 1991 and never amended reports `[1991]` with `amendmentsCount: 1`.
+- State constitutions leave out the adoption date. A section never amended reports `amendmentYears: []`.
+- Some state regulations (Oklahoma among them) include the adoption year but leave `lastAmendedYear` null until the first amendment.
+- Final rules in `FEDERAL_REGISTER` carry the year the rule was published.
+- Proposed rules carry no amendment years, so a year window returns none of them.
+- `corpusType=STATE_AG_OPINION` returns empty `amendmentYears` and `amendmentsCount: 0`. An opinion is issued once and is not amended. For currency, see [Status and currency](/api-guide/concepts/status-and-currency).
 
-Two corpora differ, because their publishers distinguish adoption from amendment and so do we:
-
-- State constitutions exclude the adoption date. A section adopted and never amended reports `amendmentYears: []` with the adoption date preserved in the credit text, so "adopted, never amended" is not mistaken for "we found nothing".
-- Some state regulations (Oklahoma among them) include the adoption year in `amendmentYears` but leave `lastAmendedYear` null until the section is actually amended. A null `lastAmendedYear` beside a populated `amendmentYears` therefore means "adopted, not yet amended", not missing data.
-
-## Where the years come from
-
-Every year we report is one the publisher printed in that section's own credit line.
-Compilation and codification references, federal act names and years in the body are not amendment years, and are excluded.
-
-<Accordion title="How we extract the years">
-Examples of the credit line and the years parsed from it:
-
-```
-Ark. Code Ann. 14-284-224
-  "Acts 1991, No. 1028, § 2; 2005, No. 2145, § 55; 2007, No. 1049, § 77."
-  -> amendmentYears [2007, 2005, 1991]
-
-Ind. Code 12-15-20-2
-  "As added by P.L.2-1992, SEC.9. Amended by P.L.27-1992, SEC.23; ... P.L.205-2013, SEC.203."
-  -> amendmentYears [2013, 2011, 2007, 2003, 2002, 2001, 2000, 1999, 1998, 1997, 1992]
-```
-
-Each state prints its credits differently, so each has its own parser.
-Indiana puts the year second (`P.L.1-1996` is public law 1 of 1996), Florida encodes it in a chapter number with no four-digit year at all (`ch. 89-257` is chapter 257 of 1989), and Hawaii abbreviates heavily inside brackets (`[L 1974, c 48, pt of §1; am L 1981, c 242, §5]`).
-
-A four-digit year in the text is not an amendment year just because it is a year.
-Three kinds are excluded, because treating them as amendments produces a date the law never had.
-
-Compilation and codification references: a state that recodifies its statutes prints the codification alongside the real credits.
-`R.S.1943`, `RSMo 1939`, `RL 1955` and `A.S.A. 1947` name a compilation, not an act that changed the section.
-
-Federal act names: a section that mentions the *Fair Labor Standards Act of 1938* was not amended in 1938 by doing so.
-
-Dates in the body: effective-date clauses, fiscal years and cross-references all carry years that are not credits.
-
-We exclude these structurally, by the token that introduces them, never by ignoring particular years.
-A real 1943 session law still counts in a state whose compilation is also named 1943.
-</Accordion>
-
-## Coverage varies by jurisdiction
-
-Coverage depends on what the publisher prints.
-Where a source does not publish a credit line, we do not infer a date from surrounding text, so an absent `amendmentYears` means we found no credit.
-The reason a section has no amendment history is one of these:
-
-| Cause | What it means | Whose gap |
-|---|---|---|
-| The publisher prints no credit | Wyoming annotates repealed and renumbered sections but not sections in force, so roughly three quarters of its sections carry no credit at any source we can lawfully use. No parser can recover what was never published. | The publisher's |
-| The credit exists and we have not extracted it yet | The publisher prints it and our parser does not read it yet. We treat it as a defect rather than a limitation. | Ours |
-| The publisher printed the credit and the scan destroyed it | Scanned federal corpora only. For `I&N Dec.`, dates come from the index citation year where the scan is damaged, and a reissued decision counts as 2. | The scan's |
-
-Per-jurisdiction figures are published on [Coverage](/api-guide/coverage) once a jurisdiction has been measured against its own source.
-
-<Accordion title="I&N Dec.: damaged scans and reissued decisions">
-The `I&N Dec.` reporter prints a date line on every decision, but the pre-1985 volumes are OCR of paper prints and the line arrives damaged ("Docidcd by Docird Juno 25, 19.78").
-We keep the publisher's printed string byte-identical in `effectiveDate` whatever state it is in, because it is the evidence, and we derive a clean date from it only where a second, independent source agrees.
-For that corpus the second source is the citation year on the publisher's own index, and the two disagree on 172 decisions, essentially always because the scan misread a digit.
-Rather than serve a year that is wrong by decades, we drop the derived date and take the year from the index.
-That derived date is held with the document for our own gating and is not served as its own response field.
-
-A decision reissued with changes is a real amendment event, and this reporter states it in the date line itself: "Decided as amended March 19, 1998".
-We count it as one, so those decisions report an `amendmentsCount` of 2 rather than 1.
-The reissue marker itself is held with the document and is not exposed as a response field, so read the count.
-</Accordion>
-
-### AG opinions
-
-`corpusType=STATE_AG_OPINION` returns empty `amendmentYears` and `amendmentsCount: 0` on every section.
-An AG opinion is not amended: it is issued once, on a date, and is thereafter withdrawn, overruled, modified or left standing, so the version event in this corpus is supersession.
-The empty values mean the instrument has no amendment concept, not that we failed to extract one, and the CMS "modified" timestamp is served as `observedDate`.
-For the currency side, see the AG opinions entry in [Status and currency](/api-guide/concepts/status-and-currency).
-
-<Accordion title="The measurement behind this">
-Measured across all 898 documents in the Delaware archive on 2026-09-08:
-
-- 0.00% carry any publisher-printed statement that the opinion itself was revised, reissued or withdrawn.
-- 100% carry a publisher-assigned issue date, which is what `effectiveDate` serves.
-- 35.5% carry a CMS "modified" timestamp later than their issue date, with a median gap of 5 days and a maximum of 27.5 years. That is a content-management touch, not an amendment, and writing it to an amendment field would manufacture history that never happened.
-
-The empty values are the recorded output of a sweep, not an unimplemented field.
-</Accordion>
+Some jurisdictions print no credit line. For those, `amendmentYears` is empty or absent. Check [Coverage](/api-guide/coverage) for your jurisdiction.
 
 ## Using the fields
 
@@ -162,4 +75,4 @@ Each result carries the fields described above:
 ## Related
 
 - Time and versions: this page covers when a section changed, [Point-in-time law](/api-guide/point-in-time) covers past text, and [Status and currency](/api-guide/concepts/status-and-currency) covers whether it is still law.
-- [Law change alerts](/api-guide/alerts) notify you when a section changes, rather than polling its amendment history.
+- [Law change alerts](/api-guide/alerts) notify you when a section changes, so you do not need to poll.

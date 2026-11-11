@@ -1,3 +1,2 @@
-The server completes the MCP handshake and lists all of its tools with no credential at all.
-Authentication is enforced at the API call behind each tool, not at the protocol layer.
-A "Connected" status and a full tool list are therefore both consistent with a completely broken credential.
+The server lists all of its tools without a credential. Authentication is checked when a tool calls the API.
+A "Connected" status and a full tool list do not prove that your credential works.

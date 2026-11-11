@@ -1,5 +1,4 @@
 Set {props.option} when you create the client.
 Once responses on that client have reported that many credits, the next charged call raises {props.error} before anything is sent.
-The cap is exact: while it is set, charged calls on the client and its derived clients run one at a time, from the check to the moment their credits are counted, so concurrent calls cannot all pass the check and overshoot.
-A replayed response counts as 0 credits.
-Leave the option unset to keep full concurrency.
+While the cap is set, charged calls on the client run one at a time, so concurrent calls cannot overshoot it.
+A replayed response counts as 0 credits. Leave the option unset to keep full concurrency.

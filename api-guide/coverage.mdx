@@ -1,33 +1,23 @@
 ---
 title: "Coverage"
-description: "Which US jurisdictions and corpus types the Vaquill API holds, with measured section counts and refresh cadence"
+description: "Which US jurisdictions and corpus types the Vaquill API covers, with section counts and how often each is updated"
 ---
 
 import GoodLawUnknown from '/snippets/good-law-unknown.mdx';
 
-**6.0M+ distinct sections, indexed as 21M+ retrieval passages**, across federal law and all 56 states and territories.
+**6.0M+ sections** across federal law and all 56 states and territories.
 
-The corpus grows continuously, so this page gives magnitudes and the table below gives the measured split.
-For a number you can put in a contract, call the endpoint.
-It is free, self-describing and authoritative over anything written here by hand.
+Counts grow over time. For the current numbers, call the coverage endpoint. It is free.
 
 ```bash
-# The live, self-describing answer. Free, and authoritative over this page.
 curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-<Note>
-  Counts are **distinct sections**, one per provision or document, matching what `GET /us/statutes/coverage` returns.
-  Longer documents split into several passages for retrieval, so the index holds more passages than sections.
-  A citation lookup still resolves to one section with its full text.
-  Past editions held for point-in-time lookups are counted too, and `statusBreakdown.superseded` gives that share per corpus.
-</Note>
-
 <CardGroup cols={3}>
   <Card title="Federal" href="/api-guide/coverage/federal">
     **1.5M+ sections**, 16 corpora.
-    US Code, CFR, Statutes at Large, Federal Register, adjudications, federal local court rules, and per-corpus scope limits.
+    US Code, CFR, Statutes at Large, Federal Register, adjudications and federal court rules.
   </Card>
   <Card title="States and territories" href="/api-guide/coverage/states">
     **4.5M+ sections** across 56 jurisdictions.
@@ -37,122 +27,86 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
     **97K+ documents** from 53 named federal sources, each filterable with `source`.
   </Card>
   <Card title="State session laws" href="/api-guide/session-laws">
-    Session laws for the 50 states, DC and Puerto Rico, from 1975, as enacted, with dates, veto outcome and text.
-    Counts per jurisdiction and session are on `GET /us/statutes/coverage`.
+    Session laws for the 50 states, DC and Puerto Rico, from 1975, as enacted.
   </Card>
 </CardGroup>
 
 ## What's in the corpus
 
-Counts measured **2026-11-07**.
+Counts as of **2026-11-07**.
 
 | Corpus | Jurisdictions | Sections | `corpusType` | Refresh |
 |---|---|---:|---|---|
 | State statutes | 56 | 2,642,636 | `STATE` | Monthly, quarterly for AR, GA, TN and VI |
-| State regulations | 56 | 1,504,702 | `REGULATION` | Monthly where the publisher supports one, per state |
+| State regulations | 56 | 1,504,702 | `REGULATION` | Monthly |
 | State court rules | 56 | 69,931 | `STATE_RULES` | Monthly |
 | State constitutions | 53 | 13,057 | `STATE_CONSTITUTION` | Monthly |
-| State registers (notices, not codified law) | 24 | 153,850 | `STATE_REGISTER` | Not stated |
-| State agency guidance | 49 | 13,402 | `STATE_AGENCY_GUIDANCE` | Monthly, per state, in rotation |
-| State AG opinions | 45 | 109,438 | `STATE_AG_OPINION` | Monthly, per jurisdiction, new opinions only |
-| Federal, 16 corpora | Federal | 1,534,416 | See [Federal](/api-guide/coverage/federal) and [Treaties](/api-guide/coverage/treaties) | Daily to weekly, on amendment for the Constitution |
-| [State session laws](/api-guide/session-laws) | 52 | Live on the endpoint | Own endpoints | Not stated |
+| State registers (notices, not codified law) | 24 | 153,850 | `STATE_REGISTER` | Varies |
+| State agency guidance | 49 | 13,402 | `STATE_AGENCY_GUIDANCE` | Monthly |
+| State AG opinions | 45 | 109,438 | `STATE_AG_OPINION` | Monthly, new opinions only |
+| Federal, 16 corpora | Federal | 1,534,416 | See [Federal](/api-guide/coverage/federal) and [Treaties](/api-guide/coverage/treaties) | Daily to weekly |
+| [State session laws](/api-guide/session-laws) | 52 | See the endpoint | Own endpoints | Varies |
 
 The 56 jurisdictions are the 50 states, DC, Puerto Rico, Guam, the Northern Mariana Islands, the US Virgin Islands and American Samoa.
-All 56 carry statutes, regulations and court rules, and 53 carry constitutions.
-Guam, the Virgin Islands and DC have no constitution of their own, and the organic acts of Guam and the Virgin Islands are federal law.
-Session laws cover the 50 states, DC and Puerto Rico from 1975, and the count held per jurisdiction and session changes as collection proceeds, so the live counts are on `GET /us/statutes/coverage`.
+All 56 carry statutes, regulations and court rules. 53 carry constitutions.
+Session laws cover the 50 states, DC and Puerto Rico from 1975.
 
-Every section is indexed for hybrid semantic and keyword search, and mirrored in multiple formats (HTML, PDF, XML, plain text, DOCX) where the source provides them.
+Every section is searchable by meaning and by keyword. Many are also available as HTML, PDF, XML, plain text or DOCX.
 
 ## Federal
 
-Federal law is split into 16 corpus types, from the US Code, the CFR and the Federal Register to agency guidance, adjudications, the Federal Rules and treaties.
-The [federal table](/api-guide/coverage/federal) lists every one with its scope limits, and [treaty coverage](/api-guide/coverage/treaties) covers the two treaty tokens.
-Congressional bill text of the 119th Congress is held as the opt-in `FEDERAL_BILL` token, outside every total; it is described on the federal page and the [Roadmap](/api-guide/roadmap).
+Federal law has 16 corpus types, from the US Code, the CFR and the Federal Register to agency guidance, adjudications, the Federal Rules and treaties.
+The [federal page](/api-guide/coverage/federal) lists each one. [Treaty coverage](/api-guide/coverage/treaties) covers the two treaty tokens.
+Bill text of the 119th Congress is available as the opt-in `FEDERAL_BILL` token and is not part of any total.
 
-Agency guidance is the one corpus with a registry behind it: **53 named sources across 26 agencies** behind the single `corpusType=AGENCY_GUIDANCE` token, each narrowable with `source`.
+Agency guidance has **53 named sources across 26 agencies** under `corpusType=AGENCY_GUIDANCE`. Narrow it with `source`.
 See the [source registry](/api-guide/coverage/agency-guidance).
 
 ## State corpora
 
 Per-jurisdiction counts for all 56 are in the [matrix](/api-guide/coverage/states).
-A few sets, mainly professional-conduct and bar rules and all of American Samoa's Code, Constitution and court rules, are read from a bar association's site, and the states page [says which](/api-guide/coverage/states#where-bar-associations-supply-the-text).
 
 ### State administrative registers
 
-`corpusType=STATE_REGISTER` holds the notices a state printed in its official register: proposed, adopted and emergency rule text, one document per item, cited by register volume and page.
-It is not codified law, it is never ranked as primary law, and it is served with `goodLawStatus: "unknown"`.
+`corpusType=STATE_REGISTER` holds notices a state printed in its official register: proposed, adopted and emergency rules.
+It is not codified law and is served with `goodLawStatus: "unknown"`.
 See [per-jurisdiction counts](/api-guide/coverage/states#state-administrative-registers).
 
 ### State agency guidance
 
-State-issued regulatory guidance that interprets state law, almost all of it insurance-regulator bulletins.
-Queryable with `corpusType=STATE_AGENCY_GUIDANCE` paired with `state`.
-It is not a full rollout: it lands state by state, and some states may never be built.
-See [per-state sources and counts](/api-guide/coverage/states#state-agency-guidance).
+State regulatory guidance that interprets state law, mostly insurance-regulator bulletins.
+Query it with `corpusType=STATE_AGENCY_GUIDANCE` and `state`.
+See [per-state sources](/api-guide/coverage/states#state-agency-guidance).
 
 ### State attorney general opinions
 
-Formal written opinions of a state Attorney General, construing that state's own statutes, constitution and regulations for an officer, legislator or local government who asked.
-Queryable with `corpusType=STATE_AG_OPINION` paired with `state`.
-The rollout is by jurisdiction: 45 of the 52 jurisdictions surveyed are live, and the survey measured roughly 184,600 individually addressable opinions, so what is live is a fraction of what exists.
+Formal written opinions of a state Attorney General on that state's statutes, constitution and regulations.
+Query them with `corpusType=STATE_AG_OPINION` and `state`. 45 jurisdictions are live.
 
 <Warning>
   **AG opinions are persuasive authority, not binding law.**
-  An AG opinion is often the only interpretive authority for a provision no court has reached.
 
   <GoodLawUnknown />
 
   See [Status and currency](/api-guide/concepts/status-and-currency).
 </Warning>
 
-Per-state ranges, scope limits and notes (Delaware, Montana, Arkansas, Indiana, Florida and others) are on [state coverage](/api-guide/coverage/states#state-attorney-general-opinions).
+Per-state counts are on [state coverage](/api-guide/coverage/states#state-attorney-general-opinions).
 
 ## Refresh cadence
 
-The Refresh column of the table above says how often each corpus is re-pulled from its official source.
-State statutes refresh monthly, except Arkansas, Georgia, Tennessee and the US Virgin Islands, which refresh quarterly.
-For the age of any single source, call [`GET /boards`](/api-guide/alerts).
-It is free and carries `lastRetrievedAt` and `cadence` per source.
-`GET /us/statutes/coverage` reports what each corpus is *current through* in the publisher's own words, which is a different question and is not available for every state.
+The Refresh column above shows how often each corpus is updated from its official source.
+For the age of any single source, call [`GET /boards`](/api-guide/alerts). It is free and returns `lastRetrievedAt` and `cadence` per source.
+`GET /us/statutes/coverage` reports what each corpus is *current through*, in the publisher's own words.
 
 ### Which statute cadence applies where
 
-Compare `lastRetrievedAt` against `cadence` on `GET /boards` to see how recently a source was pulled.
-The sections stay queryable at the `currentThrough` the coverage response reports.
+Compare `lastRetrievedAt` with `cadence` on `GET /boards` to see how recently a source was updated.
 
-<Accordion title="Cadence details">
-
-**Monthly, 46 jurisdictions.**
-These state statute boards report `cadence: "monthly"` on `GET /boards`.
-
-**Quarterly, 4 jurisdictions.**
-Arkansas, Georgia, Tennessee and the US Virgin Islands are pulled on a quarterly slot, tracking legislatures that sit for part of the year.
-They report `cadence: "quarterly"`.
-
-Read the `cadence` field on `/us/statutes/coverage` and `/boards` as the declared staleness window a board is alerted against, not as a ceiling on how often the corpus is re-pulled.
-
-**Five jurisdictions are covered but not watchable**: Delaware, Hawaii, Mississippi, New Mexico and Utah.
-Their statutes are live, complete and queryable.
-What is held back is the automated re-pull, so they are absent from `GET /boards` rather than listed as idle.
-A board is switched on only once its refresh has been shown to work, so `GET /boards` lists what can be watched, never what is covered.
-For these five, read currency from `GET /us/statutes/coverage`.
-
-State AG opinions are issued once and not revised, so a refresh looks for new opinions rather than changed ones.
-Constitutions change on the order of years, via ballot measure.
-State agency guidance is almost all insurance-regulator bulletins, and states are refreshed in rotation, about two a day, rather than all at once each week.
-
-</Accordion>
-
-<Accordion title="Statute exceptions">
-
-The Colorado Revised Statutes are published once a year with no process for periodic updates, so a Colorado re-pull of all 46 titles changes the stored text only when a new edition appears.
-
-Pennsylvania's Consolidated Statutes are complete.
-Of its older unconsolidated statutes only 35 P.S. ch. 780 (54 sections) is held, and the rest is prioritized for backfill.
-
-</Accordion>
+- 46 jurisdictions report `cadence: "monthly"`.
+- Arkansas, Georgia, Tennessee and the US Virgin Islands report `cadence: "quarterly"`.
+- Delaware, Hawaii, Mississippi, New Mexico and Utah are covered but do not appear on `GET /boards`. Read their currency from `GET /us/statutes/coverage`.
+- Colorado publishes once a year, so its text changes only when a new edition appears.
 
 ## Related
 
@@ -161,20 +115,18 @@ Of its older unconsolidated statutes only 35 P.S. ch. 780 (54 sections) is held,
     Every `corpusType` token, and how `source` and `state` combine with it.
   </Card>
   <Card title="Point-in-time law" href="/api-guide/point-in-time">
-    Every corpus can be asked what it said on a past date, and the answer states whether it is a published edition or a reconstruction.
+    Ask what any corpus said on a past date.
   </Card>
   <Card title="Coverage monitoring" href="/api-guide/recipes/coverage-monitoring">
-    New corpora appear on `GET /us/statutes/coverage` as they land.
-    To find sections that moved, use the `changedSince` filter on `POST /us/statutes/search`.
+    Track new corpora and changed sections.
   </Card>
   <Card title="Law change alerts" href="/api-guide/alerts">
-    Be pushed a change instead of polling for one.
+    Get pushed a change instead of polling for one.
   </Card>
   <Card title="Roadmap" href="/api-guide/roadmap">
-    Corpora that are planned but not yet served, and what is deliberately out of scope.
+    Corpora that are planned but not yet served.
   </Card>
   <Card title="Open source: Vaquill-AI/open-us-law" href="https://github.com/Vaquill-AI/open-us-law">
-    The ingestion pipeline behind this corpus is open source under a permissive license.
-    Build your own copy, or contribute a source.
+    The open source code behind this corpus.
   </Card>
 </CardGroup>

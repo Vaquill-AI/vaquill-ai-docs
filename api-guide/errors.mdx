@@ -38,20 +38,10 @@ Validation errors (422) keep `detail` as a short string and put the field-level 
 }
 ```
 
-Read `detail` for the message and `errors[].loc` to find the field.
-
-<Accordion title="Error body edge cases">
-  The `401` text says which of three things is wrong: no key was sent, the key does not start with `vq_key_`, or the key is unknown, revoked or expired.
-
-  Every `404` and `405` carries `code` and `requestId`, including a path that does not exist.
-
-  Some validation errors carry extra keys on each entry, such as `ctx` for a failed rule.
-  A `422` from a rule that spans several fields (`chapter` without `titleNumber`, a malformed Boolean expression) is a plain `detail` string with no `errors` array, as is every other error status.
-</Accordion>
+Read `errors[].loc` to find the field.
+A `422` from a rule that spans several fields (`chapter` without `titleNumber`, a malformed Boolean expression) has a plain `detail` string and no `errors` array.
 
 ## Status codes
-
-Each row links to the [error code reference](/errors/codes), which is the per-code detail.
 
 | Status | Error codes | What to do |
 |---|---|---|
@@ -70,10 +60,12 @@ Each row links to the [error code reference](/errors/codes), which is the per-co
 | `503` Service Unavailable | [`service_unavailable`](/errors/codes#service_unavailable) | A backend is temporarily unavailable. Not charged. Retry with backoff |
 | `504` Gateway Timeout | [`upstream_timeout`](/errors/codes#upstream_timeout) | An upstream call timed out. Refunded. Retry with backoff |
 
-A `429` has three meanings, told apart by `code`.
-`rate_limited` is retryable.
-`quota_exceeded` is a standing account limit such as the watch cap (see [Law change alerts](/api-guide/alerts)), and `retryable: false`, because waiting does not help: delete a watch or upgrade.
-`daily_cap_exceeded` is the per-key daily cap.
+A `429` has three meanings, told apart by `code`:
+
+- `rate_limited` is retryable.
+- `quota_exceeded` is a standing account limit such as the watch cap (see [Law change alerts](/api-guide/alerts)). It has `retryable: false`. Delete a watch or upgrade.
+- `daily_cap_exceeded` is the per-key daily cap.
+
 The cooldown `429` on a watch test delivery sends `Retry-After: 30`.
 
 ### 402 body
@@ -95,46 +87,47 @@ A `402` adds the numbers behind the refusal when they are known:
 ### 400 versus 422
 
 A `422` is schema validation: a field is missing, or its type or range is wrong.
-The API rejects it before your request reaches any business logic, and the response carries the `loc` array shown above.
+The response carries the `loc` array shown above.
+`GET` and `POST /us/statutes/resolve` also return `422` (code `invalid_citation_input`) for a `corpusType` or `state` scope they do not accept. Nothing is charged.
 
 A `400` is a request that is well-formed but not allowed.
-`GET` and `POST /us/statutes/resolve` answer a `corpusType` or `state` scope they do not accept with a `422` (code `invalid_citation_input`) before any charge, so nothing is charged or refunded.
 `POST /watches` and `PATCH /watches/{id}` return it for:
 
 - a `scope` the board cannot be narrowed by, or an `actId` scope that does not exist on that board,
-- a source that is not scopable at all, meaning a board whose `scopable` is `false` such as the Federal Register,
+- a board whose `scopable` is `false`, such as the Federal Register,
 - a missing `webhookUrl` or `emailAddress` for the `channel` you asked for, or one set on a channel that does not use it,
 - a `webhookUrl` the API refuses as a delivery target,
 - a `webhookAuth.headerName` that is not a legal header name, or outbound auth set on an email-only watch.
 
-The `detail` string names the specific problem, so read it rather than retrying.
+The `detail` string names the problem. Do not retry without changing the request.
 
 ### 409 on watches
 
-`POST /watches` returns `409` when you already hold a watch on the same board, the same channel, and the same scope.
-Watches are unique on that triple, so a `409` means the subscription already exists. Nothing has failed.
-`PATCH /watches/{id}` returns it for the same reason, when narrowing a watch's `scope` would collide with another watch you already hold.
-List your watches with `GET /watches` and reuse the existing one.
+`POST /watches` returns `409` when you already hold a watch on the same board, channel and scope.
+`PATCH /watches/{id}` returns it when narrowing a watch's `scope` would collide with another of your watches.
+The subscription already exists, so list your watches with `GET /watches` and reuse it.
 
 ## Rate limiting
 
-Limits are enforced per API key and scale with your plan.
-A valid key has its own bucket at your plan limit, so other callers behind the same IP address do not use it up.
-A per-address backstop at 10 times that limit also applies.
-A key that does not validate is counted in the shared per-address bucket instead.
+Limits apply per API key and scale with your plan.
+Each valid key has its own bucket, and a per-address limit at 10 times your plan limit also applies.
+A key that does not validate counts against the shared per-address bucket.
 
-Every response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` (a Unix timestamp) for the per-minute window.
-It also carries `X-RateLimit-Limit-Hour` and `X-RateLimit-Remaining-Hour` for the hourly window.
-`X-RateLimit-Limit-Day`, `X-RateLimit-Remaining-Day` and `X-RateLimit-Reset-Day` (the next UTC midnight, as a Unix timestamp) describe the daily one.
-On a request with an API key, `X-RateLimit-Scope` is `key` when the numbers describe your key's own bucket and `ip` when they describe the shared per-address bucket.
-It is absent on requests without an API key.
-Browsers can read all of these headers on cross-origin calls.
-When you exceed one the API returns `429`.
+Every response carries these headers:
+
+| Window | Headers |
+|---|---|
+| Per minute | `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (Unix timestamp) |
+| Per hour | `X-RateLimit-Limit-Hour`, `X-RateLimit-Remaining-Hour` |
+| Per day | `X-RateLimit-Limit-Day`, `X-RateLimit-Remaining-Day`, `X-RateLimit-Reset-Day` (next UTC midnight, Unix timestamp) |
+
+On a request with an API key, `X-RateLimit-Scope` is `key` for your key's own bucket and `ip` for the shared per-address bucket.
+Exceeding a limit returns `429`.
 
 <RetryAfter />
 
-The official [SDKs](/api-guide/sdks/overview) already retry the safe cases for you.
-If you call the API directly, add exponential backoff so retries spread out under sustained pressure.
+The official [SDKs](/api-guide/sdks/overview) retry the safe cases for you.
+If you call the API directly, add exponential backoff.
 
 <Accordion title="Retry loop example">
 
@@ -197,7 +190,7 @@ const data = await searchWithRetry({ query: "data breach notification" });
 </Accordion>
 
 <Tip>
-  Pace your requests before you hit the ceiling. A small client-side delay between calls in a paging loop keeps you under the limit and cuts down on retries.
+  In a paging loop, add a small delay between calls to stay under the limit.
 </Tip>
 
 ## Related

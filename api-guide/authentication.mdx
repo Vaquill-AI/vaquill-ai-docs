@@ -23,8 +23,7 @@ Keys use the `vq_key_` prefix and are tied to your account.
     Go to [app.vaquill.ai/settings](https://app.vaquill.ai/settings).
   </Step>
   <Step title="Create a key">
-    Under **API Keys**, click **Create API Key**. Copy the key now and store it somewhere safe.
-    The dashboard can reveal keys created on or after 2026-08-03 again, but treat the key as a secret either way.
+    Under **API Keys**, click **Create API Key**. Copy the key and store it somewhere safe.
   </Step>
 </Steps>
 
@@ -57,20 +56,15 @@ Active keys are capped per account. Creating one past the cap fails.
 | Vaquill API Business | 5 |
 | All other plans | 2 |
 
-The cap of 2 fills up fast, because the console's Playground mints a key of its own when it cannot reuse one. An account with one integration key and a Playground key is already at the cap.
+The console's Playground creates a key of its own when it cannot reuse one, and that key counts toward the cap.
 
 Revoking a key frees its slot immediately.
-The cap is only checked when a key is created or reactivated, so lowering a plan never revokes a key you already hold.
 
 <Accordion title="Rotating a key">
-  On Business, you can rotate without downtime: create the new key, deploy it, then revoke the old one. Five slots leave room to overlap.
+  On Business, create the new key, deploy it, then revoke the old one. Five slots leave room to overlap.
 
-  On any other plan sitting at 2 keys, you cannot create the replacement first.
-  Revoke the old key, then create the new one and deploy it. For a short window the old key is dead and the new one is not yet live, so do the revoke and the deploy close together, or upgrade if you need an overlap.
-
-  <Warning>
-    A revoked key stops working immediately, and at the cap there is no free slot to hold the old key open while you roll out. Confirm your deploy pipeline is ready before you revoke.
-  </Warning>
+  On any other plan at 2 keys, revoke the old key first, then create the new one and deploy it.
+  The old key stops working immediately, so keep the gap short or upgrade for an overlap.
 </Accordion>
 
 ## Related

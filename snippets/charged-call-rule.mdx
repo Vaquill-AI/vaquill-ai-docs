@@ -1,2 +1,2 @@
-A call is charged when the API declares the `Idempotency-Key` header on its operation.
-The SDKs derive the list of charged calls from the API contract, and prices are not hard-coded in them.
+A call is charged when its operation declares the `Idempotency-Key` header.
+The SDKs read the list of charged calls from the API contract. Prices are not hard-coded in them.

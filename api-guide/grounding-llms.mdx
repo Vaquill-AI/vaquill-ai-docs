@@ -1,73 +1,66 @@
 ---
 title: "Grounding LLMs with Vaquill AI"
-description: "Why and how to ground model answers in retrieved, authoritative US statutory text"
+description: "How to ground model answers in retrieved US statutory text"
 ---
 
 import CreditsConsumed from '/snippets/credits-consumed.mdx';
 
-A model answering from memory writes fluently about the law and gets it wrong often enough to matter: it invents a plausible citation, drifts from the enacted wording, or answers a question the law does not address instead of saying the sources are silent.
-Grounding fixes this. You retrieve the authoritative sections first and hand the model their verbatim text, then require it to answer only from that text and to cite every claim.
-Every section Vaquill AI returns has a citation, full text, and a link to the official government source, so your users can check the answer against the primary record.
-The pattern is four steps: retrieve, fetch the text, build a grounded prompt, link back to the source.
+Grounding means you retrieve the authoritative sections first and give the model their verbatim text. The model then answers only from that text and cites each claim.
+Every section Vaquill AI returns has a citation, full text, and a link to the official government source, so users can check the answer.
 
 <Note>
-  This page is the "why" and the judgment calls. The runnable, copy-paste implementation lives in the [RAG grounding recipe](/api-guide/recipes/rag-grounding), including the retrieval loop, the prompt, the citation check, and the tool-calling agent variant. Read this first, then go there for code.
+  The runnable implementation is in the [RAG grounding recipe](/api-guide/recipes/rag-grounding). It includes the retrieval loop, the prompt, the citation check, and a tool-calling agent variant.
 </Note>
 
 ## The pattern
 
-A raw question becomes a grounded, verifiable answer in four steps.
-
 <Steps>
   <Step title="Retrieve the relevant sections">
-    Send the user's question to `POST /us/statutes/search`. Scope it with `corpusType` (and `state` for state-scoped corpora) so you search only the body of law that can answer it, and off-target jurisdictions do not compete for the model's attention. Each result carries an `actId`, a `citation`, an `excerpt`, and a source URL.
+    Send the user's question to `POST /us/statutes/search`. Scope it with `corpusType` (and `state` for state-scoped corpora) so off-target jurisdictions do not compete for the model's attention. Each result carries an `actId`, a `citation`, an `excerpt`, and a source URL.
   </Step>
 
   <Step title="Fetch the authoritative text">
-    The `excerpt` is a ranking preview, not quotable text. Get the real thing either by setting `includeBody: true` on the search, which attaches each hit's full text on `body` in the same call, or by calling `GET /us/statutes/section/{actId}/body` per section. Both bill the ordinary body price per body served (see [what a search costs](/api-guide/concepts/search#what-a-search-costs)), so the choice affects latency and not the body price.
+    The `excerpt` is a ranking preview, not quotable text. Set `includeBody: true` on the search to attach each hit's full text on `body`. Or call `GET /us/statutes/section/{actId}/body` per section. Both bill the same body price (see [what a search costs](/api-guide/concepts/search#what-a-search-costs)).
   </Step>
 
   <Step title="Construct a grounded prompt">
-    Build a prompt that gives the model the retrieved sections, each labeled with its citation and source URL, and instructs it to:
+    Give the model the retrieved sections, each labeled with its citation and source URL. Tell it to:
 
     - answer only from the provided sections,
     - cite each claim by its `citation`,
-    - say plainly that it cannot find support when the sources do not cover the question.
+    - say it cannot find support when the sources do not cover the question.
   </Step>
 
   <Step title="Link back to the source">
-    Show the answer with its citations, and link each one to the official government source URL returned with the section. The user can then verify against the primary record without relying on the model.
+    Show the answer with its citations, and link each one to the official source URL returned with the section.
   </Step>
 </Steps>
 
 ## Practical guidance
 
-These habits keep grounded answers accurate and cheap.
-Scoping with `corpusType`, never quoting `excerpt`, treating `relevanceScore` as a relative rank and cost per body are covered in [Best practices](/api-guide/best-practices).
+[Best practices](/api-guide/best-practices) covers scoping, `excerpt`, `relevanceScore` and cost per body.
 
 <AccordionGroup>
   <Accordion title="Keep the retrieved text verbatim">
-    Do not summarize, clean up, or paraphrase a section before it reaches the model. Paraphrasing can shift the meaning, and it defeats the point of grounding. Pass the `body` text through untouched, and let the model quote from it directly.
+    Pass the `body` text through untouched. Paraphrasing can shift the meaning.
   </Accordion>
 
   <Accordion title="Carry the citation and source URL with every passage">
-    When you assemble the context block, keep each passage next to its `citation` and its source URL (for example `htmlUrl`, `stateHtmlUrl`, or `govInfoHtmlUrl`). That lets the model attribute claims correctly and lets you render clickable, verifiable citations in your UI.
+    Keep each passage next to its `citation` and its source URL (for example `htmlUrl`, `stateHtmlUrl`, or `govInfoHtmlUrl`). The model can then attribute claims, and your UI can show clickable citations.
   </Accordion>
 
   <Accordion title="Gate the context block on noGoodMatch">
-    Before you build the context block, check `noGoodMatch` on the search response. When it is `true`, nothing in the corpus looks on point: tell the user that, rather than handing the model weak passages it will try to answer from. When it is `null` the ranking was degraded; retry the query.
+    Check `noGoodMatch` on the search response before you build the context. When it is `true`, nothing in the corpus looks on point. Tell the user, and do not give the model weak passages. When it is `null`, retry the query.
 
-    Do not drop results below a fixed `relevanceScore` cutoff like `0.5` or trust a high score as proof of relevance. Use the score to order what you show, and let the grounded prompt decide whether the sections actually answer the question.
+    Do not drop results below a fixed `relevanceScore` cutoff. Use the score only to order what you show.
   </Accordion>
 
   <Accordion title="Verify the model's citations before showing the answer">
-    A grounded model should only cite sections you retrieved, but verify it anyway. Before rendering, check that every `actId` or citation the model used appears in the set you passed in.
-
-    Drop or flag anything that does not match. This catches the rare case where the model reaches back into its own memory instead of the provided context.
+    Check that every `actId` or citation in the model's answer appears in the set you passed in. Drop or flag anything that does not.
   </Accordion>
 
-  <Accordion title="Watch what retrieval costs you">
-    A grounded turn is one search plus one body per section you cite, so cost scales with how many sections you cite rather than how many you retrieve. Cache on `actId`, which is a stable handle for a section.
+  <Accordion title="Watch what retrieval costs">
+    A grounded turn is one search plus one body per section you cite. Cost grows with the sections you cite, not the sections you retrieve. Cache on `actId`.
 
     <CreditsConsumed />
   </Accordion>

@@ -5,8 +5,7 @@ description: "Poll changedSince for sections that moved since your last sync, an
 
 import FreeRateLimited from '/snippets/free-rate-limited.mdx';
 
-**What this gets you:** an early-warning check for your own product.
-It tells you when the law you depend on has moved, and when a state or agency you depend on gains coverage.
+Find out when the law you depend on changes, and when a state or agency gains coverage.
 
 | Question | Use |
 |---|---|
@@ -16,8 +15,7 @@ It tells you when the law you depend on has moved, and when a state or agency yo
 
 ## The sync filter: `changedSince`
 
-`changedSince` takes a `YYYY-MM-DD` date and restricts a search to sections where we have observed a change since then.
-It answers "what moved since my last run" directly, with no snapshot files and no diffing of your own.
+`changedSince` takes a `YYYY-MM-DD` date and limits a search to sections that changed since then.
 
 <CodeGroup>
 ```bash cURL
@@ -61,34 +59,22 @@ def changed_since(query: str, since: str, **scope) -> list[dict]:
 ```
 </CodeGroup>
 
-Then read each hit's history with `GET /us/statutes/section/{actId}/changes` when you need to know what actually moved.
-`changedSince` and that endpoint are the same event stream, so a hit here always has a history there.
+Read a hit's history with `GET /us/statutes/section/{actId}/changes` to see what moved.
 
-A `422` means the window is too broad: narrow it with a later date, `corpusType` or `state` (see [Errors](/api-guide/errors)).
+A `422` means the window is too broad. Use a later date, `corpusType` or `state` (see [Errors](/api-guide/errors)).
 
-<Accordion title="What changedSince does and does not guarantee">
+<Accordion title="How changedSince behaves">
 
-- **These are observed changes, not effective dates.**
-  A refresh compared the publisher against the copy we held and found it different.
-  The date is when we saw it, which is an upper bound on when it took effect.
-- **Coverage is bounded by capture, not by the age of the law.**
-  Change capture began long after the corpus did, it is per-source, and events are swept at 5 years.
-  An empty result means no captured change in the window, never that nothing was amended.
-- **A window that is too broad is refused, not truncated.**
-  Match too many sections and the call returns `422` telling you to use a later date or a `state` filter.
-  That is deliberate: a partial change set would look complete to a sync job, which would then mark itself current having never seen the sections that were cut.
-  Narrow with `corpusType` and `state`.
-- **A search still needs a `query`.**
-  `changedSince` narrows a search and does not list everything that moved.
-  Run it once per topic you track, which keeps each result small enough to act on.
+- **Dates are when we saw the change.** They are an upper bound on when it took effect, not an effective date.
+- **An empty result means no captured change in the window.** It does not prove nothing was amended.
+- **A window that is too broad returns `422` instead of partial results.** Narrow it with `corpusType` and `state`.
+- **A search still needs a `query`.** Run one search per topic you track.
 
-Paging is bounded in the ranked modes: `limit` caps at 50 and `offset` at 70, so the deepest reachable result is 120.
-If a window is returning full pages, tighten it with a later date, a `state` list, or a narrower `corpusType` rather than trying to page through it.
-Boolean mode (`matchType: "boolean"`) is the exception: it pages to the end of the matches, with `offset` up to 10,000.
-See [Search](/api-guide/concepts/search) for the ranked modes.
+In ranked modes `limit` caps at 50 and `offset` at 70, so the deepest result is 120.
+Boolean mode (`matchType: "boolean"`) pages to the end of the matches, with `offset` up to 10,000.
+See [Search](/api-guide/concepts/search).
 
-An empty window is a valid answer and is charged the ordinary 4-credit search price, so a nightly job can do nothing when nothing moved.
-Read `creditsConsumed` rather than assuming.
+An empty window is charged the ordinary 4-credit search price. Read `creditsConsumed`.
 
 </Accordion>
 
@@ -122,20 +108,16 @@ if __name__ == "__main__":
 
 ## The other question: a jurisdiction gaining a new corpus
 
-`changedSince` tells you a section moved.
-It cannot tell you that a state you do not yet query has just gained regulations, because there was nothing there to change.
-For that, snapshot `GET /us/statutes/coverage` on a schedule and diff the snapshots.
-<FreeRateLimited /> Daily or weekly is plenty.
+`changedSince` cannot show that a state you do not yet query has gained regulations.
+To catch that, snapshot `GET /us/statutes/coverage` on a schedule and diff the snapshots.
+<FreeRateLimited /> Daily or weekly is enough.
 
 <Accordion title="Snapshot and diff code">
 
-The response is wrapped as `{ "data": {...}, "meta": {...} }`.
-Inside `data`
-you get a `corpusTypes` legend and a `jurisdictions` array, where each jurisdiction carries a `corpora` object mapping a corpusType token to its ingested section count (the same distinct-section count [Coverage](/api-guide/coverage) shows, not the larger passage count used internally for retrieval).
-The full shape is in the coverage endpoint reference.
+The response is `{ "data": {...}, "meta": {...} }`.
+Inside `data` are a `corpusTypes` legend and a `jurisdictions` array. Each jurisdiction has a `corpora` object that maps a corpusType token to its section count (the same count [Coverage](/api-guide/coverage) shows).
 
-**1.
-Fetch and flatten the coverage matrix**
+**1. Fetch and flatten the coverage matrix**
 
 ```python Python
 def fetch_coverage() -> dict:
@@ -156,10 +138,9 @@ def to_snapshot(coverage_data: dict) -> dict:
     }
 ```
 
-**2.
-Persist and diff**
+**2. Save and diff**
 
-Save each snapshot as JSON so the next run has a baseline, then compare the two maps for a new jurisdiction, a new corpus within a known jurisdiction, or an existing corpus whose count grew.
+Save each snapshot as JSON. Compare two snapshots for a new jurisdiction, a new corpus, or a corpus whose count grew.
 
 ```python Python
 import json
@@ -200,7 +181,7 @@ def diff_snapshots(old: dict, new: dict) -> list[str]:
     return changes
 ```
 
-Example output on a run where a state gained regulations (counts here are round placeholders):
+Example output when a state gained regulations (counts are placeholders):
 
 ```text
 2 coverage change(s) detected:
@@ -211,9 +192,8 @@ Example output on a run where a state gained regulations (counts here are round 
 </Accordion>
 
 <Warning>
-  A growing count is a coarse signal.
-  It says the corpus got bigger, not which sections moved, and a re-ingest that replaces sections one for one leaves the count flat.
-  Use the diff to decide that something happened, then use `changedSince` to find out what.
+  A growing count shows the corpus got bigger, not which sections moved.
+  Use `changedSince` to find what changed.
 </Warning>
 
 ## Related

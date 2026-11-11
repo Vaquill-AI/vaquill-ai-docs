@@ -12,10 +12,8 @@ import ChargedCallRule from '/snippets/charged-call-rule.mdx';
 
 The Kotlin client is built for coroutines.
 Every call is a `suspend` function, every paginated endpoint is a `Flow`, and every model is a `kotlinx.serialization` data class.
-It covers the statutes, session law, watch, board, credit and pricing operations of the US Data API; the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) lists the operations without a method yet.
-It targets JVM 11 and newer, and depends on `kotlinx-serialization-json` and `kotlinx-coroutines-core`.
-Transport is the JDK `java.net.http.HttpClient`, so there is no HTTP engine to choose.
-For the options shared by all SDKs, see the [SDKs overview](/api-guide/sdks/overview).
+It covers the statutes, session law, watch, board, credit and pricing operations of the US Data API and targets JVM 11 and newer.
+For shared options and the operations without a method yet, see the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits).
 
 <Warning>
   Preview. Not yet published to Maven Central, so build locally and use `publishToMavenLocal` until the first release.
@@ -63,8 +61,7 @@ fun main() = runBlocking {
 }
 ```
 
-Create one client and share it. It is thread safe, and safe to call from many coroutines at once.
-Call `close()` (or use `use {}`) to release its threads.
+Create one client and share it across coroutines. Call `close()` (or use `use {}`) when done.
 
 ## Configuration
 
@@ -83,12 +80,9 @@ val client = VaquillClient {
 
 Per-call overrides go in `RequestOptions(timeout, maxRetries, idempotencyKey, headers)`, the last parameter of every method.
 `client.withOptions { ... }` makes a copy that shares the transport and the spend total.
-`Authorization` and `Idempotency-Key` cannot be overridden by default or per-call headers.
 
-`timeout` is the total time for one HTTP attempt, from sending the request until the whole response body has been read.
-Each retry gets a fresh budget. Connecting has its own fixed 5 s limit.
-This is stricter than the Python SDK for very large bodies, so raise `timeout` for them or use `Duration.ZERO`.
-The logger receives every line after API key redaction, and idempotency keys are logged by their first 8 characters only.
+`timeout` covers one HTTP attempt, until the whole response body has been read. Each retry gets a fresh budget.
+For very large bodies, raise `timeout` or use `Duration.ZERO`.
 
 Read the status, request id and credits of a call with `withResponse`.
 
@@ -130,8 +124,6 @@ VaquillException
     UnexpectedStatusException         any other 4xx or 5xx
 ```
 
-The class is chosen by the error `code` first, then by status, so an unknown future code still gives the status class.
-
 ```kotlin
 try {
     client.statutes.getSection("TX-PEN-22.01")
@@ -150,10 +142,10 @@ try {
 
 Kotlin specifics:
 
-* 501 is not retried, and the codes the server marks retryable are retried.
-* Connect failures never reached the server, so they are always retried.
-* Other transport failures are ambiguous. They are retried only for GET and HEAD, or when the call carries an idempotency key.
-* A 5xx on a charged call is not retried unless the call has an idempotency key, because it may already have been billed.
+* 501 is not retried.
+* Connect failures are always retried.
+* Other transport failures are retried only for GET and HEAD, or when the call carries an idempotency key.
+* A 5xx on a charged call is not retried without an idempotency key.
 
 <IdempotencyKeys />
 
@@ -163,16 +155,14 @@ Charged calls get a fresh UUID key automatically. Pass your own for a retry that
 client.statutes.search("trespass", options = RequestOptions(idempotencyKey = "order-7731-search-1"))
 ```
 
-A key must be 16 to 255 visible ASCII characters. An empty or invalid key throws `VaquillException` before any request.
+A key must be 16 to 255 visible ASCII characters.
 `ApiResponse.idempotentReplayed` is true when the server replayed a stored answer. A replay is not charged again and not counted by the spend guard.
-The batch helpers suffix a caller key with `-1`, `-2` and so on for chunks after the first, because each chunk has a different body.
 
 ## Spend guard
 
 `maxCredits` caps what this client, and clients derived from it, will spend.
-Charged calls are serialised by a coroutine `Mutex` while the cap is set, so the cap is exact even under heavy concurrency. See [how the guard stays exact](/api-guide/sdks/overview#spend-guard).
 When the cap is reached the call throws `SpendGuardExceededException` and nothing is sent.
-Free calls are never blocked. `client.creditsSpent` shows the running total.
+Free calls are never blocked. `client.creditsSpent` shows the running total. See [the spend guard](/api-guide/sdks/overview#spend-guard).
 
 ## Pagination and batch helpers
 
@@ -189,8 +179,7 @@ println("${p.truncated} ${p.stuck}")
   Charged endpoints spend credits on every page. Set `maxPages` or `maxItems` unless you mean to read everything.
 </Warning>
 
-`truncated` is true when a guard cut the result short.
-`stuck` is true when the server repeated the position it was just sent, or answered an empty page with `hasMore: true`. The loop stops instead of paying for the same page forever.
+`truncated` is true when a limit cut the result short. `stuck` is true when the server repeated the position it was just sent. The loop then stops.
 
 | Method | Pages by |
 | --- | --- |
@@ -224,7 +213,7 @@ println("${event.event} ${event.firedAt} ${event.extra}")
 
 * Standard Webhooks signatures with a `whsec_` base64 secret (or a plain UTF-8 secret), and a timestamp tolerance of 300 s by default.
 * Pass several secrets (`secrets = listOf(new, old)`) to accept both during a rotation.
-* An empty or blank secret, or a `whsec_` secret that is not valid base64, throws `IllegalArgumentException`. A misconfigured environment can never accept a forged event.
+* An empty secret, or a `whsec_` secret that is not valid base64, throws `IllegalArgumentException`.
 * `Webhooks.verify` checks the signature only. `unwrap` also parses the event.
 * The legacy `X-Vaquill-Signature` header is rejected unless you pass `allowLegacy = true`. It has no replay protection.
 
@@ -235,10 +224,4 @@ See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
 <ChargedCallRule />
 
 Read the live prices with `client.pricing.get()`, which is free.
-The User-Agent is `vaquill-kotlin/0.1.0 kotlin/<version> java/<version> <os>`.
-A dedicated [Java SDK](/api-guide/sdks/java) also exists. For an endpoint newer than the SDK, use `client.rawRequest(method, path, query, body, charged)`.
-
-<Accordion title="Release workflow status">
-  The release workflow, which signs the artifacts and uploads them to the Sonatype Central Portal, has never run.
-  The first release may need fixes, and a release candidate tag is planned first.
-</Accordion>
+A [Java SDK](/api-guide/sdks/java) also exists. For an endpoint newer than the SDK, use `client.rawRequest(method, path, query, body, charged)`.

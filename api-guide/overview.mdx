@@ -15,12 +15,16 @@ import CreditsConsumed from '/snippets/credits-consumed.mdx';
   style={{ width: '100%', height: 'auto', borderRadius: '0.5rem', margin: '0 0 1.5rem' }}
 />
 
-The Vaquill Data API searches and retrieves the US Code, the Code of Federal Regulations, all 50 state statutory codes plus DC and Puerto Rico, state and US constitutions, court rules, executive orders, Federal Register agency rules, and agency guidance.
+The Vaquill Data API searches and retrieves US primary law:
 
-Every section comes back with a citation, status and currency signals, full text in more than one format, and a link to the official government source.
-Typical uses are grounding AI (RAG and agents), compliance and RegTech work, and putting authoritative legal text inside your own product.
+- the US Code and the Code of Federal Regulations
+- statutory codes for all 50 states, DC and Puerto Rico
+- state and US constitutions and court rules
+- executive orders, Federal Register agency rules and agency guidance
 
-**Start here:** the [Quickstart](/api-guide/quickstart) makes a first call, and [Authentication](/api-guide/authentication) covers keys.
+Every section comes back with a citation, status and currency signals, full text in more than one format, and a link to the official source.
+
+To start, make a first call with the [Quickstart](/api-guide/quickstart) and get a key from [Authentication](/api-guide/authentication).
 To pick a recipe by what you are building, see [Use cases](/api-guide/use-cases).
 
 ## Capabilities
@@ -40,12 +44,6 @@ Every path is prefixed with `/api/v1`.
 | Live coverage: which jurisdictions hold which corpora | `GET /us/statutes/coverage` |
 | State session laws as enacted: list by state and date, search the text, fetch by id or citation, read the text | `GET /us/session-laws/list`, `POST /us/session-laws/search`, `GET /us/session-laws/{sessionLawId}`, `.../body` |
 | Subscribe to a jurisdiction or corpus and get a webhook or email when it changes, section by section, with before/after text on amendments | `GET /boards`, `POST /watches`, `GET /watches/{id}/changes`, `.../diff` |
-
-<Accordion title="Search with includeBody">
-  `POST /us/statutes/search` accepts `includeBody: true`, which attaches each hit's full text on the result's `body` instead of making you call `/section/{actId}/body` once per hit.
-  A row whose text cannot be resolved comes back with `body: null` and is not charged.
-  This saves round trips. It does not lower the cost of the rows that return text.
-</Accordion>
 
 ### What a call costs
 
@@ -84,13 +82,10 @@ Scope any search with the `corpusType` token. [Corpus types](/api-guide/concepts
 | State | `STATE_REGISTER` | State register notices (not codified law) |
 | State | `STATE_AGENCY_GUIDANCE` | State regulator guidance (insurance bulletins), not itself law |
 
-State session laws cover the 50 states, DC and Puerto Rico, sessions from 1975, and are served by `/us/session-laws` rather than a `corpusType`.
-Coverage is partial for many sessions, and `GET /us/statutes/coverage` reports it live.
+State session laws cover the 50 states, DC and Puerto Rico, from 1975. They are served by `/us/session-laws`, not a `corpusType`.
 See [State session laws](/api-guide/session-laws).
 
-<Note>
-  Coverage expands weekly. Call `/us/statutes/coverage` at runtime to see exactly what is queryable rather than hardcoding jurisdiction counts.
-</Note>
+Coverage expands weekly. Call `GET /us/statutes/coverage` at runtime instead of hardcoding jurisdiction counts.
 
 ## Related
 

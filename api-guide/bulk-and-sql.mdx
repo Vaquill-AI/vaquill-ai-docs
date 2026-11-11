@@ -7,7 +7,7 @@ The API answers one question at a time.
 For the corpus itself, use the bulk files.
 
 Every dated snapshot ships as Parquet in a public object store.
-You can query it where it sits, load it into your own warehouse, or download all of it and run without calling us again.
+You can query it in place, load it into your own warehouse, or download all of it.
 
 ```sql
 -- Runs as-is. No key, no download, no signup.
@@ -18,30 +18,24 @@ FROM read_parquet('https://oss-data-us.vaquill.ai/v2026.09.1/us_ak_constitutions
 WHERE text ILIKE '%unreasonable searches%';
 ```
 
-<Note>
-  That query reads a remote Parquet file over HTTPS.
-  The object store serves range requests, so DuckDB fetches only the column chunks it needs rather than the file.
-</Note>
-
 ## What ships
 
-One Parquet file per jurisdiction and corpus, so you can take only the slice you need: `us_ak_constitutions.parquet`, `us_tx_statutes.parquet`, and so on.
-Versions are immutable: pin `v2026.09.1` and your results stay reproducible when the next snapshot lands.
+One Parquet file per jurisdiction and corpus, such as `us_ak_constitutions.parquet` or `us_tx_statutes.parquet`.
+Versions are immutable. Pin `v2026.09.1` to keep results reproducible.
 
 | Resource | URL | Notes |
 |---|---|---|
-| Manifest | `https://oss-data-us.vaquill.ai/index.json` | Lists every file with its byte size, SHA-256 and URL, so you can verify an unattended sync. It is the live source for file counts and sizes. |
+| Manifest | `https://oss-data-us.vaquill.ai/index.json` | Lists every file with its byte size, SHA-256 and URL. |
 | Browsable index | `https://oss-data-us.vaquill.ai/index.html` | |
 | Per-corpus files | `https://oss-data-us.vaquill.ai/v2026.09.1/us_ak_constitutions.parquet` | 308 Parquet files in `v2026.09.1`. |
-| Combined tarball | `https://oss-data-us.vaquill.ai/v2026.09.1/open-us-law-v2026.09.1-parquet.tar` | About 6.9 GB in `v2026.09.1`. Fetch once and unpack locally. |
+| Combined tarball | `https://oss-data-us.vaquill.ai/v2026.09.1/open-us-law-v2026.09.1-parquet.tar` | About 6.9 GB in `v2026.09.1`. |
 | Canonical mirror | [Hugging Face](https://huggingface.co/datasets/vaquill/open-us-law) | |
 | Source code | [GitHub](https://github.com/Vaquill-AI/open-us-law) | |
 
 ## Schema
 
 Every Parquet file carries the same 27 columns.
-The first 24 are the long-standing ones.
-`official_status`, `currency_note` (both VARCHAR) and `adopting_citations` (VARCHAR[]) are newer and are null for most rows.
+`official_status`, `currency_note` and `adopting_citations` are null for most rows.
 
 <Accordion title="All 27 columns">
 
@@ -71,16 +65,14 @@ The first 24 are the long-standing ones.
 | `cross_references_cfr` | VARCHAR | CFR sections this provision cites |
 | `public_laws_referenced` | VARCHAR | Public laws this provision cites |
 | `year` | BIGINT | Snapshot year |
-| `official_status` | VARCHAR | The publisher's own label for the copy, where one was recorded. Null means unlabelled, not certified official. |
+| `official_status` | VARCHAR | The publisher's own label for the copy. Null means unlabelled. |
 | `currency_note` | VARCHAR | The publisher's own "current through" line |
 | `adopting_citations` | VARCHAR[] | Instruments that adopted or amended the rule (register citations, adopting orders, session laws) |
 
 </Accordion>
 
 <Note>
-  This is the bulk schema.
-  The REST API returns a richer object with amendment history, prior effective dates and format mirrors.
-  See [Response fields](/api-guide/concepts/response-fields).
+  The REST API returns a richer object. See [Response fields](/api-guide/concepts/response-fields).
 </Note>
 
 ## Load it into your own database
@@ -128,18 +120,12 @@ shasum -a 256 -c SHA256SUMS
 
 ## Paid bulk delivery and the vector index
 
-The free snapshots above are the open dataset.
-Two paid options sit beside them.
+Two paid options sit beside the free snapshots.
 A bulk license ships you the corpus under a separate signed agreement.
-The corpus is also held as an embedded, chunked retrieval index, and direct access to that index is available under a data license, which saves you the compute of re-embedding several million sections yourself.
+A data license gives direct access to the embedded retrieval index, so you do not re-embed the sections yourself.
 
-Talk to us at [contact@vaquill.ai](mailto:contact@vaquill.ai) about scope.
-
-<Warning>
-  We do not operate a hosted replica for you, and there is no connection string to rent.
-  You take a copy and run it on your own infrastructure.
-  The copy is yours and keeps working even if we stop operating.
-</Warning>
+Contact [contact@vaquill.ai](mailto:contact@vaquill.ai) about scope.
+We do not host a replica for you. You take a copy and run it on your own infrastructure.
 
 ## License
 
@@ -153,12 +139,9 @@ Attribute as "Open US Law by Vaquill AI, CC BY-NC 4.0".
 
 <Accordion title="Earlier snapshots and paid bulk deliveries">
   Snapshots before v2026.09 were released under CC BY 4.0 and stay that way.
-  They already grant commercial use, redistribution, remixing and model training, irrevocably.
-  From v2026.09 the compilation is CC BY-NC 4.0: free for research, teaching, legal aid and other non-commercial use, with commercial use under a separate license.
-  The public-domain text stays unrestricted either way.
-  Anything you take from the public object store is yours under the license it was published with: CC BY 4.0 for snapshots before v2026.09, CC BY-NC 4.0 from v2026.09.
-  Those grants are irrevocable.
+  They grant commercial use, redistribution, remixing and model training, irrevocably.
+  From v2026.09 the compilation is CC BY-NC 4.0: free for research, teaching, legal aid and other non-commercial use.
 
-  A paid bulk license works the other way: on termination or expiry you delete stored copies of our compilation within 30 days.
-  See [Rights and licensing](/api-guide/rights-and-licensing) for what you keep and why the rules differ.
+  A paid bulk license works differently: on termination or expiry you delete stored copies of our compilation within 30 days.
+  See [Rights and licensing](/api-guide/rights-and-licensing).
 </Accordion>

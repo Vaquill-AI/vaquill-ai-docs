@@ -4,15 +4,14 @@ sidebarTitle: "Statute chatbot"
 description: "A minimal question-and-answer loop that searches US statutes, pulls the governing section, and replies with a cited answer"
 ---
 
-**What this gets you:** a support or research chatbot that answers "what does the law say" questions from statute text and a source link, where a bare model would guess.
+Build a chatbot that answers "what does the law say" questions from statute text and a source link.
 
-Each user message runs one search, pulls the best matching section's text, and returns an answer grounded in that text with a link to the official source.
-The loop needs no framework, so it works the same in Slack, Discord, a web widget, or a terminal.
+Each user message runs one search, gets the best section's text, and returns an answer with a link to the official source. It works in Slack, Discord, a web widget or a terminal.
 
-**Endpoints used:** `POST /us/statutes/search`, `GET /us/statutes/section/{actId}/body`.
+**Endpoints:** `POST /us/statutes/search`, `GET /us/statutes/section/{actId}/body`.
 
-This is the compact retrieve-then-ground loop, and [Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding) covers multi-source answers, stricter citation rules and prompt design.
-To answer in one round trip, pass `"includeBody": true` with `"limit": 1` and the top section's text comes back inline at the same price.
+[Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding) covers multi-source answers and prompt design.
+To answer in one call, pass `"includeBody": true` with `"limit": 1`. The price is the same.
 Keep the two-call version below if you rank three candidates and ground on one.
 
 ## The loop
@@ -26,8 +25,8 @@ Keep the two-call version below if you rank three candidates and ground on one.
     Take the top result and fetch its full text with `GET /us/statutes/section/{actId}/body`.
   </Step>
   <Step title="Reply, grounded and cited">
-    Give an LLM the section text and its citation, and have it answer only from that text.
-    Append the official source link so the user can verify.
+    Give an LLM the section text and citation. Have it answer only from that text.
+    Add the official source link.
   </Step>
 </Steps>
 
@@ -131,24 +130,23 @@ if __name__ == "__main__":
         print("Bot:", answer(message, state="ca"))
 ```
 
-To wire the loop into Slack or Discord, call `answer()` from your message handler and post the return value back.
+To use the loop in Slack or Discord, call `answer()` from your message handler and post the result.
 
-## Making it feel good
+## Tips
 
 <AccordionGroup>
   <Accordion title="Set the jurisdiction once">
-    If your bot serves one state, pass `state` on every search so results stay scoped.
-    If users can switch jurisdictions, capture the two-letter state code from the conversation and pass it through.
-    Omit `corpusType` and `state` to search the entire US corpus when the jurisdiction is unknown.
+    If your bot serves one state, pass `state` on every search.
+    If users can switch states, pass the two-letter state code from the conversation.
+    Omit `corpusType` and `state` to search all US law.
   </Accordion>
-  <Accordion title="Handle the empty case honestly">
-    When search returns no results or the body is unavailable, say so instead of guessing, as `answer()` does above.
-    A bot that reports a miss is more useful than one that invents an answer.
+  <Accordion title="Handle the empty case">
+    When search returns nothing or the body is unavailable, say so, as `answer()` does above.
   </Accordion>
 </AccordionGroup>
 
 ## Related
 
-- [Pick the best source URL](/api-guide/concepts/formats#picking-the-best-available-format): every reply ends with the citation and the official URL, so use the shared preference order and the bot cites the same page as the rest of your product.
-- [Grounding LLMs](/api-guide/grounding-llms): why grounding on retrieved text prevents hallucinated law.
+- [Pick the best source URL](/api-guide/concepts/formats#picking-the-best-available-format): the shared preference order for the official URL.
+- [Grounding LLMs](/api-guide/grounding-llms): why grounding on retrieved text matters.
 - [Resolve a citation](/api-guide/recipes/citation-lookup) and [Vaquill MCP server](/integrations/mcp/vaquill).

@@ -3,28 +3,17 @@ title: "Response fields"
 description: "Which fields a section carries, which corpus each one belongs to, and how to tell 'not applicable' from 'we do not have it'"
 ---
 
-A section object is one shape across every corpus, so a result always carries the same keys whatever you searched.
-Most of them will be `null`, because most belong to a different corpus.
-
-A Federal Register rule has a docket number and a comment-close date.
-A US Code section has a source credit and a chapter.
-A court rule has a rule set.
-None of those fields apply to the other corpora, so a null there is expected.
-
-This page tells the two apart.
-
-## The rule
+Every result has the same keys whatever corpus you searched. Many are `null` because they belong to a different corpus.
+For example, only a Federal Register rule has a docket number, and only a court rule has a rule set.
 
 <Note>
-A `null` on a field this page marks as **not applicable** for your `corpusType`
-carries no information.
-A `null` on a field marked **expected** is a real gap, and worth telling us about.
+A `null` on a field marked **not applicable** for your `corpusType` means nothing.
+A `null` on a field marked **expected** is a real gap. Tell us about it.
 </Note>
 
 ## Present on nearly every section
 
-These keys are on every result and carry a value on nearly every section in every corpus.
-The schema marks all of them except `actId` as nullable, so a null on one is a real gap.
+These keys carry a value on nearly every section.
 
 | Field | Meaning |
 |-------|---------|
@@ -37,15 +26,14 @@ The schema marks all of them except `actId` as nullable, so a null on one is a r
 | `actStatus` | `in_force`, `repealed`, `superseded`, `reserved` and similar. |
 | `goodLawStatus` | Our verdict on whether it is still good law. See [Status and currency](/api-guide/concepts/status-and-currency). |
 
-`externalUrl` is the publisher's own page for the section, and it is `null` when the publisher issues no per-section link or the link is withheld.
-Use `sourceUrl`, which is that link when present and otherwise the best official alternative, as the link you cite.
+`externalUrl` is the publisher's own page for the section. It is `null` when the publisher has no per-section link.
+Cite `sourceUrl`, which is that link when present and otherwise the best official alternative.
 
 ## By corpus type
 
-`o` = expected to carry a value where the code records that level.
+`o` = expected to carry a value where the code has that level.
 `-` = not applicable, ignore the null.
-The rows run in three blocks: hierarchy and credit fields (USC, CFR, STATE), Federal Register fields (`fr*`) and executive-order fields (`president`, `signingDate`).
-What each level is and which jurisdictions name it is on [Hierarchy and container names](/api-guide/concepts/hierarchy).
+For what each level means, see [Hierarchy and container names](/api-guide/concepts/hierarchy).
 
 | Field | USC | CFR | STATE | FEDERAL_REGISTER | EXECUTIVE_ACTION |
 |-------|:---:|:---:|:-----:|:----------------:|:----------------:|
@@ -66,45 +54,42 @@ What each level is and which jurisdictions name it is on [Hierarchy and containe
 | `president` / `signingDate` | - | - | - | - | o |
 | `documentNumber` | - | - | - | o | o |
 
-Two families sit outside this table because they belong to corpora it has no column for.
+Two more families belong to corpora with no column above.
 
 | Fields | Belong to |
 |---|---|
 | `ruleSet`, `ruleSetCode` | `STATE_RULES`, `FEDERAL_RULES` |
 | `articleNumber`, `articleName` | `CONSTITUTION`, `STATE_CONSTITUTION` |
 
-The table covers the most common corpora, not all of them.
-For every field on every corpus, read the `StatuteResult` schema in the OpenAPI reference.
+For every field on every corpus, see the `StatuteResult` schema in the OpenAPI reference.
 
 ## Version and supersession fields
 
-These are populated where a publisher states the relation itself, and null everywhere else.
-A null here means the publisher drew no link we could read.
+These are null unless the publisher states the relation itself.
 
-| Field | Meaning | Where it carries a value |
-|-------|---------|---------|
-| `supersededBy` | `actId` of the document that replaced this one. | Corpora whose publishers print a supersession statement: state agency guidance bulletins, state court rules, and the `I&N Dec.` reporter under `AGENCY_ADJUDICATION`. A document can supersede several predecessors, so the value can be more than one `actId` joined by `; `. |
-| `supersedes` | `actId` of the earlier document this one replaced. | Same corpora as `supersededBy`. |
-| `priorEffectiveDates` | Earlier effective dates the publisher records for the same section. | Where the publisher records them. |
-| `versionId` | The publisher's own identifier for THIS version of the document. | Where a publisher versions a document separately from the document itself, which today means Colorado regulations, where it is the only version pointer that exists. |
+| Field | Meaning |
+|-------|---------|
+| `supersededBy` | `actId` of the document that replaced this one. Can hold several `actId` values joined by `; `. |
+| `supersedes` | `actId` of the earlier document this one replaced. |
+| `priorEffectiveDates` | Earlier effective dates the publisher records for the section. |
+| `versionId` | The publisher's identifier for this version of the document. Used for Colorado regulations. |
 
-See [Status and currency](/api-guide/concepts/status-and-currency) for how to read the direction of a supersession link before treating it as fatal.
+`supersededBy` and `supersedes` appear on state agency guidance bulletins, state court rules, and the `I&N Dec.` reporter under `AGENCY_ADJUDICATION`.
+See [Status and currency](/api-guide/concepts/status-and-currency) for how to read a supersession link.
 
 ## Cross-references between statutes and regulations
 
-USC and CFR sections carry each other's citations where the source material draws the link, so you can walk from a statute to the regulations that implement it, or from a regulation back to the law that authorizes it, without a separate search.
+USC and CFR sections carry each other's citations, so you can go from a statute to its implementing regulations and back.
 
-- **`statutoryAuthority`** (CFR results): the USC citation(s) the regulation cites as its authorizing statute.
-- **`implementingRegulations`** (USC results): the reverse index, which CFR sections cite this statute as their authority.
-- **`crossReferencesCfr`** / **`crossReferencesUsc`**: parsed cross-references to the other corpus found in the section's own text, as a list of section strings (e.g. `['1.6011-4']`).
-  A section referencing itself is represented as `'self:<section>'` rather than omitted.
+- **`statutoryAuthority`** (CFR results): the USC citations the regulation cites as its authority.
+- **`implementingRegulations`** (USC results): the CFR sections that cite this statute as their authority.
+- **`crossReferencesCfr`** / **`crossReferencesUsc`**: cross-references to the other corpus found in the section text, as a list of section strings (for example `['1.6011-4']`). A section that references itself appears as `'self:<section>'`.
 
-All four are nullable and populated only where the underlying source material actually draws the connection.
-Absence does not mean no relationship exists, only that it was not extractable from the text.
+All four are nullable. A null does not mean no relationship exists.
 
 ## Federal Register tracking fields
 
-`FEDERAL_REGISTER` results (final and proposed rules) carry rulemaking-lifecycle fields not present on statute or regulation results, useful for tracking a rule from proposal through effect:
+`FEDERAL_REGISTER` results (final and proposed rules) carry fields for tracking a rule from proposal through effect:
 
 | Field | Meaning |
 |-------|---------|
@@ -116,42 +101,28 @@ Absence does not mean no relationship exists, only that it was not extractable f
 | `frRegulationIdNumbers` | The RIN(s) assigned to the rulemaking. |
 | `frDocketIds` | The regulations.gov docket ID(s) for the rulemaking. |
 
-These are populated on `GET /us/statutes/section/{actId}` (not on search results) for sections under `corpusType=FEDERAL_REGISTER`.
+These appear on `GET /us/statutes/section/{actId}`, not on search results.
 
 ## Point-in-time text: `asOf`
 
-`GET /us/statutes/section/{actId}/body` accepts `asOf=YYYY-MM-DD` and returns the section's text as it stood on that date, with an `asOf` block naming what you are holding.
+`GET /us/statutes/section/{actId}/body` accepts `asOf=YYYY-MM-DD` and returns the text as it stood on that date, with an `asOf` block.
 Read its `source` and `isBounded` before using the text.
-The full contract, per-corpus behaviour and billing rules are on [Point-in-time law](/api-guide/point-in-time).
+See [Point-in-time law](/api-guide/point-in-time).
 
 ## Amendment fields on the Federal Register
 
-`amendmentYears` on a final rule is the year that rule was published, which is the year it amended the CFR.
-A proposed rule carries no amendment years at all, because it amended nothing.
-
-<Accordion title="Why the asymmetry">
-  A proposed rule that was never finalized, or was withdrawn, must not look like enacted law on the field a currency query trusts.
-</Accordion>
+`amendmentYears` on a final rule is the year it was published, which is the year it amended the CFR.
+A proposed rule has no amendment years.
 
 ## Filtering by year
 
-`yearFrom` and `yearTo` match a section on any of three years, in this order:
+`yearFrom` and `yearTo` match a section on the first of these that it has:
 
-1. `lastAmendedYear`, the publisher's own credited amendment.
-2. The year of the section's `effectiveDate`, for a section adopted once and never amended.
-3. The document's own publication or issue year, for the corpora dated that way: Federal Register proposed rules, agency guidance, adjudications and the treaty record.
-   This is not a general fallback.
+1. `lastAmendedYear`, the publisher's credited amendment.
+2. The year of `effectiveDate`, for a section adopted once and never amended.
+3. The publication or issue year, for Federal Register proposed rules, agency guidance, adjudications and treaties.
 
-A section carrying none of the three is not reachable by a year filter and returns zero results rather than an error.
-
-<Accordion title="Why the year filter works this way">
-  Calling an adoption an amendment would be a wrong answer rather than a missing one, so a section adopted once carries no `lastAmendedYear` and is reached through its `effectiveDate` year instead.
-  That year is an index field and is not returned on a result; read `effectiveDate` for the date it came from.
-
-  On statutes and regulations the underlying year field records when we last ingested the text, not when the law changed, so matching it would answer a recent-year window with entire state codes.
-
-  That is why a proposed rule is reachable by its publication year while carrying no `amendmentYears`: "when was this published" and "what did this amend" are different questions, and only the second one is silent for a proposal.
-</Accordion>
+A section with none of the three returns zero results for a year filter, not an error.
 
 ## Related
 

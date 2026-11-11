@@ -3,19 +3,14 @@ title: "Section identifiers"
 description: "The actId section identifier, how it behaves over time, and how to go from search to metadata, full text and neighbors"
 ---
 
-Every section in the Vaquill AI corpus has one canonical identifier: its **`actId`**.
-It is unique, and it is the key you use to fetch a section's metadata and full text.
+Every section has one unique identifier, its **`actId`**.
+Use it to fetch a section's metadata and full text.
 
-You never construct an `actId` by hand.
-You get it from search results and pass it back to the section endpoints.
-
-An `actId` encodes where a section sits in its publisher's hierarchy.
-That keeps it stable through most changes, and it moves only when the section's place in the hierarchy changes.
+Get the `actId` from search results and pass it back to the section endpoints. Do not build one by hand.
 
 ## What an actId looks like
 
-Each `actId` encodes the section's place in the source hierarchy.
-Treat the whole string as an opaque key: read it from a result, store it, and pass it back unchanged.
+Treat the whole string as an opaque key. Read it from a result, store it, and pass it back unchanged.
 
 | Family | actId | Citation |
 |---|---|---|
@@ -23,35 +18,33 @@ Treat the whole string as an opaque key: read it from a result, store it, and pa
 | CFR | `CFR_T17_P240_S240_10b5_1` | 17 C.F.R. § 240.10b5-1 (the dot and hyphen become underscores) |
 | State | `STATE_TX_Cpr_C93_S93.005` | Tex. Property Code § 93.005 |
 
-State ids encode the state's code and section structure, so the segments are not derivable from a citation.
+State ids cannot be derived from a citation.
 
 ## Stability over time
 
-The id derives from the section's place in the hierarchy rather than from its text, so it holds when the text is amended (history is on `amendmentYears`) and when the section is repealed (it keeps the id, carries a dead `actStatus`, and a lookup still resolves).
+The `actId` stays the same when a section is amended or repealed. A repealed section keeps its id and a lookup still resolves.
 It changes only when the section is renumbered, moved or recodified.
-Store the citation alongside the `actId` rather than the id on its own.
+Store the citation alongside the `actId`.
 
-- **A stored `actId` stops resolving:** that is usually a renumbering rather than a repeal, so re-resolve by citation through `GET /us/statutes/resolve` and update your record.
-  Deleting on a failed lookup will quietly drop law that is still in force under a new number.
-  A watch on the section's board emits a `removed` event carrying the old `actId`, which is the earliest signal you can act on (see [Law change alerts](/api-guide/alerts)).
+If a stored `actId` stops resolving, the section was probably renumbered. Re-resolve by citation with `GET /us/statutes/resolve` and update your record.
+A watch on the section emits a `removed` event with the old `actId` (see [Law change alerts](/api-guide/alerts)).
 
 ## The workflow
 
-1. **Search:** `POST /us/statutes/search` returns result objects, each with an `actId`.
-2. **Metadata:** `GET /us/statutes/section/{actId}` returns the full result object for that one section (citation, hierarchy, source URLs).
-3. **Full text:** `GET /us/statutes/section/{actId}/body` returns the section's full text, only when text is available.
-4. **Neighbors (optional):** `GET /us/statutes/section/{actId}/related` returns the sections immediately before and after, within the same container (chapter, part, or code), in the statute's own order and not numeric adjacency.
-   The response carries `previous` and `next` arrays (each a full section object, same shape as a search result) plus a `container` label naming what they neighbor within.
-   This covers "show me the surrounding sections" without a second search call, such as reading § 1983 alongside §§ 1981-1982 and 1985 in one request.
+1. **Search:** `POST /us/statutes/search` returns results, each with an `actId`.
+2. **Metadata:** `GET /us/statutes/section/{actId}` returns the full result object for one section.
+3. **Full text:** `GET /us/statutes/section/{actId}/body` returns the text, when available.
+4. **Neighbors (optional):** `GET /us/statutes/section/{actId}/related` returns the sections before and after, in the statute's own order.
+   The response has `previous` and `next` arrays of section objects and a `container` label.
 
-Search results and the `section` object share the same shape.
-Alongside `actId`, the fields that place a section and cite it are `titleNumber`, `titleName`, `chapter`, `chapterName`, `sectionNumber`, `displayPath` (a human-readable path), `breadcrumb` (an array of hierarchy levels, from broadest to the section), `citation` and `citationShort`.
-Their meanings are on [Hierarchy and container names](/api-guide/concepts/hierarchy) and [Response fields](/api-guide/concepts/response-fields).
-`titleNumber` can be alphanumeric (some states use ids like `13A`), so treat it as a string, not an integer.
+Search results and the `section` object share one shape.
+The fields that place and cite a section are `titleNumber`, `titleName`, `chapter`, `chapterName`, `sectionNumber`, `displayPath`, `breadcrumb`, `citation` and `citationShort`.
+See [Hierarchy and container names](/api-guide/concepts/hierarchy) and [Response fields](/api-guide/concepts/response-fields).
+`titleNumber` can be alphanumeric (such as `13A`), so treat it as a string.
 
 ## Example: search, then fetch
 
-This walks the full path: run a search, take the first `actId`, fetch its metadata, then fetch its body.
+Search, take the first `actId`, then fetch its metadata and body.
 
 ```bash cURL
 # 1. Search
@@ -154,37 +147,29 @@ curl https://api.vaquill.ai/api/v1/us/statutes/section/USC_T42_C21_S1983/related
 
 </Accordion>
 
-A `404` on either section endpoint means no section was found, and the `/body` endpoint returns text only when it is available.
-Check `available` before reading `html` or `plain`.
-A section the publisher prints as images comes back with `bodyUnavailable: true` and `bodyUnavailableReason: "image_only_source"` instead of text.
+A `404` on either section endpoint means no section was found.
+Check `available` before reading `html` or `plain` from `/body`.
+A section printed as images returns `bodyUnavailable: true` and `bodyUnavailableReason: "image_only_source"` instead of text.
 
 ## When an actId misses
 
-An id assembled by hand misses.
-Start from a citation instead with `GET /us/statutes/resolve`, which is what it is for.
+An id built by hand will miss. Start from a citation with `GET /us/statutes/resolve` instead.
 
 <Accordion title="The batch route and its notFound detail">
-  The batch route `POST /us/statutes/sections` takes up to 50 `actIds` and tells why each one missed, so you can tell a bug in your code from a gap in our corpus.
-
-  Alongside `sections` it returns `notFound` (the bare ids) and `notFoundDetail`, one entry per missed id:
+  `POST /us/statutes/sections` takes up to 50 `actIds`. It returns `sections`, `notFound` (the bare ids) and `notFoundDetail`, one entry per missed id:
 
   | Field | Contains |
   |---|---|
-  | `actId` | The identifier from your request that did not resolve. |
-  | `reason` | `assembled_id` or `not_in_corpus`. See below. |
-  | `didYouMean` | Real act ids carrying the section number your id pointed at, best first, at most 3. |
+  | `actId` | The id from your request that did not resolve. |
+  | `reason` | `assembled_id` or `not_in_corpus`. |
+  | `didYouMean` | Up to 3 real act ids for the same section number, best first. |
 
-  `reason: "assembled_id"` means **this id does not exist, but the section does**, under the ids in `didYouMean`.
-  That is almost always an id built from a citation.
-  The chapter, article and part segments are not derivable from a citation, so `Tex. Property Code § 93.005` is `STATE_TX_Cpr_C93_S93.005`, not `STATE_TX_C93_S93.005`.
-  Send one of the suggested ids back and you get the section.
+  `assembled_id` means the id does not exist but the section does, under the ids in `didYouMean`.
+  For example, `Tex. Property Code § 93.005` is `STATE_TX_Cpr_C93_S93.005`, not `STATE_TX_C93_S93.005`.
 
-  `reason: "not_in_corpus"` means nothing matching was found: either the id is malformed beyond recovery, or the section is genuinely absent.
-  Check `GET /us/statutes/coverage` for that jurisdiction before reading it as missing coverage.
+  `not_in_corpus` means nothing matching was found. Check `GET /us/statutes/coverage` for that jurisdiction.
 
-  Ids in `notFound` are **not charged**, so a batch with misses costs less than 50 times the per-section rate.
-  `notFoundDetail` is diagnostic only and never charged.
-  It can come back empty if the suggestion lookup is unavailable, so treat it as a hint rather than a contract.
+  Ids in `notFound` are not charged. `notFoundDetail` can come back empty.
 </Accordion>
 
 ## Related

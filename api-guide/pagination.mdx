@@ -27,15 +27,14 @@ Use it for change history, where new rows land while you page and an offset woul
 
 `cross-state` and `related` have no page two, so raise `limit` to its maximum if you want the whole set.
 
-<Accordion title="How cited-by pages and what its counts mean">
-  `cited-by` pages on `offset`: pass the previous response's `nextOffset` as `offset` while `hasMore` is true.
-  Its `total` is the true count of citing sections across all pages (a lower bound when `totalCitersIsLowerBound` is true), and `returned` is the number of rows on this page.
-  Its response also carries `totalCiters`, `totalCitersIsLowerBound` (true when the count stopped at a ceiling and more exist) and `verifiedCiters`, how many of the leading rows had their text confirmed to name the section.
+<Accordion title="How cited-by pages">
+  `cited-by` pages on `offset`. Pass the previous response's `nextOffset` as `offset` while `hasMore` is true.
+  `total` is the count of citing sections across all pages (a lower bound when `totalCitersIsLowerBound` is true). `returned` is the number of rows on this page.
 </Accordion>
 
 ## Search paging
 
-`POST /us/statutes/search` is the endpoint most integrations page. Two request fields control the window, and one response flag tells you when to stop.
+`POST /us/statutes/search` is the endpoint most integrations page. Two request fields set the window, and one response flag tells you when to stop.
 
 | Field | Type | Default | Range | Purpose |
 |-------|------|---------|-------|---------|
@@ -48,36 +47,34 @@ Each search response includes these top-level fields:
 
 - `results`: the array of result objects for this page.
 - `count`: the number of results returned on this page, not the corpus-wide match count.
-- `total`: a deprecated alias for `count`, still returned for back-compatibility. Read `count` in new code. Unlike `GET /boards`, where `data.total` is the full count, this `total` is never a corpus total.
+- `total`: a deprecated alias for `count`. Read `count` in new code. It is never a corpus total.
 - `offset`: the offset that was applied.
 - `hasMore`: `true` when more results are reachable beyond this page.
-- `changedSectionCount`: only when `changedSince` is set. How many sections changed in that window, before ranking. Compare it against `count` to see whether the page is the whole window or a slice of it.
-- `creditsConsumed`: what this call actually cost. Read it rather than assuming the list price.
+- `changedSectionCount`: only when `changedSince` is set. How many sections changed in that window, before ranking.
+- `creditsConsumed`: what this call cost.
 
 <Warning>
-  `count` and `hasMore` describe the pool this query can reach, never the corpus, and no field reports how many sections match in total.
-  Drive your loop with `hasMore`, not arithmetic on `count`, and narrow the query rather than paging deeper.
+  `count` and `hasMore` describe the results this query can reach, not the corpus. No field reports the total number of matches.
+  Loop on `hasMore`, and narrow the query instead of paging deeper.
 </Warning>
 
 ### How deep you can page
 
 The deepest reachable result is `offset + limit`.
-Ranked modes (`any`, `all`, `phrase`) rank a candidate pool of 120 results once per query and cache it, so every page is a free slice of that ranking with no extra search or rerank.
-`hasMore` is therefore always `false` on the last reachable page: it means "more results are reachable within that pool", not "more matches exist in the corpus".
-With the largest page size, `offset` 70 reaches the whole pool:
+Ranked modes (`any`, `all`, `phrase`) rank a pool of 120 results once per query, so every page is a free slice of that ranking.
+`hasMore` is `false` on the last reachable page. With the largest page size, `offset` 70 reaches the end of the pool:
 
 ```json
 { "query": "data breach notification", "limit": 50, "offset": 70 }
 ```
 
-`matchType: "boolean"` pages to the end of the matches, because the expression is applied while the corpus is searched and not to a ranked pool afterwards.
+`matchType: "boolean"` pages to the end of the matches.
 Keep `limit` at 50 or below and send each `nextOffset` back as `offset` until `hasMore` is `false`.
 To survey a jurisdiction more broadly, scope with `corpusType` and `state` and run several narrower queries, as [Best practices](/api-guide/best-practices) describes.
-A tighter scope also gives more predictable pages.
 
 ### Page until hasMore is false
 
-This loop walks every reachable page of a ranked search, stopping when `hasMore` is `false` or the offset cap is reached.
+This loop walks every reachable page of a ranked search.
 
 <Warning>
   The last ranked page is clamped to `offset` 70, so with `page_size` 50 it overlaps the page before it. The loop drops repeats by `actId`.
@@ -165,15 +162,11 @@ console.log(sections.length);
 
 `GET /boards` and `GET /watches` both take `limit` and `offset` and return their page inside `data`.
 
-They differ in what they tell you about the rest.
-`GET /boards` returns `data.total` and `data.hasMore`, so you can page it properly.
-`GET /watches` returns neither: page it by advancing `offset` until a page comes back shorter than `limit`.
-In practice one page is always enough there, because the watch cap (see [Law change alerts](/api-guide/alerts)) never exceeds the default `limit` of 100.
+`GET /boards` returns `data.total` and `data.hasMore`.
+`GET /watches` returns neither. Advance `offset` until a page comes back shorter than `limit`. One page is enough there, because the watch cap (see [Law change alerts](/api-guide/alerts)) never exceeds the default `limit` of 100.
 
-`GET /boards` needs more care.
-Its `limit` defaults to 500 and 500 is also the maximum, so a client that never passes `offset` silently truncates once the registry passes 500 boards.
-The default limit of 500 covers the registry today, but nothing guarantees it will stay that way.
-Read `total` and page on `offset` using `hasMore` instead of trusting one call.
+The `GET /boards` `limit` defaults to 500, which is also the maximum.
+Page on `offset` using `hasMore` instead of trusting one call.
 
 ```python Python
 import requests
@@ -200,9 +193,9 @@ print(len(all_boards()))
 
 ## Cursor paging on change history
 
-`GET /watches/{id}/changes` and `GET /us/statutes/section/{actId}/changes` page by change `id` rather than by offset.
+`GET /watches/{id}/changes` and `GET /us/statutes/section/{actId}/changes` page by change `id`, not by offset.
 `GET /watches/{id}/deliveries` uses the same backwards `beforeId` contract, with the next cursor in `meta.nextBeforeId`.
-Change ids are monotonic across the whole corpus, so an id is a stable position in the log even as new rows arrive behind you.
+Change ids only increase, so an id is a stable position in the log.
 
 | Parameter | Direction | Purpose |
 |---|---|---|
@@ -217,12 +210,11 @@ The two endpoints return the cursor in different places:
 - `GET /watches/{id}/changes` returns it as `meta.cursor`, alongside `meta.hasMore`.
 - `GET /us/statutes/section/{actId}/changes` returns it as a top-level `cursor`, alongside a top-level `hasMore`.
 
-Either way the cursor is the **highest** `id` on the page, and it is `null` on an empty page, so an idle poll must keep the cursor it already holds rather than overwriting it with `null`.
+The cursor is the highest `id` on the page. It is `null` on an empty page, so an idle poll must keep the cursor it already holds.
 
-**Polling forwards** is the normal case: save the cursor, and pass it as `sinceId` with `order=asc` on the next call.
-Walking forward means a page that fills to `limit` leaves the gap at a known end, so you never lose a row between polls.
+To poll forwards, save the cursor and pass it as `sinceId` with `order=asc` on the next call.
 
-**Walking backwards** is what `beforeId` is for: pass the **lowest** `id` you have seen, with the default `order=desc`, to fetch the page of history that sits behind it.
+To walk backwards, pass the lowest `id` you have seen as `beforeId`, with the default `order=desc`.
 Repeat until a page comes back short of `limit`.
 
 ```python Python
@@ -247,7 +239,7 @@ def backfill(act_id, headers):
 ```
 
 <Warning>
-  `hasMore` on both change endpoints means "this page filled to `limit`", not "more rows definitely exist". A page that happens to land exactly on `limit` reports `true` and the next page comes back empty. Treat an empty page as the end.
+  On both change endpoints, `hasMore` means this page filled to `limit`. The next page can be empty. Treat an empty page as the end.
 </Warning>
 
 ## Related

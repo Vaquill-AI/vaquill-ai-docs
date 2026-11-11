@@ -1,111 +1,56 @@
 ---
 title: "India regulatory publications coverage"
 sidebarTitle: "India regulatory (separate corpus)"
-description: "What the India regulatory publications corpus holds: which regulators and courts, how it is refreshed, and what it deliberately does not hold"
+description: "What the India regulatory publications corpus holds: documents issued by Indian regulators and courts, and the routes to read them."
 ---
 
 <Info>
   This is **India regulatory publications**: what Indian regulators and courts published, and when it changed.
 
-  It is a **different corpus from [India legislation](/api-guide/coverage/india)**, which holds acts and sections.
-  Legislation tells you what the law says.
-  Regulatory publications tell you what a regulator issued last Tuesday.
-  Different routes, different filters, different units.
-  No `actId` applies here, and no `documentId` applies there.
+  It is a different corpus from [India legislation](/api-guide/coverage/india), which holds acts and sections.
+  The routes, filters and units differ. No `actId` applies here, and no `documentId` applies there.
 </Info>
 
-Indian regulators and courts, their own listings, polled on their own schedules.
-
 ```bash
-# The live, self-describing answer, and the authoritative one. Free.
+# The live answer. Free, and authoritative over this page.
 curl https://api.vaquill.ai/api/v1/in/reg/sources \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-`/sources` is the authoritative statement of what this corpus holds: which publishers and sources are served, how far back each one goes, and how fresh each one is.
-It costs no credits, it reads the database, and it is current by construction.
-Anything you display to a user should come from there rather than from this page.
+`/sources` lists the publishers and sources we serve, how far back each goes, and when each was last checked.
+It costs no credits. Show users what it returns rather than what this page says.
+Each source reports `retrievalStatus` and `sourceCheckedAt`.
 
 ## What a document is here
 
-A **document** is one thing a publisher issued: a circular, a notification, a gazette entry, a cause list, a judgment, a press release.
-It has a publisher, a source (the specific listing it came from), a date, a title, and usually an archived file.
+A **document** is one thing a publisher issued: a circular, a notification, a gazette entry, a cause list, a judgment or a press release.
+It has a publisher, a source (the listing it came from), a date, a title, and usually an archived file.
 
-A **version** is one observation of that document.
-Regulators edit in place without saying so, so the same circular can have several versions, and the difference between two of them is often the only notice anyone gets.
-This is the unit the changes feed moves on.
+A **version** is one observation of a document.
+Regulators sometimes edit a document in place, so one circular can have several versions.
+The changes feed moves on versions.
 
-Do not read a document count as a version count.
-Most documents have been observed once and some many times, so there are always somewhat more versions than documents.
+## Publishers
 
-## Freshness
-
-Sources are polled on their own schedules rather than all at once, and a full pass across every source takes hours rather than minutes.
-A document typically appears within a day of the publisher posting it.
-`/sources` reports `sourceCheckedAt` per source, so you can see exactly how stale any one lane is rather than trusting a single global figure.
-
-## The publishers
-
-The largest by volume, in order.
-This is volume, not importance: a single SEBI circular may matter more than a thousand cause lists.
-
-| Publisher |
-|---|
-| CBIC |
-| CDSL |
-| Lok Sabha |
-| eGazette |
-| DoT |
-| Bombay High Court |
-| Rajya Sabha |
-| SEBI |
-| DGFT |
-| PIB |
-| CCI |
-| CBDT |
-
-`/sources` returns the full list with the per-source detail, and is the only statement of what is currently served.
-
-SEBI has by far the most **sources** while being well down this list by volume, which is the shape of the whole corpus.
-A regulator's output is split across many small listings, and the source is what tells you which listing a document came from.
+Publishers include SEBI, CBIC, CBDT, DGFT, DoT, CCI, PIB, eGazette, Lok Sabha, Rajya Sabha and the Bombay High Court.
+A new document usually appears within a day of the publisher posting it.
 
 ## Document types
 
-`docType` is the filter for a class of instrument rather than a publisher.
+`docType` filters by class of instrument rather than publisher.
 
 `act`, `advisory`, `assurance`, `bill`, `bulletin`, `cause-list`, `circular`, `consultation-paper`, `court-order`, `debate`, `direction`, `draft-direction`, `draft-regulation`, `faq`, `gazette-notification`, `general-order`, `guideline`, `informal-guidance`, `instruction`, `judgment`, `master-circular`, `master-direction`, `news`, `notice`, `notification`, `offer-document`, `order`, `practice-direction`, `press-release`, `public-comment`, `public-notice`, `question`, `regulation`, `report`, `rule`, `settlement-order`, `speech`, `tender`.
 
 ## Known limits
 
-Read this section before relying on this corpus in front of a client.
-
-**Not every document has a date.**
-Most documents carry a publication date, but a small share do not: they came from listings that do not publish one, so a date filter silently excludes them.
-Filter on `firstSeenFrom` instead when you need everything.
-
-**A few dates are in the future.**
-A handful of documents carry a date later than today.
-These are genuine: some court listings publish the hearing date rather than the issue date, and we record what the publisher said rather than correcting it.
-
-**The archive is not complete, and says so.**
-Some sources are deliberately metadata-only: we record that a document exists without storing its bytes.
-`fileAvailability` on every document tells you which.
-Asking for the file of a document we never archived returns `content_not_archived` with a 404.
-That is a settled answer, not a transient failure, and retrying will not change it.
-A storage failure on a document we did archive is a different answer, `archive_unavailable` with a 502, and retrying that is worthwhile.
-
-**Coverage reflects what we are permitted to redistribute.**
-Publishers whose terms do not permit redistribution are withheld from this API, and withheld documents are absent rather than listed-and-blocked.
-A publisher can therefore disappear from coverage between two readings, and `/sources` is the only reliable statement of what is currently served.
-
-**Coverage moves.**
-The corpus grows every day and sources are occasionally withdrawn, so this page describes shape rather than quantity.
-Read `/sources` for anything you display to a user, and do not cache its answer as a constant.
+- Some documents have no date, so a date filter excludes them. Filter on `firstSeenFrom` to get everything.
+- Some sources are metadata-only. Check `fileAvailability` before requesting a file.
+- A file we never archived returns 404 `content_not_archived`. Do not retry it.
 
 ## Routes
 
-Five operations, all `GET`, all under `https://api.vaquill.ai/api/v1/in/reg`.
-The Credits column is a snapshot and the live pricing matrix is authoritative.
+Five `GET` operations under `https://api.vaquill.ai/api/v1/in/reg`.
+The Credits column is a snapshot. The live pricing matrix is authoritative.
 
 | Route, under `/api/v1/in/reg` | Credits | What it answers |
 |---|---:|---|
@@ -119,39 +64,32 @@ Full request and response shapes are in the India API Reference tab, generated f
 
 ## Paging and the changes feed
 
-Both list routes page with a **cursor**, never an offset or a page number.
-Send the `nextCursor` you were given and you resume exactly where you stopped.
-There is no page to skip past and no window that shifts under you while you read.
-
+Both list routes page with a cursor, not an offset.
+Send the `nextCursor` you were given to resume where you stopped.
 `hasMore` tells you whether to continue.
-`total` is three-state and worth reading carefully:
 
-- a **number** means we counted
-- **`null`** means we did not count, which is not the same as zero
-- **`0`** means genuinely empty
+`total` has three states:
+
+- A number means we counted.
+- `null` means we did not count. It is not zero.
+- `0` means empty.
 
 On `/documents` the count is capped, and `totalIsExact: false` says so.
-A capped count that claimed to be exact is a number somebody would do arithmetic on.
-On `/changes`, `total` is always `null` by design: the feed is unbounded and counting it would cost more than reading it.
+On `/changes`, `total` is always `null`.
 
 <Note>
-  Multi-value filters are **repeated keys**, not comma lists.
+  Multi-value filters are repeated keys, not comma lists.
   `?publisherId=1&publisherId=2` selects two publishers.
-  `?publisherId=1,2` is rejected with a 400 rather than silently matching nothing, because a filter that quietly matches nothing returns a confident empty page.
+  `?publisherId=1,2` is rejected with a 400.
 </Note>
 
-## Sources and refresh
+## Sources
 
 Every document comes from the publisher's own website or feed.
-No commercial database is a source, and nothing here is re-keyed from a third-party aggregator.
-
-Each source is polled on its own schedule.
-Every poll is recorded whether or not it found anything, so "nothing was published" and "we could not read the page" are distinguishable rather than both appearing as silence.
-`/sources` exposes that per source as `retrievalStatus`.
 
 <CardGroup cols={2}>
   <Card title="India legislation" href="/api-guide/coverage/india">
-    The separate corpus of Indian acts and sections: 64,179 acts and 745,970 sections, with amendment and repeal history.
+    The separate corpus of Indian acts and sections, with amendment and repeal history.
   </Card>
   <Card title="Authentication" href="/api-guide/authentication">
     One `vq_key_` credential and one credit ledger serve every corpus.

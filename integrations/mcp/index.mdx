@@ -5,35 +5,31 @@ description: "Connect Vaquill AI's US primary-law corpus to Claude, Cursor, VS C
 keywords: ["mcp server legal", "claude legal mcp", "cursor legal research", "vs code legal research", "model context protocol legal"]
 ---
 
-The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants call external tools. The Vaquill MCP exposes Vaquill AI's US primary-law corpus: the US Code, the CFR, every state and territory statutory code, state and federal regulations, court rules, constitutions, agency guidance and adjudications, session laws and the Federal Register, plus the law-change alert tools.
+The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants call external tools. The Vaquill MCP gives an assistant access to US primary law. That includes the US Code, the CFR, state and territory codes, regulations, court rules, constitutions, agency guidance, session laws and the Federal Register.
 
-The Vaquill MCP is available three ways: as a Claude connector, as a Claude Code plugin, and as a key-based server for any other MCP client. All three reach the same US primary-law tools.
+You can use it as a Claude connector, as a Claude Code plugin, or as a key-based server for any other MCP client. All three reach the same tools.
 
 <CardGroup cols={1}>
   <Card title="Claude Connector" href="/integrations/mcp/claude-connector">
-    Using Claude? Start here. Add US primary law to claude.ai, Claude Desktop, Claude Code or Cowork with OAuth. No key to create or paste, and the only option that works in Cowork. Also listed in the [Claude Connectors Directory](https://claude.ai/directory/vaquill-ai-primary-law).
+    Start here if you use Claude. Add US primary law to claude.ai, Claude Desktop, Claude Code or Cowork with OAuth. No key needed. It is the only option that works in Cowork. Also listed in the [Claude Connectors Directory](https://claude.ai/directory/vaquill-ai-primary-law).
   </Card>
   <Card title="Claude Code Plugin" href="/integrations/mcp/claude-plugin">
     The same tools plus ten research commands and a US statute research skill, installed from the Vaquill marketplace.
   </Card>
   <Card title="Vaquill MCP" href="/integrations/mcp/vaquill">
-    The API-key setup for Cursor, VS Code, Windsurf and every other client. Search and retrieve US primary law, resolve citations, and read a section as it stood on a past date.
+    API-key setup for Cursor, VS Code, Windsurf and other clients. Search US primary law, resolve citations, and read a section as of a past date.
   </Card>
 </CardGroup>
 
 ## What it covers
 
-The Vaquill MCP is built from the Developer API's own OpenAPI document, so it reaches the whole US corpus, and statutes are only part of it. See [API Coverage](/api-guide/coverage) for the live matrix and current counts.
+The whole US corpus, not only statutes. See [API Coverage](/api-guide/coverage) for the current matrix.
 
-Use it to have an assistant search primary law, resolve a citation to an exact provision, pull authoritative text to ground an answer, or read a section as it stood on a past date.
-
-<Accordion title="How often the corpora refresh">
-  Every corpus is ingested from its own official source and re-pulled on a recurring cycle: daily for the CFR, a weekly check for a new annual US Code edition, and every 7 days or monthly for a state, depending on how it publishes its code. The [coverage page](/api-guide/coverage) is the source of truth if this drifts.
-</Accordion>
+Use it to search primary law, resolve a citation, get source text for an answer, or read a section as of a past date.
 
 ## Supported clients
 
-The server works with any MCP-compatible client. Tested with:
+It works with any MCP client. Tested with:
 
 - Claude Desktop
 - Claude Code
@@ -45,8 +41,8 @@ The server works with any MCP-compatible client. Tested with:
 - Continue
 - Any HTTP-MCP or stdio-MCP client
 
-## Hosted vs self-hosted
+## Hosted or self-hosted
 
-The hosted server is at `https://mcp.vaquill.ai/mcp` (OAuth) or takes a Bearer key (`Authorization: Bearer vq_key_...`). Self-host with `uvx vaquill-mcp`.
-Hosted is the fastest path. Paste a URL into your client and the tools appear. Self-hosting gives you control over rate limits, audit logging and network egress.
-See [Vaquill MCP](/integrations/mcp/vaquill#authentication) for the key options and [Authentication](/api-guide/authentication) for the full model.
+The hosted server is at `https://mcp.vaquill.ai/mcp`. It uses OAuth or a Bearer key (`Authorization: Bearer vq_key_...`). Paste the URL into your client and the tools appear.
+To self-host, run `uvx vaquill-mcp`. That gives you control over rate limits, audit logging and network egress.
+See [Vaquill MCP](/integrations/mcp/vaquill#authentication) for key options and [Authentication](/api-guide/authentication) for the full model.

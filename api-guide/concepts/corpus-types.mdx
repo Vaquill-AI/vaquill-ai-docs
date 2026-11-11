@@ -1,89 +1,79 @@
 ---
 title: "Corpus types"
-description: "How each corpusType token scopes a search, which tokens need a state, and how source narrows a token further"
+description: "What each corpusType token covers, which tokens need a state, and how source narrows a token."
 ---
 
 import GoodLawUnknown from '/snippets/good-law-unknown.mdx';
 
 `corpusType` chooses which body of law a search runs against.
-It is the most important filter in the API, since it decides whether you get a statute, a regulation, a court rule, agency guidance or an agency adjudication.
-
+It is the most important filter in the API.
 Pass one token or a list.
-This page covers the query vocabulary: what each token means and how to scope it.
-For how much data sits behind each one and what is deliberately excluded, see [API Coverage](/api-guide/coverage).
+
+For how much data sits behind each token, see [API Coverage](/api-guide/coverage).
 
 ## Scoping rules
 
 - **Federal token:** send only `corpusType`, such as `{"query": "civil rights under color of law", "corpusType": "USC"}`.
 - **State token:** send `corpusType` and `state`.
-  Omit `state` and the search spans every jurisdiction that has that corpus ingested, which is rarely what you want and always costs the same.
-  `state` also accepts a **list**, so one call can cover several jurisdictions.
-- **Source:** where a token folds in several bodies, narrow further with `source`, such as `{"query": "tip credit", "corpusType": "AGENCY_GUIDANCE", "source": "whd_foh"}`.
+  Without `state`, the search spans every jurisdiction that has that corpus.
+  `state` also accepts a list.
+- **Source:** where a token folds in several bodies, narrow with `source`, such as `{"query": "tip credit", "corpusType": "AGENCY_GUIDANCE", "source": "whd_foh"}`.
 
 ```json
 { "query": "security deposit return", "corpusType": "STATE", "state": "ca" }
 ```
 
 <Note>
-  `titleNumber` is only valid alongside `corpusType` `USC` or `CFR`.
-  Sending it with any other token returns a `422`.
+  `titleNumber` is only valid with `corpusType` `USC` or `CFR`. Any other token returns a `422`.
 </Note>
 
 ## Tokens
 
-Section counts are approximate.
-They include past editions held for point-in-time lookups, and `statusBreakdown.superseded` in the coverage response gives that share.
-Call `GET /us/statutes/coverage` for the live figure and for which tokens have data in which jurisdiction.
+Call `GET /us/statutes/coverage` for live counts and for which tokens have data in which jurisdiction.
 The Source codes column lists the values each token accepts in the `source` filter (see [Filtering to one named source](#filtering-to-one-named-source)).
 
-| Token | Scope | Contains | Source codes | Sections (approx.) | Jurisdictions |
-|---|---|---|---|---:|---|
-| `USC` | Federal | United States Code, the codified federal statutes | - | 60,494 | - |
-| `SESSION_LAW` | Federal | Statutes at Large: public and private laws **as enacted**, 1789-2026 | - | 429,678 | - |
-| `STATUTE_COMPILATION` | Federal | An act's own text **as amended through** a stated later public law | - | 80,447 | - |
-| `CFR` | Federal | Code of Federal Regulations, the continuously refreshed current compilation | `far` (48 C.F.R. ch. 1), `dfars` (ch. 2). Every other CFR result has a null `source`. | 222,076 | - |
-| `CFR_ANNUAL` | Federal | GPO's published **annual editions** of the CFR, 31 editions, 1996-2026 | - | 312,132 | - |
-| `FEDERAL_REGISTER` | Federal | Federal Register agency rules, final and proposed | - | 196,801 | - |
-| `FEDERAL_REGISTER_NOTICE` | Federal | A **curated slice** of Federal Register notices, those acting on a rulemaking | - | 20,675 | - |
-| `EXECUTIVE_ACTION` | Federal | Presidential documents: executive orders, proclamations, memoranda | - | 3,693 | - |
-| `AGENCY_GUIDANCE` | Federal | Sub-regulatory guidance from 53 named sources across 26 agencies | See the [source registry](/api-guide/coverage/agency-guidance) | 97,114 | - |
-| `AGENCY_ADJUDICATION` | Federal | Federal matters decided by an agency, seven bodies | See [Federal coverage](/api-guide/coverage/federal) | 100,920 | - |
-| `US_TAX_TREATY` | Federal | Bilateral income tax treaties and their Treasury technical explanations, from the IRS. See [Treaty coverage](/api-guide/coverage/treaties) | `us_tax_treaty`, `us_tax_treaty_technical_explanation` | 173 | - |
-| `US_TREATY` | Federal | Treaty and international agreement text, one document per article (133,865 documents from the Statutes at Large, U.S.T., T.I.A.S., Bevans, totalization, FATCA and free trade agreement series), plus the Senate treaty record: treaties considered since 1949, resolutions of advice and consent, Treaty Document transmittals (1,492). See [Treaty coverage](/api-guide/coverage/treaties) | `us_treaty`, `senate_treaty`, `senate_treaty_resolution`, `senate_treaty_document`, `senate_executive_report` | 135,357 | - |
-| `SENTENCING_GUIDELINES` | Federal | US Sentencing Guidelines, current sections plus former text in Appendix B | - | 1,283 | - |
-| `FEDERAL_RULES` | Federal | Federal Rules of Civil, Criminal, Appellate and Bankruptcy Procedure, Evidence, and Supreme Court Rules | `frcp`, `frcrp`, `fre`, `frap`, `frbp`, `sct` | 1,130 | - |
-| `FEDERAL_RULES_ANNUAL` | Federal | **Past texts** of the national Federal Rules, from GPO's annual US Code appendix editions. Opt in only. Not current law | - | 1,125 | - |
-| `FEDERAL_RULES_PROPOSED` | Federal | **Pending amendments** to the national Federal Rules, a proposal and not law. Opt in only | - | 49 | - |
-| `FEDERAL_LOCAL_RULES` | Federal | A federal court's **own** rules: the courts of appeals, habeas rules, national courts and 32 district-court rule sets | - | 6,234 | - |
-| `CONSTITUTION` | Federal | US Constitution, Articles and Amendments | - | 74 | - |
-| `STATE` | State | State statutory codes | - | 2,642,636 | 56 |
-| `REGULATION` | State | State administrative codes | - | 1,504,702 | 56 |
-| `STATE_RULES` | State | State court rules: civil, criminal, appellate, evidence, professional conduct, and the local rules of 38 trial courts | - | 69,931 | 56 |
-| `STATE_AGENCY_GUIDANCE` | State | State regulator guidance, almost all insurance bulletins | `state_insurance_bulletin`, `state_financial_bulletin` | 13,402 | 49 |
-| `STATE_AG_OPINION` | State | State Attorney General opinions. **Persuasive authority, not binding law** | `state_ag_opinion` | 109,438 | 45 |
-| `STATE_CONSTITUTION` | State | State constitutions | - | 13,057 | 53 |
-| `STATE_REGISTER` | State | State register **notices**: proposed, adopted and emergency rules as printed. **Not codified law** | - | 153,850 | 24 |
+| Token | Scope | Contains | Source codes |
+|---|---|---|---|
+| `USC` | Federal | United States Code, the codified federal statutes | - |
+| `SESSION_LAW` | Federal | Statutes at Large: public and private laws as enacted, 1789-2026 | - |
+| `STATUTE_COMPILATION` | Federal | An act's own text as amended through a stated later public law | - |
+| `CFR` | Federal | Code of Federal Regulations, the current compilation | `far` (48 C.F.R. ch. 1), `dfars` (ch. 2). Other CFR results have a null `source` |
+| `CFR_ANNUAL` | Federal | GPO's annual editions of the CFR, 1996-2026 | - |
+| `FEDERAL_REGISTER` | Federal | Federal Register agency rules, final and proposed | - |
+| `FEDERAL_REGISTER_NOTICE` | Federal | A curated set of Federal Register notices that act on a rulemaking | - |
+| `EXECUTIVE_ACTION` | Federal | Executive orders, proclamations and memoranda | - |
+| `AGENCY_GUIDANCE` | Federal | Sub-regulatory guidance from named agency sources | See the [source registry](/api-guide/coverage/agency-guidance) |
+| `AGENCY_ADJUDICATION` | Federal | Federal matters decided by an agency | See [Federal coverage](/api-guide/coverage/federal) |
+| `US_TAX_TREATY` | Federal | Bilateral income tax treaties and Treasury technical explanations. See [Treaty coverage](/api-guide/coverage/treaties) | `us_tax_treaty`, `us_tax_treaty_technical_explanation` |
+| `US_TREATY` | Federal | Treaty and international agreement text, one document per article, plus the Senate treaty record. See [Treaty coverage](/api-guide/coverage/treaties) | `us_treaty`, `senate_treaty`, `senate_treaty_resolution`, `senate_treaty_document`, `senate_executive_report` |
+| `SENTENCING_GUIDELINES` | Federal | US Sentencing Guidelines, current sections plus former text in Appendix B | - |
+| `FEDERAL_RULES` | Federal | Federal Rules of Civil, Criminal, Appellate and Bankruptcy Procedure, Evidence, and Supreme Court Rules | `frcp`, `frcrp`, `fre`, `frap`, `frbp`, `sct` |
+| `FEDERAL_RULES_ANNUAL` | Federal | Past texts of the national Federal Rules. Opt in only. Not current law | - |
+| `FEDERAL_RULES_PROPOSED` | Federal | Proposed amendments to the national Federal Rules. Opt in only | - |
+| `FEDERAL_LOCAL_RULES` | Federal | A federal court's own rules: courts of appeals, habeas rules, national courts and district courts | - |
+| `CONSTITUTION` | Federal | US Constitution, Articles and Amendments | - |
+| `STATE` | State | State statutory codes | - |
+| `REGULATION` | State | State administrative codes | - |
+| `STATE_RULES` | State | State court rules, including professional conduct and trial-court local rules | - |
+| `STATE_AGENCY_GUIDANCE` | State | State regulator guidance, mostly insurance bulletins | `state_insurance_bulletin`, `state_financial_bulletin` |
+| `STATE_AG_OPINION` | State | State Attorney General opinions. Persuasive authority, not binding law | `state_ag_opinion` |
+| `STATE_CONSTITUTION` | State | State constitutions | - |
+| `STATE_REGISTER` | State | State register notices: proposed, adopted and emergency rules as printed. Not codified law | - |
 
-A state-scoped token requires `state`, or spans every jurisdiction holding that corpus.
-
-Tokens you can walk with `/us/statutes/divisions` are the ones with `browsable: true` in the coverage legend: `USC`, `CFR`, `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
+You can walk the tokens with `browsable: true` in the coverage legend using `/us/statutes/divisions`: `USC`, `CFR`, `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
 
 State session laws have no `corpusType`.
-They are served by [`/us/session-laws`](/api-guide/session-laws), not `/us/statutes`.
+They are served by [`/us/session-laws`](/api-guide/session-laws).
 `SESSION_LAW` is the federal Statutes at Large only.
 
-The OpenAPI enum also accepts two more values that are not tokens to search today:
+The OpenAPI enum also accepts two values that are not searchable tokens today:
 
-- `USC_ANNUAL` is GPO's retired annual edition of the US Code, kept only so a past date can be answered from a printed edition.
-- `FEDERAL_BILL` holds the text of Congressional bills of the 119th Congress, which is proposed text and never law.
-  It is opt in only and never part of an unscoped search, a browse or a total.
-  Enacted text is served under `SESSION_LAW` and, once codified, `USC`.
+- `USC_ANNUAL` is GPO's retired annual edition of the US Code.
+- `FEDERAL_BILL` holds text of Congressional bills, which is proposed text and never law. It is opt in only and never part of an unscoped search.
 
-`STATE_AGENCY_GUIDANCE` is the newest corpus.
-It holds state Department of Insurance bulletins and circular letters.
+`STATE_AGENCY_GUIDANCE` holds state Department of Insurance bulletins and circular letters.
 A bulletin interprets the law and is not itself the law, so it has its own token rather than sharing `REGULATION`.
 Use it for insurance compliance and 50-state survey questions.
-The jurisdiction count and date range are in `GET /us/statutes/coverage`.
 
 ### Tokens that are not current law
 
@@ -91,52 +81,46 @@ The jurisdiction count and date range are in `GET /us/statutes/coverage`.
 
 <AccordionGroup>
   <Accordion title="FEDERAL_RULES_ANNUAL and FEDERAL_RULES_PROPOSED">
-    Both tokens sit beside `FEDERAL_RULES` and share its citations, so neither is part of an unscoped search.
+    Both sit beside `FEDERAL_RULES` and share its citations, so neither is part of an unscoped search.
     Name the token to read them.
-    Neither is watchable: a stage change in a pending amendment is announced on the rule's own watch (see [alerts](/api-guide/alerts#pending-federal-rules-amendments)).
+    A stage change in a pending amendment is announced on the rule's own watch (see [alerts](/api-guide/alerts#pending-federal-rules-amendments)).
 
-    - `FEDERAL_RULES_ANNUAL` holds 1,125 superseded texts of 510 Federal Rules.
+    - `FEDERAL_RULES_ANNUAL` holds superseded texts.
       The `actId` is the current rule's `actId` plus `_E` and the year, such as `{actId}_E2015`.
-      It is superseded text by construction, so read `goodLawStatus` and use `FEDERAL_RULES` for the rule in force.
+      Use `FEDERAL_RULES` for the rule in force.
       To ask what a rule said on a date, pass `asOf` with the current `actId` (see [Point-in-time law](/api-guide/point-in-time)).
-    - `FEDERAL_RULES_PROPOSED` holds 49 pending or proposed amendment documents on 36 current rules.
-      The `actId` is the current rule's `actId` plus `_P` and the cycle year.
-      Every row has `actStatus: "proposed"`.
-      It is a proposal, not law, until its effective date.
+    - `FEDERAL_RULES_PROPOSED` holds amendment documents.
+      The `actId` is the current rule's `actId` plus `_P` and the cycle year, or `_PNOCYCLE` when no cycle year is set (`FRULES_FRE_R707_PNOCYCLE`).
+      A proposal for a new rule (Evidence Rule 707, Bankruptcy Rule 7043) has no current rule to point at.
+      `actStatus` is `proposed`, `superseded` (the amendment took effect) or `withdrawn`.
+      A proposed amendment asked with `asOf` is refused as not law on any date.
       The rule in force lists its pending amendments in `pendingAmendments` (see [Federal coverage](/api-guide/coverage/federal)).
   </Accordion>
   <Accordion title="STATE_REGISTER">
     A state's official register prints each proposed, adopted or emergency rule as a notice on a date.
-    `STATE_REGISTER` holds those notices, one document per printed item, cited by register volume and page (`36 Pa. Bull. 510`).
+    `STATE_REGISTER` holds one document per printed item, cited by register volume and page (`36 Pa. Bull. 510`).
+    See [Register citations](/api-guide/concepts/citation-formats#register-citations).
 
-    **A register notice is not the law.**
-    The codified rule under `REGULATION` is the operative text, and a register page often prints a rule that was later withdrawn, amended or never adopted.
-    Every item is served with `goodLawStatus: "unknown"`, `year` is the year of the issue it was printed in, and it is never given the priority that binding law gets in search ranking.
-    Name the token when you want register notices, and do not read one as the rule in force.
-
-    Cite a register item by its register citation; see [Register citations](/api-guide/concepts/citation-formats#register-citations).
+    The codified rule under `REGULATION` is the operative text.
+    Every item is served with `goodLawStatus: "unknown"`, and `year` is the year of the issue it was printed in.
+    Register notices rank below binding law in search.
     The states loaded are listed on [State and territory coverage](/api-guide/coverage/states#state-administrative-registers).
   </Accordion>
   <Accordion title="STATE_AG_OPINION">
-    A formal written opinion in which a state's chief legal officer construes that state's own statutes, constitution and regulations for a state officer, legislator or local government who asked.
+    A formal written opinion in which a state's chief legal officer construes that state's laws for a state officer, legislator or local government.
+    It is persuasive authority and does not bind a court.
+    `goodLawStatus` is always `unknown`. See [Status and currency](/api-guide/concepts/status-and-currency).
 
-    **Persuasive authority, not binding law.**
-    `goodLawStatus` is always `unknown`.
-    Officials follow these opinions in practice, and for a provision no court has reached one is often the only interpretive authority, but it does not bind a court.
-    The reasoning is on [Status and currency](/api-guide/concepts/status-and-currency).
-
-    Where a jurisdiction runs more than one series, the `series` field carries the publisher's own label, so you can filter Washington's formal `AGO` apart from its `AGLO` letter opinions, or Georgia's Official from its Unofficial opinions.
-    The series is also part of the `actId`, which is what makes the field trustworthy rather than derived from a title.
+    Where a jurisdiction runs more than one series, the `series` field carries the publisher's label.
+    You can filter Washington's `AGO` from its `AGLO` letter opinions, or Georgia's Official from its Unofficial opinions.
+    The series is also part of the `actId`.
   </Accordion>
   <Accordion title="SESSION_LAW and STATUTE_COMPILATION">
-    Both carry `goodLawStatus: "unknown"`: they are historical records, not statements of current law.
+    Both carry `goodLawStatus: "unknown"`. They are historical records, not statements of current law.
   </Accordion>
 </AccordionGroup>
 
 ## Choosing between tokens that look alike
-
-Four pairs are routinely confused.
-Picking the wrong token returns a confident answer to a different question.
 
 | You want | Use | Not |
 |---|---|---|
@@ -155,24 +139,18 @@ For asking any corpus what it said on a past date, see [Point-in-time law](/api-
 ## Filtering to one named source
 
 `AGENCY_GUIDANCE`, `AGENCY_ADJUDICATION`, `FEDERAL_RULES`, `CFR`, `US_TAX_TREATY`, `US_TREATY` and `STATE_AGENCY_GUIDANCE` each fold several independently filterable bodies into one token.
-Every result carries a `source` field naming which one it came from; pass that value back as the `source`
-filter to scope to it.
+Every result carries a `source` field. Pass that value back as the `source` filter to scope to it.
 
 ```json
 { "query": "petition for writ of certiorari", "corpusType": "FEDERAL_RULES", "source": "sct" }
 ```
 
-`source` accepts a single value or a list, so `source: ["frcp", "sct"]` searches both in one call.
-An unrecognized value is rejected with `422` and the error names every valid code, so the API itself is the authoritative list.
-The codes for each token are in the Source codes column of the [token table](#tokens).
-
-<Note>
-  The `far` and `dfars` sources split **existing** Title 48 data by chapter.
-  They are not a separate ingest and do not add sections to the `CFR` total.
-</Note>
+`source` accepts a single value or a list, such as `source: ["frcp", "sct"]`.
+An unrecognized value returns `422`, and the error names every valid code.
+The codes for each token are in the [token table](#tokens).
 
 ## Related
 
-- [API Coverage](/api-guide/coverage): how much sits behind each token, and what each corpus deliberately excludes.
-- [Jurisdictions and state codes](/api-guide/concepts/jurisdictions): the 56 jurisdictions and how to discover live coverage.
+- [API Coverage](/api-guide/coverage): how much sits behind each token.
+- [Jurisdictions and state codes](/api-guide/concepts/jurisdictions): the 56 jurisdictions and how to find live coverage.
 - [Status and currency](/api-guide/concepts/status-and-currency): what `goodLawStatus` means per corpus.

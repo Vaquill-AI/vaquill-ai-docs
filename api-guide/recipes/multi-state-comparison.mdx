@@ -4,12 +4,9 @@ sidebarTitle: "Compare states"
 description: "Find the comparable provision in other states from one section, or run one multi-state search, instead of a search per state"
 ---
 
-**What this gets you:** a multi-state comparison table for a rule, built from API calls instead of by hand.
-It suits due diligence, multi-state compliance, and any "how does this vary by state" question.
+Build a multi-state comparison table for a rule, such as security deposits, non-competes or breach notice.
 
-Many legal questions are the same question asked of many jurisdictions: how does each state handle security deposits, non-competes, or breach notice?
-There are three ways to answer that, and they differ by an order of magnitude in cost.
-Start at the top.
+There are three ways to do it. Cost differs a lot, so start at the top.
 
 | Approach | Calls | Credits | Gives you |
 |---|---|---|---|
@@ -17,16 +14,14 @@ Start at the top.
 | `POST /us/statutes/search` with `state` as a list | 1 | 4 | One merged ranking across the states you named |
 | One search per state | 1 per state | 4 per state, so 200 for the 50 states | A guaranteed top hit for each state, including the ones with no strong match |
 
-These are task totals at today's prices.
-The live list is [`GET /api-credits/pricing`](/api-reference/pricing/get-api-credit-pricing), and `creditsConsumed` on each response is what that call billed.
+Current prices are at [`GET /api-credits/pricing`](/api-reference/pricing/get-api-credit-pricing). `creditsConsumed` on each response shows what the call billed.
 
-**Endpoints used:** `GET /us/statutes/section/{actId}/cross-state`, `POST /us/statutes/search`, and `GET /us/statutes/coverage` (free) to check which jurisdictions carry the corpus.
+**Endpoints:** `GET /us/statutes/section/{actId}/cross-state`, `POST /us/statutes/search`, and `GET /us/statutes/coverage` (free) to see which jurisdictions have the corpus.
 
 ## Best: start from one section you already have
 
-If you can name the provision in one state, `cross-state` finds its analogue elsewhere.
-This is the endpoint built for this question.
-It returns at most one provision per state, ordered most similar first, so the response reads as a jurisdiction comparison rather than a relevance list.
+If you can name the provision in one state, `cross-state` finds its analogue in other states.
+It returns at most one provision per state, most similar first.
 
 <CodeGroup>
 ```bash cURL
@@ -78,18 +73,14 @@ async function crossState(actId, limit = 10) {
 ```
 </CodeGroup>
 
-Take the `actId` from a `/us/statutes/search` result rather than assembling the string yourself.
-Do not have one?
-Spend one search to find it, then one `cross-state` call.
+Take the `actId` from a `/us/statutes/search` result. If you have none, run one search first.
 
 <Note>
-  Scores are relative retrieval signals, not legal opinions.
-  `similarity` (0 to 1) says two provisions cover the same ground, not that they impose the same obligation, and the differences are the point.
-  Read the response as a shortlist.
-  `relevanceScore` on a search is a rank within one response, so do not compare scores across separate responses.
+  `similarity` (0 to 1) means two provisions cover the same ground. It does not mean they impose the same obligation. Treat the response as a shortlist.
+  `relevanceScore` on a search is a rank within one response. Do not compare it across responses.
 </Note>
 
-A trimmed response (`neighbors` is cut to one entry here, and can hold up to `limit`, at most 25):
+A trimmed response (`neighbors` is cut to one entry and can hold up to `limit`, at most 25):
 
 ```json
 {
@@ -106,22 +97,19 @@ A trimmed response (`neighbors` is cut to one entry here, and can hold up to `li
 }
 ```
 
-`statesCovered` is how many other states were actually examined, meaning their own search held something to consider.
-A state counts whether or not it appears in `neighbors`, so `neighbors` can be shorter than `statesCovered`: a state whose best provision is not on the same subject is left out, and `limit` caps the list.
-Historical editions and dead law (superseded or repealed text) are not searched as another state's equivalent, so they never count.
-A state whose search failed and that the wider search never reached is not counted, and a state with no state statute corpus holds nothing to examine.
-If `rankingDegraded` is true, the neighbors are in retrieval order, `matchQuality` is null, `note` says so, and the call is refunded (`creditsConsumed` 0).
+`statesCovered` is how many other states were examined. `neighbors` can be shorter, because states with no same-subject provision are left out and `limit` caps the list.
+Repealed and superseded text is not matched.
+If `rankingDegraded` is true, the neighbors are in retrieval order, `matchQuality` is null, `note` explains, and the call is refunded (`creditsConsumed` 0).
 
 <Note>
-  `cross-state` is scoped to state statute sections.
-  USC, CFR, regulations and court rules return empty with a `note`, refunded, because a federal section has no state analogue by definition.
-  `limit` caps at 25.
+  `cross-state` works on state statute sections only.
+  USC, CFR, regulations and court rules return an empty list with a `note`, and the call is refunded.
 </Note>
 
 ## Next best: one search across several states
 
-`state` accepts a list, so one call covers every jurisdiction you name.
-Use this when you have no starting section, or when you want the corpus to pick the states rather than picking them yourself.
+`state` accepts a list, so one call covers every state you name.
+Use this when you have no starting section.
 
 <CodeGroup>
 ```bash cURL
@@ -159,17 +147,15 @@ def best_per_state(results: list[dict]) -> dict[str, dict]:
 ```
 </CodeGroup>
 
-There is no reserved slot per state in the merged ranking.
-Raise `limit` (up to 50), group by each result's `state`, and treat a missing state as "not in the top N", not as "no such law".
+The merged ranking has no slot reserved per state.
+Raise `limit` (up to 50) and group by each result's `state`. A missing state means "not in the top N", not "no such law".
 
 <Accordion title="Fallback: one search per state">
-Loop only when you need a guaranteed slot for every named jurisdiction, including the ones with a weak match, and the visible gaps matter more than the spend.
-This is one call per state, 50 in all (the 50 states; DC and the territories are not counted), against a single `cross-state` call.
+Loop only when you need a result slot for every named state, including weak matches.
+This takes one call per state (50 for the 50 states).
 
-**1.
-Drop the states that do not carry the corpus.**
-`GET /us/statutes/coverage` is free.
-Read it once, cache it, and never spend a search on a jurisdiction with no data to return.
+**1. Drop the states that do not have the corpus.**
+`GET /us/statutes/coverage` is free. Read it once and cache it.
 
 ```python Python
 def states_with_corpus(token: str = "STATE") -> list[str]:
@@ -183,9 +169,8 @@ def states_with_corpus(token: str = "STATE") -> list[str]:
     ]
 ```
 
-**2.
-Search each state and assemble the table.**
-States with no match are recorded so the gaps stay visible.
+**2. Search each state and build the table.**
+Record states with no match so the gaps show.
 
 ```python Python
 def compare_across_states(query: str, states: list[str]) -> list[dict]:
@@ -223,6 +208,6 @@ TX    Tex. Prop. Code § 92.103
 
 ## Related
 
-- [Pick the best source URL](/api-guide/concepts/formats#picking-the-best-available-format): results carry several optional URL fields, any may be null, so use the shared preference order and `best_source_url()` helper.
+- [Pick the best source URL](/api-guide/concepts/formats#picking-the-best-available-format): the shared preference order for the `best_source_url()` helper.
 - [Coverage](/api-guide/coverage): which states carry which corpora.
 - [Monitor corpus coverage](/api-guide/recipes/coverage-monitoring): poll for what changed since your last sync.

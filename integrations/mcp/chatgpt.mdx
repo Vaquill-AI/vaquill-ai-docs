@@ -1,15 +1,11 @@
 ---
 title: "ChatGPT and Codex"
 sidebarTitle: "ChatGPT & Codex"
-description: "Connect US primary law to ChatGPT and Codex over MCP. The standard search and fetch pair, OAuth sign-in, and no API key to paste."
+description: "Connect US primary law to ChatGPT and Codex over MCP. Use the search and fetch tools with OAuth sign-in and no API key."
 keywords: ["chatgpt mcp", "chatgpt connector legal", "codex mcp server", "openai apps sdk legal", "deep research connector", "us law chatgpt"]
 ---
 
-The MCP server that serves Claude also serves ChatGPT and Codex. It is the same endpoint, credit balance and corpus of United States primary law.
-
-<Note>
-  `https://mcp.vaquill.ai/mcp` speaks the Model Context Protocol over Streamable HTTP, an open standard, so nothing on it is specific to Claude. The client-specific pages exist because the setup steps differ. The server is the same.
-</Note>
+The same MCP server that serves Claude also serves ChatGPT and Codex. It uses the same endpoint, credit balance and US primary-law corpus.
 
 ## Connect
 
@@ -17,46 +13,38 @@ The MCP server that serves Claude also serves ChatGPT and Codex. It is the same 
 https://mcp.vaquill.ai/mcp
 ```
 
-Add it as a remote MCP server. Leave any API key or header field empty: this endpoint authenticates with OAuth 2.1, so you sign in with your Vaquill AI account and there is nothing to copy.
+Add it as a remote MCP server over Streamable HTTP. Leave any API key or header field empty. The endpoint uses OAuth 2.1, so you sign in with your Vaquill AI account.
 
-An unauthenticated request returns `401` with a `WWW-Authenticate` header pointing at the protected-resource metadata, which is how a compliant client knows to start the sign-in.
-
-For **Codex** and other terminal clients, register it the way that client documents for a remote MCP server over Streamable HTTP, then complete the browser sign-in it opens.
+In Codex and other terminal clients, register it as a remote MCP server the way that client documents, then finish the browser sign-in.
 
 ## The search and fetch pair
 
-Research-style clients, including ChatGPT's deep research and company-knowledge connectors, look for two specific tools rather than a bespoke catalogue. This server publishes both:
+Research clients, including ChatGPT deep research and company-knowledge connectors, look for two tools named `search` and `fetch`. This server provides both:
 
 | Tool | Returns |
 | --- | --- |
 | `search` | `{id, title, url}` records across every US corpus, ready to cite |
 | `fetch` | `{id, title, text, url, metadata}` for one section, by `id`, source URL, or a Bluebook citation such as `42 U.S.C. 1983` |
 
-They are deliberately additive. If your client can call the typed tools instead, prefer them: `search_us_statutes` filters by jurisdiction, corpus, date and status, which the generic pair cannot.
+If your client can call the typed tools, prefer them. `search_us_statutes` filters by jurisdiction, corpus, date and status. The generic pair cannot.
 
 <Warning>
-  **`url` is always a non-empty string on a result.** Research clients render a citation only when it is present, so a result with an empty `url` could not be cited. Every legal-record result carries its official government source URL.
+  `url` is always a non-empty string, because research clients show a citation only when it is present. Every result carries its official government source URL.
 </Warning>
 
 ## Verify it works
 
-A connected status does not prove the server works. Make one real call. The cheapest one is free:
+A connected status does not prove the server works. Make one real call. The cheapest is free:
 
 > "List statutes coverage for California."
 
-`list_statutes_coverage` costs **0 credits**, so it confirms the connection carries an identity without spending anything.
-
-## What you get
-
-The same US corpus as every other Vaquill MCP client. See [API coverage](/api-guide/coverage) for the corpora and the current section counts.
-
-Every legal-record result carries its official source URL and the publisher's own status for that section. Where currency cannot be vouched for, the derived good-law verdict reports `unknown` rather than over-claiming.
+`list_statutes_coverage` costs 0 credits.
 
 ## Costs
 
-Metered per call against your credit balance. Reads are 1 to 6 credits; `list_statutes_coverage`, `get_credit_balance` and `get_pricing` are free. Every response reports its own `creditsConsumed`, and a backend failure returns `503` and is refunded automatically.
+Each call is charged against your credit balance. Reads cost 1 to 6 credits. `list_statutes_coverage`, `get_credit_balance` and `get_pricing` are free. Each response reports `creditsConsumed`, and a backend failure returns `503` and is refunded.
 
-New accounts include 1,000 free credits. See [pricing](https://www.vaquill.ai/legal-api).
+New accounts include 1,000 free credits. See [pricing](https://www.vaquill.ai/legal-api) and [API coverage](/api-guide/coverage) for the corpora.
 
 ## Other clients
 
@@ -71,4 +59,4 @@ New accounts include 1,000 free credits. See [pricing](https://www.vaquill.ai/le
 
 ## Support
 
-Questions, a broken call, or a credit top-up: [vaquill.ai/support](https://www.vaquill.ai/support).
+Questions, a broken call or a credit top-up: [vaquill.ai/support](https://www.vaquill.ai/support).

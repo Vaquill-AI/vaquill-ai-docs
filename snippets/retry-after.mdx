@@ -1,5 +1,4 @@
-A `429` or `503` that sends a `Retry-After` header also carries `retryAfterSeconds` in the error body.
-Both are whole seconds, and for a rate limit they count down to the end of the window that refused you.
-Wait that long, then retry the same request.
+A `429` or `503` with a `Retry-After` header also carries `retryAfterSeconds` in the error body.
+Both are whole seconds. Wait that long, then retry the same request.
 If there is no hint, retry with exponential backoff.
 `daily_cap_exceeded` is also a `429`, but retrying cannot succeed until the cap resets.

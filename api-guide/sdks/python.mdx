@@ -76,9 +76,8 @@ Each method is the `operationId` with the namespace noun removed, so `search_sta
 <ChargedCallRule />
 
 Free: `statutes.coverage`, `boards.list`, every watch operation except `watches.change_diff` (`create`, `list`, `update`, `delete`, `test`, `changes`, `deliveries`), `credits.balance` and `pricing.get`.
-The [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) has the full charged and free table and the operations that have no method yet.
-Some charged calls return `credits_consumed` of 0 (for example a body that is not held), so read the figure from the response.
-`extract_citations` costs 0 credits when `resolve=False`.
+`extract_citations` costs 0 credits when `resolve=False`. Read `credits_consumed` from each response for the actual charge.
+The [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) has the full charged and free table.
 
 <PriceTable />
 
@@ -92,8 +91,7 @@ client.credits_spent  # running total across this client and any with_options() 
 client.pricing.get()  # free: the live price list
 ```
 
-The guard checks what is already spent before a charged call, not the cost of the next call. `credits_spent` adds each response's `credits_consumed`.
-The guard is exact under concurrent threads and tasks. See [how the guard stays exact](/api-guide/sdks/overview#spend-guard).
+The guard checks what is already spent before a charged call, not the cost of the next call. See [the spend guard](/api-guide/sdks/overview#spend-guard).
 
 Async is the same with `AsyncVaquill` and `await`.
 
@@ -128,13 +126,13 @@ except vaquill.APIStatusError as err:
     print(err.status_code, err.request_id)
 ```
 
-`ResponseParseError` is raised when a 2xx response is not the JSON the endpoint promises (bad JSON or the wrong shape). It carries `message`, `request_id` and `status_code`.
-Other classes: `APIConnectionError` and `APITimeoutError` (no response arrived), `AuthenticationError`, `PermissionDeniedError`, `NotFoundError`, `BadRequestError`, `UnprocessableEntityError`, `ConflictError`, `DailyCapExceededError` (a `RateLimitError`; retrying cannot succeed until the cap resets), `InternalServerError`, `SpendGuardExceeded` and `WebhookVerificationError`.
+`ResponseParseError` is raised when a 2xx response is not the JSON the endpoint promises.
+Other classes: `APIConnectionError` and `APITimeoutError` (no response arrived), `AuthenticationError`, `PermissionDeniedError`, `NotFoundError`, `BadRequestError`, `UnprocessableEntityError`, `ConflictError`, `InternalServerError`, `SpendGuardExceeded` and `WebhookVerificationError`.
+`DailyCapExceededError` is a `RateLimitError`. Retrying cannot fix it until the cap resets.
 Idempotency failures are `IdempotencyConflictError` with `IdempotencyKeyReusedError`, `IdempotencyInProgressError` and `IdempotencyReplayUnavailableError`.
 
-Each status error also exposes `code`, `retryable` and `retry_after_seconds`, and the legacy `detail` and `errors` members. They are `None` when the server did not send them.
-The code is checked first, then the status, so an unknown code still gives the status class.
-The message of an `UnprocessableEntityError` (422) ends with the first validation reasons from the response's `errors` list, so the rejected field is in `str(err)`.
+Each status error also exposes `code`, `retryable` and `retry_after_seconds`. They are `None` when the server did not send them.
+The message of an `UnprocessableEntityError` (422) lists the first validation reasons, so the rejected field is in `str(err)`.
 
 ## Retries and idempotency
 
@@ -170,13 +168,12 @@ Iterate the pager for items, call `.pages()` for whole pages and read `.truncate
 Charged helpers: `statutes.iter_search`, `statutes.iter_divisions`, `statutes.iter_section_changes`, `session_laws.iter_search`, `session_laws.iter_list`, `session_laws.iter_changes`, `session_laws.iter_body`.
 Free helpers: `watches.iter_list`, `watches.iter_changes`, `boards.iter_list`.
 
-Two guards stop an iteration that has no `max_pages` or `max_items`.
-`truncated` is `True` whenever a guard left rows unread, including a `max_items` that cut items off the last page.
-`stuck` is `True` when the server returned the offset or cursor it was just sent, or an empty page with `hasMore: true`. The iterator then stops, logs a warning on the `vaquill` logger and does not fetch again, so a misbehaving server cannot burn credits.
+`truncated` is `True` when a limit left rows unread. `stuck` is `True` when the server repeats the offset or cursor it was just sent. The iterator then stops and does not fetch again.
 
 ## Batch helpers
 
-Each helper wraps one batch operation, splits the input at the per-call cap and returns the members of every response as one flat list in input order.
+Each helper wraps one batch operation and splits the input at the per-call cap.
+It returns one flat list in input order.
 
 | Helper | Cap per call | Returns |
 | --- | --- | --- |
@@ -184,17 +181,12 @@ Each helper wraps one batch operation, splits the input at the per-call cap and 
 | `client.statutes.get_sections_all` | 50 | `sections` |
 | `client.session_laws.get_batch_all` | 200 | `laws` |
 
-- The `max_credits` guard is checked before every chunk, so a guard reached part way raises `SpendGuardExceeded` and the remaining chunks are not sent.
+- The `max_credits` guard is checked before every chunk. If it is reached part way, `SpendGuardExceeded` is raised and later chunks are not sent.
 - Exact repeats in the input are sent once.
-- A caller's `idempotency_key` is kept for the first chunk and suffixed with `-<chunk number>` for later ones.
-- An empty input sends nothing and returns `[]`.
 - `get_sections_all` and `get_batch_all` drop ids with no match. Call the single-call method to read `notFound`.
 
-All three are charged. Each exists on `AsyncVaquill` with `await`.
+All three are charged and exist on `AsyncVaquill`.
 
-## Argument checks
-
-A path argument that is empty, `.` or `..` raises `ValueError` before any request, because a URL parser would resolve it to another endpoint.
 ## Raw responses
 
 ```python
@@ -237,25 +229,22 @@ except WebhookVerificationError:
     ...  # respond 400
 ```
 
-`verify_webhook` checks the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance. It accepts several `v1` signatures and a list of secrets, so you can rotate a secret without downtime. A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes. It raises `WebhookVerificationError` on any signature failure.
-A `whsec_` secret must be valid base64.
-From 0.2.1, one that is not raises `ValueError` instead of being used as plain text (0.2.0 used the text).
-An empty or whitespace-only secret (or `whsec_` with no key) raises `ValueError` in every version, so an unset environment variable cannot verify a forged event.
+`verify_webhook` checks the Standard Webhooks headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) with a 300 second tolerance. It accepts a list of secrets, so you can rotate a secret without downtime.
+A secret that starts with `whsec_` must be valid base64. An empty secret raises `ValueError`.
+A failed signature raises `WebhookVerificationError`.
 
 <Warning>
-  `verify_webhook` rejects the old `X-Vaquill-Signature: sha256=<hex>` header unless you pass `allow_legacy=True`. The TypeScript client behaves the same with `allowLegacy: true`.
-  That header signs only the body, so it has no replay protection: a captured delivery verifies forever. Opt in only if you still receive legacy deliveries.
+  `verify_webhook` rejects the old `X-Vaquill-Signature: sha256=<hex>` header unless you pass `allow_legacy=True`. That header has no replay protection, so use it only if you still receive legacy deliveries.
 </Warning>
 
 See [Alerts](/api-guide/alerts) for the payload and delivery behavior.
 
 ## Debug logging and custom HTTP client
 
-The client logs through the standard `logging` module under the `vaquill` logger, and logs idempotency keys by their first 8 characters only.
-There is no logging option on the client. Configure the logger as you would any other, for example `logging.getLogger("vaquill").setLevel(logging.DEBUG)`.
-The API key never appears in a log line. A stuck pager and a deprecated endpoint each log a warning on this logger.
+The client logs through the standard `logging` module under the `vaquill` logger. The API key never appears in a log line.
+Turn on debug output with `logging.getLogger("vaquill").setLevel(logging.DEBUG)`.
 Pass `http_client=` (an `httpx.Client`) to set a proxy or client certificate, or to inject a test double. The SDK does not close a client you pass.
 
 ## Types
 
-Responses are Pydantic v2 models in `vaquill.types`, generated from the API contract. Unknown fields are kept and unknown enum values never raise.
+Responses are Pydantic v2 models in `vaquill.types`. Unknown fields are kept and unknown enum values never raise.

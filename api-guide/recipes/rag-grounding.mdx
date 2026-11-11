@@ -4,33 +4,30 @@ sidebarTitle: "Ground an LLM"
 description: "Retrieve US statutes and regulations, then make an LLM answer only from that text, with links to the official source"
 ---
 
-**What this gets you:** an AI assistant that answers legal questions from statute text instead of its own memory.
-Each claim carries a citation and a link to the official source, so users can check it.
+Answer legal questions from statute text instead of the model's memory. Each claim carries a citation and an official source link.
 
-You retrieve the governing sections, pull their full text, and pass it to an LLM in your stack with strict rules: answer only from the sources, cite every claim, link to the official source.
-This is the standard retrieve-then-ground (RAG) loop, and the model can only draw on text you supplied.
+Retrieve the governing sections and get their full text. Pass it to your LLM with strict rules: answer only from the sources, cite every claim, and link to the official source.
 
-**Endpoints used:** `POST /us/statutes/search` (retrieve), `GET /us/statutes/section/{actId}/body` (full text).
+**Endpoints:** `POST /us/statutes/search` (retrieve), `GET /us/statutes/section/{actId}/body` (full text).
 
-The text and links come from Vaquill AI and the reasoning from your LLM.
-Vaquill AI does not replace a lawyer or a licensed research service, so carry the official link on every answer.
+Vaquill AI supplies the text and links. Your LLM does the reasoning. Vaquill AI does not replace a lawyer, so carry the official link on every answer.
 
 ## The pattern in four steps
 
 1. **Retrieve.**
-   `POST /us/statutes/search` with the user question.
-   Scope with `corpusType` and `state` when you know them (`USC` for federal statutes, or `STATE` with `state: "ca"`).
+   Call `POST /us/statutes/search` with the user question.
+   Set `corpusType` and `state` when you know them (`USC` for federal statutes, or `STATE` with `state: "ca"`).
    Take the top few results.
 2. **Fetch full text.**
-   Search returns an `excerpt` of 500 characters by default (raisable to 600 with `excerptChars`), which is enough to rank but not to ground on.
-   Call `GET /us/statutes/section/{actId}/body` for each result you cite and use the complete `plain` text.
+   Search returns a short `excerpt` (500 characters by default, up to 600 with `excerptChars`). That ranks results but is too short to ground on.
+   Call `GET /us/statutes/section/{actId}/body` for each result you cite and use the `plain` text.
 3. **Build a grounded prompt.**
    Label each section with its `citation` and official source URL.
-   Tell the model to answer only from those sources, cite each claim, and say so when the sources do not support an answer.
+   Tell the model to answer only from those sources, cite each claim, and say so when the sources do not answer.
 4. **Answer with links.**
-   Return the answer plus the cited sources, each linking to the official text through `sourceUrl`, which every section carries when we hold an official link.
+   Return the answer and the cited sources, each linked through `sourceUrl`.
 
-`includeBody` collapses steps 1 and 2 into one call: see the one-call tab below.
+`includeBody` combines steps 1 and 2 in one call. See the one-call tab below.
 
 ## Step 1 and 2: retrieve, then fetch full text
 
@@ -121,13 +118,11 @@ async function fetchBody(actId) {
 
 </CodeGroup>
 
-The one-call version returns three grounded sources in one round trip instead of four.
-It saves latency, not money: the cost is the search plus the ordinary body price per row that returns text, so it multiplies with `limit`.
+The one-call version saves latency, not credits. It costs the search plus the body price for each row that returns text, so cost grows with `limit`.
 Use the two-call version when you rank more candidates than you ground on.
-[What a search costs](/api-guide/concepts/search#what-a-search-costs) defines `includeBody` billing.
+See [What a search costs](/api-guide/concepts/search#what-a-search-costs) for `includeBody` billing.
 
-A trimmed search result for that query looks like this.
-Note the `actId` (used to fetch the body), the `citation`, and the source URLs.
+A trimmed search result for that query:
 
 ```json
 {
@@ -150,12 +145,11 @@ Note the `actId` (used to fetch the body), the `citation`, and the source URLs.
 }
 ```
 
-`results` is cut to its first entry here, so `count` is 3 and one result is shown.
+`results` is cut to its first entry.
 
 ## Step 3 and 4: build the grounded prompt and answer
 
-The prompt is where grounding happens.
-Give the model the retrieved text, a stable label per source, and rules it cannot skip: answer only from the sources, cite by citation and link, and refuse when the text does not support an answer.
+Give the model the retrieved text and a label per source. Set three rules: answer only from the sources, cite by citation and link, and refuse when the text does not answer.
 
 ```python Python
 def build_grounded_prompt(question, sources):
@@ -227,18 +221,14 @@ if __name__ == "__main__":
 
 ## Scope
 
-<Accordion title="Scope narrows retrieval, and narrow retrieval grounds better">
-  When you know the question is federal, pass `corpusType: "USC"` or `"CFR"`.
-  When it is about one state, pass `corpusType: "STATE"` with the two-letter `state` code.
-
-  Tighter scope means the top results are more likely to be the governing sections, which makes the grounded answer more precise.
-  Omit both to search the whole corpus.
+<Accordion title="Narrow the scope for better retrieval">
+  For a federal question, pass `corpusType: "USC"` or `"CFR"`.
+  For one state, pass `corpusType: "STATE"` with the two-letter `state` code.
+  Omit both to search everything.
 </Accordion>
-
-Why this holds up, and why the model cannot cite what it was not given: [Grounding LLMs](/api-guide/grounding-llms).
 
 ## Related
 
-- [Grounding LLMs](/api-guide/grounding-llms): the concepts behind grounding and why it prevents hallucinated law.
-- [Pick the best source URL](/api-guide/concepts/formats#picking-the-best-available-format): the full preference order, so the same section links to the same official page everywhere.
+- [Grounding LLMs](/api-guide/grounding-llms): the concepts behind grounding.
+- [Pick the best source URL](/api-guide/concepts/formats#picking-the-best-available-format): the full preference order.
 - [Statute lookup chatbot](/api-guide/recipes/statute-chatbot) and [Vaquill MCP server](/integrations/mcp/vaquill): the same loop as a chatbot, or as tools for an AI agent.

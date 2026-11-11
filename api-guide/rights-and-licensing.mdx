@@ -3,7 +3,7 @@ title: "Rights and licensing"
 description: "What you may do with the data: cache it, build indexes, show it to your users, redistribute it, and what you keep if you stop paying."
 ---
 
-This page states what you are allowed to build with the data, so you do not need to book a call to find out.
+This page states what you may build with the data.
 
 Terms used here: **Output** is the data the API returns to you.
 The **compilation** is our schema, citations, hierarchy, cross-references, metadata and the assembled corpus.
@@ -11,10 +11,10 @@ A **bulk license** is a paid delivery of the corpus under a separate signed agre
 
 <Note>
   This page is a plain-language summary.
-  The [Terms of Service](https://www.vaquill.ai/terms), Section 21, is what actually governs, and it controls if the two ever disagree.
+  The [Terms of Service](https://www.vaquill.ai/terms), Section 21, governs if the two differ.
 </Note>
 
-## The short version
+## Quick answers
 
 | Can I... | Answer | Terms |
 |---|---|---|
@@ -29,33 +29,29 @@ A **bulk license** is a paid delivery of the corpus under a separate signed agre
 | Train a model on it? | Yes, unless the model is a competing legal-data service | Section 21 |
 
 <Accordion title="Why the text is unrestricted">
-  The statutory, regulatory and constitutional text is US primary law, and US primary law cannot be copyrighted.
-  *Georgia v. Public.Resource.Org, Inc.*, 590 U.S. 255 (2020) settled it, holding that even annotations prepared under contract for a legislature are uncopyrightable government edicts.
+  Statutory, regulatory and constitutional text is US primary law, and it cannot be copyrighted.
+  *Georgia v. Public.Resource.Org, Inc.*, 590 U.S. 255 (2020), held that even annotations prepared for a legislature are uncopyrightable.
 
-  We claim no ownership of that text and nothing in our terms restricts your use of it.
-  The public-domain text carries no restriction either way, and never did.
-
-  What is licensed to you is the compilation: the schema, the citations, the hierarchy, the cross-references, the metadata and the assembled corpus.
-  That is the work product, and the restrictions below apply to it alone.
+  We claim no ownership of that text. What is licensed to you is the compilation, and the restrictions below apply to it alone.
 </Accordion>
 
 ## What you keep if you leave
 
 <AccordionGroup>
   <Accordion title="Retrieved through the API">
-    Responses you cached during a paid term are yours to keep.
-    There is no deletion obligation, and you may keep showing them to your customers.
-    That includes the citations, hierarchy and cross-references those responses carry, because a cached answer is not usable without them.
+    Responses you cached during a paid term are yours to keep, with the citations, hierarchy and cross-references they carry.
+    You may keep showing them to your customers.
   </Accordion>
   <Accordion title="Delivered in bulk">
-    The rule differs here on purpose.
-    On termination or expiry of a bulk license you delete stored copies of our compilation within 30 days.
-    The corpus itself is the deliverable, so permanent retention would let a single period buy it outright.
+    On termination or expiry of a bulk license, you delete stored copies of our compilation within 30 days.
 
-    You still keep anything you had independently retrieved through the API, the public-domain text, anything obtained under the Open US Law licenses, and Output already embedded in work product you delivered to your clients.
-  </Accordion>
-  <Accordion title="Retention is not a license to redistribute">
-    Whatever you keep, you may not resell our compilation as a standalone data product, nor use it to build a competing legal-data API or database.
+    You still keep:
+
+    - anything you retrieved through the API
+    - the public-domain text
+    - anything obtained under the Open US Law licenses
+    - Output already embedded in work product you delivered to your clients
+
   </Accordion>
 </AccordionGroup>
 
@@ -70,33 +66,28 @@ Without a separate signed agreement, you will not:
 - reverse engineer the API or attempt to derive its models or training data
 - exceed or circumvent your plan's rate limits or credit allowance, including by spreading access across accounts
 
-Each of those is available under a written agreement, so they are commercial terms and not matters of principle.
+A written agreement can cover each of these.
 
 ## Multiple clients and end users
 
-You can create several API keys per account, and every request is recorded against the key that made it, so usage can be reported per key.
-One key per client is an easy way to keep each client's usage separate.
-If you'd rather have full separation, each client can have its own organization, with its own keys and billing.
+You can create several API keys per account. Every request is recorded against its key, so you can report usage per key.
+One key per client keeps each client's usage separate. For full separation, give each client its own organization, with its own keys and billing.
 
 If you build your own product on the API and serve your own end users, [Section 24 of the Terms](https://vaquill.ai/terms) covers that.
-You hold the relationship with each end customer, and they don't need Vaquill AI accounts.
-Reselling or white-labelling our data as a standalone dataset or API is different and needs a separate written agreement (Section 21.7).
+Your end customers do not need Vaquill AI accounts.
 For what the API stores per key and per client, see [Data and privacy](/api-guide/data-privacy).
 
 ## Attribution
 
-Unless your plan waives it, display **"Legal data by Vaquill AI"**, linked to vaquill.ai, somewhere a user can reasonably find it in any product where the Output is shown to your end users.
-A footer, an about page or a data-sources page is fine.
-One credit per product, not one per response.
+Unless your plan waives it, display **"Legal data by Vaquill AI"**, linked to vaquill.ai, in any product that shows the Output to your end users.
+A footer, an about page or a data-sources page is fine. One credit per product is enough.
 The console gives you the exact snippet.
 
-It is not required for internal or back-office use where nothing is shown outside your organization, or for evaluation.
-
-Attribution can be waived commercially. Talk to us.
+Attribution is not required for internal use or evaluation.
 
 ## The open dataset
 
-Separately from the paid API, the whole corpus is published as [Open US Law](/api-guide/bulk-and-sql#license):
+The whole corpus is also published as [Open US Law](/api-guide/bulk-and-sql#license), separate from the paid API:
 
 | Part | License |
 |---|---|
@@ -104,10 +95,8 @@ Separately from the paid API, the whole corpus is published as [Open US Law](/ap
 | Our compilation | CC BY-NC 4.0 from snapshot v2026.09, CC BY 4.0 before that |
 | The ingestion pipelines | Apache-2.0 |
 
-What you retrieve through the API is covered by the Terms, Section 21, not by these licenses.
-The snapshot grants, including what the CC BY 4.0 snapshots allow, are on [Bulk and SQL access](/api-guide/bulk-and-sql#license).
+What you retrieve through the API falls under the Terms, Section 21, not these licenses.
 
-## Still unsure?
+## Questions
 
-Describe what you want to build and we will tell you which of the above it lands in, in writing, before you commit to anything.
-[contact@vaquill.ai](mailto:contact@vaquill.ai)
+Describe what you want to build and we will tell you in writing which case it falls under: [contact@vaquill.ai](mailto:contact@vaquill.ai)

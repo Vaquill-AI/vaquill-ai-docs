@@ -5,7 +5,6 @@ description: "Find an Indian regulator's circular, read it, and follow what chan
 ---
 
 Five `GET` routes, one key, one scope.
-If you can send an HTTP request you have everything you need.
 
 <Note>
   This is the **India regulatory publications** corpus: what regulators issued.
@@ -14,8 +13,7 @@ If you can send an HTTP request you have everything you need.
 
 ## 1. What is in there
 
-Start free.
-`/sources` costs nothing and needs no filters.
+`/sources` is free and needs no filters.
 
 ```bash
 curl https://api.vaquill.ai/api/v1/in/reg/sources \
@@ -23,7 +21,7 @@ curl https://api.vaquill.ai/api/v1/in/reg/sources \
 ```
 
 You get every publisher, every source under it, and when each was last checked.
-Read this first rather than guessing publisher names: the ids it returns are what the other routes filter on.
+The ids it returns are what the other routes filter on.
 
 ## 2. Search
 
@@ -44,7 +42,6 @@ To select more than one value, **repeat the key**:
 ```
 
 A comma list is rejected with a 400.
-That is deliberate: a comma that parsed as one meaningless id would return a confident empty page, and an empty page is indistinguishable from "nothing matched".
 
 ## 3. Read one document
 
@@ -71,14 +68,11 @@ Two failures look similar and mean opposite things:
 | `content_not_archived` | 404 | We never held these bytes. | No, never. |
 | `archive_unavailable` | 502 | We hold them, and our archive failed. | Yes. |
 
-Collapsing these is the most common integration mistake here.
-A client that treats the 404 as transient retries forever.
-One that treats the 502 as permanent discards a document it could have had a second later.
+Do not retry the 404. Do retry the 502.
 
 ## 5. Follow what changes
 
-This is what the corpus is for.
-The feed is resumable: store the cursor, send it back, and you get exactly what you have not seen.
+The feed is resumable. Store the cursor and send it back to get what you have not seen.
 
 ```bash
 # first call
@@ -93,23 +87,15 @@ curl -G https://api.vaquill.ai/api/v1/in/reg/changes \
 ```
 
 Keep calling while `hasMore` is true.
-Do not poll with a date filter instead.
-Regulators publish out of order and edit in place, so a date window silently misses anything that arrived late or changed quietly.
-The cursor does not.
+Do not poll with a date filter instead, because a date window misses documents that arrive late or change quietly.
 
 <Warning>
-  `total` on the changes feed is always `null`.
-  That means **not counted**, not zero.
-  An empty feed has `total: null` and `items: []`, so read `items` and `hasMore`, never `total`, to decide whether there is anything new.
+  `total` on the changes feed is always `null`, which means not counted. Read `items` and `hasMore` to see whether anything is new.
 </Warning>
 
 ## Scopes
 
-One scope, `reg:read`.
-It reads everything in this corpus: every publisher, every document, every route above.
-There is no per-publisher scope, no separate scope for files, and no read/write split, because nothing here writes.
-
-A key that works for one of these routes works for all five.
+One scope, `reg:read`, covers every publisher, document and route above.
 
 ## Errors
 
@@ -125,7 +111,7 @@ A key that works for one of these routes works for all five.
 
 <CardGroup cols={2}>
   <Card title="Coverage" href="/api-guide/coverage/india-regulatory">
-    What the corpus holds, how fresh it is, and its known limits.
+    What the corpus holds and its known limits.
   </Card>
   <Card title="Authentication" href="/api-guide/authentication">
     Getting a `vq_key_` credential.

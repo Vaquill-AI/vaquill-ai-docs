@@ -3,12 +3,9 @@ title: "Map a compliance requirement to the governing law"
 description: "Turn a plain-language obligation into governing sections, grouped by jurisdiction, with citations and official source links"
 ---
 
-**What this gets you:** a plain-English obligation mapped to the statutes, regulations, and agency rules that govern it, across federal and state law.
-Each one comes with a citation and a source link, which is the building block of a compliance or RegTech product.
+Map a plain-language obligation like "breach notification timelines" to the federal and state sections that govern it. Each section comes with its citation and an official source link.
 
-Start from a plain-language obligation like "breach notification timelines" and end with the governing sections, each with its citation and a link to the official source.
-
-**Endpoints used:** `POST /us/statutes/search`, `GET /us/statutes/section/{actId}/body`, `GET /us/statutes/coverage` (free, to discover which corpora a jurisdiction has).
+**Endpoints:** `POST /us/statutes/search`, `GET /us/statutes/section/{actId}/body`, and `GET /us/statutes/coverage` (free, lists the corpora a jurisdiction has).
 
 Run `POST /us/statutes/search` once per corpus with the same plain-language query:
 
@@ -18,8 +15,8 @@ Run `POST /us/statutes/search` once per corpus with the same plain-language quer
 - `REGULATION` for state administrative rules, paired with a `state`.
 - `STATE_AGENCY_GUIDANCE` for state insurance bulletins and circular letters, paired with a `state`.
 
-Add `"excludeRepealed": true` so a rule the publisher has already killed cannot enter the map as an obligation.
-Then fetch each section's full text with `GET /us/statutes/section/{actId}/body`, group by `corpusType` and jurisdiction so the map reads by source of authority, and show each section with its `citation` and the official government URL so a reviewer can open the primary source.
+Add `"excludeRepealed": true` to drop repealed rules.
+Then fetch each section's text with `GET /us/statutes/section/{actId}/body`. Group by `corpusType` and jurisdiction. Show each section's `citation` and official URL.
 
 ## Step 1: search across the regulatory corpora
 
@@ -36,28 +33,26 @@ Change `corpusType` and add the parameters for each corpus.
 | Corpus | `corpusType` | Extra parameters |
 |---|---|---|
 | Federal regulations | `CFR` | none |
-| Federal Register agency rules | `FEDERAL_REGISTER` | `agency`, `documentType`, `publishedFrom`, `publishedTo`; for example `"agency": "federal-trade-commission", "documentType": "final", "publishedFrom": "2020-01-01"`. Filter, or you rank one query against every rule every agency has published. |
+| Federal Register agency rules | `FEDERAL_REGISTER` | `agency`, `documentType`, `publishedFrom`, `publishedTo`. For example `"agency": "federal-trade-commission", "documentType": "final", "publishedFrom": "2020-01-01"`. |
 | Agency guidance | `AGENCY_GUIDANCE` | optional `source` |
 | A state's administrative regulations | `REGULATION` | `"state": "wa"` (Washington, for example) |
 | A state's insurance bulletins | `STATE_AGENCY_GUIDANCE` | `"state"` |
 
-Not sure which corpora a state has?
-Call `GET /us/statutes/coverage`, read the jurisdiction's `corpora` keys, and pass one as `corpusType`.
-State regulations (`REGULATION`) are ingested for a subset of states, so drive the state list from coverage rather than assuming every state is present.
+To see which corpora a state has, call `GET /us/statutes/coverage` and read the jurisdiction's `corpora` keys.
+State regulations (`REGULATION`) cover only some states.
 
 ## Narrowing the Federal Register sweep
 
-`FEDERAL_REGISTER` holds every rule and every proposal every agency has published, so an unfiltered sweep ranks your obligation against all of it.
-A compliance map wants all four filters.
+Without filters, `FEDERAL_REGISTER` ranks your query against every rule and proposal from every agency. Use these filters.
 
 | Filter | What it does | Applies to |
 |---|---|---|
 | `documentType` | `final` for a rule in force, `proposed` for an NPRM, `presidential` for a Presidential Document | `FEDERAL_REGISTER` |
-| `agency` | Federal Register agency slug, or a list of them. Ask for `agencySlugs` in `fields`, or read it off a broad sweep, to scope the follow-up query. | `FEDERAL_REGISTER` and `EXECUTIVE_ACTION` |
-| `publishedFrom` | Only documents published on or after this date (`YYYY-MM-DD`). It is the publication date and differs from `yearFrom`, which filters the version year of a section. | `FEDERAL_REGISTER` |
+| `agency` | Federal Register agency slug, or a list of them. Request `agencySlugs` in `fields` to read slugs from a broad sweep. | `FEDERAL_REGISTER` and `EXECUTIVE_ACTION` |
+| `publishedFrom` | Only documents published on or after this date (`YYYY-MM-DD`). Not the same as `yearFrom`, which filters a section's version year. | `FEDERAL_REGISTER` |
 | `publishedTo` | Only documents published on or before this date | `FEDERAL_REGISTER` |
 
-Other corpora carry no agency or publication date, so combining these filters with them returns nothing.
+Other corpora have no agency or publication date, so these filters return nothing there.
 
 ```json
 {
@@ -71,12 +66,11 @@ Other corpora carry no agency or publication date, so combining these filters wi
 }
 ```
 
-Use `documentType: "final"` for obligations, and run a separate, labelled `proposed` pass for what is coming.
+Use `documentType: "final"` for obligations. Run a separate `proposed` pass for upcoming rules.
 
 ## Narrowing to one named source
 
-`AGENCY_GUIDANCE` is a registry of many named sources under one `corpusType`.
-When you already know the obligation is, say, a CFTC swaps-clearing question or a BSA/AML question, skip the broader sweep and add `source` to go straight to that registry entry:
+`AGENCY_GUIDANCE` holds many named sources. If you know the source, such as CFTC staff letters, add `source` to skip the broad sweep:
 
 ```json
 {
@@ -87,14 +81,20 @@ When you already know the obligation is, say, a CFTC swaps-clearing question or 
 }
 ```
 
-Every result already carries its own `source`, so a hit from a broad sweep tells you which registry entry to scope a follow-up query to.
-An unrecognized value is rejected with `422` rather than silently matching nothing.
-See [Filtering to one named source](/api-guide/concepts/corpus-types#filtering-to-one-named-source) for the full list of `source` values and which corpus each belongs to.
+Each result carries its own `source`. Use it to scope a follow-up query. An unknown value returns `422`.
+See [Filtering to one named source](/api-guide/concepts/corpus-types#filtering-to-one-named-source) for the list of `source` values.
 
 <Accordion title="Sources under AGENCY_GUIDANCE, FEDERAL_RULES and CFR">
 
-SSA rulings, IRS notices/procedures/rulings, DOJ & FTC Merger Guidelines, the DOJ Antitrust Leniency Policy, Copyright Office Circulars, the DOJ Justice Manual, the USCIS Policy Manual, USPTO MPEP/TMEP, CFTC Staff Letters, FinCEN rulings and guidance, Federal Reserve/OCC/FDIC banking guidance, DFARS PGI, and NLRB memoranda all live under `AGENCY_GUIDANCE`.
-`FEDERAL_RULES` and `CFR` similarly fold in several sets (the Federal Rules of Procedure plus Supreme Court Rules; FAR and DFARS within CFR Title 48).
+`AGENCY_GUIDANCE` includes:
+
+- SSA rulings, IRS notices, procedures and rulings
+- DOJ and FTC Merger Guidelines, the DOJ Antitrust Leniency Policy, the DOJ Justice Manual
+- Copyright Office Circulars, USCIS Policy Manual, USPTO MPEP and TMEP
+- CFTC Staff Letters, FinCEN rulings and guidance, Federal Reserve, OCC and FDIC banking guidance
+- DFARS PGI and NLRB memoranda
+
+`FEDERAL_RULES` includes the Federal Rules of Procedure and Supreme Court Rules. `CFR` Title 48 includes FAR and DFARS.
 
 </Accordion>
 
@@ -211,20 +211,18 @@ Governing law for: data breach notification timeline
     Source: https://app.leg.wa.gov/...
 ```
 
-Each result carries several optional source URL fields and any may be null.
-`best_source_url()` applies the canonical order from [Text formats and source URLs](/api-guide/concepts/formats#picking-the-best-available-format), so a reviewer opening the link from your compliance map lands on the same official page as everywhere else in your product.
+Source URL fields can be null. `best_source_url()` uses the order in [Text formats and source URLs](/api-guide/concepts/formats#picking-the-best-available-format).
 
 ## Notes for a production compliance map
 
 <AccordionGroup>
   <Accordion title="Feed the grouped sections into an LLM for a summary">
-    Once you have the grouped, cited text, you can pass it to an LLM in your stack to produce a plain-language summary of each obligation, one that cites each section and links its official source.
-    Use the strict grounding pattern in [Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding) so the summary quotes only the retrieved regulatory text.
+    Pass the grouped, cited text to an LLM and ask for a short description of each obligation, with citations.
+    Use the pattern in [Ground an LLM answer in statutes](/api-guide/recipes/rag-grounding) so the summary quotes only retrieved text.
   </Accordion>
 </AccordionGroup>
 
-Vaquill AI returns the authoritative regulatory text and links back to the official government source.
-It supports building a compliance map and does not make a compliance determination, so pair it with review by qualified counsel.
+Vaquill AI returns the regulatory text and official source links. It does not make compliance determinations, so have qualified counsel review the map.
 
 ## Related
 

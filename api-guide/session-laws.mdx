@@ -4,7 +4,7 @@ description: "State session laws as enacted, with dates, veto outcome, sources, 
 ---
 
 A session law is an act as the legislature enacted it, before it is folded into a code.
-It carries what a code section does not: the act's own date of approval, its effective dates, the code sections it changed, and the text as passed, including what it struck out.
+It has the act's approval date, effective dates, the code sections it changed, and the text as passed.
 
 Eight endpoints serve them.
 
@@ -19,28 +19,14 @@ Eight endpoints serve them.
 | [`GET /us/session-laws/changes`](/api-reference/us-session-laws/feed-of-changes-to-the-session-law-registry) | What changed in the registry since your cursor | 1 per page |
 | [`GET /us/statutes/section/{actId}/enactments`](/api-reference/us-statutes/which-acts-a-state-publisher-lists-against-this-section) | The session laws a publisher lists against one code section | 1 |
 
-The federal Statutes at Large are not here.
-They are served by `/us/statutes` under `corpusType=SESSION_LAW`; see [Corpus Types](/api-guide/concepts/corpus-types).
+The federal Statutes at Large are served by `/us/statutes` under `corpusType=SESSION_LAW`. See [Corpus Types](/api-guide/concepts/corpus-types).
 
 ## What is held
 
-State session laws cover the 50 states, the District of Columbia and Puerto Rico, 52 jurisdictions in all, from 1975 at the earliest.
-How far back a state goes, and how many of its sessions we hold, differs by state.
-The figures change as collection continues, so this page does not quote them: `GET /us/statutes/coverage` is free and is the live source, and each jurisdiction's `sessionLaws` block lists its sessions, oldest first, with the session `year`, the counts we hold and a `status`.
-
-<Accordion title="Partial sessions, denominators and laws without text">
-Coverage is partial for many sessions.
-A session with `status: "partial"` is not `complete`: some laws the publisher lists for it are not yet collected, or the session cannot be checked against a listing.
-Do not read an empty result for a law in a partial session as proof that no such law exists.
-Where the publisher gives a total, the session's `denominator` says what that total is and where it comes from.
-
-A small share of laws have no text.
-The registry holds the record (citation, dates, outcome, sources) but the publisher printed no text we can read, for example a scan with no text layer.
-Those laws have `textStatus: "not_held"`.
-
-Every law is built from the source document named in its `sources`.
-We do not check a law against a second publisher.
-</Accordion>
+State session laws cover the 50 states, the District of Columbia and Puerto Rico, from 1975 at the earliest.
+Coverage by state and session is on `GET /us/statutes/coverage`, which is free.
+Each jurisdiction's `sessionLaws` block lists its sessions with the session `year`, counts and a `status`.
+A session with `status: "partial"` is incomplete, so an empty result there does not prove a law does not exist.
 
 ## Identifiers
 
@@ -55,8 +41,9 @@ Every law has a `sessionLawId`, built from its jurisdiction, session, series and
 | `SSL_NE_2025R_G_Y2025_BLB241` | Nebraska, LB 241 |
 | `SSL_MO_2025R_G_Y2025_BHB145-59` | Missouri, House Bill 145 & 59 |
 
-The session code is the year plus `R` (regular), `S` (special), `X` (extraordinary) or `U` (not stated), and the session's number where it has one: `2025S1`, `2025X2`, Florida's `2025SC`.
-An id never changes once issued.
+The session code is the year plus a letter: `R` (regular), `S` (special), `X` (extraordinary) or `U` (not stated).
+A session number follows where there is one, as in `2025S1`, `2025X2` or Florida's `2025SC`.
+An id never changes.
 
 ## Finding a law
 
@@ -74,10 +61,8 @@ A citation lookup is charged whether or not it resolves.
 The response says what matched in `resolvedFrom`.
 Pass `jurisdiction` (a two-letter state code) when the citation does not name its state, as `Act 2025-127` does not.
 
-<Accordion title="Ambiguous citations and bill numbers">
-A bare bill number such as `S.F.No. 1552` is reused across sessions, so it usually names more than one law and is not a good lookup key; use the law's id, or a citation that names its year and number.
-A citation naming more than one law is a `404` with `reason: ambiguous_citation`, every candidate in `didYouMean` and the conventional reading in `defaultSessionLawId`.
-</Accordion>
+A bare bill number such as `S.F.No. 1552` is reused across sessions, so use the law's id or a citation with its year.
+A citation that names more than one law is a `404` with `reason: ambiguous_citation`, every candidate in `didYouMean` and the usual reading in `defaultSessionLawId`.
 
 **By state and date.** `GET /us/session-laws/list` takes a required `jurisdiction` and these filters:
 
@@ -102,9 +87,9 @@ A citation naming more than one law is a `404` with `reason: ambiguous_citation`
 `general`, `public`, `public_act`, `special_act`, `private_and_special`, `act`, `acts`, `law`, `local`, `municipal`, `appropriation`, `resolve`, `resolves`, `resolution`, `resolution_chapter`, `joint_resolution`, `concurrent_resolution`, `memorial`, `initiated_bill`, `constitutional_amendment`.
 </Expandable>
 
-A malformed value is a `422` and is never charged.
-A value that is well formed but matches nothing returns an empty page, which is charged.
-`GET /us/statutes/coverage` lists, for each state, the `series` and `instrumentType` values it actually holds and the span of approval dates, so you can offer a real list before you filter.
+A malformed value or a missing `jurisdiction` is a `422` and is not charged.
+A well formed value that matches nothing returns an empty page, which is charged.
+`GET /us/statutes/coverage` lists the `series` and `instrumentType` values each state holds.
 
 Everything taking effect in California on 1 January 2026:
 
@@ -113,13 +98,11 @@ curl "https://api.vaquill.ai/api/v1/us/session-laws/list?jurisdiction=ca&effecti
   -H "Authorization: Bearer vq_key_..."
 ```
 
-A request without `jurisdiction` is a `422` and is not charged.
-
-**By citation, inside a document.** `POST /us/statutes/resolve` (and `GET /us/statutes/resolve`) recognises a state session law citation when it names no code section.
-The response then carries `matchedCorpus: "session_law"` and a `sessionLaw` block, and `resolved` stays `false` and `section` stays `null`, because both describe a code section.
-`sessionLaw.status` is `matched` (one law, with its title, bill number, approval and effective dates, outcome, official source URL and `href`) or `ambiguous` (every candidate listed, none chosen for you).
+**By citation, inside a document.** `POST /us/statutes/resolve` (and `GET /us/statutes/resolve`) recognizes a state session law citation when it names no code section.
+The response carries `matchedCorpus: "session_law"` and a `sessionLaw` block. `resolved` stays `false` and `section` stays `null`.
+`sessionLaw.status` is `matched` (one law, with its title, bill number, dates, outcome, source URL and `href`) or `ambiguous` (every candidate listed).
 There is no extra charge beyond the resolve price.
-A `state` scope applies; a `corpusType` scope skips the lookup.
+A `state` scope applies. A `corpusType` scope skips the lookup.
 
 ## Searching the text
 
@@ -180,19 +163,17 @@ curl -X POST "https://api.vaquill.ai/api/v1/us/session-laws/search" \
 }
 ```
 
-This example is abridged and illustrative: `count` is 5 and `hasMore` is true, so `results` holds five laws and only the first is shown, with its `snippet` and `highlights` shortened.
-The laws, their order and the counts change as new laws are added.
+The example is abridged. `count` is 5, but only the first of five results is shown.
 
 It costs 4 credits per page, and each page is a new search.
-An empty result with no filter is an answer ("nothing matches") and is charged. An empty first page under a filter is refunded.
-A request that fails validation is a `422` and is not charged; a failure on our side is refunded.
+An empty result with no filter is charged. An empty first page under a filter is refunded.
+A request that fails validation is a `422` and is not charged.
 
 ### What is searched
 
-The enacted text: the law as it reads once the act takes effect.
-Language an act strikes out is not searched and never appears in a snippet, so a repealed word cannot match as if it were law.
-Only laws we serve with text are searched; laws whose text we withhold are not returned.
-`GET /us/statutes/coverage` shows what each state holds.
+The enacted text, as it reads once the act takes effect.
+Struck-out language is not searched and never appears in a snippet.
+Only laws served with text are searched. Withheld laws are not returned.
 
 ### What you can ask
 
@@ -205,19 +186,18 @@ Only laws we serve with text are searched; laws whose text we withhold are not r
 
 Parts combine: `hemp "licensed retailer" 63-3004` reads as the words, a phrase and a citation, and `parsed` in the response shows how the query was read.
 
-### How it ranks, and what that does not mean
+### How it ranks
 
 Ranking is keyword relevance, not meaning.
 
-- A question has to share vocabulary with the act: `teeth cleaning professional` will not find an act that says `dental hygienist`, and `how often are property values reassessed` will not find one that says `reappraisal`. When a question finds nothing, try the words the legislature would use, or quote a phrase.
-- A law matched by its title and its text, or by an exact part of your query, ranks above one matched a single way. `matchType` is `exact` when a quoted phrase, citation, code section or bill number matched, otherwise `text`, and `matchedBy` lists every way (`title`, `text`, `phrase`, `citation`, `codeSection`, `billNumber`).
-- Neither says the law is the right one. A question with no true answer still returns its closest words, and there is no "no good match" flag, because keyword scores do not separate the two cases. Read the snippet.
+- A question must share words with the act. `teeth cleaning professional` will not find an act that says `dental hygienist`. If nothing matches, try the legislature's words or quote a phrase.
+- A law matched by title and text, or by an exact part of your query, ranks higher. `matchType` is `exact` for a quoted phrase, citation, code section or bill number, otherwise `text`. `matchedBy` lists every way (`title`, `text`, `phrase`, `citation`, `codeSection`, `billNumber`).
+- There is no "no good match" flag. Read the snippet to judge the result.
 
 ### The snippet
 
-`passage.snippet` is about 280 characters of the enacted text around your words, plain text, with `…` where it was cut.
-`passage.highlights` lists `[start, end]` character offsets inside the snippet (end exclusive) for each word that matched, so you draw the highlight yourself.
-The snippet carries no markup.
+`passage.snippet` is about 280 characters of plain enacted text around your words, with `…` where it was cut.
+`passage.highlights` lists `[start, end]` character offsets in the snippet (end exclusive) for each matched word.
 `passage.bodyHref` reads the text from that passage: it is the law's `/body` with `startChar` set to `passage.ownStart`.
 
 ### Filters and paging
@@ -232,11 +212,9 @@ The snippet carries no markup.
 | `limit` | Laws per page, 1 to 25 (default 10) |
 | `offset` | Laws to skip. `offset` plus `limit` reaches at most the 60 best matches |
 
-A page past the 60 best matches is a `422`.
-Narrow the search with a filter instead of paging deeper.
-A search with any of `jurisdiction`, `session`, `series`, `instrumentType` or the approval dates that finds nothing on its first page is refunded, and its `note` names the filters.
-A search with no filter that finds nothing is an answer: it is charged, and its `note` says so.
-Unknown fields in the body are a `422`, so a typo is never silently dropped.
+A page past the 60 best matches is a `422`. Narrow the search with a filter instead.
+A filtered search that finds nothing on its first page is refunded, and its `note` names the filters.
+Unknown fields in the body are a `422`.
 
 ## What a law carries
 
@@ -271,26 +249,24 @@ Unknown fields in the body are a `422`, so a typo is never silently dropped.
 }
 ```
 
-- `effectiveDates` is always a list: one act can take effect on several dates, each with its scope as printed.
-- `codeSectionsAffected` lists the code sections the act changed, as the publisher's own table prints them, in the 11 jurisdictions that publish one (California, Maryland, Utah, the District of Columbia, Washington, Iowa, Kentucky, Nebraska, Missouri, Mississippi, Hawaii). The [enactments route](#from-a-code-section-to-the-acts-that-changed-it) reads a narrower set.
-- `enactmentOutcome` is `signed`, `became_law_without_signature`, `veto_overridden`, `line_item_veto`, `vetoed`, `pocket_veto`, `not_presented` or `unknown`; `vetoStatusAsPrinted` is the publisher's own words.
-- `sources` names every document the record was built from, with its fetch time and sha256.
+- `effectiveDates` is always a list. One act can take effect on several dates.
+- `codeSectionsAffected` lists the code sections the act changed. Eleven jurisdictions publish this: California, Maryland, Utah, the District of Columbia, Washington, Iowa, Kentucky, Nebraska, Missouri, Mississippi and Hawaii.
+- `enactmentOutcome` is `signed`, `became_law_without_signature`, `veto_overridden`, `line_item_veto`, `vetoed`, `pocket_veto`, `not_presented` or `unknown`. `vetoStatusAsPrinted` is the publisher's own words.
+- `sources` names the documents the record came from.
 
 ## `textStatus`
 
 | Value | Meaning | `/body` |
 |---|---|---|
 | `held` | Text is served | Text, 6 credits per page |
-| `withheld` | We hold the text but have not cleared it for plain reading; `withheldReason` says which. The law's metadata is always served | `available: false`, not charged, unless you pass `includeUnverified=true` (see [Text reliability](#text-reliability-and-older-versions)) |
-| `not_held` | The law exists but no text was published (a scan with no text layer) | `available: false`, not charged |
-
-Text we serve is not always text we can vouch for: a served law carries a `textReliability` label, explained in [Text reliability](#text-reliability-and-older-versions).
+| `withheld` | Text is held but not cleared for plain reading. `withheldReason` says why. Metadata is always served | `available: false`, not charged, unless you pass `includeUnverified=true` |
+| `not_held` | The law exists but has no readable text | `available: false`, not charged |
 
 ## Reading the text
 
-`/body` returns the text as printed, in pages of about 30,000 characters, cut at a paragraph break where possible.
+`/body` returns the text as printed, in pages of about 30,000 characters.
 Pass `nextCursor` back as `cursor` for the next page.
-A cursor is tied to the text it was issued for; if the text changes, the old cursor is a `409`.
+If the text changes, the old cursor is a `409`.
 
 Session laws amend existing law, so their text carries amendment markup.
 `markupConvention` says how it is written:
@@ -305,23 +281,21 @@ Session laws amend existing law, so their text carries amendment markup.
 
 ## Text reliability and older versions
 
-A served text is not necessarily a checked text.
-Each text carries a `textReliability` label, derived from the result of the check recorded against the current version of that text.
-A `verified` text carries no extra fields.
-An `unverified` or `known_issue` text carries `textReliability`, `reasonCode` and `notice` on an ordinary read, not only when you pass `includeUnverified=true`.
-Pass `includeUnverified=true` to read the text of a withheld law, labelled the same way. Most of a withheld law's text can be read this way.
+Each served text carries a `textReliability` label.
+An `unverified` or `known_issue` text also carries `reasonCode` and `notice`.
+Pass `includeUnverified=true` to read the text of a withheld law, labeled the same way.
 
 | Field | Meaning |
 |---|---|
 | `textReliability` | `verified`, `unverified` or `known_issue`, defined below |
-| `reasonCode` | A stable token to branch on; the codes are listed under "reasonCode values" below |
+| `reasonCode` | A stable token to branch on, listed below |
 | `notice` | One sentence saying what to do about it |
 
 | `textReliability` | Meaning |
 |---|---|
-| `verified` | The strike-through check passed, or the markup the source declares was checked against the text and is consistent with it |
-| `unverified` | The markup is recorded as lost, a check held the text without evidence, or no check has been recorded or one could not be run. No result is never read as a clean result |
-| `known_issue` | The markup the source declares is contradicted by the text, or struck (deleted) language was found in it and could not be released as enacted |
+| `verified` | The check passed, and the markup is consistent with the text |
+| `unverified` | The markup is lost, or no clean check result exists |
+| `known_issue` | The markup contradicts the text, or deleted language was found in it |
 
 <Accordion title="reasonCode values">
 Codes on a text that is served with a label:
@@ -344,11 +318,9 @@ Branch on `reasonCode`, not on `notice`, which is for people.
 </Accordion>
 
 Check the printed act before relying on amended language in an `unverified` or `known_issue` text.
-A law whose source terms bar publication is never returned, whatever you pass.
-Text that failed our own validation, or that cannot yet be placed in its session, is not offered either.
 
 A law's text can be corrected after it is first served.
-`GET /us/session-laws/{sessionLawId}/versions` lists every version we served or adopted, newest first, at one credit.
+`GET /us/session-laws/{sessionLawId}/versions` lists every version, newest first, at one credit.
 Each entry has a `textAccess`: `served` (a plain `/body` call reads it), `includeUnverified` (the law is withheld and the text needs that flag) or `none`.
 Read one with `GET /us/session-laws/{sessionLawId}/body?version=N`, at the body price.
 A version number that does not exist answers `404` and is not charged.
@@ -364,7 +336,7 @@ curl -X POST "https://api.vaquill.ai/api/v1/us/session-laws/batch" \
   -d '{"ids": ["SSL_MN_2025R_G_Y2025_C1", "SSL_MN_2025R_G_Y2025_C2"]}'
 ```
 
-- 2 credits per law served; a miss is not charged.
+- 2 credits per law served. A miss is not charged.
 - A citation in `ids` also pays 2 credits to resolve it, as on the single route.
 - `includeBody: true` adds each law's first page of text as `body`, at 6 credits per page served. 50 laws with text is 400 credits.
 - `jurisdiction` scopes how every citation in the batch is read.
@@ -379,27 +351,27 @@ curl -X POST "https://api.vaquill.ai/api/v1/us/session-laws/batch" \
 
 Each entry has `kind`, `sessionLawId`, `jurisdiction` and `detectedAt`, which is when we recorded the change, not an approval or effective date.
 A `withdrawn` or `merged` entry means the law no longer answers at its id.
-1 credit per page of up to 200 entries; an empty page is charged.
+1 credit per page of up to 200 entries. An empty page is charged.
 
 ## From a code section to the acts that changed it
 
-`GET /us/statutes/section/{actId}/enactments` lists the session laws a state publisher's own "sections affected" tables print against one code section: which act added, amended or repealed it, and when the act took effect.
+`GET /us/statutes/section/{actId}/enactments` lists the session laws a state publisher's "sections affected" tables show for one code section.
+It says which act added, amended or repealed the section, and when the act took effect.
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/statutes/section/{actId}/enactments" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-It reads the code-section tables of California, the District of Columbia, Hawaii, Kentucky, Missouri, Mississippi, Nebraska, Utah and Washington.
-That is fewer than the jurisdictions that fill `codeSectionsAffected` (Maryland and Iowa are not among them), and a few other states are read from the section's own credit line (`basis: credit_line`).
-Any other section answers `supported: false` and is refunded; `supported` and `coverage.note` on each response are the live answer.
+It reads the tables of California, the District of Columbia, Hawaii, Kentucky, Missouri, Mississippi, Nebraska, Utah and Washington.
+A few other states are read from the section's credit line (`basis: credit_line`).
+Any other section answers `supported: false` and is refunded. `coverage.note` on each response says what applies.
 
 It is not a complete amendment history.
-It lists only acts we hold, in sessions we hold, whose table prints the section in a form we match; `coverage.note` says what is not matched in each jurisdiction.
-An empty list with `supported: true` means no held table lists the section.
-1 credit; a section that does not exist is not charged.
+An empty list with `supported: true` means no table we hold lists the section.
+1 credit. A section that does not exist is not charged.
 
 ## See also
 
-- [Law change alerts](/api-guide/alerts) to be told when a source changes, and `GET /us/session-laws/changes` for the session-law registry feed.
+- [Law change alerts](/api-guide/alerts) to be told when a source changes.
 - [Coverage](/api-guide/coverage) for what each jurisdiction holds.

@@ -13,8 +13,7 @@ curl "https://api.vaquill.ai/api/v1/us/statutes/section/STATE_ID_IDAPA_16_03_21_
 `asOf=YYYY-MM-DD` on `GET /us/statutes/section/{actId}/body` returns the section's text as it stood on that date.
 It is billed as an ordinary body fetch.
 
-This matters when the question is dated: what an employer's obligation was on the day of the conduct, which version of a rule a contract signed in 2019 incorporated, what a regulation required before an amendment.
-Today's text gives the wrong answer to all of these.
+Use it when the question is dated. Examples: what an employer's duty was on the day of the conduct, or which version of a rule a 2019 contract incorporated.
 
 ## Choosing the right tool
 
@@ -26,88 +25,69 @@ Today's text gives the wrong answer to all of these.
 | Tell me when it changes from now on | [Law change alerts](/api-guide/alerts) |
 | Which sections moved since my last sync? | `changedSince` on `/statutes/search` |
 
-## Every answer says where it came from
+## The asOf block
 
-The response carries an `asOf` block.
-Read `engine` first, then `source`: the same parameter is answered by two different mechanisms, and one of them is an estimate.
+Every answer carries an `asOf` block.
+Read `engine` first, then `source`. Two mechanisms answer the same parameter, and one of them is an estimate.
 
-| `engine` | `source` | What you are holding | Charged |
+| `engine` | `source` | What you get | Charged |
 |---|---|---|---|
-| `observed_change` | `live` | We captured no change after your date, so today's text is what stood then, as far as we ever saw. | Yes |
-| `observed_change` | `reconstructed` | Rebuilt from the before-side of the first change we captured after your date. | Yes |
-| `observed_change` | `unavailable` | We know it changed but cannot rebuild the earlier text. No text is returned. | No, refunded |
-| `stored_edition` | `published` | An edition we hold answered, verbatim. It is the publisher's own text, with no estimate from us. | Yes |
-| `stored_edition` | `unavailable` | No edition we hold governs your date. No text is returned. | No, refunded |
+| `observed_change` | `live` | We saw no change after your date, so today's text is returned. | Yes |
+| `observed_change` | `reconstructed` | Text rebuilt from the first change we saw after your date. | Yes |
+| `observed_change` | `unavailable` | The section changed but we cannot rebuild the earlier text. No text. | No, refunded |
+| `stored_edition` | `published` | The publisher's own edition, verbatim. | Yes |
+| `stored_edition` | `unavailable` | No edition we hold covers your date. No text. | No, refunded |
 
-`observed_change` answers every corpus that does not hold published editions.
-The text is rebuilt from change history we observed, and reaches back only as far as capture began for that source.
+`observed_change` answers every corpus that has no published editions. It reaches back only as far as we have tracked changes for that source.
 
-`stored_edition` answers from a publisher's own dated edition, held verbatim: `CFR_ANNUAL`, the U.S. Code, the Copyright Compendium and the OFAC FAQs.
+`stored_edition` answers from a publisher's dated edition: `CFR_ANNUAL`, the U.S. Code, the Copyright Compendium and the OFAC FAQs.
+A date between two editions, or before the first, is out of coverage. We do not answer it from a neighboring edition.
 
-On `stored_edition`, `outOfCoverageReason` says why no text came back in a sentence, and names the earliest edition we hold when your date predates it.
-The editions are enumerated, not interpolated: a date between two of them, or before the first, is reported out of coverage rather than answered from a neighbouring edition, because the text may have changed in the gap.
-
-A fourth outcome is not a `source` value at all: on `observed_change`, `existed: false` means the earliest thing we ever captured for this section is its addition, and that addition postdates your date, so it demonstrably did not exist yet.
-That is a definite answer, so it is charged.
-On `stored_edition` with `source: "unavailable"`, `existed` carries no meaning and is always `false`: read `source` and `outOfCoverageReason`.
+On `observed_change`, `existed: false` means the section was first added after your date. That is a definite answer, so it is charged.
+On `stored_edition` with `source: "unavailable"`, `existed` is always `false`. Read `source` and `outOfCoverageReason` instead.
 
 | Field | Meaning |
 |---|---|
-| `requested` | The date you asked for, echoed back. |
-| `existed` | On `observed_change`, false when the section demonstrably did not exist yet on your date. |
-| `basisChangeId` | The change event whose before-side supplied this text. Null unless `source` is `reconstructed`. |
-| `observedFrom` | The earliest change we ever captured for this section. |
-| `isBounded` | Means different things on the two engines. On `observed_change`, true marks a bounded reconstruction: see the warning below. On `stored_edition`, true means your date falls inside an edition we hold, so the text is a verified published printing, and false means out of coverage with no text. |
-| `coverage` | The same limit in prose, safe to show a reader verbatim. |
-| `outOfCoverageReason` | `stored_edition` only. Why no text came back, when `source` is `unavailable`. |
-| `resolvedEditionYear`, `scheduledEditionYear`, `editionsObserved` | `CFR_ANNUAL` only. The edition year actually served, the year the revision schedule computed, and the editions held for the section. |
-| `html` | Always null on an `asOf` answer, on every corpus. Reconstructed text is plain text, and we do not synthesize markup the publisher never printed. Read `plain`, as on every body response. |
+| `requested` | The date you asked for. |
+| `existed` | On `observed_change`, false when the section did not exist yet on your date. |
+| `basisChangeId` | The change event that supplied this text. Null unless `source` is `reconstructed`. |
+| `observedFrom` | The earliest change we captured for this section. |
+| `isBounded` | On `observed_change`, true marks a bounded reconstruction (see the warning below). On `stored_edition`, true means your date falls inside an edition we hold. |
+| `coverage` | The same limit in prose, safe to show a reader. |
+| `outOfCoverageReason` | `stored_edition` only. Why no text came back. It names the earliest edition we hold when your date is before it. |
+| `resolvedEditionYear`, `scheduledEditionYear`, `editionsObserved` | `CFR_ANNUAL` only. The edition year served, the year the revision schedule computed, and the editions held. |
+| `html` | Always null on an `asOf` answer. Read `plain`. |
 
-`engine` and `source` are in the table above.
-
-To see the event a `reconstructed` answer rests on, read [`GET /us/statutes/section/{actId}/changes`](/api-guide/concepts/section-intelligence) with `sinceId` set one below `basisChangeId` and `order=asc`.
+To see the event behind a `reconstructed` answer, call [`GET /us/statutes/section/{actId}/changes`](/api-guide/concepts/section-intelligence) with `sinceId` set one below `basisChangeId` and `order=asc`.
 
 <Warning>
-  On `observed_change`, `isBounded: true` means we observed no change affecting that date.
-  It does not mean there was none.
-
-  It is set when your date predates `observedFrom`, or when we captured no change for that section at all.
-  Change capture began long after the corpus did, and runs per source, so a bounded answer is our best reconstruction rather than a verified historical text.
-
-  Surface it.
-  Rendering a bounded answer as authoritative point-in-time law makes a claim we did not make.
+  On `observed_change`, `isBounded: true` means we saw no change affecting that date. It does not mean there was none.
+  The text is our best reconstruction, not a verified historical text.
+  Show this to your readers.
 </Warning>
 
 ## How each corpus answers
 
-`asOf` resolves two different ways depending on the corpus, and the difference decides how much weight the answer carries.
-Where the publisher issues dated editions, the answer is the edition in force on your date.
-Everywhere else the corpus holds one current text per citation, and the earlier one is rebuilt from observed change history: accurate to what we captured, bounded by when capture began.
+Where the publisher issues dated editions, `asOf` returns the edition in force on your date.
+Everywhere else it rebuilds the earlier text from changes we observed.
 
 | Corpus | How | Point-in-time behavior |
 |---|---|---|
-| `CFR_ANNUAL` | Edition | 31 GPO annual editions, 1996-2026, all 49 titles. `asOf` resolves to the edition in force. |
-| `USC` | Edition | Two editions: the one current through 2025-01-06 (served only for that date) and the current release point, which governs from 2026-09-02. Every date in between, and every earlier date, is out of coverage and returns no text. |
-| `FEDERAL_RULES` | Edition | 1,125 superseded texts of 510 Federal Rules, each its own `FEDERAL_RULES_ANNUAL` document (`{current actId}_E{year}`) built from GPO's annual US Code appendix editions. Pass the rule's current `actId` and `asOf` resolves to the text in force. The record begins 1998-01-26. |
-| `copyright_compendium` | Edition | Three dated releases (2014, 2017, 2021). Resolves to the edition the Copyright Office states applied. |
-| `ofac_faq` | Separate document | 361 prior FAQ versions are separate citable documents from OFAC's own archive, served `actStatus: "superseded"`. |
-| `whd_opinion_letter` | Separate document | Withdrawn and superseded letters stay retrievable under their own `act_id`, including the 2009 letters WHD re-issued in 2018 under new numbers. |
-| CMS Medicare manuals, DOL Field Operations Handbook | Capture only | The publisher replaces text in place and issues no superseded editions, so there is nothing to reconstruct from beyond our own capture history. Expect `isBounded: true` on dates before capture began. |
+| `CFR_ANNUAL` | Edition | 31 annual editions, 1996-2026, all 49 titles. |
+| `USC` | Edition | Two editions: one current through 2025-01-06 (served only for that date) and the current release point, which governs from 2026-09-02. Other dates return no text. |
+| `FEDERAL_RULES` | Edition | Past texts of the Federal Rules, back to 1998-01-26. Pass the rule's current `actId`. |
+| `copyright_compendium` | Edition | Three releases (2014, 2017, 2021). |
+| `ofac_faq` | Separate document | Prior FAQ versions are separate documents with `actStatus: "superseded"`. |
+| `whd_opinion_letter` | Separate document | Withdrawn and superseded letters stay retrievable under their own `act_id`. |
+| CMS Medicare manuals, DOL Field Operations Handbook | Observed change | The publisher replaces text in place. Expect `isBounded: true` on earlier dates. |
 
 Where history is a separate document, you retrieve it by citation instead of by date.
 
-<Accordion title="Edge cases by corpus">
-On `CFR_ANNUAL`, `editionsObserved` is an enumeration and never a range: a version observed in 1998, 1999 and 2003 lists exactly those years, and a date in an unobserved gap returns `asOf.isBounded: false` rather than the nearest year held.
-Also on `CFR_ANNUAL`, a citation year is the volume's own `<REVISED>` year, which can differ from the folder GPO filed it under, because GPO reprints unchanged volumes forward without re-dating them.
-
-On a Federal Rule, a date before 1998-01-26 returns the earliest text we hold with `asOf.isBounded: true`, which is not the text in force on that date.
-A date before the rule existed answers that it did not exist.
-So does a date after a rule was deleted and before its number was reused: Criminal Rule 59 answers that it did not exist between 2002-12-01 and 2005-12-01.
-When a later edition corrected a misprint without a new amendment, the corrected printing is served for every date that amendment governs.
-Editions were not published for every year, so a text in force only between two editions we hold can be missing.
-Past texts are also citable on their own under `corpusType=FEDERAL_RULES_ANNUAL`, which is opt-in and never part of an unscoped search.
-
-On `whd_opinion_letter`, a re-issued pair shares one PDF at the publisher but is two documents with opposite status.
+<Accordion title="Federal Rules edge cases">
+A date before 1998-01-26 returns `source: "unavailable"`, `available: false` and `plain: null`. The call is not charged.
+A proposed amendment (`FEDERAL_RULES_PROPOSED`) asked with `asOf` is refused, because it is not law on any date.
+A date before a rule existed, or after it was deleted and before its number was reused, answers that it did not exist.
+Past texts are also citable under `corpusType=FEDERAL_RULES_ANNUAL`. That corpus is opt-in and is never part of an unscoped search.
 </Accordion>
 
 ## Worked example
@@ -134,11 +114,10 @@ The response:
 }
 ```
 
-`isBounded` is true here because 2026-06-01 predates `observedFrom`.
-The text is our best reconstruction, and a product built on it should say so to its reader.
+`isBounded` is true here because 2026-06-01 is before `observedFrom`.
 
-<Accordion title="A date no held edition governs">
-A U.S. Code date that no held edition governs answers like this instead, with no text and no charge:
+<Accordion title="A date no held edition covers">
+A U.S. Code date that no held edition covers returns no text and no charge:
 
 ```json
 {

@@ -1,22 +1,20 @@
 ---
 title: "Jurisdictions and state codes"
-description: "The jurisdictions the API accepts, how state codes and the federal jurisdiction work, and how to see what is actually there"
+description: "The jurisdictions the API accepts, how state codes work, and how to see what each one holds."
 ---
 
 `state` accepts 56 US jurisdictions: all 50 states, plus the District of Columbia, Puerto Rico, Guam (`gu`), the Northern Mariana Islands (`mp`), the US Virgin Islands (`vi`) and American Samoa (`as`).
 Federal law lives under its own `federal` jurisdiction, separate from the states.
 
-Accepting a jurisdiction does not mean it holds every corpus for it.
-A state may have its statutory code (`STATE`) and constitution (`STATE_CONSTITUTION`) but no administrative regulations (`REGULATION`) or court rules (`STATE_RULES`) yet.
+A jurisdiction may not hold every corpus.
 Read `GET /us/statutes/coverage` before you scope a search.
 
 ## How jurisdictions are keyed
 
-- **Codes:** 2-letter strings (`ca`, `tx`, `ny`, `fl`), case-insensitive.
-  An unrecognized value is rejected with a 422 rather than silently matching nothing.
-- **Lists:** pass several at once (`"state": ["ca", "ny", "tx"]`), which is one call instead of one per jurisdiction.
-- **Federal and kind:** `federal` is the jurisdiction for the federal corpora, and a federal search needs only a `corpusType`, no `state`.
-  Each jurisdiction row from `/us/statutes/coverage` carries a `kind` of `federal`, `state` or `territory`, and DC plus the five territories above are `territory`.
+- **Codes:** 2-letter strings (`ca`, `tx`, `ny`), case-insensitive. An unrecognized value returns `422`.
+- **Lists:** pass several at once, such as `"state": ["ca", "ny", "tx"]`.
+- **Federal:** a federal search needs only a `corpusType`, no `state`.
+- **Kind:** each jurisdiction row from `/us/statutes/coverage` has a `kind` of `federal`, `state` or `territory`. DC and the five territories are `territory`.
 
 <Accordion title="All 56 state codes">
 
@@ -85,9 +83,7 @@ Read `GET /us/statutes/coverage` before you scope a search.
 
 <CardGroup cols={2}>
   <Card title="GET /us/statutes/coverage">
-    Which corpora exist in which jurisdiction, with document counts.
-    For the age of a source, read `GET /boards`.
-    Free, no credits.
+    Which corpora exist in which jurisdiction. Free, no credits.
   </Card>
   <Card title="GET /us/statutes/divisions">
     Walk the hierarchy one level at a time: a state's codes, then its chapters, then its sections.
@@ -95,20 +91,16 @@ Read `GET /us/statutes/coverage` before you scope a search.
   </Card>
 </CardGroup>
 
-Coverage expands weekly.
-Read it at request time rather than baking counts into your app.
+Coverage grows over time, so read it at request time.
 
 ## Reading a jurisdiction's corpora
 
-`GET /us/statutes/coverage` returns a wrapped `{ "data": ..., "meta": ... }`
-response.
-Each jurisdiction in `data.jurisdictions` has a `corpora` object whose keys are the `corpusType` tokens that actually have data, mapped to the ingested document count.
-Read those keys to know which searches you can scope.
+`GET /us/statutes/coverage` returns a `{ "data": ..., "meta": ... }` response.
+Each jurisdiction in `data.jurisdictions` has a `corpora` object.
+Its keys are the `corpusType` tokens that have data, mapped to a document count.
+`data.corpusTypes` is a legend naming every token and whether it is federal or state-scoped.
 
-The same response carries `data.corpusTypes`, a legend naming every token and whether it is federal or state-scoped, so you never need a hardcoded list.
-
-A jurisdiction that holds [state session laws](/api-guide/session-laws) also carries a `sessionLaws` block: its sessions with `status` (`complete` or `partial`), the counts served, withheld and still open, the numbering `series` and `instrumentTypes` it holds (the values the list and search endpoints accept) and the span of approval dates.
-A jurisdiction with no session laws has no block.
+A jurisdiction that holds [state session laws](/api-guide/session-laws) also has a `sessionLaws` block with its sessions, `series`, `instrumentTypes` and approval-date span.
 Session laws are not a `corpusType`.
 
 <CodeGroup>
@@ -153,21 +145,13 @@ console.log("available corpora:", Object.keys(ca.corpora));
 
 </Accordion>
 
-This response does not say how recently a corpus was refreshed.
-Read the free `GET /boards` alongside it (see [Law change alerts](/api-guide/alerts)).
-
-<Accordion title="Freshness: lastRetrievedAt, cadence and currentThrough">
-  `GET /boards` is free and carries `lastRetrievedAt` (left out of a board that has no successful retrieval yet) and `cadence` per source, so read it alongside the counts here to tell a maintained corpus from a frozen one.
-
-  A board names a `(jurisdiction, corpusType)` pair, never a whole jurisdiction: a state can be frozen in one corpus and current in another.
-  Where a publisher states its own currency, it rides on each section as `currentThrough`.
-</Accordion>
+For how recently a corpus was refreshed, read the free `GET /boards` (see [Law change alerts](/api-guide/alerts)).
+It carries `lastRetrievedAt` and `cadence` per `(jurisdiction, corpusType)` pair.
 
 ## Listing a state's codes
 
-`state=tx` alone searches every Texas code at once.
-To scope below a jurisdiction, browse its codes with `/us/statutes/divisions`
-and pass one back as the `code` filter on search.
+`state=tx` alone searches every Texas code.
+To scope below a jurisdiction, browse its codes with `/us/statutes/divisions` and pass one back as the `code` filter on search.
 
 <CodeGroup>
 
@@ -192,18 +176,13 @@ for node in resp.json()["divisions"]:
 
 </CodeGroup>
 
-Each node's `identifier` is what `code` on `POST /us/statutes/search` takes, so browse output feeds straight back in.
-Drill one level further by passing it back to `/us/statutes/divisions`
-(`corpusType=STATE&state=tx&code=tx_pe` returns that code's chapters), and keep going until `isLeaf` is true, where each node carries an `actId`.
+Each node's `identifier` is what `code` on `POST /us/statutes/search` takes.
+To drill further, pass it back to `/us/statutes/divisions` (`corpusType=STATE&state=tx&code=tx_pe` returns that code's chapters) until `isLeaf` is true, where each node carries an `actId`.
 
-Browse supports the tokens with `browsable: true` in the `/us/statutes/coverage` legend, so you never need to probe for it (the list is on [Corpus types](/api-guide/concepts/corpus-types#tokens)).
-The rest are dated series or share no tree, so reach those with `/us/statutes/search`.
-
-<Tip>
-  Check coverage first, then structure, then search: `/us/statutes/coverage` for the corpora a jurisdiction has, `/us/statutes/divisions` for how it is structured, then `POST /us/statutes/search` with the `corpusType`, `state` and `code` you confirmed.
-</Tip>
+Browse supports the tokens with `browsable: true` in the coverage legend (listed on [Corpus types](/api-guide/concepts/corpus-types#tokens)).
+Reach the rest with `/us/statutes/search`.
 
 ## Related
 
 - [Corpus types](/api-guide/concepts/corpus-types): the corpusType tokens and how to pair them with a state.
-- [API Coverage](/api-guide/coverage): the full jurisdiction matrix with current section counts.
+- [API Coverage](/api-guide/coverage): the jurisdiction matrix with current counts.

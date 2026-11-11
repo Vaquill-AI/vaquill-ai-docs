@@ -1,18 +1,16 @@
 ---
 title: "Hierarchy and container names"
-description: "What a title, chapter, part or article is, which fields carry its name, and how to read breadcrumb and displayPath"
+description: "What a title, chapter, part or article is, which fields carry its name, and how to read breadcrumb and displayPath."
 ---
 
-A law is printed inside containers.
+This page explains what each container of a law is called in the API, and which fields carry its name.
 A section sits in a chapter, the chapter in a title, and some codes add subtitles, divisions, parts or articles between them.
 Each container has a number or letter, and most have a heading.
-This page says what every container is called in the API, which fields carry its name, and where a name is missing.
 
 ## What a container is
 
 A container is any level of a code between the code itself and a section.
 The levels are the publisher's own, so no two codes have the same ladder.
-Read two real sections to see it.
 
 <CodeGroup>
 
@@ -43,11 +41,11 @@ Title 17 CFR: Commodity and Securities Exchanges
 
 </CodeGroup>
 
-The same word means different things in different codes.
+The same word sits at different levels in different codes.
 In California a title sits below a division and a part.
 In the U.S. Code it sits at the top.
-In Texas a title sits below the code, and in New York there are no titles at all, only articles.
-So never assume a level exists, and never assume where it sits: read the response.
+New York has no titles, only articles.
+Read the response rather than assuming a level.
 
 | Container | `kind` in `/divisions`, `type` in `breadcrumb` | Request filter that lists inside it | Example |
 |---|---|---|---|
@@ -78,7 +76,7 @@ Pass a node's `identifier` back as the filter its `kind` names and you list what
 
 ## Where the names are
 
-Four places carry a container's name, and they agree.
+These fields carry a container's name.
 
 | Where | Shape | What it is for |
 |---|---|---|
@@ -88,8 +86,7 @@ Four places carry a container's name, and they agree.
 | `displayPath` | One string, `Title 42: THE PUBLIC HEALTH AND WELFARE / Chapter 21: CIVIL RIGHTS / ...` | Showing a reader where a section sits |
 | `name` on each node of `GET /us/statutes/divisions` | One string | The listing of a level, before you hold a section |
 
-Read it from a real response.
-This is Delaware, a state that divides a title into subtitles, articles and parts:
+Delaware divides a title into subtitles, articles and parts:
 
 ```json
 {
@@ -114,148 +111,42 @@ This is Delaware, a state that divides a title into subtitles, articles and part
 }
 ```
 
-Three things to read in it:
+- `breadcrumb` is in the publisher's order, which is not always the order of the flat fields. Do not rebuild a path from the flat fields.
+- `label` is the level and its number (`Article 2`), and `name` is the heading (`Sales`). `displayPath` joins them as `Article 2: Sales`.
+- `chapter: "21"` is the number, and `chapterName: "CIVIL RIGHTS"` is the heading. Pass numbers and identifiers to filters, never names.
 
-- **`breadcrumb` is in the publisher's order, which is not always the order of the flat fields.** Delaware's breadcrumb runs title, subtitle, article, part.
-  California's runs code, division, part, title, chapter.
-  Do not rebuild a path from the flat fields.
-- **`label` is the level and its number** (`Article 2`), and **`name` is the heading** (`Sales`).
-  `displayPath` joins them as `Article 2: Sales`.
-- **A name is not a number.** `chapter: "21"` is the number, `chapterName: "CIVIL RIGHTS"` the heading.
-  Pass numbers and identifiers to filters, never names.
+A container with no name prints only its label in `displayPath`, and its breadcrumb entry has no `name` key.
+Names are printed the way the publisher prints them, and are never recased.
+The code itself is a level: Texas has a `code` entry (`Code pe`, name `Penal Code`) at the top of its breadcrumb, and the `code` identifier (`tx_pe`) is the filter that lists inside it.
 
-<Accordion title="More on reading names: no-name containers, capitalization and the code level">
-  - **A container with no name prints only its label.** In New Jersey the path reads `NJ Code / Title 2C: THE NEW JERSEY CODE OF CRIMINAL JUSTICE / Chapter 12 / Section 12-1`, and the chapter's breadcrumb entry carries no `name` key at all.
-  - **Names are printed the way the publisher prints them.** Capitals, sentence case and abbreviations are the publisher's own: a Delaware chapter is `UNIFORM ELECTRONIC TRANSACTIONS ACT` and a Delaware article is `Sales`.
-    We never recase a name.
-  - **The code itself is a level.** Texas has a `code` entry (`Code pe`, name `Penal Code`) at the top of its breadcrumb, because the Penal Code and the Water Code are separate codes inside one state.
-    The `code` identifier (`tx_pe`) is the filter that lists inside it.
-</Accordion>
-
-The same containers appear in the listing, which [Browse the statute hierarchy](/api-guide/recipes/browse-hierarchy) walks level by level.
 For this Delaware section, `GET /us/statutes/divisions?corpusType=STATE&state=de&code=de_6` has the node `{ "identifier": "2", "name": "Sales", "kind": "article", ... }`, and adding `&article=2` lists its parts.
 
 ## A null name
 
-`name` is `null` on a listing node, and absent on a breadcrumb entry, when we serve no heading for that container.
-It does not mean the container is empty or missing, or that the level does not exist: the level is real and has a number, and `sectionCount` and the sections inside it are unaffected.
-The [census below](#which-jurisdictions-name-which-levels) lists the known gaps.
+`name` is `null` on a listing node, and absent on a breadcrumb entry, when no heading is served for that container.
+The container still exists, and its `sectionCount` and sections are unaffected.
+Some publishers print a level as a number alone.
 
-<Accordion title="Why a name can be null">
-  The response does not say which of two reasons applies.
-
-  - **The publisher prints no heading.** New Jersey prints a chapter as a number alone, and Maryland prints the article's name and no title or subtitle heading.
-    No name exists to serve, so `null` is the whole answer.
-  - **We have not read the heading yet.** A name we cannot confirm from the publisher's own pages is left empty, never guessed or title-cased from a neighbour.
-</Accordion>
-
-## Which jurisdictions name which levels
-
-Three jurisdictions are materially unnamed, and everywhere else the gaps are a handful of containers per level (the largest is Guam part, 18 of 21).
-The notes below also cover the jurisdictions whose names are carried in an unusual way.
-The full per-jurisdiction census is in the accordion after them.
+## Jurisdiction notes
 
 | Jurisdiction | Notes |
 |---|---|
-| Maryland | Not fully named: title and subtitle (none). The code is divided into articles, and a name is printed for the article only. `titleName` carries the article's name (`Md. Code, Commercial Law`), and titles and subtitles are numbers alone. |
-| New Jersey | Not fully named: chapter (none). Titles are named. Chapters print a number alone, so `chapterName` is `null` on every New Jersey section. |
-| Pennsylvania | Not fully named: title (53 of 134), chapter (925 of 1,187), act (3,510 of 3,548). |
-| Texas | Titles, subtitles and chapters carry the publisher's capitalised headings. The `code` level is a citation label plus the code's name (`Code pe`, `Penal Code`). The `/divisions` name of a code is its citation form (`Tex. Penal Code`), while the `breadcrumb` name of the same code is `Penal Code`. |
+| Maryland | The code is divided into articles, and only the article has a name. `titleName` carries the article's name (`Md. Code, Commercial Law`), and titles and subtitles are numbers alone. |
+| New Jersey | Chapters print a number alone, so `chapterName` is `null`. Titles are named. |
+| Pennsylvania | Some titles, chapters and acts have no name. |
+| Texas | The `code` level is a citation label plus the code's name (`Code pe`, `Penal Code`). The `/divisions` name of a code is its citation form (`Tex. Penal Code`), and the `breadcrumb` name is `Penal Code`. |
 | California | The ladder is code, division, part, title, chapter, article, and any of them can be absent. `titleNumber` and `titleName` read the level called title (`5`, `HIRING` for Civil Code § 1950.5), not the code. Chapter numbers repeat inside one code: see [Pooled numbers](#pooled-numbers). |
 | New York | Laws are divided into articles, not chapters or titles, so there is no `chapterName`. `titleName` carries the law's name (`N.Y. General Business Law`), and `articleNumber` and `articleName` carry the article (`22-A`). |
-| Arkansas, Georgia, Tennessee | `sourceUrl` is `null`. Every Arkansas title and chapter is named, every Georgia title and 898 of 899 chapters, and every Tennessee title and 1,228 of 1,234 chapters. The six Tennessee chapters that are repealed and Georgia chapter 43-12A have `chapterName: null`. |
-
-<Accordion title="Arkansas, Georgia and Tennessee: how the headings were read">
-  These three codes are published by the state only through a commercial platform, under a licence that covers sourcing and not linking.
-  We read their headings only from the pages that licence covers, never from another publisher, and `sourceUrl` is `null` for them.
-  The platform's own table of contents prints a name for every title and chapter.
-  The six Tennessee chapters are repealed and their heading is a bare `[Repealed]`, and Georgia chapter 43-12A is printed twice with two different names (one per effective-date version), so those chapters have `chapterName: null`.
-  A bracketed `[Repealed]` that follows a name is part of the heading and stays in the name.
-</Accordion>
-
-<Accordion title="Census of every jurisdiction">
-
-{/* census:start */}
-Data as of 2026-10-27, across every state statute section.
-A container counts as named when any of its sections carries its heading in `breadcrumb`, or in `chapterName` or `articleName`.
-The second column lists the levels the jurisdiction records above its sections.
-The third lists each level that is not fully named, with how many of its containers carry a heading.
-
-| Jurisdiction | Levels recorded | Levels not fully named |
-|---|---|---|
-| Alabama | title, chapter | every level named |
-| Alaska | title, chapter | every level named |
-| American Samoa | title, chapter | chapter: 328 of 329 |
-| Arizona | title, chapter, article | every level named |
-| Arkansas | title, chapter | every level named |
-| California | title, division, part, chapter, article | part: 1,190 of 1,192; chapter: 8,494 of 8,499; article: 13,523 of 13,532 |
-| Colorado | title, part, article | part: 2,682 of 2,810 |
-| Connecticut | title, chapter | chapter: 1,031 of 1,032 |
-| Delaware | title, subtitle, part, chapter, subchapter, article | chapter: 1,287 of 1,289; subchapter: 1,405 of 1,410 |
-| District of Columbia | title, chapter | chapter: 1,262 of 1,263 |
-| Florida | title, part, chapter | every level named |
-| Georgia | title, chapter | chapter: 898 of 899 |
-| Guam | title, division, part, chapter, subchapter, article, subarticle | division: 58 of 60; part: 18 of 21; article: 1,055 of 1,057 |
-| Hawaii | title, division, chapter | every level named |
-| Idaho | title, chapter | every level named |
-| Illinois | chapter, act | every level named |
-| Indiana | title, chapter, article | chapter: 7,420 of 7,421 |
-| Iowa | title, chapter | every level named |
-| Kansas | chapter, article | chapter: 82 of 83; article: 1,419 of 1,433 |
-| Kentucky | title, chapter | every level named |
-| Louisiana | title | title: 52 of 54 |
-| Maine | title, subtitle, part, chapter | part: 163 of 164 |
-| Maryland | title, subtitle, article | title: none; subtitle: none |
-| Massachusetts | title, part, chapter, article | every level named |
-| Michigan | chapter, act | chapter: 285 of 286; act: 2,441 of 2,443 |
-| Minnesota | part, chapter | every level named |
-| Mississippi | title, chapter | chapter: 1,305 of 1,306 |
-| Missouri | chapter | every level named |
-| Montana | title, part, chapter | every level named |
-| Nebraska | chapter | every level named |
-| Nevada | title, chapter | title: 59 of 60 |
-| New Hampshire | title, chapter | every level named |
-| New Jersey | title, chapter | chapter: none |
-| New Mexico | chapter, article | article: 1,953 of 1,954 |
-| New York | title, subtitle, part, subpart, article, act | title: 1,199 of 1,204; part: 294 of 296 |
-| North Carolina | chapter | chapter: 394 of 396 |
-| North Dakota | title, chapter | every level named |
-| Northern Mariana Islands | title, division, part, chapter, article | every level named |
-| Ohio | title, chapter | every level named |
-| Oklahoma | title | title: 84 of 88 |
-| Oregon | title, chapter | every level named |
-| Pennsylvania | title, chapter, act | title: 53 of 134; chapter: 925 of 1,187; act: 3,510 of 3,548 |
-| Puerto Rico | part | every level named |
-| Rhode Island | title, chapter | every level named |
-| South Carolina | title, chapter, article | title: 61 of 63; chapter: 1,291 of 1,299; article: 2,080 of 2,082 |
-| South Dakota | title, chapter | chapter: 1,632 of 1,633 |
-| Tennessee | title, chapter | chapter: 1,228 of 1,234 |
-| Texas | title, subtitle, chapter | chapter: 4,952 of 4,963 |
-| U.S. Virgin Islands | title, subtitle, part, subpart, chapter, subchapter, article | every level named |
-| Utah | title, chapter | every level named |
-| Vermont | title, chapter | chapter: 1,633 of 1,639 |
-| Virginia | title, subtitle, part, subpart, chapter, article | subtitle: 72 of 73; part: 73 of 77; chapter: 1,568 of 1,572 |
-| Washington | title, chapter | every level named |
-| West Virginia | chapter, article | every level named |
-| Wisconsin | chapter | chapter: 466 of 470 |
-| Wyoming | title, chapter | title: 41 of 44 |
-
-{/* census:end */}
-
-</Accordion>
+| Arkansas, Georgia, Tennessee | `sourceUrl` is `null`. A few repealed chapters have `chapterName: null`. |
 
 ## Pooled numbers
 
-Some codes reuse a number at the same level in many places: California's Civil Code has dozens of chapters numbered `2`.
-A listing that is asked only for `chapter=2` therefore cannot tell them apart.
-It answers `kind: section` nodes for every chapter that carries that number, flat, with a `note` saying so, and never merges them into one.
+Some codes reuse a number at the same level: California's Civil Code has dozens of chapters numbered `2`.
+A listing asked only for `chapter=2` returns `kind: section` nodes for every chapter with that number, flat, with a `note` saying so.
 Pass each ancestor the listing returned (`code`, `division`, `part`, `title`, `chapter`) to list one of them.
 
 State regulations that print the agency above their chapters do not pool: Maine, Virginia and Wyoming list `umbrella`, `agency` and `program` nodes, and naming the agency (and the program in Wyoming) opens the right chapter.
 See [Browse the statute hierarchy](/api-guide/recipes/browse-hierarchy#state-regulations-umbrella-agency-and-program) for a worked Maine example.
-
-Two other things you will meet on a section are covered where they belong:
-`matchLevel` on a citation answer is on [Citation formats](/api-guide/concepts/citation-formats#when-the-answer-is-not-the-exact-unit-you-cited-matchlevel), and `bodyUnavailable` is on [Response formats](/api-guide/concepts/formats).
 
 ## Related
 

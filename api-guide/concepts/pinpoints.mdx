@@ -3,10 +3,8 @@ title: "Pinpoints"
 description: "Get the text of one subsection, paragraph or clause instead of the whole section, and learn how far to trust it."
 ---
 
-A statute section can run to dozens of subsections.
-A pinpoint citation such as `625 ILCS 5/11-601(c)` names one of them.
-The API returns exactly that unit, with its own text, the text it completes, and where it sits in the section.
-No second model call and no parsing on your side.
+A pinpoint citation such as `625 ILCS 5/11-601(c)` names one subsection of a section.
+The API returns that unit with its own text, the text it completes, and where it sits in the section.
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/statutes/resolve?cite=625%20ILCS%205/11-601(c)&state=il" \
@@ -22,7 +20,7 @@ The response carries the whole section as before, and a `pinpoint` object beside
 | `text`, `leadIn`, `fullText` | The unit's own text, the text it completes, and the unit as printed with its sub-units |
 | `children`, `siblings` | The sub-units, and the labels of the previous and next unit at the same level |
 | `charStart`, `charEnd` | The unit's character offsets in the section `plain` text |
-| `structure` | Where the outline came from and how far to trust it. See [How far to trust it](#how-far-to-trust-it-structure) |
+| `structure` | Where the outline came from. See [How far to trust it](#how-far-to-trust-it-structure) |
 
 <Expandable title="Full response for 625 ILCS 5/11-601(c)">
 
@@ -60,17 +58,16 @@ The response carries the whole section as before, and a `pinpoint` object beside
 | Route | How to ask | What you get |
 |---|---|---|
 | `GET /us/statutes/resolve`, `POST /us/statutes/resolve` | Put the pinpoint in the citation | `pinpoint` on the response, and on each item of a batch |
-| `POST /us/statutes/extract-citations` | Send `resolve: true`. A pinpoint in the text is read | `pinpointMatch` on each resolved row that carried a pinpoint, and `charStart` / `charEnd` giving the row's span in your text. A range returns its two ends (`rangeRole`, `rangePartner`), not every section between |
+| `POST /us/statutes/extract-citations` | Send `resolve: true` | `pinpointMatch` on each resolved row with a pinpoint, plus `charStart` / `charEnd` for its span in your text. A range returns its two ends (`rangeRole`, `rangePartner`) |
 | `GET /us/statutes/section/{actId}/body` | `pinpoint=(c)(1)` | `pinpoint` beside the full body |
-| `POST /us/statutes/search` | `includePinpoint: true` | `pinpoints`, keyed by `actId`: which subsection each hit matched |
+| `POST /us/statutes/search` | `includePinpoint: true` | `pinpoints`, keyed by `actId` |
 
-Pinpoints add no cost: a resolve with a pinpoint is the resolve price, a body with a pinpoint is the body price, and `includePinpoint` adds nothing to a search.
-Charging for a miss is in the [Errors table](#errors).
+Pinpoints add no cost. See the [Errors table](#errors) for misses.
 
 ## What a pinpoint can look like
 
 The pinpoint is read from the end of the citation.
-Labels are parenthesised, outermost first, and a label that contains a hyphen or a dot is one label.
+Labels are in parentheses, outermost first. A label with a hyphen or a dot is one label.
 
 | You send | Path |
 |---|---|
@@ -82,114 +79,62 @@ Labels are parenthesised, outermost first, and a label that contains a hyphen or
 | `Mo. Rev. Stat. § 556.061(2)(a)` | `["2", "a"]` |
 | `Wis. Stat. § 48.02(1)(a)` | `["1", "a"]` |
 
-Hyphenated and decimal labels are never split.
-`(f)(1.5)` is the unit `1.5` inside `(f)`, not the unit `5` inside `1` inside `(f)`.
+`(f)(1.5)` is the unit `1.5` inside `(f)`.
 
 Ranges and lists (`(a)-(c)`, `(a), (b)`) resolve to the first unit.
-The block says so in `kind`, and lists the others in `also`.
-Ask for each one with `GET /us/statutes/section/{actId}/body?pinpoint=...`.
+`kind` says so, and `also` lists the others.
+Fetch each one with `GET /us/statutes/section/{actId}/body?pinpoint=...`.
 
-State-specific forms are read too, for example Minnesota `subd.`, Kentucky `Section 8(2)(a)`, New Hampshire `II(a)(1)`, Wisconsin letter inserts such as `(am)` and `(1m)`, and Spanish forms for Puerto Rico.
+State forms are read too, such as Minnesota `subd.`, Kentucky `Section 8(2)(a)`, Wisconsin inserts like `(am)` and `(1m)`, and Spanish forms for Puerto Rico.
 
-The older `subsection` string on the section is unchanged.
-It is dot-joined (`f.1.5`), so it cannot tell a unit `1.5` from `1` then `5`.
-Read `pinpoint.path` when you need the unit itself.
+The `subsection` string on the section is dot-joined (`f.1.5`). Read `pinpoint.path` for the exact unit.
 
 ## Always read `matched`
 
 A pinpoint can name a unit the section does not have.
-The call still succeeds, because the section resolved.
-The block says what happened instead of answering with the whole section.
+The call still succeeds because the section resolved.
 
 | `matchLevel` | Meaning | What the block describes |
 |---|---|---|
 | `exact` | The whole path exists | The unit you asked for |
 | `ancestor` | Only a leading part of the path exists | The deepest unit that does. `unmatched` lists the part that did not exist, for example `["7"]` when you asked for `(c)(7)` and the section ends at `(c)(4)` |
-| `none` | Not even the first label exists, or we could not recover this section's outline | Nothing. Read `reason` |
+| `none` | Not even the first label exists, or the outline could not be recovered | Nothing. Read `reason` |
 
-On a miss, `available` lists the labels that do exist at the level where the lookup stopped, so a mistyped pinpoint can be corrected without another call.
-`reason` is `no_such_subsection` when the outline is known and has no such unit, and `no_structure` when we could not recover the section's outline.
-In the second case the section text is still at `/body`.
+On a miss, `available` lists the labels that exist at the level where the lookup stopped.
+`reason` is `no_such_subsection` or `no_structure`. With `no_structure` the section text is still at `/body`.
 
-If the pinpoint could not be looked up at all (the section text was unavailable, or the lookup ran out of time), the response carries `pinpointNote` instead of `pinpoint`.
-The section itself resolved and is charged as usual, and retrying usually answers.
+If the pinpoint could not be looked up at all, the response has `pinpointNote` instead of `pinpoint`. Retrying usually works.
 
 ## How far to trust it: `structure`
 
-Every pinpoint says where its outline came from and how far to trust it.
+Every pinpoint says where its outline came from.
 
 | `structure.quality` | Meaning |
 |---|---|
 | `native` | Built from the publisher's own markup |
-| `verified` | Parsed from the text and passed every check we run |
-| `heuristic` | Parsed from the text and failed a check. Use it, and confirm against the text |
+| `verified` | Parsed from the text and passed every check |
+| `heuristic` | Parsed from the text and failed a check. Confirm against the text |
 | `none` | No outline could be recovered |
 
-We never present a guess as exact.
-A section whose outline we cannot recover is reported as `none`, not as a section with no subsections.
-
-Three examples, all exact matches:
-
-| Citation | `path` | `structure.quality` | `structure.source` |
-| --- | --- | --- | --- |
-| `Wis. Stat. 940.01(1)(a)` | `["1", "a"]` | `verified` | `request_time` |
-| `Iowa Code 422.5(1)(b)` | `["1", "b"]` | `verified` | `request_time` |
-| `Minn. Stat. 609.02 subd. 2` | `["2"]` | `native` | `artifact` |
-
-When a unit's `text` is empty and `children` is not (Iowa 422.5(1)(b) opens with two numbered paragraphs), read the children.
-
-`structure.source` is `artifact` when a pre-built outline of this section was used, which is only done after its hash matched the exact text we serve, and `request_time` when the outline was parsed from the text on this request.
+`structure.source` is `artifact` for a pre-built outline and `request_time` for one parsed on this request.
 `structure.textSha256` is the SHA-256 of the `plain` text that `charStart` and `charEnd` index into.
 Hash your copy of `plain` to confirm the offsets apply to it.
 
-Long definitions sections and sections with tables are the most likely to be `heuristic`.
-Check `matched` and `structure.quality` on every call and treat them as part of the answer.
-Measured rates by state are under [Coverage by state](#coverage-by-state).
+If a unit's `text` is empty and `children` is not, read the children.
 
 ## Search: which subsection matched
 
-Search ranks whole sections.
-With `includePinpoint: true`, each hit also says which subsection it matched, in a `pinpoints` object keyed by `actId`.
+With `includePinpoint: true`, each search hit also says which subsection it matched, in a `pinpoints` object keyed by `actId`.
 
 ```json
 { "query": "30 mph urban district speed limit", "state": "il", "includePinpoint": true }
 ```
 
-For each hit you get `located`, `pinpoint` (`(c)(1)`), a `citation` you can paste back into `resolve`, the unit's `text`, the `leadIn` it completes, and its character offsets.
-`matchedBy` is `passage` when the unit lies inside the passage the search matched, and `query` when the unit was chosen by your query's words alone, which is what later pages of a query get.
-When several sub-units matched equally well, `scope` is `parent` and the block names their common parent instead of choosing between them.
+Each hit has `located`, `pinpoint` (`(c)(1)`), a `citation` you can pass to `resolve`, the unit's `text`, its `leadIn` and character offsets.
+`matchedBy` is `passage` or `query`.
+When several sub-units matched equally well, `scope` is `parent` and the block names their common parent.
 
-A hit that cannot be named says why in `reason` (`no_single_unit`, `no_structure`, and so on).
-That is a verdict about the hit and not a failure.
-It never changes which sections are returned, their order or their scores, and the search is charged the same either way.
-
-## Coverage by state
-
-Coverage varies by state.
-Measured on 2026-10-26, from a full build of outlines over every section of the state, graded by `structure.quality` as described above.
-Those percentages measure the build, not a given call, so read `structure.source` and `structure.quality` on every response.
-
-| State | Sections measured | Native or verified | Heuristic | None |
-|---|---|---|---|---|
-| Illinois | 72,251 | 98.7% | 1.2% | 0.1% |
-| Minnesota | 27,747 | 99.3% | 0.7% | 0.0% |
-
-Missouri, Wisconsin and Iowa: no percentage is published, so read `structure.quality` on each response.
-
-<Accordion title="How each state's outline is built">
-  - **Illinois.** In the build, 68,219 of the 72,251 sections have an outline taken from the publisher's own markup.
-    Sections that hold several versions of the text in one record, and long sections whose enumerations run inside a sentence, are the likeliest to be `heuristic`.
-    Inserted labels such as `(d-1)` and `(1.5)` are kept as single labels.
-    A call can instead parse the outline from the section text, and that parse is graded on its own, so read `structure.quality`.
-  - **Minnesota.** In the build, 26,325 of the 27,747 sections have an outline taken from the publisher's own markup, and a call can use a pre-built outline of the section.
-    A subdivision may open at `(1)` without a paragraph (a) before it.
-  - **Missouri.** The outline is parsed from the text of the section, one paragraph per line.
-    A definitions section has no numbered subsection level, so in `Mo. Rev. Stat. 556.061(1)` the unit (1) sits directly under the section.
-  - **Wisconsin.** The outline is parsed from the text of the section.
-    Letter inserts such as `(1m)`, `(2g)` and `(am)` are each one label, and repealed provisions leave gaps in the sequence, which is normal.
-  - **Iowa.** The outline is parsed from the text of the section, where each paragraph is printed with the labels of the units above it.
-    A unit that only introduces numbered paragraphs can have an empty `text`, with the content in its `children`.
-</Accordion>
+A hit that cannot be named says why in `reason` (`no_single_unit`, `no_structure`). Results and price are unchanged.
 
 ## Errors
 

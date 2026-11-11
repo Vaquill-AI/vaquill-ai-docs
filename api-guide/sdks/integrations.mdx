@@ -8,23 +8,21 @@ import PriceTable from '/snippets/price-table.mdx';
 {/* Every sample on this page is copied from the README of the matching package in integrations/ of vaquill-sdks. */}
 
 Three packages wrap the SDKs as tools for agent frameworks: LangChain, LlamaIndex and the Vercel AI SDK.
-Each tool calls the same Data API endpoints, spends the same credits, and has a spend cap so an agent loop cannot run unchecked.
+Each tool calls the same Data API endpoints, spends the same credits, and has a spend cap.
 
 | Package | Framework | Install | Status |
 | --- | --- | --- | --- |
 | `langchain-vaquill` | LangChain and LangGraph | `pip install langchain-vaquill` | Published (0.1.0 on PyPI) |
 | `llama-index-tools-vaquill` | LlamaIndex | `pip install llama-index-tools-vaquill` | Published (0.1.0 on PyPI) |
-| `@vaquill-ai/ai-sdk` | Vercel AI SDK | `npm install @vaquill-ai/ai-sdk ai zod` | Not yet published (see note) |
+| `@vaquill-ai/ai-sdk` | Vercel AI SDK | `npm install @vaquill-ai/ai-sdk ai zod` | Not yet published |
 
-Note: `@vaquill-ai/ai-sdk` is not published yet, so its install command does not work today.
-Until it is released, install it from a checkout of the [`integrations/vercel-ai` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations/vercel-ai) of the repository.
+Until `@vaquill-ai/ai-sdk` is released, install it from the [`integrations/vercel-ai` directory](https://github.com/Vaquill-AI/vaquill-sdks/tree/main/integrations/vercel-ai) of the repository.
 
-The Python packages are built on the published [`vaquill`](/api-guide/sdks/python) SDK and need Python 3.11 or newer.
-The Vercel package is built on the published [`@vaquill-ai/sdk`](/api-guide/sdks/typescript) and needs Node 20 or newer.
-Each is MIT licensed.
+The Python packages are built on the [`vaquill`](/api-guide/sdks/python) SDK and need Python 3.11 or newer.
+The Vercel package is built on [`@vaquill-ai/sdk`](/api-guide/sdks/typescript) and needs Node 20 or newer.
 
 Use the integrations on a server only. A `vq_key_` key must never ship to a browser.
-Almost every tool spends credits and an agent can call tools many times in a loop, so each framework section below shows its spend guard.
+An agent can call tools many times in a loop, so set a spend cap in each framework.
 
 <PriceTable />
 
@@ -44,9 +42,9 @@ For the agent example, also install `langchain-vaquill[agents]` and `langchain-o
 
 ### Spend guard
 
-Always set `max_credits` on the toolkit and the retriever, because an agent can call tools many times in a loop. It is a hard cap: once reached, paid tools return a message telling the model to stop.
+Set `max_credits` on the toolkit and the retriever. Once it is reached, paid tools return a message telling the model to stop.
 Use `free_only=True` to expose only tools that never spend (`vaquill_credit_balance`, `vaquill_get_pricing`, `vaquill_statutes_coverage`, `vaquill_list_boards`, `vaquill_list_watches` and `vaquill_extract_citations` with its default `resolve=false`).
-Every tool description states what it costs, and `vaquill_get_pricing` returns the live prices.
+`vaquill_get_pricing` returns the live prices.
 
 ### Agent
 
@@ -100,11 +98,10 @@ A call that could push the total past `max_credits` is refused before any reques
 
 ### Errors, retries and idempotency
 
-Tools never raise SDK exceptions or stack traces at the model.
-They raise `ToolException` with an instruction: out of credits (stop), bad key (stop), rate limited (wait, retry once), not found (resolve the citation first), bad arguments (fix and call again), spend cap reached (answer with what you have).
-Anything shaped like an API key or bearer token is removed from messages.
-Retries, backoff and idempotency keys come from the Python SDK underneath, so they behave as described on the [Python SDK](/api-guide/sdks/python) page.
-You can pass your own `client=` or `async_client=` (a `vaquill.Vaquill` or `vaquill.AsyncVaquill`) to tune them.
+Tools raise `ToolException` with an instruction for the model.
+Out of credits or a bad key means stop. Rate limited means wait and retry once. Not found means resolve the citation first. Bad arguments mean fix and call again. A reached spend cap means answer with what you have.
+Retries and idempotency come from the [Python SDK](/api-guide/sdks/python).
+Pass your own `client=` or `async_client=` (a `vaquill.Vaquill` or `vaquill.AsyncVaquill`) to tune them.
 
 ## LlamaIndex
 
@@ -120,12 +117,9 @@ export VAQUILL_API_KEY="vq_key_..."
 
 ### Spend guard
 
-The prices are in the table above, and a count is cheaper than a search.
-`get_credit_balance` and `extract_citations` with `resolve=False` are free.
-Read the live prices with `client.pricing.get()` (free) before a large job.
-Always set `max_credits` when you hand tools to an agent or a retriever to a pipeline.
-It is a hard cap shared by the sync and async paths: once it is reached no further request is sent.
-One call that is already in flight can still finish, so choose a cap with some headroom.
+`get_credit_balance` and `extract_citations` with `resolve=False` are free. A count is cheaper than a search.
+Set `max_credits` when you hand tools to an agent or a retriever to a pipeline.
+Once it is reached, no further request is sent. A call already in flight can still finish, so leave some headroom.
 
 ### Agent
 
@@ -158,7 +152,7 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-Each tool has an `_async` twin, and `to_tool_list()` wires both into one `FunctionTool`, so async agents use the async client.
+Each tool has an `_async` twin.
 `create_watch`, `update_watch` and `delete_watch` are not exposed unless you opt in with `VaquillToolSpec(enable_watch_management=True)`.
 
 ### Retriever
@@ -181,14 +175,13 @@ query_engine = RetrieverQueryEngine.from_args(retriever)  # uses your configured
 ```
 
 Each retrieval is one search at the search price, plus the text price per row when `include_body=True` (the default). Set `include_body=False` for excerpts at the search price only.
-Before each request the retriever adds the worst-case cost of that retrieval to what it has spent, and raises `vaquill.SpendGuardExceeded` without sending anything if the total would pass the cap.
+The retriever raises `vaquill.SpendGuardExceeded` without sending anything if a retrieval could pass the cap.
 
 ### Errors, retries and idempotency
 
 By default a failure comes back as a short string the model can act on, for example `Vaquill error: Out of credits (402). ...`.
-There are no stack traces and the API key is scrubbed from every message.
 Set `raise_on_error=True` to raise `VaquillToolError` instead. Retriever failures always raise `VaquillToolError`.
-`VaquillToolSpec` accepts `client`, `async_client`, `timeout` and `max_retries`. Retries and idempotency are handled by the [Python SDK](/api-guide/sdks/python) underneath.
+`VaquillToolSpec` accepts `client`, `async_client`, `timeout` and `max_retries`. Retries and idempotency come from the [Python SDK](/api-guide/sdks/python).
 
 ## Vercel AI SDK
 
@@ -196,7 +189,7 @@ Set `raise_on_error=True` to raise `VaquillToolError` instead. Retriever failure
 
 ### Install
 
-Not yet published (see the note under the table at the top). Once released:
+Once released:
 
 ```bash
 npm install @vaquill-ai/ai-sdk ai zod
@@ -204,15 +197,14 @@ export VAQUILL_API_KEY=vq_key_...
 ```
 
 `ai` (5.0.15 or newer, 6 or 7) and `zod` (3.25.76 or newer, or 4) are peer dependencies.
-`ai` 7 itself requires Node 22 or newer.
+`ai` 7 requires Node 22 or newer.
 
 ### Spend guard
 
 Only `creditBalance` is free.
-`maxCredits` defaults to 200 credits per process. Set it deliberately, and pair it with a step limit (`stopWhen`) on the AI SDK side.
-The cap is checked before each call against credits already spent, so the last call may take the total slightly past the limit.
-Once the limit is reached, every further paid call returns a `spend_limit` result and sends no request.
-While a cap is set, paid calls run one at a time, so parallel tool calls cannot overshoot it.
+`maxCredits` defaults to 200 credits per process. Pair it with a step limit (`stopWhen`) on the AI SDK side.
+The cap is checked before each call, so the last call may take the total slightly past it.
+Once it is reached, every further paid call returns a `spend_limit` result and sends no request.
 Pass `maxCredits: Infinity` to switch the cap off.
 
 ### generateText
@@ -276,13 +268,14 @@ createVaquillTools({
 ```
 
 With `allowWrites: true` five watch tools appear: `listWatches`, `createWatch`, `updateWatch`, `deleteWatch` and `testWatch`.
-`createWatch` makes Vaquill email or POST to an address the model chooses, so enable writes only for agents you trust with that, and consider a human approval step.
+`createWatch` makes Vaquill email or POST to an address the model chooses.
+Enable writes only for agents you trust, and consider a human approval step.
 
 ### Errors, retries and idempotency
 
 A tool never throws for an API problem. Success returns `{ ok: true, data, creditsSpentSoFar }`.
 A failure returns a structured result the model can act on.
-Retries and idempotency come from the [TypeScript SDK](/api-guide/sdks/typescript) underneath.
+Retries and idempotency come from the [TypeScript SDK](/api-guide/sdks/typescript).
 
 <Accordion title="Error result format">
   ```json
@@ -301,13 +294,12 @@ Retries and idempotency come from the [TypeScript SDK](/api-guide/sdks/typescrip
 
   `kind` is one of `spend_limit`, `insufficient_credits`, `authentication`, `permission_denied`, `not_found`, `invalid_request`, `rate_limited`, `daily_cap`, `server_error`, `timeout`, `connection`, `bad_response`, `error` or `unexpected`.
 
-  Results carry no stack traces, and anything shaped like an API key is replaced with `[redacted]`.
   Only an abort (the AI SDK's `abortSignal`) is rethrown, so cancelling a request stops the loop.
-  A result larger than `maxResultChars` is replaced by `{ ok: true, truncated: true, preview, note }`. Credits are still spent for it, so ask for a `pinpoint` subsection or a narrower search.
+  A result larger than `maxResultChars` is replaced by `{ ok: true, truncated: true, preview, note }`. Credits are still spent, so ask for a `pinpoint` subsection or a narrower search.
 </Accordion>
 
 ## Webhooks and versioning
 
 The integrations do not receive webhooks. To verify a law change delivery, use the webhook helpers of the [Python](/api-guide/sdks/python) or [TypeScript](/api-guide/sdks/typescript) SDK.
-Pagination and batch helpers are not exposed as tools, and bulk fetches are deliberately left out. Use the SDK for those.
-`langchain-vaquill` and `llama-index-tools-vaquill` are at 0.1.0, so the API may change in minor versions before 1.0. The Vercel package is unpublished.
+Pagination and batch helpers are not exposed as tools. Use the SDK for those.
+`langchain-vaquill` and `llama-index-tools-vaquill` are at 0.1.0, so the API may change in minor versions before 1.0.

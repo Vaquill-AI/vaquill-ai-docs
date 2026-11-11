@@ -3,29 +3,26 @@ title: "Add the corpus as an AI agent tool (MCP)"
 description: "Give an AI agent authoritative statute search, either through the hosted Vaquill MCP server or by wrapping the REST API as your own tool"
 ---
 
-**What this gets you:** an AI agent (Claude, Cursor, or one you built) that can look up US law on its own, mid-conversation, with citations, instead of guessing from training data.
+Let an AI agent (Claude, Cursor, or your own) look up US law mid-conversation, with citations.
 
-There are two ways to ground an agent in legal text: connect an MCP-compatible client to the hosted Vaquill MCP server, or wrap the REST API as a tool your own agent can call.
-Both return citations and source links to official government text.
+There are two ways. Connect an MCP-compatible client to the hosted Vaquill MCP server, or wrap the REST API as a tool for your own agent.
+Both return citations and official source links.
 
-**Endpoints used:** `POST /us/statutes/search` for the custom-tool path.
-The hosted server path needs no direct REST calls from you.
+**Endpoint:** `POST /us/statutes/search` for the custom-tool path. The hosted server needs no REST calls from you.
 
 <Tip>
-  Using an MCP-compatible client?
-  Connect the [hosted Vaquill MCP server](/integrations/mcp/vaquill) and skip this page: no glue code, with statute search and retrieval exposed as tools and a citation and official source link on each result.
+  Using an MCP-compatible client? Connect the [hosted Vaquill MCP server](/integrations/mcp/vaquill) and skip this page. It needs no glue code.
 </Tip>
 
 ## Wrap the REST API as your own tool
 
-When you are building your own tool-calling agent, define a `search_statutes` function backed by `POST /us/statutes/search` and register it as a tool.
-The agent decides when to call it, and you return cited results the model can quote.
+Define a `search_statutes` function backed by `POST /us/statutes/search` and register it as a tool.
+The agent decides when to call it.
 
 <Steps>
   <Step title="Implement the tool function">
-    Ask the API for a narrow result with `fields` rather than fetching 40+ fields (most null on any row) and trimming them in Python.
-    A field you do not request never crosses the wire and never reaches the model's context window, and the saving scales with `limit`.
-    `actId` and `citation` always come back, because a row without them cannot be used or attributed.
+    Use `fields` to request only what the model needs. Fields you skip are never sent, and the saving grows with `limit`.
+    `actId` and `citation` always come back.
 
     ```python Python
     import requests
@@ -79,13 +76,11 @@ The agent decides when to call it, and you return cited results the model can qu
         ]
     ```
 
-    `best_source_url()` is the canonical source-link preference order in [Text formats and source URLs](/api-guide/concepts/formats#picking-the-best-available-format).
-    Trimming in Python fixes the context window but not the transfer; `fields` fixes both.
+    `best_source_url()` uses the order in [Text formats and source URLs](/api-guide/concepts/formats#picking-the-best-available-format).
   </Step>
 
   <Step title="Declare the tool schema">
-    Tool-calling agents need a schema so the model knows when and how to call your function.
-    This shape (a name, a description, and a JSON Schema for parameters) is the common convention across tool-calling frameworks.
+    Give the model a schema (a name, a description, and a JSON Schema for parameters) so it knows when and how to call the function.
 
     ```python Python
     SEARCH_STATUTES_TOOL = {
@@ -123,7 +118,7 @@ The agent decides when to call it, and you return cited results the model can qu
   </Step>
 
   <Step title="Dispatch the call and keep answers grounded">
-    When the model asks to call `search_statutes`, dispatch to the function and hand the cited results back; the plumbing depends on your framework.
+    When the model calls `search_statutes`, run the function and return the cited results. The wiring depends on your framework.
 
     ```python Python
     def dispatch_tool_call(name: str, arguments: dict) -> list[dict]:
@@ -136,14 +131,13 @@ The agent decides when to call it, and you return cited results the model can qu
         raise ValueError(f"Unknown tool: {name}")
     ```
 
-    Instruct the model to cite the `citation` field and link the `sourceUrl` for every legal claim, and to say when the corpus returns no match rather than guessing.
-    The prompt pattern is in [Ground an LLM answer (RAG)](/api-guide/recipes/rag-grounding).
+    Tell the model to cite `citation` and link `sourceUrl` for every legal claim, and to say so when nothing matches.
+    See [Ground an LLM answer (RAG)](/api-guide/recipes/rag-grounding) for the prompt.
   </Step>
 </Steps>
 
 <Tip>
-  For heavy agent traffic, cache the `/us/statutes/coverage` response and use it to steer `corpusType` and `state` on tool calls.
-  Searches stay narrow and skip jurisdictions with no data.
+  For heavy agent traffic, cache the `/us/statutes/coverage` response and use it to set `corpusType` and `state` on tool calls.
 </Tip>
 
 ## Related

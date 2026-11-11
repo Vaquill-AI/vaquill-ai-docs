@@ -5,14 +5,12 @@ description: "Every machine-readable error code the Data API returns, with its s
 
 import RetryAfter from '/snippets/retry-after.mdx';
 
-Errors from the Data API carry a stable `code` beside the legacy `detail` member.
-Branch on `code` in your own handling, and fall back to the HTTP status when `code` is absent.
-The set of codes is open, so treat an unknown value as its HTTP status class.
+Errors from the Data API carry a stable `code` beside the `detail` member.
+Branch on `code`, and fall back to the HTTP status when `code` is absent.
+Treat an unknown code as its HTTP status class.
 
-The `type` member of every error body is a URL of the form `https://www.vaquill.ai/docs/errors/{code}`.
-Opening that URL in a browser lands on this page, at the section for that code.
-Start at [Errors and rate limits](/api-guide/errors) for the status table, the `detail` and `errors` shapes and rate limiting.
-This page is the per-code reference.
+The `type` member of every error body is a URL of the form `https://www.vaquill.ai/docs/errors/{code}`. It opens this page at the section for that code.
+For the status table, the `detail` and `errors` shapes and rate limiting, see [Errors and rate limits](/api-guide/errors).
 
 ## Body fields
 
@@ -29,9 +27,7 @@ This page is the per-code reference.
 
 ## Example response
 
-Every error body has this shape.
-The `detail` text is illustrative and can differ by endpoint.
-A few codes add members of their own, which their sections name.
+Every error body has this shape. The `detail` text can differ by endpoint, and a few codes add members of their own.
 
 ```json
 {
@@ -49,7 +45,7 @@ A few codes add members of their own, which their sections name.
 ## All codes
 
 The Python SDK (`vaquill`) and the TypeScript SDK use the same class names.
-A class marked "by status" is the class the SDKs pick from the HTTP status when a code has none of its own (see [How the SDKs expose them](#how-the-sdks-expose-them)).
+"By status" means the SDKs pick the class from the HTTP status (see [How the SDKs expose them](#how-the-sdks-expose-them)).
 
 | Code | Status | Retryable | SDK class | Title | What to do |
 |---|---|---|---|---|---|
@@ -88,16 +84,11 @@ See the [Python SDK](/api-guide/sdks/python) and the [TypeScript SDK](/api-guide
 
 ## Codes by kind
 
-Each section below is named for its code, so the `type` URL of an error body opens straight to it.
-Every code is exposed in both SDKs with `code`, `retryable`, the request id and the retry hint, as the SDK section further down describes.
+Status, retry rule and SDK class are in the table above. Each entry below says what the code means.
 
 ### Authentication and permission
 
-Status, retry rule and SDK class are in the table above, so each entry here says what the code means and what is specific to it.
-
-### Authentication and permission
-
-Retrying a `401` or `403` unchanged cannot succeed: change the key, plan, scope or jurisdiction first.
+Retrying a `401` or `403` unchanged cannot succeed. Change the key, plan, scope or jurisdiction first.
 See [Authentication](/api-guide/authentication) for the header format and key rotation.
 
 <a id="authentication_required"></a>
@@ -109,10 +100,9 @@ Send your key in the `Authorization: Bearer vq_key_...` header.
 <a id="invalid_api_key"></a>
 #### invalid_api_key
 
-The key is malformed, unknown or revoked.
-This is also the default code for any `401` that the API could not classify more precisely.
+The key is malformed, unknown or revoked. It is also the default code for any other `401`.
 Check that the key starts with `vq_key_` and was copied whole.
-Create a new key in the developer dashboard if the old one was revoked.
+If it was revoked, create a new key in the developer dashboard.
 
 <a id="api_key_expired"></a>
 #### api_key_expired
@@ -125,7 +115,7 @@ Create a new key and replace the expired one.
 
 The key is valid, but your plan, the key's scope or the requested jurisdiction does not allow this call.
 For example, webhook delivery on a watch requires the Business plan.
-Read `detail` to see which of plan, scope or jurisdiction applies, then use a different channel or jurisdiction, or upgrade the plan.
+`detail` says which one applies.
 
 <a id="insufficient_scope"></a>
 #### insufficient_scope
@@ -138,10 +128,8 @@ The key is valid but lacks the scope this route needs.
 <a id="insufficient_credits"></a>
 #### insufficient_credits
 
-Your credit balance is too low to pay for this call.
-Top up your credits, then send the request again.
-`GET /credits/balance` is free and shows what you hold.
-Never retry before topping up.
+Your credit balance is too low for this call.
+Top up, then send the request again. `GET /credits/balance` is free.
 
 <a id="rate_limited"></a>
 #### rate_limited
@@ -153,14 +141,13 @@ Wait as described under [Retrying](#retrying), then retry.
 #### quota_exceeded
 
 A standing account limit, for example the watch cap.
-Retrying cannot help: free one up, for example by deleting a watch, or raise the limit by upgrading.
+Retrying cannot help. Delete a watch or upgrade.
 
 <a id="daily_cap_exceeded"></a>
 #### daily_cap_exceeded
 
 The key reached its per-key daily cap.
-The status is `429`, but unlike `rate_limited` a short wait does not help.
-Retry only after the daily cap resets.
+A short wait does not help. Retry after the cap resets.
 
 ### Request validation
 
@@ -169,33 +156,27 @@ Fix the request and send it again.
 <a id="validation_error"></a>
 #### validation_error
 
-The request body or parameters failed schema validation.
-This is the default code for a `4xx` that the API could not classify more precisely.
-The body also carries the legacy `errors` array, a field-level list.
-Each entry has `loc` (where), `msg` (why) and `type`.
-See [Errors and rate limits](/api-guide/errors) for the `errors` shape.
+The request body or parameters failed schema validation. It is the default code for any other `4xx`.
+The body also carries an `errors` array. Each entry has `loc` (where), `msg` (why) and `type`.
 
 <a id="invalid_query"></a>
 #### invalid_query
 
-A Boolean query or a filter was refused before any charge.
-Read `detail` for the reason, such as a malformed expression.
-See [Boolean search](/api-guide/concepts/boolean-search#errors) for the grammar and its error messages.
-Rejected requests are not charged.
+A Boolean query or a filter was refused. It is not charged.
+`detail` gives the reason, such as a malformed expression.
+See [Boolean search](/api-guide/concepts/boolean-search#errors).
 
 <a id="invalid_citation_input"></a>
 #### invalid_citation_input
 
-The request itself is malformed.
-This is not the same as a citation that parsed but did not resolve.
-Send the citation as a string in the field the endpoint documents.
+The request is malformed, for example a citation that is not a string in the field the endpoint documents.
+A citation that parsed but did not resolve is a different case.
 
 <a id="bad_request"></a>
 #### bad_request
 
 The request parsed but the API refused it.
-`detail` names the specific problem, so read it rather than retrying.
-See [400 versus 422](/api-guide/errors#400-versus-422).
+`detail` names the problem. See [400 versus 422](/api-guide/errors#400-versus-422).
 
 <a id="method_not_allowed"></a>
 #### method_not_allowed
@@ -219,15 +200,13 @@ Send `Content-Type: application/json`.
 #### section_not_found
 
 No section matches the identifier you sent.
-The body keeps the legacy members `reason` and `didYouMean` beside the standard ones, and they carry the values the lookup produced.
-Read `reason` to see why the lookup failed and try the candidates in `didYouMean` when present.
-Use search or the hierarchy browse to find the correct identifier.
+The body carries `reason` and `didYouMean`. Read `reason`, and try the candidates in `didYouMean` when present.
+Use search or the hierarchy browse to find the right identifier.
 
 <a id="resource_not_found"></a>
 #### resource_not_found
 
 A watch, board, delivery or change with that id does not exist for your account.
-Check the id and that it belongs to your key's account.
 List the resource first to get valid ids.
 
 ### Idempotency and conflict
@@ -237,7 +216,6 @@ List the resource first to get valid ids.
 
 You sent an `Idempotency-Key` that was already used with a different request.
 Use a fresh key for each distinct request.
-Reuse a key only when you resend the identical request.
 
 <a id="idempotency_in_progress"></a>
 #### idempotency_in_progress
@@ -248,22 +226,19 @@ Wait briefly and resend the same request with the same key.
 <a id="idempotency_replay_unavailable"></a>
 #### idempotency_replay_unavailable
 
-The original request completed, but its response was too large to replay.
-The call was not charged again.
-Check your balance with `GET /credits/balance` before deciding to repeat the call.
-If you need the data again, send a new request with a new key.
+The original request completed, but its response was too large to replay. You were not charged again.
+Check your balance with `GET /credits/balance`. To get the data again, send a new request with a new key.
 
 <a id="conflict"></a>
 #### conflict
 
-The request conflicts with the current state of a resource and no more specific code applies.
-For example, you already hold the watch you tried to create.
-Read `detail` for the conflicting state and fetch the existing resource instead of creating it again.
+The request conflicts with the current state of a resource, for example you already hold the watch you tried to create.
+Fetch the existing resource instead.
 
 ### Server and upstream
 
 All three are refunded.
-Retry with exponential backoff, and honour `Retry-After` when it is present, as described under [Retrying](#retrying).
+Retry with exponential backoff, and honor `Retry-After` when present (see [Retrying](#retrying)).
 
 <a id="upstream_timeout"></a>
 #### upstream_timeout
@@ -283,8 +258,8 @@ If it persists, [contact support](mailto:contact@vaquill.ai) and include the `re
 
 ## How the SDKs expose them
 
-Both SDKs read the same body and map it to an exception class.
-They pick the class from `code` first and from the HTTP status second, so an unknown code still raises the right status class.
+Both SDKs map the error body to an exception class.
+They pick the class from `code` first and the HTTP status second.
 
 | Information | Python (`vaquill`) | TypeScript |
 |---|---|---|
@@ -298,6 +273,16 @@ They pick the class from `code` first and from the HTTP status second, so an unk
 
 `code` and `retryable` are `None` in Python and `null` in TypeScript when the server did not send them.
 
-The class for each code is in the [All codes](#all-codes) table.
-A code without a class of its own maps by status: `401` to `AuthenticationError`, `403` to `PermissionDeniedError`, `404` to `NotFoundError`, `409` to `ConflictError`, `422` to `UnprocessableEntityError`, `429` to `RateLimitError`, and `5xx` to `InternalServerError`.
+A code without a class of its own maps by status:
+
+| Status | Class |
+|---|---|
+| `401` | `AuthenticationError` |
+| `403` | `PermissionDeniedError` |
+| `404` | `NotFoundError` |
+| `409` | `ConflictError` |
+| `422` | `UnprocessableEntityError` |
+| `429` | `RateLimitError` |
+| `5xx` | `InternalServerError` |
+
 The three idempotency classes share the base class `IdempotencyConflictError`.

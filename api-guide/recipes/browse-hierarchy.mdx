@@ -3,26 +3,25 @@ title: "Browse the statute hierarchy"
 description: "Walk a code top to bottom with /us/statutes/divisions: titles, chapters, parts, articles, rule sets and sections in statutory order"
 ---
 
-**What this gets you:** a table of contents for any code or title. You can render a browsable tree of a law in your product, the way a person would flip through it, instead of surfacing only single sections from search.
+Build a table of contents for any code or title. Show a law as a tree, in the order a person reads it.
 
-Search finds the section that answers a question, but it cannot enumerate a code. When you need the structure (titles, then chapters, then sections, in the order a human reads them), use `GET /us/statutes/divisions`. Each call returns the immediate children of wherever you are, so you can render a tree, build a table of contents, or walk a whole title without paging through search.
+Search finds the section that answers a question. To list the structure (titles, chapters, sections), use `GET /us/statutes/divisions`. Each call returns the children of one level.
 
-**Endpoint used:** `GET /us/statutes/divisions`. **Credits:** 1 per call, and a level that turns out to be empty costs nothing.
+**Endpoint:** `GET /us/statutes/divisions`. **Credits:** 1 per call. An empty level costs nothing.
 
 <Note>
   Browse supports `USC`, `CFR`, `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
-  Every legend entry on `GET /us/statutes/coverage` carries a `browsable` flag that says which, so read it instead of probing.
-  Executive actions, the Federal Register and agency guidance are dated series or share no common tree; reach those with `POST /us/statutes/search` (see the [Quickstart](/api-guide/quickstart)).
-  A request whose filters do not fit the corpus is rejected with `422` before anything is charged.
+  Each legend entry on `GET /us/statutes/coverage` has a `browsable` flag.
+  Executive actions, the Federal Register and agency guidance have no common tree. Use `POST /us/statutes/search` for those (see the [Quickstart](/api-guide/quickstart)).
+  A request with filters that do not fit the corpus returns `422` and is not charged.
 </Note>
 
 ## How drilling works
 
-Pass the deepest level you already know, and the response returns the level directly below it.
-Which level that is depends on the code, because each section's own place in its publisher's hierarchy decides it.
-A code has no fixed number of levels, and one listing can mix kinds (a state code lists its chapters followed by loose sections, a U.S. Code chapter lists any section outside a subchapter beside its subchapters).
-Read `level` and each node's `kind` on every response instead of assuming a depth, and keep drilling until `isLeaf` is `true`.
-The levels shown are what the corpus recorded on the day it was written.
+Pass the deepest level you know. The response returns the level directly below it.
+
+The levels depend on the code, and one listing can mix kinds. A state code lists chapters and loose sections together.
+Read `level` and each node's `kind` on every response. Keep drilling until `isLeaf` is `true`.
 
 | You pass | You get back (`level`) |
 |---|---|
@@ -61,15 +60,13 @@ The levels shown are what the corpus recorded on the day it was written.
 | `corpusType=STATE_RULES&state=tx` | the state's court rule sets, such as the local rules of one trial court |
 | `corpusType=STATE_RULES&state=tx&code=HARRIS` | the levels and rules inside one rule set |
 
-Federal rules are published twice, by the Judicial Conference at uscourts.gov (`frcp`, `fre`, ...) and as an appendix to the U.S. Code (`uscapp_t28a_fre`, ...).
-Each is its own rule set in the listing, so no rule appears twice under one heading.
-On `CFR` you can pass the chapter from a citation such as "17 CFR Chapter II, Part 240": with a `part`, `chapter` is accepted and ignored, because part numbers are unique within a title.
+Federal rules appear as two rule sets: `frcp`, `fre` and so on, and the U.S. Code appendix copies such as `uscapp_t28a_fre`.
+On `CFR`, `chapter` is ignored when you also pass a `part`.
 
 </Accordion>
 <Accordion title="Filters by level">
 
-Beyond `titleNumber`, `chapter`, `part`, `code` and `article`, the listing takes one filter per level a code or rule set can have.
-Each is passed back the way the listing returned it, with the `identifier` of a node whose `kind` names that level, and each is case-insensitive where it is text.
+The listing takes one filter per level. Pass the `identifier` of a node whose `kind` names that level. Text filters are case-insensitive.
 The state-only filters all need `code`.
 
 | Filter | Level it lists | Applies to | Needs |
@@ -90,11 +87,11 @@ The state-only filters all need `code`.
 </Accordion>
 </AccordionGroup>
 
-`excludeRepealed` and `actStatus` narrow any listing by section status, the way they do on search.
+`excludeRepealed` and `actStatus` narrow any listing by section status, as they do on search.
 
-Interior nodes carry a `sectionCount` and `isLeaf: false`; pass the `identifier` back, verbatim, as the filter named by its `kind` (`title` is `titleNumber` on the U.S. Code and CFR and `title` inside a state code).
-Leaf nodes are sections with `isLeaf: true` and an `actId` you pass straight to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids).
-Every list comes back in statutory (natural) order: `9` before `10`, `240.9` before `240.10`.
+Interior nodes carry a `sectionCount` and `isLeaf: false`. Pass the `identifier` back as the filter named by its `kind`. (`title` is `titleNumber` on the U.S. Code and CFR, and `title` inside a state code.)
+Leaf nodes are sections with `isLeaf: true` and an `actId`. Pass it to [`/us/statutes/section/{actId}`](/api-guide/concepts/section-ids).
+Lists come back in statutory order: `9` before `10`, `240.9` before `240.10`.
 
 ## One level
 
@@ -137,24 +134,23 @@ A trimmed response (two of the chapters shown):
 }
 ```
 
-`name` is `null` when the publisher prints no heading for that container, and otherwise follows the publisher's casing (capitals above).
-See [Hierarchy and container names](/api-guide/concepts/hierarchy) for what each level is called and which jurisdictions name which levels.
+`name` is `null` when the publisher prints no heading for that container.
+See [Hierarchy and container names](/api-guide/concepts/hierarchy) for what each level is called.
 
 ## State regulations: umbrella, agency and program
 
-Maine, Virginia, Wyoming, Louisiana and Mississippi regulation codes have agency-style levels, and naming the level opens the right chapter.
+Maine, Virginia, Wyoming, Louisiana and Mississippi regulation codes have agency-style levels. Name the level to open the right chapter.
 
 <Accordion title="State regulations with agency levels">
 
-Some state regulation codes print the issuing body above their chapters, and a chapter number repeats under different bodies.
-Naming the body opens the right chapter, so these codes no longer answer a repeated chapter number as one pooled list with a `note`.
+Some state regulation codes list the issuing body above its chapters. A chapter number can repeat under different bodies, so name the body first.
 
 - **Maine** groups agencies under a department umbrella, then lists the agency's chapters.
 - **Virginia** lists agencies, inside a title.
 - **Wyoming** lists agencies, then a program between the agency and its chapters. Chapter `1` repeats under every program, so pass the `program` too.
 - **Louisiana and Mississippi** list `subpart` nodes inside a part. Pass the `part` and the `subpart` with `code`.
 
-Walk Maine one level at a time, passing each `identifier` back as the filter its `kind` names.
+Walk Maine one level at a time. Pass each `identifier` back as the filter its `kind` names.
 Take `code` from the `codes` listing of `corpusType=REGULATION&state=me` (`me_regs-me` below).
 
 ```bash
@@ -171,16 +167,15 @@ curl -H "Authorization: Bearer vq_key_..." \
   "https://api.vaquill.ai/api/v1/us/statutes/divisions?corpusType=REGULATION&state=me&code=me_regs-me&umbrella=10&agency=144"
 ```
 
-Each call costs 1 credit, and a level that turns out to be empty costs nothing.
-Keep the filters you already passed at every step.
-The walk helper below needs no change for these codes, because its `FILTER` map already carries `umbrella`, `agency` and `program`.
+Each call costs 1 credit. Keep the filters you already passed at every step.
+The walk helper below already handles `umbrella`, `agency` and `program`.
 
 </Accordion>
 
 ## Walk a whole title
 
-Drill from a title down until a node is a leaf. A leaf carries the `actId` you use to fetch metadata or full text.
-Because a chapter may list subchapters, parts or subparts before it lists sections, the walk is recursive: each node is passed back as the filter its `kind` names.
+Drill from a title down to the leaves. A leaf carries the `actId` for metadata or full text.
+The walk is recursive: pass each node back as the filter its `kind` names.
 
 ```python Python
 import requests
@@ -225,24 +220,21 @@ walk({"corpusType": "USC", "titleNumber": 4})
 ```
 
 <Warning>
-  A leaf listing is bounded to keep one call fast, so a large container comes back in more than one page.
-  Check `truncated` on every section listing. When it is `true`, pass `nextCursor` back as `cursor` until it is `null`. `children()` above already does this.
+  A large container comes back in more than one page.
+  Check `truncated` on every section listing. When it is `true`, pass `nextCursor` back as `cursor` until it is `null`. `children()` above does this.
 </Warning>
 
 <Accordion title="Paging and search caps">
 
-Rows are sorted into statutory order within each response, and pages are walked in storage order, so concatenating pages does not give you one globally sorted list.
-The union of every page is the complete container. Sort it yourself once you hold it all.
+Each page is sorted, but pages are not. Sort the full list yourself after you fetch every page.
 
-Do not reach for `POST /us/statutes/search` to finish an enumeration.
-Ranked search caps at 120 results per query, so it cannot complete a container that browse could not.
-`matchType: "boolean"` pages to the end of the matches (up to 10,000), but browse is still the way to enumerate a container.
+Do not use `POST /us/statutes/search` to list a container. Ranked search caps at 120 results per query.
 
 </Accordion>
 
 ## Export a container with its text
 
-Enumeration gives you identifiers. To turn a chapter into text, batch those `actId` values through `POST /us/statutes/sections` with `includeBody`, 50 at a time.
+Listing gives you identifiers. To get text, send the `actId` values to `POST /us/statutes/sections` with `includeBody`, 50 at a time.
 
 ```python
 def export_container(**scope) -> list[dict]:
@@ -259,17 +251,16 @@ def export_container(**scope) -> list[dict]:
     return out
 ```
 
-Two calls per 50 sections, and no per-section round trip. `includeBody` bills the ordinary body price for each row that returns text; rows whose text cannot be resolved come back with `body: null` and are not charged for it, so read `creditsConsumed` on each response instead of computing it.
+`includeBody` bills the body price for each row that returns text. Rows with `body: null` are not charged. Read `creditsConsumed` on each response.
 
-Text is the expensive half of any export. If you are filtering, run the filter on metadata first (omit `includeBody`) and fetch bodies only for what survives.
+Text is the costly part. To filter, use metadata first (omit `includeBody`) and fetch bodies only for what you keep.
 
-Size the container before you walk it: `POST /us/statutes/count` takes the same scoping filters, runs no ranking, and returns an exact section count for one credit, which tells you what an export will cost before you start it.
+To size an export, call `POST /us/statutes/count` with the same scoping filters. It returns an exact section count for one credit.
 
 ## Search within a container
 
-Browse and search meet at the `parent` object.
-A search result from any browsable corpus carries a `parent`: the ready-made query that lists its siblings.
-Every key it carries (`titleNumber`, `chapter`, `part`, `code`, `article`) is also a `POST /us/statutes/search` filter, so you can take any hit and run a search confined to its chapter, part, article or rule set, without building the scope yourself.
+A search result from any browsable corpus carries a `parent`: the query that lists its siblings.
+Every key in it (`titleNumber`, `chapter`, `part`, `code`, `article`) is also a `POST /us/statutes/search` filter. Use it to search inside the hit's chapter, part, article or rule set.
 
 <Accordion title="The parent object for every browsable corpus">
 
@@ -285,7 +276,7 @@ Every key it carries (`titleNumber`, `chapter`, `part`, `code`, `article`) is al
 
 </Accordion>
 
-The same object replays against `GET /us/statutes/divisions` unchanged, so one hit gives you both the listing of its container and a search within it.
+The same object works unchanged on `GET /us/statutes/divisions`.
 
 ```python Python
 import requests
@@ -309,22 +300,22 @@ for r in neighbors["results"]:
     print(r["actId"], r["citation"])
 ```
 
-`chapter` and `part` accept a single value or a list, and must be paired with `titleNumber` (USC/CFR) or `code` (state), which `parent` always includes. A chapter number alone repeats across every title, so an unpaired `chapter`/`part` is rejected with `422`.
-Every shape error is a `422` decided before anything is charged.
+`chapter` and `part` take one value or a list. Pair them with `titleNumber` (USC/CFR) or `code` (state). `parent` always includes these. An unpaired `chapter` or `part` returns `422`.
+Shape errors return `422` and are not charged.
 
 <Accordion title="Rules for article and federal rule sets">
 
-`article` follows the same logic, because article labels repeat too:
+`article` labels repeat, so it follows the same rule:
 
-- It needs a `corpusType` from one family: `CONSTITUTION` / `STATE_CONSTITUTION`, where it is the article label browse lists (`Amendment XIV`), or `STATE` / `REGULATION`, where it is the article of a code divided by article instead of chapter (New York's `2-A`).
-- `STATE_CONSTITUTION` also needs `state`, since most state constitutions have an `Article IV`.
-- On `STATE` / `REGULATION` it needs the `code` it belongs to, and it cannot be combined with `chapter`.
+- It needs a `corpusType` from one family. Use `CONSTITUTION` or `STATE_CONSTITUTION` for the article label browse lists (`Amendment XIV`). Use `STATE` or `REGULATION` for a code divided by article (New York's `2-A`).
+- `STATE_CONSTITUTION` also needs `state`.
+- On `STATE` or `REGULATION` it needs `code`, and it cannot be combined with `chapter`.
 
-Pass the `identifier` exactly as the listing returned it; a case slip such as `amendment xiv` also matches.
+Pass the `identifier` as the listing returned it. Case does not matter.
 
 A federal rule set is a `code` under `corpusType=FEDERAL_RULES`: `frcp`, `fre`, `frcpsuppadm`, or an appendix copy such as `uscapp_t28a_fre`.
-Without that `corpusType`, `frcp` cannot be told apart from a state code missing its state, so it is refused.
-`code=frcp` is the Federal Rules of Civil Procedure alone; `source=frcp` also covers the FRCP supplemental rules.
+Without that `corpusType`, the request is refused.
+`code=frcp` is the Federal Rules of Civil Procedure alone. `source=frcp` also covers the FRCP supplemental rules.
 
 </Accordion>
 

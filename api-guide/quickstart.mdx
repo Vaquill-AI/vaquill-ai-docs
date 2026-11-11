@@ -6,20 +6,18 @@ description: "Search US statutes and fetch a section in a few minutes"
 import LivePricing from '/snippets/live-pricing.mdx';
 import CreditsConsumed from '/snippets/credits-consumed.mdx';
 
-This guide walks through a first search, then fetches one section's full text using the `actId` from the results.
+This guide runs a first search, then fetches one section's full text using the `actId` from the results.
 
 Every path is prefixed with `/api/v1` and every request needs an `Authorization: Bearer vq_key_...` header.
 
 <Steps>
   <Step title="Get an API key">
-    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. Copy the key now and store it somewhere safe.
-    The dashboard can reveal keys created on or after 2026-08-03 again, but treat the key as a secret either way.
-    See [Authentication](/api-guide/authentication) for details.
+    Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**. See [Authentication](/api-guide/authentication).
 
-    A new account starts with a free signup credit balance that never refills, so your first calls need no purchase.
-    A `401` means the key is missing or invalid, and a `402` means the balance is used up. See [Errors](/api-guide/errors).
+    A new account starts with a free signup credit balance, so your first calls need no purchase.
+    A `401` means the key is missing or invalid. A `402` means the balance is used up. See [Errors](/api-guide/errors).
 
-    Keep the key in an environment variable so you do not paste it into commands:
+    Keep the key in an environment variable:
 
     ```bash
     export VAQUILL_API_KEY="vq_key_..."
@@ -77,7 +75,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
     </CodeGroup>
 
-    Trimmed to the first of five results. The top-level fields describe the page. Each `results` entry has a citation, an excerpt, and links to the official source.
+    The sample is trimmed to the first of five results. Each `results` entry has a citation, an excerpt, and links to the official source.
 
     ```json
     {
@@ -115,11 +113,9 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
     ```
 
     <Accordion title="Reading count, total and creditsConsumed">
-      `count` is the number of results on this page. It is not a corpus-wide match count, and no such total exists, because the API ranks a bounded candidate set rather than scoring the whole corpus. Use `hasMore` to decide whether to fetch the next page. See [Pagination](/api-guide/pagination).
+      `count` is the number of results on this page. It is not a corpus-wide match count. Use `hasMore` to decide whether to fetch the next page. See [Pagination](/api-guide/pagination).
 
-      The live response also carries `total`, a deprecated alias for `count` kept for backward compatibility, and it was left out of the sample above. Its name suggests a corpus-wide total, but it never was one. Read `count` in new code.
-      The sample also leaves out fields that were null. The live response lists them as `null`.
-      The sample omits `externalUrl`, which carries the same official link as `sourceUrl` for this section.
+      The live response also carries `total`, a deprecated alias for `count`, and lists null fields as `null`. The sample omits both.
 
       <CreditsConsumed />
       `includeBody: true` bills each row that returns text on top of the search.
@@ -130,8 +126,8 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
 
   <Step title="Fetch the section body">
     Take an `actId` from the results (for example `USC_T42_C21_S1983`) and call `GET /us/statutes/section/{actId}/body` for the full text.
-    `GET /us/statutes/section/{actId}` returns the section's metadata alone.
-    To get text in the first call, send `includeBody: true` in step 2 instead.
+    `GET /us/statutes/section/{actId}` returns metadata only.
+    To get text in the first call, send `includeBody: true` in step 2.
 
     <CodeGroup>
     ```bash cURL
@@ -179,7 +175,7 @@ Every path is prefixed with `/api/v1` and every request needs an `Authorization:
 
 ## Optional: discover coverage
 
-Coverage grows weekly. Call `GET /us/statutes/coverage` to see the corpus legend and, for each jurisdiction, which `corpusType` tokens have data (read `data.jurisdictions[].hasData` and `data.jurisdictions[].corpora`). Pass one of those tokens back into `/us/statutes/search`.
+Call `GET /us/statutes/coverage` to see which `corpusType` tokens have data for each jurisdiction (read `data.jurisdictions[].hasData` and `data.jurisdictions[].corpora`). Pass one of those tokens to `/us/statutes/search`.
 
 ```bash
 curl https://api.vaquill.ai/api/v1/us/statutes/coverage \

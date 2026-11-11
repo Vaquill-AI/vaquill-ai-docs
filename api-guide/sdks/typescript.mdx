@@ -61,11 +61,9 @@ Path parameters are positional arguments. Query and body fields keep the camelCa
 - `timeout` is per attempt, in milliseconds (default 60000). `maxRetries` defaults to 2.
 - `fetch` injects a custom implementation, for a proxy or a test double.
 - `maxCredits` is the spend guard, described below. `client.creditsSpent` shows the running total.
-- `logger` is where log lines go: any subset of `debug`, `info`, `warn` and `error`, defaulting to `console`. `logLevel` is the minimum level, default `warn`. `debug` logs each request and response, `info` adds retries, and `warn` reports deprecated endpoints once per method and path. The API key is always redacted.
+- `logger` is where log lines go, defaulting to `console`. `logLevel` is the minimum level, default `warn`. The API key is always redacted.
 - `client.withOptions({ ... })` returns a derived client that shares the key and the spend counter.
 - Every method takes `{ timeout, maxRetries, headers, signal, idempotencyKey }` as its last argument.
-
-The key is held in a private field. It does not appear in `JSON.stringify`, `util.inspect`, `String(client)` or any error.
 
 ## Namespaces and credits
 
@@ -81,15 +79,13 @@ The key is held in a private field. It does not appear in `JSON.stringify`, `uti
 | `pricing` | none | `get` | none |
 
 Each method maps to one `operationId`, so `search_statutes` is `statutes.search` and `get_section_body` is `statutes.getSectionBody`.
-That is 25 of the 30 charged operations in the contract. The other five are rulemaking docket routes without a method yet; the [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) lists them.
-The `*All` iterators call charged methods and spend per page.
+Some rulemaking docket routes have no method yet. The [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) lists them.
 `client.pricing.get()` returns the live price list.
 
 ## Spend guard
 
-Pass `maxCredits` to the constructor. Once responses on this client have reported that many credits, charged calls throw `SpendGuardExceededError` before sending anything.
-It checks what is already spent, not the cost of the next call.
-The [SDKs overview](/api-guide/sdks/overview#spend-guard) explains how the guard stays exact under concurrency.
+Pass `maxCredits` to the constructor. Once responses on this client report that many credits, charged calls throw `SpendGuardExceededError` before sending anything.
+It checks what is already spent, not the cost of the next call. See the [SDKs overview](/api-guide/sdks/overview#spend-guard).
 
 ```ts
 const client = new Vaquill({ maxCredits: 500 });
@@ -99,8 +95,8 @@ console.log(client.creditsSpent);
 ## Error handling
 
 `VaquillError` is the base. `APIConnectionError` (with `APITimeoutError` and `APIUserAbortError`) means no response arrived.
-`ResponseParseError` is thrown when a success response is not valid JSON. It carries `status`, `requestId` and `bodyPreview` (the first 200 characters of the body).
-`APIStatusError` carries `status`, `requestId`, `code`, `retryable`, `retryAfterSeconds`, `body`, and the legacy `detail` and `errors`.
+`ResponseParseError` is thrown when a success response is not valid JSON.
+`APIStatusError` carries `status`, `requestId`, `code`, `retryable`, `retryAfterSeconds` and `body`.
 
 ```ts
 import {
@@ -129,8 +125,8 @@ try {
 ```
 
 Subclasses of `APIStatusError`: `BadRequestError`, `AuthenticationError`, `InsufficientCreditsError`, `PermissionDeniedError`, `NotFoundError`, `ConflictError`, `UnprocessableEntityError`, `RateLimitError` (and `DailyCapExceededError`), `InternalServerError`, and `IdempotencyConflictError` with `IdempotencyKeyReusedError`, `IdempotencyInProgressError` and `IdempotencyReplayUnavailableError`.
-The code is checked first, then the status, so an unknown code still gives the status class. Fields the server did not send come back as `null`.
-The message of an `UnprocessableEntityError` (422) ends with the first validation reasons from the response's `errors` list, so the rejected field is in `err.message`.
+Fields the server did not send come back as `null`.
+The message of an `UnprocessableEntityError` (422) lists the first validation reasons, so the rejected field is in `err.message`.
 
 ## Retries and idempotency
 
@@ -158,7 +154,8 @@ for await (const s of client.statutes.searchAll({ query: "negligence" }, { maxPa
 
 ## Batch helpers
 
-Each helper wraps one batch operation, splits the input at the per-call cap and returns the members of every response as one flat array in input order.
+Each helper wraps one batch operation and splits the input at the per-call cap.
+It returns one flat array in input order.
 
 | Helper | Cap per call |
 | --- | --- |
@@ -166,9 +163,8 @@ Each helper wraps one batch operation, splits the input at the per-call cap and 
 | `statutes.getSectionsAll(actIds, params?, options?)` | 50 |
 | `sessionLaws.getBatchAll(ids, params?, options?)` | 200 |
 
-- `options` takes the usual request options plus `chunkSize`. A value above the cap is clamped to it, so the helper never sends a request the server would refuse.
+- `options` takes the usual request options plus `chunkSize`. A value above the cap is clamped to it.
 - The spend guard is checked before each chunk, and exact repeats in the input are sent once.
-- An empty input sends nothing.
 - All three are charged.
 
 ## Raw responses
@@ -205,14 +201,11 @@ import { webhooks } from "@vaquill-ai/sdk";
 const event = await webhooks.unwrap(rawBody, request.headers, process.env.WEBHOOK_SECRET!);
 ```
 
-`verify` and `unwrap` follow the Standard Webhooks checks described in the [SDKs overview](/api-guide/sdks/overview#webhook-verification) (300 second tolerance, several signatures, a list of secrets for rotation) and compare in constant time.
-A secret that starts with `whsec_` is base64 decoded; any other secret is used as its UTF-8 bytes.
-From 0.2.1, a `whsec_` secret that is not valid base64 throws `WebhookVerificationError` (0.2.0 used the text as the key), so copy the secret exactly.
-An empty or blank secret (or a bare `whsec_`) throws `WebhookVerificationError`, so an unset environment variable cannot verify a forged event.
-Any failure throws `WebhookVerificationError`.
+`verify` and `unwrap` follow the Standard Webhooks checks described in the [SDKs overview](/api-guide/sdks/overview#webhook-verification), including a 300 second tolerance and a list of secrets for rotation.
+A `whsec_` secret must be valid base64. An empty secret, a bad secret or a failed signature throws `WebhookVerificationError`.
 
 <Warning>
-  `{ allowLegacy: true }` also accepts the old `X-Vaquill-Signature: sha256=<hex>` header when the Standard Webhooks headers are absent. That header signs only the body, so it has no replay protection: a captured delivery verifies forever. It is off by default, as in Python (`allow_legacy`).
+  `{ allowLegacy: true }` also accepts the old `X-Vaquill-Signature: sha256=<hex>` header. That header has no replay protection, so it is off by default.
 </Warning>
 
 See [Alerts](/api-guide/alerts) for the payload and delivery behavior.

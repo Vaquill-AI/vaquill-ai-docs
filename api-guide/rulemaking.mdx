@@ -3,11 +3,9 @@ title: "US rulemaking"
 description: "Regulations.gov dockets and documents, Unified Agenda history, OIRA review and CRA links, tied together by the RIN"
 ---
 
-A rule does not live in one place.
-The agency lists it on the Unified Agenda, OIRA reviews it under Executive Order 12866, Regulations.gov collects the docket and the comments, the Federal Register prints the proposal and the final rule, and the CFR codifies the result.
-The Regulation Identifier Number (RIN, for example `2060-AV16`) is the thread that ties them together.
-
-The Rulemaking API serves those sources side by side, so one call by RIN answers "where is this rule, and what is it linked to".
+The Rulemaking API links the sources behind a federal rule by its Regulation Identifier Number (RIN, for example `2060-AV16`).
+One call by RIN shows where a rule stands and what it connects to.
+Sources are the Unified Agenda, OIRA review, Regulations.gov dockets, the Federal Register and the CFR.
 
 ## What is covered
 
@@ -17,16 +15,16 @@ The Rulemaking API serves those sources side by side, so one call by RIN answers
 | Unified Agenda | One entry per edition that carried a RIN, from Fall 1995 onward, with the stage, priority and timetable the agency printed |
 | OIRA EO 12866 review | Each review with its dates, decision, and the Federal Register document it cleared |
 | Congress.gov | Congressional Review Act disapproval resolutions and rule submissions |
-| GAO | Major rule reports, a partial listing (see [Known gaps](#known-gaps)) |
+| GAO | Major rule reports, a partial listing |
 | Federal Register, CFR, USC | Cross-links to documents, CFR parts and public laws, each with the basis and quality of the link |
 
-There are no Regulations.gov comment texts, no attachments and no commenter data. The Rules Committee records below withhold the text of public comments and suggestions too.
-Regulations.gov keeps no history, so dockets and documents are the current state, with the time we last saw them in `asOf`.
+Comment texts, attachments and commenter data are not included.
+Dockets and documents show the current state, with the time we last saw them in `asOf`.
 
 ## Endpoints
 
 Eight `GET` routes under `/api/v1/us/rulemaking/`.
-Calls are authenticated with an API key that has the `research:read` scope, as in [Authentication](/api-guide/authentication).
+Use an API key with the `research:read` scope, as in [Authentication](/api-guide/authentication).
 
 | Endpoint | What it returns | Credits | Source |
 |---|---|---:|---|
@@ -40,10 +38,9 @@ Calls are authenticated with an API key that has the `research:read` scope, as i
 | `GET /us/rulemaking/committee-records/{recordId}` | One committee record, its dockets and rule links, and a window of page text | 2 | uscourts.gov |
 
 A page is one charge.
-An empty first page of `dockets/list`, an empty page of `documents` for a docket we hold, and an empty page of `committee-records/list` are refunded (`creditsConsumed` 0), and their `note` names the filters that were applied.
-A docket or RIN we hold nothing for answers `404`, and a `503` from the rulemaking database is refunded.
-A malformed RIN or a bad cursor answers `422` before any charge.
-See [Errors](/api-guide/errors).
+An empty list page is refunded (`creditsConsumed` 0), and its `note` names the filters applied.
+A docket or RIN we hold nothing for answers `404`. A malformed RIN or a bad cursor answers `422` before any charge.
+A `503` is refunded. See [Errors](/api-guide/errors).
 
 ## Look up a RIN
 
@@ -53,7 +50,7 @@ curl "https://api.vaquill.ai/api/v1/us/rulemaking/rins/2060-AV16" \
 ```
 
 The RIN is `NNNN-AANN`, and lower case is accepted.
-The response is abridged here:
+The response below is abridged, and its values are placeholders:
 
 ```json
 {
@@ -103,8 +100,6 @@ The response is abridged here:
 }
 ```
 
-The values above are placeholders that show the shape, not a recorded answer.
-
 | Field | Meaning |
 |---|---|
 | `status` | How the RIN's Federal Register documents pair up: `linked` (a proposed and a final rule are paired), `final_only`, `pending`, `corrections_only`, `partial`, `ambiguous`, or `null` when no pairing is held |
@@ -124,10 +119,7 @@ Every cross-link carries a `basis`, which says how the link was made, and a `qua
 |---|---|
 | `verified` | The link rests on an identifier the sources share |
 | `candidate` | A plausible link that is not confirmed. Check it before you rely on it |
-| `ambiguous` | We could not make the link with confidence, so we name no pick |
-
-Never treat `candidate` as `verified`.
-An `ambiguous` link carries no `actId`, and an umbrella RIN claims no pairing at all.
+| `ambiguous` | No confident link, so no pick is named. It carries no `actId` |
 
 ## Unified Agenda history
 
@@ -171,10 +163,10 @@ A docket carries these fields:
 | `sourceUrl` | The docket on Regulations.gov |
 
 <Accordion title="How rin, rinSource and spineRin relate">
-`rin` is the RIN the agency entered on the docket when there is one.
-When the agency entered none, it is the single RIN our rulemaking spine holds as verified for the docket, and `rinSource` says which: `regulations_gov` for the agency's own entry, `spine` for one derived from the spine.
-`rin` and `rinSource` are both null when neither exists, or when the spine names several RINs for the docket, because no pick is made between them.
-`spineRin` is set only when the spine holds a verified RIN that differs from the agency's, and `rin` then stays the agency's value.
+`rin` is the RIN the agency entered on the docket.
+When the agency entered none, it is the single verified RIN we hold for the docket. `rinSource` says which: `regulations_gov` or `spine`.
+`rin` and `rinSource` are null when neither exists, or when several RINs match.
+`spineRin` is set only when our verified RIN differs from the agency's. `rin` then stays the agency's value.
 </Accordion>
 
 List dockets with filters:
@@ -231,16 +223,12 @@ curl "https://api.vaquill.ai/api/v1/us/rulemaking/coverage" \
 This call is free.
 Each entry in `sources` has `name`, `rowCounts`, `latestChange`, `lastRefreshAt`, `measuredAt`, `status` and `limitations`.
 `status` is `ok`, `stale` or `unmeasured`.
-`unmeasured` means we have not measured that source, not that it is clean.
-`agendaEditions` lists the Unified Agenda editions held, and `limitations` names what is not included.
+`agendaEditions` lists the Unified Agenda editions held.
 
 ## Rules Committee records
 
-<Note>
-  The committee records store is still loading. A record you cannot find may not be loaded yet, so a missing record is not proof that none exists.
-</Note>
-
-The last two routes in the [endpoint table](#endpoints) serve the records of the Judicial Conference Rules Committees (Standing, Appellate, Bankruptcy, Civil, Criminal and Evidence), taken from uscourts.gov: meeting minutes, agenda books, committee reports, rules packages, preliminary drafts, public comments and rules suggestions.
+The last two routes in the [endpoint table](#endpoints) serve records of the Judicial Conference Rules Committees (Standing, Appellate, Bankruptcy, Civil, Criminal and Evidence) from uscourts.gov.
+Records include meeting minutes, agenda books, committee reports, rules packages, preliminary drafts, public comments and rules suggestions.
 
 ```bash
 curl "https://api.vaquill.ai/api/v1/us/rulemaking/committee-records/list?committee=Civil&ruleSet=FRCP&rule=26&limit=20" \
@@ -279,23 +267,22 @@ curl "https://api.vaquill.ai/api/v1/us/rulemaking/committee-records/rcr_01234567
 ```
 
 The single record adds `dockets` (the comment dockets it is linked to), `rules` (the Federal Rules it discusses, with `actId` and `mentionCount`) and `pages`.
-Every docket and rule link carries the `method` and `confidence` of the link, so treat a low-confidence link as a candidate.
+Every docket and rule link carries the `method` and `confidence` of the link. Treat a low-confidence link as a candidate.
 `pageFrom` starts the window at a page and `pageLimit` is 1 to 200 pages (default 50).
-`nextPage` continues the window, and is `null` on the last one.
+`nextPage` continues the window and is `null` on the last one.
 One call is one charge whatever the window.
-A `pageFrom` past the last page of a record returns the record's metadata with no pages and sets `textNotice`.
-An unknown record answers `404` and is refunded, and a `503` from the rulemaking database is refunded.
+A `pageFrom` past the last page returns the metadata with no pages and sets `textNotice`.
+An unknown record answers `404` and is refunded.
 
-Scanned pages are read by OCR, and their text has `method: textract`.
-A scanned page OCR found no text on (the blank back of a printed page, a cover) has `quality: blank` and `method: textract`.
+A page with no text has `quality: blank`.
 A scanned page not yet read has `quality: needs_ocr`, `textAvailable: false` and `text: null`.
-`textStatus` and `textNotice` say so for the record, so empty text is never a blank page.
+`textStatus` and `textNotice` describe the record as a whole.
 
 ### Withheld text
 
-Public comments (`rules_comments`, and the archived comment compilations in `rules_comments_archive`) and rules suggestions (`rules_suggestions`) name private individuals.
-For these three types `title`, `filename` and all page text are `null`, `textWithheld` is `true`, and `textNotice` says why.
-The record, its date, its dockets and its rule links are served, and `sourceUrl` points at the original on uscourts.gov.
+Public comments (`rules_comments`, `rules_comments_archive`) and rules suggestions (`rules_suggestions`) name private individuals.
+For these types `title`, `filename`, `sourceUrl`, `itemUrl` and all page text are `null`, `textWithheld` is `true`, and `textNotice` says why.
+The record, its date, its dockets and its rule links are still served.
 
 ## Connect to the rest of the API
 
@@ -307,11 +294,10 @@ The record, its date, its dockets and its rule links are served, and `sourceUrl`
 
 ## Known gaps
 
-- **Few dockets carry a RIN.** `hasRin=true` returns a little over 1,200 dockets today, and most of those carry a RIN derived from our rulemaking spine rather than one the agency entered (`rinSource` is `spine`, not `regulations_gov`). A docket with no RIN, entered or derived, cannot be found by RIN, so absence of a docket on a RIN page is not proof that none exists.
-- **Comment counts are mostly absent.** `commentCount` is `null` for most dockets and documents. `null` means not measured, never zero. `commentCountAsOf` says when a count was taken.
-- **GAO listing is partial.** The GAO major rule report listing does not cover every report.
-- **Not every rule is reviewed by OIRA**, and Unified Agenda entries exist only for the editions the agency published.
-- **Link quality varies.** Use `quality` and `linkStatus` as described above, and call [`/coverage`](#coverage) to see what is held and how fresh it is.
+- A docket with no RIN cannot be found by RIN. A docket missing from a RIN page does not mean none exists.
+- `commentCount` is `null` for most dockets and documents. `null` means not measured, never zero.
+- The GAO major rule report listing is partial.
+- Not every rule goes through OIRA review.
 
 ## See also
 

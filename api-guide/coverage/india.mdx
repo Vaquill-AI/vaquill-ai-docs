@@ -1,7 +1,7 @@
 ---
 title: "India legislation coverage"
 sidebarTitle: "India (separate API)"
-description: "What the India legislation API holds, how deep its amendment and repeal record goes, and its known limits"
+description: "What the India legislation API covers, its amendment and repeal data, and the routes you can call."
 ---
 
 import LivePricing from '/snippets/live-pricing.mdx';
@@ -11,74 +11,50 @@ import LivePricing from '/snippets/live-pricing.mdx';
   US customers: see [Coverage](/api-guide/coverage).
 </Info>
 
-**64,179 served acts and 745,970 distinct sections**, covering Union legislation, the legislation of every State and Union Territory we hold, and instruments issued by statutory regulators.
-Act-level figures were measured by a full distinct-act scan on **2026-09-06**.
+**64,000+ acts and 745,000+ sections.**
+That covers Union legislation, the legislation of every State and Union Territory we hold, and instruments issued by statutory regulators.
 
 ```bash
-# The live, self-describing answer. Free, and authoritative over this page.
+# The live answer. Free, and authoritative over this page.
 curl https://api.vaquill.ai/api/v1/in/acts/coverage \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-This is a separate corpus, a separate OpenAPI document and a separate set of routes from the US statutes API.
-Nothing on this page describes the US surface, and no `corpusType` token from the US API applies here.
+No `corpusType` token from the US API applies here.
 
-<Note>
-  Sections and passages are different units, measured differently.
-  A **section** is one distinct (act, section) pair, the unit a lawyer thinks in.
-  A **passage** is one retrieval chunk, and a section spans about 3.4 of them, so the collection holds far more passages than sections.
-  Act and section counts on this page come from a dated scan; passage counts on `GET /acts/coverage` are faceted live.
-  Divide passages by sections if you must, never multiply sections by anything, and never read a passage count as a section count.
-</Note>
+A section is one provision of an act.
+Passage counts on `GET /acts/coverage` count retrieval chunks, not sections.
 
 ## What the corpus holds
 
-Distinct acts and distinct (act, section) pairs, measured 2026-09-06.
+`category` is the top-level split. Use it to filter a whole class of instrument.
 
-| | Acts | Sections |
-|---|---:|---:|
-| Served | **64,179** | **745,970** |
-| Retired, held but not served | 703 | not served |
-| Total distinct act ids | 64,882 | |
+| `category` | What it covers |
+|---|---|
+| `state` | Legislation of a State or Union Territory legislature, and state subordinate instruments. The `state` filter narrows within this. |
+| `central` | Legislation of the Union Parliament, and central subordinate instruments made under it. |
+| `regulatory` | Instruments issued by a statutory regulator (SEBI, RBI, MCA, TRAI, IRDAI and others). The `department` filter narrows within this. |
 
-### By category
+`repealed` and `spent` are also accepted as `category` values. They select acts the publisher records as repealed or spent in any jurisdiction.
+`GET /acts/filters` returns the live filter values with counts, free.
 
-`category` is the top-level split, and it is what you filter on when you want a whole class of instrument rather than one jurisdiction.
-
-| `category` | Acts | What the word means |
-|---|---:|---|
-| `state` | 32,268 | Legislation of a State or Union Territory legislature, and state subordinate instruments. The `state` filter narrows within this. |
-| `central` | 19,965 | Legislation of the Union Parliament, and central subordinate instruments made under it. |
-| `regulatory` | 11,946 | Instruments issued by a statutory regulator (SEBI, RBI, MCA, TRAI, IRDAI and others) under powers delegated by an act. The `department` filter narrows within this. |
-
-`repealed` and `spent` are also accepted as `category` values for backward compatibility.
-They resolve against `act_status` rather than `category`, so they select acts the publisher records as repealed or spent in any jurisdiction.
-`GET /acts/coverage` publishes this same legend as `categoryLegend`, and `GET /acts/filters` returns the live vocabulary with counts, free.
-
-### Subordinate instruments
-
-**37,013 of the 64,179 served acts are subordinate instruments**: rules, regulations, notifications and orders made under a parent act rather than enacted by a legislature.
+Subordinate instruments are rules, regulations, notifications and orders made under a parent act.
 Include or exclude them with the `isSubordinate` filter on search.
-
-Every response that names a parent resolves it **by title match, not by a stored key**, and says so in `matchBasis`.
-Title matching resolves a parent for 85.8% of the instruments that name one.
-The stored `parent_act_id` field is not usable for this: all 35,502 values are the publisher's own identifiers, not ours, so a hard link would resolve to nothing.
+Each response that names a parent resolves it by title match and says so in `matchBasis`.
 
 ## Jurisdictions
 
-Distinct acts and sections per jurisdiction, measured 2026-09-06, sorted by act volume.
-The `state` column is the literal value to pass to the `state` filter.
-The rows sum to 45,578 acts and 574,399 sections, not to the corpus total: 18,601 served acts carry no jurisdiction value, mostly the 11,946 regulator instruments filed under `category=regulatory` plus central legislation with no jurisdiction key, so reach those with `category`, not with `state`.
+The `state` column is the value to pass to the `state` filter.
+Acts filed under `category=regulatory` have no jurisdiction value, so reach them with `category`.
 
 <Warning>
-  Three jurisdictions are stored under two slugs each, and a single-slug filter will silently miss the other half.
-  Pass both slugs, or search without a `state` filter and read the value off each result, until this is fixed at ingest.
+  Three jurisdictions are stored under two slugs each. A single-slug filter misses the other half, so pass both.
 
-  | Jurisdiction | Slugs (acts) |
+  | Jurisdiction | Slugs |
   |---|---|
-  | Jammu and Kashmir | `jammu-kashmir` (128), `jammu-and-kashmir` (79) |
-  | Andaman and Nicobar Islands | `andaman-and-nicobar-islands` (201), `andaman-nicobar` (37) |
-  | Dadra and Nagar Haveli | `dadra-and-nagar-haveli-and-daman-and-diu` (298), `dadra-nagar-haveli` (146) |
+  | Jammu and Kashmir | `jammu-kashmir`, `jammu-and-kashmir` |
+  | Andaman and Nicobar Islands | `andaman-and-nicobar-islands`, `andaman-nicobar` |
+  | Dadra and Nagar Haveli | `dadra-and-nagar-haveli-and-daman-and-diu`, `dadra-nagar-haveli` |
 </Warning>
 
 <Accordion title="Acts and sections by jurisdiction">
@@ -128,227 +104,66 @@ The rows sum to 45,578 acts and 574,399 sections, not to the corpus total: 18,60
 
 </Accordion>
 
-## Depth: what we hold about an act
+## Amendments and status
 
-Read this section before you build on the API.
-"We hold the text of this act" and "we hold the record of what amended it" are different claims, and only the first is true for most of the corpus.
-`GET /acts/coverage` publishes the depth rows as a `depth` block so your code can read them rather than trusting this page.
-All 64,179 served acts carry the publisher's text.
-Read [Known limits](#known-limits) before treating any status row as a currency judgement.
+Amendment history exists only for some acts.
+Amendments are not applied to the served text, so there is no point-in-time text and no `asOf` parameter.
+An empty event list can mean we have no record, so check the `coverage` block in the response.
 
-| What we hold | Acts | Share of 64,179 |
-|---|---:|---:|
-| A machine-readable citation | 64,117 | 99.9% |
-| A link to the publisher's own document | 57,316 | 89.3% |
-| Parsed chapter or part hierarchy | 16,465 | 25.7% |
-| At least one **structured amendment event** | **1,061** | **1.7%** |
-| A repeal claim | 655 | 1.0% |
-| `actStatus` `in_force` | 60,719 | 94.6% |
-| `actStatus` `repealed` | 3,404 | 5.3% |
-| `actStatus` `superseded` | 55 | 0.1% |
-| `actStatus` `spent` | 1 | under 0.1% |
-
-A further **840 acts carry a non-zero amendment count with no parseable amendment record behind them**.
-Those acts return an empty event list, and the response flags this in its own `coverage` block so the empty list is not read as "nothing ever changed".
-1,901 acts claim an amendment; we hold the events for 1,061 of them.
-
-<Accordion title="Inside the amendment record">
-
-| | Records |
-|---|---:|
-| Structured amendment records held | **32,808** |
-| carrying an ISO effective date | 17,333 (52.8%) |
-| carrying the quoted original text | 11,568 (35.3%) |
-
-About 3.15% of those records (1,035) are exact duplicates of another record on the same section, so a count of events on one provision can overstate the number of distinct amendments.
-
-Every event carries an `appliedStatus`.
-It is `not_applied` on all of them, because amendments are not applied to the served text.
-
-</Accordion>
-
-## Known limits
-
-| Limit | Effect | Workaround |
-|---|---|---|
-| Amendments are not applied to the served text | No point-in-time text, and no `asOf` parameter. | Read the amendment events and compare with the publisher's text. |
-| Status is the publisher's claim | A recorded repeal may never have commenced. | Read the three vocabularies on `GET /acts/{actId}/status`. |
-| `GET /acts/list` is a dated snapshot | An act ingested after the last build is missing from it. | Use `POST /acts/search` or the act routes. |
-| The citation graph matches on titles | Counts under-report. | Treat a count as a floor and read `totalIsExact`. |
-| Some acts carry no link to the publisher's document | `sourceUrl` is null with a named reason. | Read the reason. |
-| Retired acts are not served | 404 with a reason, refunded. | Use `GET /acts/{actId}/status`. |
-| Citation strings have cosmetic defects | A trailing period, or no year. | Clean the string before rendering it. |
-| The IPC to BNS mapping is not exhaustive | An absent section is not necessarily unchanged. | Treat the mapping as a research aid. |
-| An unmatchable filter value is refused | 422, not charged. | Use the values from `GET /acts/filters`. |
-
-<AccordionGroup>
-
-<Accordion title="Amendments are not applied to the served text">
-
-We serve the publisher's text as published.
-We do not rewrite it to incorporate the amendments we list.
-Every amendment event states this on itself, so currency never has to be inferred from silence.
-
-There is consequently **no point-in-time text reconstruction on this API**.
-An `asOf` parameter over unversioned text would return wrong answers that look right, so it is not offered.
-The US statutes API does offer point-in-time reconstruction; that is a different corpus with versioned editions behind it.
-
-</Accordion>
-
-<Accordion title="Status is a claim, not our verdict">
-
-`actStatus`, `repealedBy` and `repealedByYear` are the publisher's statements.
-We do not verify that a repealing Act was ever brought into force.
-
-`GET /acts/{actId}/status` keeps three vocabularies apart:
+`GET /acts/{actId}/status` returns three separate statements:
 
 | Field | What it is |
 |---|---|
-| `publisherStatus` | India Code's claim. |
-| `servedStatus` | Our own serving decision. |
-| `repealClaim` | The repeal record plus our caveat, including `commencementVerified`. |
+| `publisherStatus` | The publisher's claim. |
+| `servedStatus` | Our serving decision. For a retired act it is `retired`, with a reason. |
+| `repealClaim` | The repeal record, including `commencementVerified`. |
 
-A derived `goodLawStatus` maps an unverified repeal claim to `unknown`, not to `not_good_law`.
-Example: the Factories Act, 1948 records a repeal by the Industrial Relations Code, 2020, which has never been brought into force.
+`goodLawStatus` is `unknown` when a repeal claim is unverified or when `statusConflict` is `true`.
 
-An act flagged `statusConflict: true` also answers `unknown`.
-The flag means our records of the Act disagree about its status, either its own title notes a repeal or another record of the same Act records a different status, and our evidence did not settle which is right.
-`statusTwinActId` names the other record when there is one.
+## Known limits
 
-</Accordion>
-
-<Accordion title="GET /acts/list is a dated snapshot, not a live query">
-
-`GET /acts/list` enumerates **every served act**, 64,179 of them, and pages over a total order, so walking the offsets returns each act exactly once with a `total` that does not move underneath you.
-
-It answers from an act index rebuilt on the ingest cadence rather than from the live collection, so it is a snapshot with a date.
-An act ingested after that build is returned by `POST /acts/search` and by the act routes before it appears here.
-Every response states the build date in `note`.
-
-</Accordion>
-
-<Accordion title="The citation graph matches on titles, so it under-reports">
-
-`GET /{actId}/cited-by` and `GET /{actId}/subordinate` find edges by matching the act's TITLE as the publisher wrote it, because that is what the corpus stores.
-Citing provisions are inconsistent about the leading article, so we try several spellings, but a citing document that names an act differently again is not found.
-
-`total` is the count of distinct provisions matched, not of passages, and `totalIsExact` tells you whether the scan reached its ceiling.
-Treat a count as a floor.
-
-</Accordion>
-
-<Accordion title="Some acts carry no link to the publisher's document">
-
-We serve `sourceUrl` for 57,316 acts, which is 89.3%.
-The remaining 6,863 (10.7%) return a **named reason** rather than a bare null, so "we have no link" is distinguishable from "not applicable".
-
-The main cause is that India Code migrated from `indiacode.nic.in` to `indiacode.gov.in` around 2026-08-19 and re-minted every item handle with no redirect map.
-The stored deep links are stale and return 404.
-They are blanked rather than rewritten, because pointing an old handle at the new host produces a different 404 that merely looks current.
-An empty provenance URL is allowed; a broken one would be a false statement.
-
-Only live official Indian publishers are served in this field: `.gov.in` and `.nic.in` hosts, plus `rbi.org.in`, the Reserve Bank of India.
-No commercial legal database is a source or a link target.
-
-</Accordion>
-
-<Accordion title="Retired acts are held and not served">
-
-703 acts are retired.
-They are held and deliberately withheld: 305 as duplicates of an act we kept, 190 as withdrawn by the publisher, and 208 with no reason recorded.
-Nothing was deleted.
-
-A retired act returns 404 with a reason from the text and amendment routes, and is refunded.
-`GET /acts/{actId}/status` answers it rather than 404ing, with `servedStatus: retired` and the reason, because "we withdrew this" is a more useful answer than "no such thing".
-
-</Accordion>
-
-<Accordion title="Citation strings have known cosmetic defects">
-
-`citation` is present on 99.9% of served acts and is what you would paste into a brief, so these are worth knowing about before you render it verbatim:
-
-- **6,646 acts (10.4%)** have a title ending in a period, so the citation reads `The Maharashtra Value Added Tax Act, 2002., s. 23`.
-- **3,003 acts (4.7%)** carry no year in the title and no year field, so the citation identifies no edition.
-
-Both are ingest repairs, not serving bugs, and neither affects which provision you get back.
-
-</Accordion>
-
-<Accordion title="The IPC to BNS mapping is official, and still not exhaustive">
-
-`GET /acts/corresponding-provisions/{actCode}` serves **534 IPC to BNS pairs** and **518 CrPC to BNSS pairs**, from the official correspondence tables.
-`isComplete` stays `false`, and a mapping is a research aid and not a substitution rule.
-
-<Expandable title="Mapping detail">
-
-The pairs are transcribed from the correspondence tables the Bureau of Police Research and Development publishes under the Ministry of Home Affairs.
-The response carries the publication and its URL in a `source` block, and `coverage.basis` reads `official-publication`.
-
-`numberedSectionsMapped` is derived, not asserted: 477 of the IPC's 511 numbered sections and 469 of the CrPC's 484.
-`isComplete` stays `false`, because the official tables themselves do not pair every section.
-
-A section absent from the mapping is not necessarily unchanged.
-Some offences were dropped rather than renumbered, and at least one has no counterpart the publisher is willing to name: BPRD lists BNS 152 as a new provision rather than as the successor to IPC 124A, so we do not serve it as one.
-
-Both codes remain live law simultaneously for the lifetime of pending trials, so a mapping is a research aid and not a substitution rule.
-
-</Expandable>
-
-</Accordion>
-
-<Accordion title="An unmatchable filter value is refused, not charged">
-
-A filter value outside the published vocabulary returns **422 and costs nothing**.
-The response names the parameter and the values it accepts.
-
-The enforced vocabularies are `category`, `actStatus`, `provisionType`, `sectionType`, `legalSubject`, `state` and `sort`.
-An inverted year range (`yearFrom` greater than `yearTo`) is refused the same way.
-
-`department` and `ministry` are not enforced.
-`department` has 943 distinct values and `GET /acts/filters` truncates its own list at 256, so a closed list would reject values we actually hold.
-The enforced vocabularies are faceted from the corpus rather than read from a fixed list, so a value a future ingest introduces is served immediately rather than starting to 422.
-
-</Accordion>
-
-</AccordionGroup>
+- Status is the publisher's claim. A recorded repeal may never have commenced.
+- `GET /acts/list` is a dated snapshot. A newly added act may appear in `POST /acts/search` first.
+- Citation-graph counts are a floor. Read `totalIsExact`.
+- The IPC to BNS mapping is not exhaustive. An absent section is not necessarily unchanged.
 
 ## Endpoints and what they cost
 
-Eighteen operations (resolve has a GET and a POST form), all under `https://api.vaquill.ai/api/v1/in/acts`, plus `GET /api/v1/in/api-credits/pricing` which is free and needs no key.
-The Credits column is a snapshot, and the live pricing matrix is authoritative.
+All routes are under `https://api.vaquill.ai/api/v1/in/acts`.
+`GET /api/v1/in/api-credits/pricing` is free and needs no key.
+The Credits column is a snapshot. The live pricing matrix is authoritative.
 
 <LivePricing />
 
 | Route, under `/api/v1/in/acts` | Credits | What it answers |
 |---|---:|---|
-| `GET /coverage` | **0** | What the corpus holds, by jurisdiction, regulator and status, and how deep that holding goes. |
-| `GET /filters` | **0** | The live filter vocabulary with counts. |
-| `POST /search` | 2 | Search Central, State and regulator legislation down to the individual section. |
-| `GET /list` | 1 | Browse enactments by jurisdiction, regulator, year and status. See the coverage limit above. |
-| `GET /{actId}/status` | 1 | Whether an enactment is still law, as three separate statements rather than one verdict. |
+| `GET /coverage` | **0** | What the corpus holds, by jurisdiction, regulator and status. |
+| `GET /filters` | **0** | The live filter values with counts. |
+| `POST /search` | 2 | Search Central, State and regulator legislation down to the section. |
+| `GET /list` | 1 | Browse enactments by jurisdiction, regulator, year and status. |
+| `GET /{actId}/status` | 1 | Whether an enactment is still law, as three separate statements. |
 | `GET /corresponding-provisions/{actCode}` | 1 | IPC to BNS and CrPC to BNSS section mapping. |
-| `GET /{actId}/structure` | 2 | The act's table of contents: chapters and parts where the publisher gives any, and the provisions under each. |
-| `GET /{actId}/sections/{n}` | 2 | One provision as a resource: its citation, its place in the act, and what it refers to. |
-| `GET /{actId}/sections/{n}/history` | 2 | Every amendment recorded against one provision, with the amending act, its section, and the effective date where published. |
-| `GET /{actId}/text` | 3 | The source text URLs for one enactment, pointing at the publisher's own document. |
-| `GET /{actId}/sections/{n}/body` | 3 | The publisher's full text for one provision. Refunded when the text cannot be reproduced. |
+| `GET /{actId}/structure` | 2 | The act's table of contents. |
+| `GET /{actId}/sections/{n}` | 2 | One provision: its citation, its place in the act, and what it refers to. |
+| `GET /{actId}/sections/{n}/history` | 2 | Every amendment recorded against one provision. |
+| `GET /{actId}/text` | 3 | The source text URLs for one enactment. |
+| `GET /{actId}/sections/{n}/body` | 3 | The full text for one provision. Refunded when the text cannot be reproduced. |
 | `GET /{actId}/amendments` | 5 | The amendment history recorded for a whole enactment. |
-| `GET /resolve` | 2 | Resolve a citation string (`u/s 302 IPC`, `Art. 21 Constitution`) to the provisions it names. |
-| `POST /resolve` | 2 each | The same, in batch. Billed per citation; an unresolvable one is refunded. |
-| `GET /{actId}/sections/{n}/references` | 2 | The acts and sections one provision cites outward. |
-| `GET /{actId}/cited-by` | 2 | The inverse: provisions elsewhere in the corpus that cite this act. |
-| `GET /{actId}/subordinate` | 2 | Rules, regulations and notifications the publisher records under this act. |
+| `GET /resolve` | 2 | Resolve a citation string (`u/s 302 IPC`, `Art. 21 Constitution`) to provisions. |
+| `POST /resolve` | 2 each | The same, in batch. An unresolvable citation is refunded. |
+| `GET /{actId}/sections/{n}/references` | 2 | The acts and sections one provision cites. |
+| `GET /{actId}/cited-by` | 2 | Provisions elsewhere in the corpus that cite this act. |
+| `GET /{actId}/subordinate` | 2 | Rules, regulations and notifications recorded under this act. |
 | `GET /{actId}/definitions` | 2 | Defined terms in the act, and the provisions that define them. |
+
+A filter value outside the published vocabulary returns 422 and costs nothing.
+The response names the parameter and the accepted values.
 
 Full request and response shapes are in the India API Reference tab, generated from the [India OpenAPI document](https://api.vaquill.ai/in/openapi.json).
 
-## Sources and refresh
+## Sources
 
-The corpus is built from **India Code**, the Government of India's official repository of Central and State legislation, and from statutory regulators' own sites for the `regulatory` category.
-No commercial database is a source.
-
-India Code is re-swept on a weekly cadence, and each sweep is diffed against the previous one to produce added, changed and withdrawn sets.
-Act-level counts on this page move only when a new census scan is run, which is why every figure here is stamped with the date it was measured.
+The corpus is built from India Code, the Government of India's official repository of Central and State legislation, and from statutory regulators' own publications.
 
 <CardGroup cols={2}>
   <Card title="US coverage" href="/api-guide/coverage">

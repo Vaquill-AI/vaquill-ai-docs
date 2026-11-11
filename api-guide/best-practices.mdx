@@ -5,11 +5,11 @@ description: "Scoping, matching, caching and retry habits for production use of 
 
 import CreditsConsumed from '/snippets/credits-consumed.mdx';
 
-These habits matter most when you move a Vaquill AI integration from prototype to production.
+Follow these habits when you move a Vaquill AI integration from prototype to production.
 
 ## Scope every query
 
-Pass `corpusType` (and `state` for state-scoped corpora) on `POST /us/statutes/search`. Scoping does two things: it sharpens relevance by removing off-target jurisdictions, and it makes your [pages](/api-guide/pagination) more predictable. An unscoped search ranks across the whole corpus, so a `state`-specific answer can be crowded out by federal or other-state matches.
+Pass `corpusType` (and `state` for state-scoped corpora) on `POST /us/statutes/search`. Scoping removes off-target jurisdictions and makes your [pages](/api-guide/pagination) more predictable. An unscoped search ranks across the whole corpus, so federal or other-state matches can crowd out a state answer.
 
 ```json
 { "query": "security deposit return deadline", "corpusType": "STATE", "state": "ca" }
@@ -23,9 +23,9 @@ You can scope tighter still:
 | `titleNumber` | USC, CFR | Narrows a search to one title |
 | `chapter` | USC, state | Confines a search to a single subtree |
 | `part` | CFR | Confines a search to a single subtree |
-| `chapter` and `part` | Both | Pair them with `titleNumber` or `code` (which `parent` always carries), since a chapter number alone repeats across every title |
+| `chapter` and `part` | Both | Pair them with `titleNumber` or `code` (which `parent` always carries), since a chapter number repeats across titles |
 
-These are the search-side of the `parent` object on every result: take a hit's `parent` and pass it straight back to search that section's neighbors.
+These match the `parent` object on every result. Pass a hit's `parent` back to search that section's neighbors.
 
 ```json
 { "query": "damages for intentional discrimination", "corpusType": "USC", "titleNumber": 42, "chapter": "21" }
@@ -33,28 +33,26 @@ These are the search-side of the `parent` object on every result: take a hit's `
 
 ## Choose the right matchType
 
-`matchType` is the exact-match control in the API, and it is what you reach for when hybrid ranking is too loose.
+Use `matchType` when hybrid ranking is too loose.
 [How search works](/api-guide/concepts/search#matchtype) describes each mode.
 
 | Value | Behavior | Use it for |
 |---|---|---|
 | `any` (default) | Hybrid semantic plus keyword ranking | Natural-language questions |
-| `all` | Every query term must appear in the text | Multi-term lookups where recall is hurting you |
+| `all` | Every query term must appear in the text | Multi-term lookups where recall is low |
 | `phrase` | The exact phrase must appear | Defined terms and statutory phrases |
-| `boolean` | A terms-and-connectors expression that every result satisfies | Alternatives, exclusions, proximity and wildcards: `"trust fund" AND penalty NOT 6672`. Operators, `parsedQuery` and errors: [Boolean search](/api-guide/concepts/boolean-search) |
+| `boolean` | A terms-and-connectors expression that every result satisfies | Alternatives, exclusions, proximity and wildcards: `"trust fund" AND penalty NOT 6672`. See [Boolean search](/api-guide/concepts/boolean-search) |
 
 <Accordion title="When each mode earns its place">
-  `any` ranks on intent, so a query can rank a section that shares no wording with it.
-  That is what you want for "how long does a landlord have to return a deposit", and wrong for "material adverse effect", where a section that merely discusses the idea is noise.
+  `any` ranks on intent, so a result can share no wording with the query. That suits "how long does a landlord have to return a deposit". It does not suit "material adverse effect", where a section that only discusses the idea is noise.
 
-  `all` and `phrase` trade recall for precision.
-  Both can return nothing. An empty result under them means no section *we ranked for your query* carried those terms, which is not the same as the corpus holding none, so fall back to `any` and scope the query more tightly rather than concluding there is a coverage gap.
+  `all` and `phrase` trade recall for precision and can return nothing. An empty result does not mean a coverage gap. Fall back to `any` and scope the query more tightly.
 
   ```json
   { "query": "material adverse effect", "corpusType": "STATE", "state": "de", "matchType": "phrase" }
   ```
 
-  `boolean` is the one to use when the logic matters: one term or another, a term excluded, two terms in the same sentence.
+  Use `boolean` when the logic matters: one term or another, a term excluded, two terms in the same sentence.
 
   ```json
   { "query": "(employer OR employee) /s (retaliat* OR discharg*)", "corpusType": "STATE", "state": "ca", "matchType": "boolean" }
@@ -62,84 +60,81 @@ These are the search-side of the `parent` object on every result: take a hit's `
 </Accordion>
 
 <Tip>
-  To pull up one specific section, pass its citation as the query (for example `42 U.S.C. § 1983`) and leave `matchType` at `any`. It resolves to that section at rank 1. `GET /us/statutes/resolve` does the same job for less when you already hold a well-formed citation.
+  To find one section, pass its citation as the query (for example `42 U.S.C. § 1983`) and leave `matchType` at `any`. It resolves to that section at rank 1. If you already hold a well-formed citation, `GET /us/statutes/resolve` is cheaper.
 </Tip>
 
 ## Control what a search returns
 
-- `excerptChars`: how much matching text each result carries (default 500, 100 to 600; a larger value is a 422). The excerpt is windowed around the match and can begin mid-section, dropping a leading subsection marker, so it is a ranking preview and not safe to quote.
-- `includeBody`: attaches each hit's full text on `body` in the same call. It is billed per row that returns text, so use it with a small `limit`. See [what a search costs](/api-guide/concepts/search#what-a-search-costs).
-- `fields`: returns only the named fields. A result carries 40+ fields and most are null on any given row, so a page of 50 unfiltered results ships a lot of nulls.
-  A field you do not request never crosses the wire and never reaches a model's context window, and the saving scales with `limit`.
+- `excerptChars`: how much matching text each result carries (default 500, range 100 to 600, and a larger value is a 422). The excerpt can begin mid-section, so use it as a preview and do not quote it.
+- `includeBody`: attaches each hit's full text on `body` in the same call. It is billed per row that returns text, so use a small `limit`. See [what a search costs](/api-guide/concepts/search#what-a-search-costs).
+- `fields`: returns only the named fields. A result has 40+ fields and most are null on any row, so this cuts payload size.
   `actId` and `citation` always come back.
-  An unknown field name is rejected with `422`.
+  An unknown field name returns `422`.
 
 <CreditsConsumed />
 
-For text you intend to quote, use `body` or `GET /us/statutes/section/{actId}/body`, never a raised `excerptChars`.
+To quote text, use `body` or `GET /us/statutes/section/{actId}/body`. Do not raise `excerptChars`.
 
-Each result also carries a `parent` object: the `/us/statutes/divisions` query that lists the section's siblings, so you can walk up the hierarchy from any hit. Section responses also include amendment provenance (`sourceCredit`, `amendmentYears`, `lastAmendedYear`, `publicLaws`, `federalRegisterCitations`).
+Each result also carries a `parent` object: the `/us/statutes/divisions` query that lists the section's siblings. Section responses include amendment fields (`sourceCredit`, `amendmentYears`, `lastAmendedYear`, `publicLaws`, `federalRegisterCitations`).
 
 ## Treat a missing optional key as "not applicable"
 
-Statute rows follow one null policy.
 Core fields are always present and are `null` when the value is unknown, for example `citation`, `state` and `effectiveDate`.
-Conditional extras are omitted from the response when they do not apply, such as a note or diagnostic that explains an unusual outcome, and the blocks of fields that only one corpus carries.
-Each field's description in the API reference says which of the two it is.
-Do not require a conditional key to be present: read it as absent and treat a missing key as "not applicable", not as an error and not as a `null` you must handle.
-Do not rely on an explicit `null` for those keys either, because the key is simply not sent.
+Conditional extras are omitted when they do not apply, such as an explanatory note or a block of fields that only one corpus carries.
+Each field's description in the API reference says which kind it is.
+Do not require a conditional key to be present. Read a missing key as "not applicable".
 A client generated from the OpenAPI document should mark conditional fields optional, and keep core fields required but nullable.
 
 ## Discover and cache coverage
 
 Two endpoints show what is queryable.
 
-- `GET /us/statutes/coverage` is the corpus matrix (see [Coverage](/api-guide/coverage)). Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids guessing a token that has no data for that state and wasting a call on an empty result.
-- `GET /us/statutes/divisions` is the hierarchy. Pass `corpusType=STATE&state=XX` to list a state's individual statutory codes (Penal, Civil, and so on) and their `code` values, or drill in with `titleNumber`, `code`, `chapter` and `part`.
+- `GET /us/statutes/coverage` is the corpus matrix (see [Coverage](/api-guide/coverage)). Read a jurisdiction's `corpora` keys and pass one back as `corpusType`. This avoids a wasted call on a corpus with no data for that state.
+- `GET /us/statutes/divisions` is the hierarchy. Pass `corpusType=STATE&state=XX` to list a state's codes and their `code` values, or drill in with `titleNumber`, `code`, `chapter` and `part`.
 
-Coverage grows weekly, so cache both for hours or a day rather than calling them on every request. They still count against your rate limits.
+Cache both for hours or a day. They count against your rate limits.
 
 ## Store the actId values you care about
 
 The `actId` (for example `USC_T42_C21_S1983`) is the handle for a section.
-Store the `actId` of every section your product depends on, with its citation beside it, and go straight to `GET /us/statutes/section/{actId}` or `.../body` on later runs.
-If a stored id stops resolving, re-resolve by citation instead of dropping the record: see [Section identifiers](/api-guide/concepts/section-ids).
+Store the `actId` of every section your product depends on, with its citation, and call `GET /us/statutes/section/{actId}` or `.../body` on later runs.
+If a stored id stops resolving, re-resolve by citation. See [Section identifiers](/api-guide/concepts/section-ids).
 
 ## Handle 429 and 402
 
-Both are expected in production, so handle them as part of normal control flow.
+Both are expected in production.
 
 - On `429`, wait and retry as [Errors and rate limits](/api-guide/errors#rate-limiting) describes. The official SDKs do this for you.
-- On `402`, stop, surface a clear message, resolve it in your account dashboard, then retry. The body carries `creditsRequired` and `creditsAvailable` when known.
-- A refund reverses one specific charge, so it can never repeat or exceed that charge. Refunded credits return to the bucket they came from, and credit whose bucket has already expired returns as a new bucket that lasts 30 days.
+- On `402`, stop, show a clear message, resolve it in your account dashboard, then retry. The body carries `creditsRequired` and `creditsAvailable` when known.
+- A refund reverses one specific charge. Refunded credits return to the bucket they came from. If that bucket has expired, they return as a new bucket that lasts 30 days.
 
 ## Treat relevanceScore as a within-response rank
 
-`relevanceScore` (0 to 1) orders results within a single response. It is a relative rank and is not a calibrated confidence score.
+`relevanceScore` (0 to 1) orders results within one response. It is a relative rank, not a confidence score.
 
-Do not compare scores across different queries and do not use a fixed threshold (for example "drop anything below 0.7") to decide what to keep. To narrow results, tighten `query`, `corpusType`, and `state` instead.
+Do not compare scores across queries or use a fixed threshold such as 0.7. To narrow results, tighten `query`, `corpusType`, and `state`.
 
-To tell whether the corpus has anything on point at all, read `noGoodMatch` on the search response instead of thresholding scores yourself:
+To tell whether the corpus has anything on point, read `noGoodMatch` on the search response:
 
-- `true`: nothing in the corpus looks on point for this query (or no rows came back). Say so, rather than presenting the rows as an answer.
+- `true`: nothing looks on point for this query, or no rows came back. Say so instead of presenting the rows as an answer.
 - `false`: something on point was found, or the top row is an exact citation match.
-- `null`: the ranking was degraded (`rankingDegraded: true`), so its scores cannot be judged. Retry the query.
+- `null`: the ranking was degraded (`rankingDegraded: true`). Retry the query.
 
-To judge how likely the top result is to be the right section, read `matchQuality`. It is a property of the query, so every page of one search carries the same value, and it says nothing about whether the top result is the right section.
+To judge how likely the top result is correct, read `matchQuality`. Every page of one search carries the same value.
 
 <Accordion title="matchQuality tiers">
   | Value | Meaning |
   | --- | --- |
   | `exact` | The top result is a citation or section-number match. |
-  | `strong` | In our measurements the top result was correct about 94% of the time (about 91% when the answer is a statute or regulation). |
+  | `strong` | The top result is correct about 94% of the time (about 91% for a statute or regulation). |
   | `moderate` | Correct about 67% of the time. Show the top few results, not just the first. |
   | `weak` | Correct about 35% of the time. Treat the results as leads to verify. |
   | `none` | Same as `noGoodMatch: true`. |
-  | `null` | The ranking was degraded; retry. |
+  | `null` | The ranking was degraded. Retry. |
 
-  The tiers are measured on our labeled evaluation set and may be re-cut as the index changes. Treat a value you do not recognize as `moderate`.
+  Treat a value you do not recognize as `moderate`.
 
-  A same-topic section from the wrong jurisdiction or the wrong layer (a state statute for a federal question, a regulation for a statute) can rank first, so check `citation` and `state` before you rely on it.
+  A same-topic section from the wrong jurisdiction or layer (a state statute for a federal question, a regulation for a statute) can rank first. Check `citation` and `state` before you rely on it.
 </Accordion>
 
 For browse order, which is statutory and not by relevance, see [Browse the statute hierarchy](/api-guide/recipes/browse-hierarchy).
@@ -147,8 +142,7 @@ For browse order, which is statutory and not by relevance, see [Browse the statu
 ## Link users to official sources
 
 Each result carries source links, and any of them may be null.
-For user-facing deep links, prefer the official government link (state legislature or govinfo.gov) so readers land on authoritative text.
-The field list is in the API reference.
+For user-facing links, prefer the official government link (state legislature or govinfo.gov).
 
 ## Related
 

@@ -3,16 +3,13 @@ title: "Resolve and verify a statute citation"
 description: "Resolve a statute or regulation citation to its governing section, and check a whole document's citations in one batch call"
 ---
 
-**What this gets you:** a way to catch a fabricated or wrong citation before it ships, whether it came from an LLM, a user, or your own database.
-One call tells you whether a citation is real and returns the matching section if it is.
+Check whether a citation is real before it ships, whether it came from an LLM, a user or your own database.
 
-Given a Bluebook citation string like `42 U.S.C. § 1983`, `16 C.F.R. § 444.1`, or `Del. Code Ann. tit. 13, § 1301`, resolve it to the exact section and get back the section metadata with an official source link.
-One route does the whole job: `/us/statutes/resolve` parses the citation server-side and tells you whether it is real.
-Use the `GET` form for a single citation and the `POST` form for a whole document's citations.
+Send a Bluebook citation such as `42 U.S.C. § 1983`, `16 C.F.R. § 444.1` or `Del. Code Ann. tit. 13, § 1301`. `/us/statutes/resolve` returns the exact section, its metadata and an official source link.
+Use `GET` for one citation and `POST` for a whole document.
 
-Bluebook-formatted citations resolve most precisely, and the safest string to send is the `citation` value we returned to you.
-The accordion lists every form that resolves, on either form of `/us/statutes/resolve`.
-See [Citation formats](/api-guide/concepts/citation-formats) for the shared acronyms refused on purpose and how `state` unlocks them.
+Bluebook citations resolve best. The safest string to send is the `citation` value we returned.
+See [Citation formats](/api-guide/concepts/citation-formats) for shared acronyms that need a `state`.
 
 <Accordion title="Every form that resolves">
 
@@ -24,26 +21,23 @@ See [Citation formats](/api-guide/concepts/citation-formats) for the shared acro
   - State constitution: `Cal. Const. art. I, § 7`
   - Federal court rule: `Fed. R. Civ. P. 12`, `Fed. R. Evid. 702`
   - Federal Acquisition Regulation / DFARS: `FAR 52.219-14`, `DFARS 252.225-7001`
-    (with or without periods, and with a pinpoint like `FAR 52.219-14(b)`), resolving straight into the existing CFR Title 48 records, no separate corpus
+    (with or without periods, and with a pinpoint like `FAR 52.219-14(b)`). These resolve into CFR Title 48.
 
-  The form a state's own courts print resolves too, not just the Bluebook form:
+  The form a state's own courts print also resolves:
   `O.C.G.A. § 51-1-6`, `RCW 59.18.060`, `R.C. 2305.10`, `§ 292.290, RSMo`.
 
-  Agency guidance resolves as well, and it has no Bluebook form at all.
-  Send its citation exactly as we printed it: `NY Insurance Circular Letter No. 4 (2022)`, `TDI Commissioner's Bulletin B-0004-22`, `IL Company Bulletin 2021-03`.
-  This covers `STATE_AGENCY_GUIDANCE` (state insurance bulletins and circular letters) and `AGENCY_GUIDANCE` (IRS Notices, OCC Bulletins, CFTC staff letters and the rest).
-  Because these are matched on the published string rather than parsed, the `citation` we returned is the only input guaranteed to work.
+  Agency guidance has no Bluebook form. Send its citation exactly as we returned it: `NY Insurance Circular Letter No. 4 (2022)`, `TDI Commissioner's Bulletin B-0004-22`, `IL Company Bulletin 2021-03`.
+  This covers `STATE_AGENCY_GUIDANCE` (state insurance bulletins and circular letters) and `AGENCY_GUIDANCE` (IRS Notices, OCC Bulletins, CFTC staff letters and others).
 </Accordion>
 
-This recipe covers statutes and regulations only (USC, CFR, state codes, state regulations, constitutions, court rules, and other statute-corpus types).
-It does not handle case law citations, because case law is not part of the Vaquill Developer API.
+This recipe covers statutes and regulations only. Case law is not part of the Vaquill Developer API.
 
-**Endpoints used:** `GET /us/statutes/resolve` for one citation, `POST /us/statutes/resolve` for a batch (limits below).
+**Endpoints:** `GET /us/statutes/resolve` for one citation, `POST /us/statutes/resolve` for a batch.
 
 ## Resolve in one call
 
-`GET /us/statutes/resolve` parses the Bluebook citation, resolves it to the exact section, and returns the section metadata with an official source link.
-The `resolved` flag tells you whether the citation is real, which is the signal to check when verifying a citation an LLM produced.
+`GET /us/statutes/resolve` returns the section metadata and an official source link.
+Check the `resolved` flag to see whether the citation is real.
 
 <CodeGroup>
 ```bash cURL
@@ -70,25 +64,20 @@ else:
 </CodeGroup>
 
 A resolved response carries the full section (the same shape as `/us/statutes/section/{actId}`).
-When the citation had a pinpoint like `42 U.S.C. § 1983(b)(2)`, it also carries `subsection`, which echoes the pinpoint dot-joined, and a `pinpoint` object with the text of that subsection itself.
-See [Pinpoints](/api-guide/concepts/pinpoints) for the fields, and [Get one subsection](/api-guide/recipes/pinpoint-subsection) for a worked example.
-When `resolved` is `false`, treat the citation as unverified, not current.
+If the citation had a pinpoint like `42 U.S.C. § 1983(b)(2)`, the response also has `subsection` and a `pinpoint` object with the text of that subsection.
+See [Pinpoints](/api-guide/concepts/pinpoints) for the fields and [Get one subsection](/api-guide/recipes/pinpoint-subsection) for an example.
 
-`/us/statutes/resolve` is charged whether or not the citation resolves, because "this does not resolve" is a useful answer when you are checking an LLM's output.
-Only server errors are refunded.
+A call is charged whether or not the citation resolves. Only server errors are refunded.
 
 <Accordion title="Ambiguous guidance citations">
-  A guidance citation can be ambiguous, and the API returns no match rather than a guess.
-  Some regulators reuse one citation across several documents:
-  Delaware reissues `DE Domestic/Foreign Bulletin No. 113` five times, Vermont twice, and Massachusetts has three separate documents citing `MA Bulletin 1991-01`.
-  Where the publisher's own citation does not identify a single document, `resolved` is `false` rather than one of the candidates picked arbitrarily.
-  Reach those documents by `actId`, or with a `corpusType=STATE_AGENCY_GUIDANCE` search scoped to the state.
+  Some regulators reuse one citation across several documents, such as `MA Bulletin 1991-01`.
+  When a citation does not identify a single document, `resolved` is `false`.
+  Reach those documents by `actId`, or search with `corpusType=STATE_AGENCY_GUIDANCE` scoped to the state.
 </Accordion>
 
 ## Resolve a whole document's citations at once
 
-A brief, a memo, or a model's output typically carries dozens of citations, and checking them one at a time is dozens of round trips.
-`POST /us/statutes/resolve` takes a batch in one call and returns the same verdict per citation.
+`POST /us/statutes/resolve` takes a batch of citations in one call and returns a verdict for each.
 
 <CodeGroup>
 ```bash cURL
@@ -156,56 +145,49 @@ A trimmed response:
 }
 ```
 
-The batch route behaves as follows.
+The batch route works like this:
 
-- Every input gets an entry.
-  An unresolved citation comes back with `resolved: false`, never as an omission, so you can tell which of thirty citations failed.
-  The `results` array lines up with your de-duplicated input, in order.
-- Scope the whole batch with `state` or `corpusType` when every citation belongs to one jurisdiction or corpus.
-  `22 CCR 76227` is California and `8 CCR 1206-2` is Colorado, and the acronym alone cannot say which.
-  Omit both for a batch that spans jurisdictions and let each citation name its own.
+- Every input gets an entry. An unresolved citation comes back with `resolved: false`.
+  The `results` array matches your de-duplicated input, in order.
+- Set `state` or `corpusType` when every citation belongs to one jurisdiction or corpus.
+  `22 CCR 76227` is California and `8 CCR 1206-2` is Colorado, so the acronym alone is not enough.
+  Omit both for a mixed batch.
 
 **Limits and billing**
 
-- At most 50 citations per call.
-  An empty list or a longer one is rejected with `422`, so chunk a longer document into batches of 50.
-- Duplicates are collapsed before pricing and before the response is built, so the same citation sent twice costs once and returns one entry.
-- Cost is per citation, resolved or not, the same as resolving them one at a time.
-  Batching saves a round trip and latency, not credits.
-  Read `creditsConsumed` rather than multiplying: citations we failed to process because of a backend error are refunded.
+- At most 50 citations per call. An empty list or a longer one returns `422`.
+- Duplicates are collapsed before pricing, so a citation sent twice costs once.
+- Cost is per citation, resolved or not. Batching saves round trips, not credits.
+  Read `creditsConsumed`. Citations that fail on our side are refunded.
 
 ## If you need your own match tolerance
 
-Both resolve routes run the server-side parser, which knows every form in [Citation formats](/api-guide/concepts/citation-formats).
-Build your own matcher only for tolerance the parser does not offer, such as reporting a section number that is off by a digit as a near miss.
-Send the citation as the `query` on `POST /us/statutes/search`, compare the top result's `citation` and `citationShort` under your own rules, and call `GET /us/statutes/section/{actId}/body` when satisfied.
-That path bills a search plus a body where `/resolve` bills one cheaper call, so use it only when the tolerance itself is the point.
+Both resolve routes use the same parser. Build your own matcher only for tolerance it does not offer, such as flagging a section number that is off by one digit.
+Send the citation as the `query` on `POST /us/statutes/search`, compare the top result's `citation` and `citationShort`, then call `GET /us/statutes/section/{actId}/body`.
+This costs a search plus a body, so use it only when you need that tolerance.
 
 ## Flagging what you cannot resolve
 
 <AccordionGroup>
   <Accordion title="Return an unresolved flag, not a guess">
-    `resolved: false` means unverified, not "not current".
-    Do not fall through to a loosely related section, and do not present a near match as the answer.
-    If you are checking a citation an LLM produced, an unresolved flag is a sign the model may have fabricated it.
+    `resolved: false` means unverified. Do not fall back to a loosely related section.
+    For an LLM citation, an unresolved flag suggests the model made it up.
   </Accordion>
   <Accordion title="Scope by corpus to cut false matches">
     The corpus token is in the citation.
-    `... CFR ...` means `corpusType: "CFR"`; `... U.S.C. ...` means `"USC"`; a state code section means `"STATE"` with the two-letter `state`.
-    Scope is a constraint: a citation naming a different jurisdiction returns `resolved: false` rather than being forced into the scope, so leave the scope off unless you are disambiguating.
-    Scope also stops a same-numbered section in another corpus from ranking first.
-    `FAR`/`DFARS` citations live in CFR Title 48, so they are `corpusType: "CFR"`.
-    The `source` filter (`"far"`, `"dfars"`) belongs to `POST /us/statutes/search` only; the resolve routes take `state` and `corpusType` and no `source`.
+    `... CFR ...` means `corpusType: "CFR"`, `... U.S.C. ...` means `"USC"`, and a state code section means `"STATE"` with the two-letter `state`.
+    A citation that names a different jurisdiction returns `resolved: false`, so leave scope off unless you are disambiguating.
+    `FAR` and `DFARS` citations are `corpusType: "CFR"`.
+    The `source` filter (`"far"`, `"dfars"`) works on `POST /us/statutes/search` only. The resolve routes take `state` and `corpusType`.
   </Accordion>
   <Accordion title="Text unavailable on a resolved citation">
-    A citation can resolve while its full text is not yet ingested.
-    In that case `GET /us/statutes/section/{actId}/body` responds with `available: false` and `creditsConsumed: 0`.
-    Treat it as resolved-without-text: you have a confirmed `actId`, citation and source link, but nothing you can quote yet.
+    A citation can resolve before its full text is available.
+    Then `GET /us/statutes/section/{actId}/body` returns `available: false` and `creditsConsumed: 0`.
+    You still have the `actId`, citation and source link.
   </Accordion>
   <Accordion title="Picking the official source link">
-    A resolved section carries several optional source URL fields and any of them may be null.
-    Use the canonical preference order in [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format)
-    rather than writing your own, so every surface in your product links the same reader to the same official page.
+    Source URL fields on a resolved section can be null.
+    Pick one with the order in [Text Formats and Source URLs](/api-guide/concepts/formats#picking-the-best-available-format).
   </Accordion>
 </AccordionGroup>
 

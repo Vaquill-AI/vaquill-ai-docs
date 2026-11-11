@@ -4,9 +4,8 @@ sidebarTitle: "Quickstart"
 description: "Find an Indian Supreme Court or High Court judgment, read it, and resolve a citation to it, in six requests"
 ---
 
-Judgments are first-class resources here, each with a stable `caseId`.
-You search them, list them by court and date, read one, fetch its text or its file, and resolve a citation to one.
-One key, one scope.
+Each judgment has a stable `caseId`.
+You can search judgments, list them by court and date, read one, fetch its text or file, and resolve a citation to one.
 
 <Note>
   This is the **India case law** corpus: Supreme Court and High Court judgments.
@@ -16,21 +15,17 @@ One key, one scope.
 
 ## Authentication
 
-Send an API key as a Bearer token, exactly as on the other India routes.
-The key needs the scope `cases:read`.
+Send an API key as a Bearer token. The key needs the scope `cases:read`.
 
 ```bash
 -H "Authorization: Bearer vq_key_..."
 ```
 
-`cases:read` reads everything on this surface: every court, every route below.
-There is no per-court scope and no read/write split, because nothing here writes.
-A key that works for one of these routes works for all of them.
+`cases:read` covers every court and every route below.
 
 ## 1. Which courts are held
 
-Start free.
-`/courts` costs nothing and needs no filters.
+`/courts` is free and needs no filters.
 
 ```bash
 curl https://api.vaquill.ai/api/v1/in/courts \
@@ -38,8 +33,7 @@ curl https://api.vaquill.ai/api/v1/in/courts \
 ```
 
 You get every court with its `courtId`, `courtType` (`supreme_court` or `high_court`), `state`, `judgmentCount`, `firstDecision` and `lastDecision`.
-Read this first rather than guessing court names: the `courtId` values it returns, such as `supreme-court` or `madhya-pradesh-hc`, are what the `court` filter takes.
-An unknown `courtId` is a 422, not an empty page.
+The `courtId` values it returns, such as `supreme-court` or `madhya-pradesh-hc`, are what the `court` filter takes.
 
 ## 2. Search
 
@@ -52,8 +46,7 @@ curl -G https://api.vaquill.ai/api/v1/in/cases/search \
   --data-urlencode "limit=10"
 ```
 
-Search is hybrid, dense and keyword together, and returns **one result per judgment**, with its best-matching passage as `snippet`.
-The query is used as written: there is no query rewriting and no synonym expansion.
+Search combines meaning and keyword matching. It returns one result per judgment, with its best-matching passage as `snippet`.
 
 Filters are `court` (a `courtId`), `courtType`, `decidedFrom` and `decidedTo` (ISO dates).
 To select more than one court, **repeat the key**, up to 10:
@@ -63,8 +56,7 @@ To select more than one court, **repeat the key**, up to 10:
   --data-urlencode "court=delhi-hc"
 ```
 
-Asking for a `court` whose type contradicts `courtType` is a 422 `conflicting_filters`, not an empty page.
-An unknown query parameter is also a 422 naming the likely one, rather than being ignored.
+An unknown query parameter is a 422 that names the likely one.
 
 Each result carries `caseId`, `title`, `court`, `decisionDate`, `dateQuality`, `reportedYear`, `caseNumber`, `reporterCitations`, `judges`, `disposition`, `score`, `snippet` and `snippetChunkIndex`.
 
@@ -85,13 +77,11 @@ curl "https://api.vaquill.ai/api/v1/in/cases/2020_INSC_548/body" \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-The judgment is stored in passages.
-This route stitches them back into one `text`, with the overlap between neighbouring passages appearing once.
+This route returns the judgment as one `text`.
 Add `include=segments` to also get, per passage, `chunkIndex`, `charStart`, `charEnd` and `sectionType`.
 
 Read `complete` before you rely on the text.
-When it is `false`, `missingChunkIndexes` names the passages we could not read, so you know exactly what is absent rather than receiving a silently shorter judgment.
-A body served with `complete: false` is refunded.
+When it is `false`, `missingChunkIndexes` names the passages we could not read, and the call is refunded.
 
 ## 5. Get the file
 
@@ -101,8 +91,8 @@ curl -L "https://api.vaquill.ai/api/v1/in/cases/2020_INSC_548/file" \
   -o judgment.pdf
 ```
 
-This answers **bytes, not JSON**: the archived source document, unmodified.
-When no file was archived for the judgment, you get a 404 `case_file_unavailable` and the credit is refunded.
+This route returns bytes, not JSON: the archived source document.
+If no file was archived, you get a 404 `case_file_unavailable` and the credit is refunded.
 
 ## 6. Resolve a citation
 
@@ -122,19 +112,18 @@ curl -G https://api.vaquill.ai/api/v1/in/cases/resolve \
 Send exactly one of `citation` or `caseNumber`.
 `caseNumber` requires `court`.
 
-Resolve matches exactly or says it did not.
-There is no fuzzy match, so `matchType` is always `case_id`, `reporter_citation` or `case_number`.
+Resolve matches exactly. `matchType` is always `case_id`, `reporter_citation` or `case_number`.
 
 | `status` | Means |
 |---|---|
 | `found` | Exactly one judgment matched. It is in `case`. |
-| `not_found` | The input parsed cleanly and matched nothing. This is an answer, and it is charged. |
-| `ambiguous` | Several judgments match exactly. All are in `candidates`. We never pick one for you. |
+| `not_found` | The input parsed cleanly and matched nothing. It is charged. |
+| `ambiguous` | Several judgments match. All are in `candidates`. |
 
-Case numbers are stored as bare `number/year` and are not unique across case types, so `ambiguous` is common for them and is the honest answer.
+Case numbers are not unique across case types, so `ambiguous` is common for them.
 
 The citation forms carried are a case id (`2020_INSC_548`), and the Supreme Court Reports form in any common spelling (`[2020] 12 S.C.R. 1`, `(2020) 12 SCR 1`).
-Other reporters such as SCC, AIR or SCC OnLine are recognised and refused with a 422 `unsupported_citation_form` before any charge, because a refusal is more useful than a wrong match.
+Other reporters such as SCC, AIR or SCC OnLine are refused with a 422 `unsupported_citation_form`.
 
 To resolve many at once, `POST` up to 100 inputs.
 Duplicates are charged once, and each input gets its own `status`.
@@ -154,8 +143,8 @@ An input whose backend failed comes back as `unavailable` and is refunded for th
 
 ## Paging
 
-Both `/search` and `/list` page with a **cursor**, never an offset or a page number.
-Send the `nextCursor` you were given and you resume exactly where you stopped.
+`/search` and `/list` page with a cursor, not an offset.
+Send the `nextCursor` you were given to resume where you stopped.
 
 ```bash
 # first call
@@ -176,17 +165,15 @@ Keep calling while `meta.hasMore` is true.
 `/list` browses judgments by court and date with no query, newest first by default, and takes `order=decided_asc` to reverse it.
 
 <Warning>
-  There is no `total` on `/search` or `/list`.
-  An exact count over this many judgments cannot be computed honestly, so read `hasMore` and `nextCursor` to decide whether to continue.
+  `/search` and `/list` return no `total`. Read `hasMore` and `nextCursor` to decide whether to continue.
 </Warning>
 
-A cursor belongs to one query.
-Replaying it against different filters is a 400 `invalid_cursor`.
-Search is honest to a depth of 200 results (`meta.searchDepthLimit`): paging past that is a 400 `search_depth_exceeded`, which means narrow the query rather than page further.
+A cursor belongs to one query. Search depth is 200 results (`meta.searchDepthLimit`).
+Paging past that is a 400 `search_depth_exceeded`, so narrow the query.
 
 ## Related judgments
 
-`GET /in/cases/{caseId}/similar` returns the judgments semantically closest to one you already hold, grouped one per judgment, with the source excluded.
+`GET /in/cases/{caseId}/similar` returns the judgments closest in meaning to one you already hold, one per judgment, excluding the source.
 It takes the same `court`, `courtType`, `decidedFrom` and `decidedTo` filters and a `limit` of up to 20.
 
 ## What each call costs
@@ -203,8 +190,7 @@ It takes the same `court`, `courtType`, `decidedFrom` and `decidedTo` filters an
 | `POST /in/cases/resolve` | 2 per distinct input |
 | `GET /in/cases/{caseId}/similar` | 2 |
 
-Requests that fail validation are not charged.
-A backend failure, a missing judgment and a missing file are refunded.
+Requests that fail validation are not charged. Backend failures, missing judgments and missing files are refunded.
 
 ## Errors
 
@@ -239,13 +225,9 @@ Branch on `code`, and quote `requestId` if you write to us.
 | `rate_limited` | 429 | Slow down. `Retry-After` says how long. | No |
 | `cases_backend_unavailable` | 503 | A backend failed. Retry. | Refunded |
 
-A `case_file_unavailable` 404 and a `cases_backend_unavailable` 503 look alike and mean opposite things.
-The first is settled and retrying will not change it.
-The second is transient and is worth retrying.
-
 <CardGroup cols={2}>
   <Card title="Coverage" href="/api-guide/coverage/india-case-law">
-    Which courts are held, how many judgments each, and the known limits.
+    Which courts are held, and the known limits.
   </Card>
   <Card title="Authentication" href="/api-guide/authentication">
     Getting a `vq_key_` credential.
