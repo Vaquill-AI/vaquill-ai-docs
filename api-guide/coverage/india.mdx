@@ -212,6 +212,10 @@ We do not verify that a repealing Act was ever brought into force.
 A derived `goodLawStatus` maps an unverified repeal claim to `unknown`, not to `not_good_law`.
 Example: the Factories Act, 1948 records a repeal by the Industrial Relations Code, 2020, which has never been brought into force.
 
+An act flagged `statusConflict: true` also answers `unknown`.
+The flag means our records of the Act disagree about its status, either its own title notes a repeal or another record of the same Act records a different status, and our evidence did not settle which is right.
+`statusTwinActId` names the other record when there is one.
+
 </Accordion>
 
 <Accordion title="GET /acts/list is a dated snapshot, not a live query">
