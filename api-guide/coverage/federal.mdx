@@ -28,6 +28,10 @@ description: "Every federal corpus the statutes API serves, with refresh cadence
 
 The FAR and DFARS rows are part of the CFR row, not extra.
 
+The Federal Rules row is 589 rules, most counted twice: once from the Rules Committee's text and once as printed in the US Code appendices to Titles 11, 18 and 28.
+The breakdown by rule set is in the Federal Rules section below.
+Past texts (1,125 under `FEDERAL_RULES_ANNUAL`), amendment documents (49 under `FEDERAL_RULES_PROPOSED`) and Rules Committee records are not in this count.
+
 ## Tokens and scope
 
 Pass the `corpusType` token to filter a search to one corpus.
@@ -128,6 +132,20 @@ A bill cited without its Congress, such as `H.R. 1`, is refused with a hint to a
 
 <Accordion title="Federal Rules of Procedure: committee notes, past texts and pending amendments">
   The national Rules of Civil, Criminal, Appellate and Bankruptcy Procedure, the Rules of Evidence and the Supreme Court Rules, under `corpusType=FEDERAL_RULES`.
+
+  Each rule is held from the Rules Committee's text (`actId` starting `FRULES_`), and all but the Supreme Court Rules again as printed in the US Code appendix (`actId` starting `USCAPP_`).
+
+  | Rule set | Rules (`FRULES_`) | US Code appendix copies (`USCAPP_`) |
+  |---|---|---|
+  | Bankruptcy Procedure | 229 | 229 (Title 11 App.) |
+  | Civil Procedure, with the Supplemental Admiralty (7) and Social Security (8) Rules | 113 | 237 (Title 28 App., which also holds the Appellate Rules and the Rules of Evidence) |
+  | Criminal Procedure | 75 | 75 (Title 18 App.) |
+  | Evidence | 69 | In Title 28 App. |
+  | Appellate Procedure | 55 | In Title 28 App. |
+  | Supreme Court Rules | 48 | None |
+  | **Total** | **589** | **541** |
+
+  Counts are distinct `actId`s as of 2026-11-12. A number like 4.1 or 65.1 is its own rule.
 
   Three opt-in layers sit beside the current text: committee notes and the 1937 print, past texts under `FEDERAL_RULES_ANNUAL`, and pending amendments under `FEDERAL_RULES_PROPOSED`.
 
