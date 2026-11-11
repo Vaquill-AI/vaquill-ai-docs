@@ -1,7 +1,7 @@
 ---
 title: "India regulatory publications coverage"
 sidebarTitle: "India regulatory (separate corpus)"
-description: "What the India regulatory publications corpus holds: which regulators, how far back, how fresh, and what it deliberately does not hold"
+description: "What the India regulatory publications corpus holds: which regulators and courts, how it is refreshed, and what it deliberately does not hold"
 ---
 
 <Info>
@@ -14,16 +14,17 @@ description: "What the India regulatory publications corpus holds: which regulat
   No `actId` applies here, and no `documentId` applies there.
 </Info>
 
-**118,375 served documents from 46 publishers across 273 sources**, measured against production on **2026-11-10**.
+Indian regulators and courts, their own listings, polled on their own schedules.
 
 ```bash
-# The live, self-describing answer. Free, and authoritative over this page.
+# The live, self-describing answer, and the authoritative one. Free.
 curl https://api.vaquill.ai/api/v1/in/reg/sources \
   -H "Authorization: Bearer vq_key_..."
 ```
 
-Every count on this page is a dated measurement.
-The live `/sources` route is authoritative whenever the two disagree, because this page is written by hand and the route reads the database.
+`/sources` is the authoritative statement of what this corpus holds: which publishers and sources are served, how far back each one goes, and how fresh each one is.
+It costs no credits, it reads the database, and it is current by construction.
+Anything you display to a user should come from there rather than from this page.
 
 ## What a document is here
 
@@ -35,56 +36,40 @@ Regulators edit in place without saying so, so the same circular can have severa
 This is the unit the changes feed moves on.
 
 Do not read a document count as a version count.
-The corpus holds 118,375 served documents and slightly more versions, because most documents have been observed once and some many times.
+Most documents have been observed once and some many times, so there are always somewhat more versions than documents.
 
-## What the corpus holds
-
-Measured 2026-11-10, counting only enabled publishers and sources.
-
-| | Count |
-|---|---:|
-| Served documents | **118,375** |
-| Publishers | **46** |
-| Sources (distinct listings) | **273** |
-| Document types | **38** |
-| Earliest document | **1934-03-06** |
-| Most recent document | **2026-11-10** |
-
-### Freshness
-
-| Window | Documents |
-|---|---:|
-| Last 7 days | **1,485** |
-| Last 30 days | **6,213** |
+## Freshness
 
 Sources are polled on their own schedules rather than all at once, and a full pass across every source takes hours rather than minutes.
 A document typically appears within a day of the publisher posting it.
 `/sources` reports `sourceCheckedAt` per source, so you can see exactly how stale any one lane is rather than trusting a single global figure.
 
-### The largest publishers
+## The publishers
 
-By served document count, measured 2026-11-10.
+The largest by volume, in order.
 This is volume, not importance: a single SEBI circular may matter more than a thousand cause lists.
 
-| Publisher | Documents | Sources |
-|---|---:|---:|
-| CBIC | 13,042 | 19 |
-| CDSL | 12,691 | 3 |
-| Lok Sabha | 11,731 | 15 |
-| eGazette | 8,555 | 1 |
-| DoT | 8,440 | 1 |
-| Bombay High Court | 7,155 | 6 |
-| Rajya Sabha | 7,128 | 3 |
-| SEBI | 5,807 | 53 |
-| DGFT | 4,900 | 4 |
-| PIB | 3,639 | 3 |
-| CCI | 3,594 | 16 |
-| CBDT | 2,909 | 2 |
+| Publisher |
+|---|
+| CBIC |
+| CDSL |
+| Lok Sabha |
+| eGazette |
+| DoT |
+| Bombay High Court |
+| Rajya Sabha |
+| SEBI |
+| DGFT |
+| PIB |
+| CCI |
+| CBDT |
 
-SEBI has the most **sources** (53) and far from the most documents, which is the shape of the whole corpus.
+`/sources` returns the full list with the per-source detail, and is the only statement of what is currently served.
+
+SEBI has by far the most **sources** while being well down this list by volume, which is the shape of the whole corpus.
 A regulator's output is split across many small listings, and the source is what tells you which listing a document came from.
 
-### Document types
+## Document types
 
 `docType` is the filter for a class of instrument rather than a publisher.
 
@@ -92,15 +77,14 @@ A regulator's output is split across many small listings, and the source is what
 
 ## Known limits
 
-Read this section before quoting a number to a client.
+Read this section before relying on this corpus in front of a client.
 
 **Not every document has a date.**
-117,001 of the 118,375 served documents carry a publication date.
-The rest came from listings that do not publish one, so a date filter silently excludes them.
+Most documents carry a publication date, but a small share do not: they came from listings that do not publish one, so a date filter silently excludes them.
 Filter on `firstSeenFrom` instead when you need everything.
 
 **A few dates are in the future.**
-24 documents carry a date later than today.
+A handful of documents carry a date later than today.
 These are genuine: some court listings publish the hearing date rather than the issue date, and we record what the publisher said rather than correcting it.
 
 **The archive is not complete, and says so.**
@@ -112,12 +96,11 @@ A storage failure on a document we did archive is a different answer, `archive_u
 
 **Coverage reflects what we are permitted to redistribute.**
 Publishers whose terms do not permit redistribution are withheld from this API, and withheld documents are absent rather than listed-and-blocked.
-6,026 documents we hold are not served for this reason.
-A publisher can therefore disappear from coverage between two measurements, and `/sources` is the only reliable statement of what is currently served.
+A publisher can therefore disappear from coverage between two readings, and `/sources` is the only reliable statement of what is currently served.
 
-**Counts move.**
-The corpus grows every day and sources are occasionally withdrawn, so a figure on this page is a measurement rather than a constant.
-Anything you display to a user should come from `/sources`.
+**Coverage moves.**
+The corpus grows every day and sources are occasionally withdrawn, so this page describes shape rather than quantity.
+Read `/sources` for anything you display to a user, and do not cache its answer as a constant.
 
 ## Routes
 
