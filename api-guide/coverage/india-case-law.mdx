@@ -1,0 +1,157 @@
+---
+title: "India case law coverage"
+sidebarTitle: "India case law"
+description: "What the India case law corpus holds: which courts, how many judgments each, how far back, and its known limits"
+---
+
+<Info>
+  This is **India case law**: judgments of the Supreme Court of India and the High Courts.
+
+  It is a **different corpus from [India legislation](/api-guide/coverage/india)**, which holds acts and sections, and from [India regulatory publications](/api-guide/coverage/india-regulatory), which holds what regulators issued.
+  Different routes, different filters, different units.
+  A `caseId` applies here, and no `actId` or `documentId` does.
+</Info>
+
+**12,828,625 judgments across 26 courts**, counted on **2026-11-10**.
+That is 34,941 Supreme Court judgments and 12,793,684 judgments from 25 High Courts.
+
+```bash
+# The live, self-describing answer. Free, and authoritative over this page.
+curl https://api.vaquill.ai/api/v1/in/courts \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+Every count on this page is a dated measurement, as of 2026-11-10.
+The live `GET /in/courts` route is authoritative whenever the two disagree, because this page is written by hand and the route reads the registry.
+
+## What a judgment is here
+
+A **judgment** is one decided case, with one stable `caseId`.
+Supreme Court ids look like `2020_INSC_548`.
+High Court ids carry a court prefix and a registry number, such as `MPHC020138372016`.
+
+Search returns judgments, not passages.
+The same judgment is never returned twice, even where it is stored in more than one place.
+
+Do not read a judgment count as a passage count.
+Each judgment is stored as many passages, and the full text is stitched back from them when you ask for `/body`.
+
+## Courts held
+
+Measured 2026-11-10.
+Counts are judgments per court, with the earliest and latest stored decision date.
+This is volume, not importance.
+
+| Court | `courtId` | Judgments | First decision | Last decision |
+|---|---|---:|---|---|
+| Supreme Court of India | `supreme-court` | 34,941 | 1950-03-14 | 2025-11-06 |
+| Patna High Court | `patna-hc` | 1,608,159 | 1967-01-01 | 2026-05-19 |
+| Bombay High Court | `bombay-hc` | 1,589,459 | 1953-04-18 | 2025-11-14 |
+| Allahabad High Court | `allahabad-hc` | 1,497,765 | 1992-05-07 | 2025-12-17 |
+| Madras High Court | `madras-hc` | 1,494,777 | 1997-07-29 | 2025-11-03 |
+| High Court for the State of Telangana | `telangana-hc` | 1,003,913 | 1963-06-28 | 2025-10-17 |
+| High Court of Kerala | `kerala-hc` | 916,193 | 1950-02-07 | 2024-12-20 |
+| High Court of Karnataka | `karnataka-hc` | 580,888 | 1998-01-15 | 2025-09-26 |
+| High Court of Chhattisgarh | `chhattisgarh-hc` | 508,769 | 1970-01-18 | 2025-10-13 |
+| High Court of Punjab and Haryana | `punjab-and-haryana-hc` | 482,421 | 1989-12-20 | 2024-12-31 |
+| High Court of Gujarat | `gujarat-hc` | 410,187 | 1982-06-25 | 2025-10-06 |
+| High Court of Madhya Pradesh | `madhya-pradesh-hc` | 402,595 | 2000-01-01 | 2024-12-14 |
+| High Court of Rajasthan | `rajasthan-hc` | 324,182 | 1989-08-22 | 2025-10-17 |
+| High Court of Delhi | `delhi-hc` | 322,935 | 1960-10-10 | 2026-01-28 |
+| Gauhati High Court | `gauhati-hc` | 284,616 | 2000-12-20 | 2025-10-23 |
+| Orissa High Court | `orissa-hc` | 283,052 | 1992-08-10 | 2025-10-24 |
+| High Court of Andhra Pradesh | `andhra-pradesh-hc` | 254,479 | 1995-09-18 | 2025-10-23 |
+| High Court of Jharkhand | `jharkhand-hc` | 246,378 | 1993-01-01 | 2025-09-26 |
+| Calcutta High Court | `calcutta-hc` | 201,480 | 1960-03-16 | 2025-11-27 |
+| High Court of Himachal Pradesh | `himachal-pradesh-hc` | 183,933 | 1970-11-25 | 2025-10-09 |
+| High Court of Uttarakhand | `uttarakhand-hc` | 123,849 | 1950-01-01 | 2025-10-17 |
+| High Court of Jammu and Kashmir | `jammu-and-kashmir-hc` | 40,283 | 2003-02-21 | 2025-10-18 |
+| High Court of Tripura | `tripura-hc` | 18,815 | 2013-01-04 | 2025-09-26 |
+| High Court of Manipur | `manipur-hc` | 7,903 | 2017-05-19 | 2025-10-05 |
+| High Court of Meghalaya | `meghalaya-hc` | 6,200 | 2010-07-06 | 2025-09-15 |
+| High Court of Sikkim | `sikkim-hc` | 453 | 2000-03-30 | 2025-09-23 |
+
+The `courtId` is the value the `court` filter takes on `/search`, `/list` and `/similar`.
+The first and last decision dates are the stored dates, and the same date caveats as below apply to them.
+
+## Routes
+
+Nine operations under `https://api.vaquill.ai/api/v1/in`.
+The Credits column is a snapshot and the live pricing matrix is authoritative.
+
+| Route, under `/api/v1/in` | Credits | What it answers |
+|---|---:|---|
+| `GET /courts` | **0** | Which courts are held, with judgment counts and date range. |
+| `GET /cases/list` | 1 | Browse judgments by court and date, newest first. |
+| `GET /cases/search` | 2 | Search judgments by meaning and keyword, one result per judgment. |
+| `GET /cases/{caseId}/detail` | 1 | One judgment's case-level record. |
+| `GET /cases/{caseId}/body` | 3 | The full judgment text, stitched from its passages. |
+| `GET /cases/{caseId}/file` | 1 | The archived file as bytes. |
+| `GET /cases/resolve` | 2 | One citation or case number to one judgment, exact only. |
+| `POST /cases/resolve` | 2 per distinct input | Up to 100 citations or case numbers, with a per-item outcome. |
+| `GET /cases/{caseId}/similar` | 2 | The judgments semantically closest to one you hold. |
+
+Full request and response shapes are in the India API Reference tab, generated from the [India OpenAPI document](https://api.vaquill.ai/in/openapi.json).
+
+## Known limits
+
+Read this section before quoting a number or a date to a client.
+
+**Decision dates are checked, and some are withheld.**
+A stored date that is later than today, earlier than 1800, or, for a High Court judgment, earlier than the filing year carried in its own case id, is not served as a date.
+Those judgments answer `decisionDate: null` and `dateQuality: "implausible"`.
+A judgment with no stored date, or one that does not parse, answers `dateQuality: "missing"`.
+We withhold rather than guess, so a date filter excludes these judgments, and read `dateQuality` before treating a date as exact.
+
+**`reportedYear` is not the decision year.**
+For Supreme Court judgments it is the year of the reporter volume.
+It differs from the decision year on about 15% of Supreme Court judgments, which is why it is served under its own name.
+
+**Reporter citations exist only for the Supreme Court.**
+Supreme Court judgments carry the Supreme Court Reports form, such as `[1982] 2 S.C.R. 186`.
+High Court judgments carry no reporter citation, and `reporterCitations` is empty for them.
+We do not construct one.
+
+**A body can be incomplete, and says so.**
+`/body` reports `complete`, `chunkCount`, `expectedChunks` and `missingChunkIndexes`.
+When `complete` is `false`, the missing passages are named and the call is refunded.
+
+**Results can be partial.**
+Judgments are held in two stores.
+If one fails during a search or a similar-judgments call, the answer is built from the other and carries `meta.partial: true`.
+If both fail the answer is a 503, refunded, never an empty page.
+
+**Resolve refuses rather than guesses.**
+Matching is exact.
+A citation that matches nothing is `not_found`, and one that matches several judgments is `ambiguous` with every match listed.
+Case numbers are stored as bare `number/year` and are not unique across case types, so `ambiguous` is common for them.
+SCC, AIR, SCC OnLine, MANU and LiveLaw citations are refused with a 422 `unsupported_citation_form`, and `2023 INSC 123` style neutral citations are not accepted.
+
+**`/file` answers bytes, not JSON.**
+When no file was archived for a judgment it answers a 404 `case_file_unavailable`, and the credit is refunded.
+Check `hasFile` on the detail record first.
+
+**Some judgments cannot be reached by a court filter.**
+A small number of raw court labels, such as "High Court of Hyderabad", cannot be assigned to one court and are not counted under any `courtId`.
+Those judgments are reachable by search, but not by a `court` filter.
+
+**Search has a depth, and no total.**
+Search is honest to 200 results per query, and neither `/search` nor `/list` returns a `total`.
+Both page with a cursor.
+
+**What this surface does not hold.**
+There is no citation graph, no cited-by list, no good-law or treatment status, no headnotes, no judge filter and no ask or summarise route.
+Those fields are absent rather than filled with a default.
+
+**Counts move.**
+The corpus is extended over time, so a figure on this page is a measurement rather than a constant.
+Anything you display to a user should come from `/courts`.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" href="/api-guide/india-case-law-quickstart">
+    Search, read, and resolve a judgment in six requests.
+  </Card>
+  <Card title="Authentication" href="/api-guide/authentication">
+    One `vq_key_` credential and one credit ledger serve every corpus.
+  </Card>
+</CardGroup>

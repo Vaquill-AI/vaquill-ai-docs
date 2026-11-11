@@ -116,7 +116,8 @@ A key that works for one of these routes works for all five.
 | Code | Status | Means |
 |---|---|---|
 | `invalid_request` | 400 | A parameter is malformed. The message says which. |
-| `unauthorized` | 401 | The key is missing, wrong, or lacks `reg:read`. |
+| `unauthorized` | 401 | The key is missing or wrong. |
+| `insufficient_scope` | 403 | The key is valid but lacks `reg:read`. |
 | `not_found` | 404 | No document with that id. |
 | `content_not_archived` | 404 | The document exists; we never held its bytes. |
 | `rate_limited` | 429 | Slow down. `Retry-After` says how long. |

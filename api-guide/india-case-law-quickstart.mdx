@@ -1,0 +1,253 @@
+---
+title: "India case law quickstart"
+sidebarTitle: "Quickstart"
+description: "Find an Indian Supreme Court or High Court judgment, read it, and resolve a citation to it, in six requests"
+---
+
+Judgments are first-class resources here, each with a stable `caseId`.
+You search them, list them by court and date, read one, fetch its text or its file, and resolve a citation to one.
+One key, one scope.
+
+<Note>
+  This is the **India case law** corpus: Supreme Court and High Court judgments.
+  For Indian acts and sections, see [India legislation](/api-guide/coverage/india).
+  For what regulators issued, see [India regulatory publications](/api-guide/india-regulatory-quickstart).
+</Note>
+
+## Authentication
+
+Send an API key as a Bearer token, exactly as on the other India routes.
+The key needs the scope `cases:read`.
+
+```bash
+-H "Authorization: Bearer vq_key_..."
+```
+
+`cases:read` reads everything on this surface: every court, every route below.
+There is no per-court scope and no read/write split, because nothing here writes.
+A key that works for one of these routes works for all of them.
+
+## 1. Which courts are held
+
+Start free.
+`/courts` costs nothing and needs no filters.
+
+```bash
+curl https://api.vaquill.ai/api/v1/in/courts \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+You get every court with its `courtId`, `courtType` (`supreme_court` or `high_court`), `state`, `judgmentCount`, `firstDecision` and `lastDecision`.
+Read this first rather than guessing court names: the `courtId` values it returns, such as `supreme-court` or `madhya-pradesh-hc`, are what the `court` filter takes.
+An unknown `courtId` is a 422, not an empty page.
+
+## 2. Search
+
+```bash
+curl -G https://api.vaquill.ai/api/v1/in/cases/search \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "q=base development costs exceeded by more than five percent" \
+  --data-urlencode "court=supreme-court" \
+  --data-urlencode "decidedFrom=2015-01-01" \
+  --data-urlencode "limit=10"
+```
+
+Search is hybrid, dense and keyword together, and returns **one result per judgment**, with its best-matching passage as `snippet`.
+The query is used as written: there is no query rewriting and no synonym expansion.
+
+Filters are `court` (a `courtId`), `courtType`, `decidedFrom` and `decidedTo` (ISO dates).
+To select more than one court, **repeat the key**, up to 10:
+
+```bash
+  --data-urlencode "court=bombay-hc" \
+  --data-urlencode "court=delhi-hc"
+```
+
+Asking for a `court` whose type contradicts `courtType` is a 422 `conflicting_filters`, not an empty page.
+An unknown query parameter is also a 422 naming the likely one, rather than being ignored.
+
+Each result carries `caseId`, `title`, `court`, `decisionDate`, `dateQuality`, `reportedYear`, `caseNumber`, `reporterCitations`, `judges`, `disposition`, `score`, `snippet` and `snippetChunkIndex`.
+
+## 3. Read one judgment
+
+```bash
+curl "https://api.vaquill.ai/api/v1/in/cases/2020_INSC_548/detail" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+This is the case-level record: the fields above plus `petitioner`, `respondent`, `totalChunks`, `hasText`, `hasFile` and a `links` object with relative paths to `body`, `file` and `similar`.
+Check `hasText` and `hasFile` before asking for either.
+
+## 4. Get the text
+
+```bash
+curl "https://api.vaquill.ai/api/v1/in/cases/2020_INSC_548/body" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+The judgment is stored in passages.
+This route stitches them back into one `text`, with the overlap between neighbouring passages appearing once.
+Add `include=segments` to also get, per passage, `chunkIndex`, `charStart`, `charEnd` and `sectionType`.
+
+Read `complete` before you rely on the text.
+When it is `false`, `missingChunkIndexes` names the passages we could not read, so you know exactly what is absent rather than receiving a silently shorter judgment.
+A body served with `complete: false` is refunded.
+
+## 5. Get the file
+
+```bash
+curl -L "https://api.vaquill.ai/api/v1/in/cases/2020_INSC_548/file" \
+  -H "Authorization: Bearer vq_key_..." \
+  -o judgment.pdf
+```
+
+This answers **bytes, not JSON**: the archived source document, unmodified.
+When no file was archived for the judgment, you get a 404 `case_file_unavailable` and the credit is refunded.
+
+## 6. Resolve a citation
+
+```bash
+# a reporter citation
+curl -G https://api.vaquill.ai/api/v1/in/cases/resolve \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "citation=[1982] 2 S.C.R. 186"
+
+# a case number, which needs a court
+curl -G https://api.vaquill.ai/api/v1/in/cases/resolve \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "caseNumber=3729/2016" \
+  --data-urlencode "court=madhya-pradesh-hc"
+```
+
+Send exactly one of `citation` or `caseNumber`.
+`caseNumber` requires `court`.
+
+Resolve matches exactly or says it did not.
+There is no fuzzy match, so `matchType` is always `case_id`, `reporter_citation` or `case_number`.
+
+| `status` | Means |
+|---|---|
+| `found` | Exactly one judgment matched. It is in `case`. |
+| `not_found` | The input parsed cleanly and matched nothing. This is an answer, and it is charged. |
+| `ambiguous` | Several judgments match exactly. All are in `candidates`. We never pick one for you. |
+
+Case numbers are stored as bare `number/year` and are not unique across case types, so `ambiguous` is common for them and is the honest answer.
+
+The citation forms carried are a case id (`2020_INSC_548`), and the Supreme Court Reports form in any common spelling (`[2020] 12 S.C.R. 1`, `(2020) 12 SCR 1`).
+Other reporters such as SCC, AIR or SCC OnLine are recognised and refused with a 422 `unsupported_citation_form` before any charge, because a refusal is more useful than a wrong match.
+
+To resolve many at once, `POST` up to 100 inputs.
+Duplicates are charged once, and each input gets its own `status`.
+
+```bash
+curl -X POST https://api.vaquill.ai/api/v1/in/cases/resolve \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"inputs": [
+        {"citation": "2020_INSC_548"},
+        {"caseNumber": "3729/2016", "court": "madhya-pradesh-hc"}
+      ]}'
+```
+
+A malformed or unsupported input is a per-item status (`unsupported_citation_form`, `invalid_input`, `unknown_court`) and is not charged.
+An input whose backend failed comes back as `unavailable` and is refunded for that item only.
+
+## Paging
+
+Both `/search` and `/list` page with a **cursor**, never an offset or a page number.
+Send the `nextCursor` you were given and you resume exactly where you stopped.
+
+```bash
+# first call
+curl -G https://api.vaquill.ai/api/v1/in/cases/list \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "court=bombay-hc" \
+  --data-urlencode "limit=25"
+
+# next page
+curl -G https://api.vaquill.ai/api/v1/in/cases/list \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "court=bombay-hc" \
+  --data-urlencode "limit=25" \
+  --data-urlencode "cursor=<meta.nextCursor from the last call>"
+```
+
+Keep calling while `meta.hasMore` is true.
+`/list` browses judgments by court and date with no query, newest first by default, and takes `order=decided_asc` to reverse it.
+
+<Warning>
+  There is no `total` on `/search` or `/list`.
+  An exact count over this many judgments cannot be computed honestly, so read `hasMore` and `nextCursor` to decide whether to continue.
+</Warning>
+
+A cursor belongs to one query.
+Replaying it against different filters is a 400 `invalid_cursor`.
+Search is honest to a depth of 200 results (`meta.searchDepthLimit`): paging past that is a 400 `search_depth_exceeded`, which means narrow the query rather than page further.
+
+## Related judgments
+
+`GET /in/cases/{caseId}/similar` returns the judgments semantically closest to one you already hold, grouped one per judgment, with the source excluded.
+It takes the same `court`, `courtType`, `decidedFrom` and `decidedTo` filters and a `limit` of up to 20.
+
+## What each call costs
+
+| Route | Credits |
+|---|---:|
+| `GET /in/courts` | **0** |
+| `GET /in/cases/list` | 1 |
+| `GET /in/cases/search` | 2 |
+| `GET /in/cases/{caseId}/detail` | 1 |
+| `GET /in/cases/{caseId}/body` | 3 |
+| `GET /in/cases/{caseId}/file` | 1 |
+| `GET /in/cases/resolve` | 2 |
+| `POST /in/cases/resolve` | 2 per distinct input |
+| `GET /in/cases/{caseId}/similar` | 2 |
+
+Requests that fail validation are not charged.
+A backend failure, a missing judgment and a missing file are refunded.
+
+## Errors
+
+Every error is JSON with the same shape:
+
+```json
+{
+  "detail": "No judgment with caseId 'nonsense'.",
+  "code": "case_not_found",
+  "status": 404,
+  "requestId": "00000000000000000000000000000001",
+  "retryable": false,
+  "error": { "code": "case_not_found", "message": "No judgment with caseId 'nonsense'." }
+}
+```
+
+Branch on `code`, and quote `requestId` if you write to us.
+`retryable` is `true` only for `cases_backend_unavailable`.
+
+| Code | Status | Means | Charged |
+|---|---|---|---|
+| `invalid_case_id` | 422 | The `caseId` is malformed. | No |
+| `unknown_court` | 422 | A `court` is not a `courtId` from `/courts`. | No |
+| `conflicting_filters` | 422 | `court` and `courtType` cannot both match. | No |
+| `unsupported_citation_form` | 422 | A citation form this corpus does not carry, such as SCC or AIR. | No |
+| `invalid_cursor` | 400 | The cursor is malformed, or belongs to another query. | No |
+| `search_depth_exceeded` | 400 | You paged past 200 results. Narrow the query. | No |
+| `unauthorized` | 401 | The key is missing or wrong. | No |
+| `insufficient_scope` | 403 | The key is valid but lacks `cases:read`. | No |
+| `case_not_found` | 404 | No judgment with that `caseId`. | Refunded |
+| `case_file_unavailable` | 404 | The judgment exists; no file was archived for it. Do not retry. | Refunded |
+| `rate_limited` | 429 | Slow down. `Retry-After` says how long. | No |
+| `cases_backend_unavailable` | 503 | A backend failed. Retry. | Refunded |
+
+A `case_file_unavailable` 404 and a `cases_backend_unavailable` 503 look alike and mean opposite things.
+The first is settled and retrying will not change it.
+The second is transient and is worth retrying.
+
+<CardGroup cols={2}>
+  <Card title="Coverage" href="/api-guide/coverage/india-case-law">
+    Which courts are held, how many judgments each, and the known limits.
+  </Card>
+  <Card title="Authentication" href="/api-guide/authentication">
+    Getting a `vq_key_` credential.
+  </Card>
+</CardGroup>

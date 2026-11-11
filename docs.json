@@ -207,6 +207,14 @@
             ]
           },
           {
+            "group": "Case law",
+            "icon": "scale-balanced",
+            "pages": [
+              "api-guide/india-case-law-quickstart",
+              "api-guide/coverage/india-case-law"
+            ]
+          },
+          {
             "group": "Endpoints",
             "openapi": "https://api.vaquill.ai/in/openapi.json"
           }
