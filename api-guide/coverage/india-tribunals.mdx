@@ -1,0 +1,118 @@
+---
+title: "India tribunals coverage"
+sidebarTitle: "India tribunals"
+description: "What the India tribunals corpus holds: matters before 15 Indian forums, the forums covered, and the routes to read them."
+---
+
+<Info>
+  This is **India tribunals**: matters before Indian tribunals and a few regulators and boards.
+
+  It is a **different corpus from [India case law](/api-guide/coverage/india-case-law)**, which holds Supreme Court and High Court judgments, from [India regulatory publications](/api-guide/coverage/india-regulatory), and from [India legislation](/api-guide/coverage/india).
+  A matter is identified by a forum `code` and a `caseId` together. No `actId`, `documentId` or `courtId` applies here.
+</Info>
+
+**813,168 matters across 15 forums**: 557,216 judgments and 255,952 other matters, such as orders, order sheets and case listings.
+
+```bash
+# The live answer. Free, and authoritative over this page.
+curl https://api.vaquill.ai/api/v1/in/tribunals/forums \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+`/forums` is free, and it carries the `code` every other route takes.
+Call it first. Show users what it returns rather than what this page says.
+
+## What a matter is here
+
+A **matter** is one case, order sheet or ruling as a forum published it.
+It has a title, parties where recorded, a bench, a case number, a decision date where one can be trusted, and usually one document.
+
+This is a **case index, not a judgment-text API**.
+No judgment text exists in this corpus.
+Search reads title, petitioner and respondent only, and the document is served as a file through `/file`.
+
+Four of the 15 forums are not tribunals.
+The CCI is a regulator, the IBBI a board, RERA an authority and the GST AAR an advance-ruling body.
+`forumType` says which: `tribunal`, `regulator`, `board`, `authority` or `advance-ruling`.
+
+## Forums held
+
+Matters per forum, as measured on 2026-11-11. `code` is the value the `tribunal` filter takes.
+`firstDecisionYear` is the earliest year for which a decision date is served.
+The two right-hand columns are the ones to read before you build on a forum.
+
+| Forum | `code` | Matters | Judgments | `firstDecisionYear` | Order list | No document |
+|---|---|---:|---:|---:|:---:|---:|
+| Central Administrative Tribunal (Orders) | `cat_cis` | 181,429 | 0 | 2021 | Yes | 0 |
+| Central Administrative Tribunal | `cat` | 162,439 | 162,439 | 1985 | No | 0 |
+| Customs, Excise and Service Tax Appellate Tribunal | `cestat` | 122,612 | 122,612 | 2000 | No | 0 |
+| Income Tax Appellate Tribunal | `itat` | 115,074 | 115,074 | 2021 | No | 0 |
+| Debt Recovery Tribunal | `drt` | 108,395 | 52,339 | 2000 | Yes | 807 |
+| National Company Law Tribunal | `nclt` | 63,487 | 47,970 | 2014 | Yes | 27,407 |
+| National Green Tribunal | `ngt` | 34,350 | 34,350 | 2011 | No | 0 |
+| Securities Appellate Tribunal | `sat` | 9,296 | 9,296 | 2006 | No | 0 |
+| Armed Forces Tribunal | `atfp` | 3,359 | 456 | 2016 | No | 0 |
+| Competition Commission of India (regulator) | `cci` | 2,944 | 2,944 | 2010 | No | 0 |
+| Appellate Tribunal for Electricity | `aptel` | 2,707 | 2,707 | 2008 | No | 0 |
+| GST Authority for Advance Rulings (advance-ruling) | `gst_aar` | 2,618 | 2,618 | 2017 | No | 0 |
+| Insolvency and Bankruptcy Board of India (board) | `ibbi` | 1,580 | 1,533 | 2017 | No | 0 |
+| Real Estate Regulatory Authority (authority) | `rera` | 1,530 | 1,530 | 2018 | No | 0 |
+| Telecom Disputes Settlement and Appellate Tribunal | `tdsat` | 1,348 | 1,348 | 2001 | No | 0 |
+
+`firstDecisionYear` reflects what we hold.
+For `cat_cis` and `itat` it is 2021, and it is not the year the forum began.
+
+## How to read a forum
+
+- **Documents.** 3.5% of matters corpus-wide have no document, and almost all of that is NCLT. A missing document is a 404 `matter_file_unavailable` on `/file`, and it does not mean the matter is missing. Check `hasFile`.
+- **Orders.** Only `cat_cis`, `drt` and `nclt` keep an order list. The other 12 answer `not_applicable`, which is a 200. In DRT, 2,694 matters answer `unjoinable`, which means unknown.
+- **`isJudgment`.** In CAT CIS, `false` means an order sheet we hold. In NCLT, `false` means a case listing with no document.
+- **`docType`.** It is informational and is not a filter. CCI uses three values (`combination`, `antitrust`, `press_releases`) and ATFP uses two (`order`, `judgment`), so read it on the matter. `isJudgment` is `true` on every CCI press release.
+
+## Known limits
+
+- There is no judgment text. A search miss is not evidence that a document does not mention your term.
+- Read `dateQuality` before treating `decisionDate` as exact. For NCLT, 36.8% of matters store the filing date in the decision-date column. It is withheld, and `filedOn` on `/detail` carries it.
+- A list row and a detail response can disagree about one NCLT matter. `/detail` is the authority.
+- `caseNumber` is null on a few thousand matters, mostly DRT, and is served as `null` and never as an empty string.
+- `scrapedAt` is when we collected a record, not when it was decided. Do not sort on it.
+- Browse and search return no `total`. Both page with a cursor.
+
+## Routes
+
+Six `GET` operations under `https://api.vaquill.ai/api/v1/in/tribunals`.
+All six need the scope `cases:read`.
+The Credits column is a snapshot. The live pricing matrix is authoritative.
+
+| Route, under `/api/v1/in/tribunals` | Credits | What it answers |
+|---|---:|---|
+| `GET /forums` | **0** | The 15 forums, with counts, the judgment split and document availability for each. |
+| `GET /matters` | 1 per page | Browse by forum, bench, year, decision date or exact case number, newest decision first. |
+| `GET /matters/search` | 2 per page | Search matters by party or title. Not judgment text. |
+| `GET /matters/{tribunal}/{caseId}/detail` | 1 | One matter's full record, and the authority on its decision date. |
+| `GET /matters/{tribunal}/{caseId}/orders` | 1 | The orders recorded against one matter, or why there is no list. |
+| `GET /matters/{tribunal}/{caseId}/file` | 1 | The document held for one matter, as PDF bytes. |
+
+Full request and response shapes are in the India API Reference tab, generated from the [India OpenAPI document](https://api.vaquill.ai/in/openapi.json).
+
+## Paging
+
+`/matters` and `/matters/search` page with a cursor, not an offset.
+Send the `nextCursor` you were given, unchanged, to resume where you stopped.
+`hasMore` tells you whether to continue.
+
+There is no `total`, on purpose.
+Use `GET /forums` for per-forum counts.
+
+## Sources
+
+Every matter comes from the forum's own published records.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" href="/api-guide/india-tribunals-quickstart">
+    Find a matter, read it, check its orders and fetch its document in six requests.
+  </Card>
+  <Card title="India case law" href="/api-guide/coverage/india-case-law">
+    The separate corpus of Supreme Court and High Court judgments.
+  </Card>
+</CardGroup>

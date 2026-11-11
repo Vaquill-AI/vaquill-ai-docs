@@ -215,6 +215,14 @@
             ]
           },
           {
+            "group": "Tribunals",
+            "icon": "gavel",
+            "pages": [
+              "api-guide/india-tribunals-quickstart",
+              "api-guide/coverage/india-tribunals"
+            ]
+          },
+          {
             "group": "Endpoints",
             "openapi": "https://api.vaquill.ai/in/openapi.json"
           }

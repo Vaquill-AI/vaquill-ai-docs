@@ -1,0 +1,424 @@
+---
+title: "India tribunals quickstart"
+sidebarTitle: "Quickstart"
+description: "Find a matter before an Indian tribunal, read it, check its orders and fetch its document, in six requests"
+---
+
+Each matter has a forum `code` and a `caseId`, and the pair is its identity.
+You can browse matters by forum, bench and date, search by party or title, read one, list its orders, and fetch its document.
+
+<Note>
+  This is the **India tribunals** corpus: matters before 15 Indian forums, such as NCLT, ITAT, DRT and CESTAT.
+  For Supreme Court and High Court judgments, see [India case law](/api-guide/india-case-law-quickstart).
+  For Indian acts and sections, see [India legislation](/api-guide/coverage/india).
+  For what regulators issued, see [India regulatory publications](/api-guide/india-regulatory-quickstart).
+</Note>
+
+<Warning>
+  Read these five rules before you build on this surface.
+
+  1. **There is no judgment text here.** Search reads title, petitioner and respondent only. An empty result never means no tribunal has considered an issue.
+  2. **A matter is the pair `(tribunal, caseId)`.** Never use `caseId` alone, and never work out the forum from its prefix.
+  3. **The three `orders` statuses are different answers.** `unjoinable` means unknown. It never means no orders.
+  4. **`decisionDate` can be withheld.** `/detail` is the authority, so read `dateQuality` and `dateBasis`.
+  5. **A missing document is not a missing matter.** Check `hasFile` before you call `/file`.
+</Warning>
+
+## Authentication
+
+Send an API key as a Bearer token. The key needs the scope `cases:read`.
+
+```bash
+-H "Authorization: Bearer vq_key_..."
+```
+
+`cases:read` covers every forum and every route below.
+
+## 1. Which forums are held
+
+`/forums` is free and needs no filters. Call it first.
+
+```bash
+curl https://api.vaquill.ai/api/v1/in/tribunals/forums \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+You get the 15 forums.
+The `code` of each, such as `cat_cis`, `nclt` or `drt`, is what the `tribunal` filter and the first path segment of every matter route take.
+
+Four of the 15 are not tribunals: the CCI is a regulator, the IBBI a board, RERA an authority and the GST AAR an advance-ruling body.
+`forumType` says which, and the path is `/tribunals` for all of them.
+
+One entry, abridged:
+
+```json
+{
+  "data": [
+    {
+      "code": "cat_cis",
+      "name": "Central Administrative Tribunal (Orders)",
+      "forumType": "tribunal",
+      "subjectArea": "Central government service matters",
+      "recordCount": 181429,
+      "countedAt": null,
+      "firstDecisionYear": 2021,
+      "judgmentCount": 0,
+      "nonJudgmentCount": 181429,
+      "docType": "order",
+      "hasOrderList": true,
+      "files": {
+        "archived": 181429,
+        "publisherLink": 0,
+        "missing": 0,
+        "coverage": "complete",
+        "nonJudgmentsMissing": 0
+      }
+    }
+  ],
+  "meta": { "requestId": "00000000000000000000000000000001", "processingTimeMs": 12.4, "creditsConsumed": 0 }
+}
+```
+
+Each forum carries its own figures for matters held, the judgment split and document availability.
+`countedAt` is null when `recordCount` is a figure we measured rather than a live count.
+Read `files` and `hasOrderList` per forum, because the corpus-wide averages hide the forums where they matter.
+
+## 2. Browse
+
+```bash
+curl -G https://api.vaquill.ai/api/v1/in/tribunals/matters \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "tribunal=cat_cis" \
+  --data-urlencode "year=2024" \
+  --data-urlencode "limit=25"
+```
+
+`/matters` browses by forum, bench, year, decision date or exact `caseNumber`, newest decision first.
+Matters with no decision date come last.
+It takes no query text. For that, use [search](#3-search).
+
+A row looks like this. Example values are illustrative:
+
+```json
+{
+  "tribunal": "cat_cis",
+  "caseId": "CAT_CIS_OA7962024_5dd99505",
+  "title": "MOHAMMAD HUSSAIN Vs BSNL [O.A./796/2024] (2024)",
+  "caseNumber": "O.A./796/2024",
+  "petitioner": "MOHAMMAD HUSSAIN",
+  "respondent": "BSNL",
+  "bench": "cat_cis_jabalpur",
+  "judges": null,
+  "decisionDate": "2024-08-27",
+  "dateQuality": "exact",
+  "dateBasis": "decision_date",
+  "year": 2024,
+  "isJudgment": false,
+  "docType": "order",
+  "fileSource": "archive",
+  "hasFile": true,
+  "scrapedAt": "2026-03-21T09:14:02Z",
+  "links": {
+    "detail": "/api/v1/in/tribunals/matters/cat_cis/CAT_CIS_OA7962024_5dd99505/detail",
+    "orders": "/api/v1/in/tribunals/matters/cat_cis/CAT_CIS_OA7962024_5dd99505/orders",
+    "file": "/api/v1/in/tribunals/matters/cat_cis/CAT_CIS_OA7962024_5dd99505/file"
+  }
+}
+```
+
+`links.file` is present only when `hasFile` is `true`.
+`judges` is null on about two thirds of matters, and is never an empty list.
+
+The envelope around a page carries the paging fields:
+
+```json
+"meta": {
+  "requestId": "00000000000000000000000000000001",
+  "processingTimeMs": 48.2,
+  "creditsConsumed": 1,
+  "hasMore": true,
+  "nextCursor": "eyJjIjoiQ0FUXzEyMyJ9"
+}
+```
+
+There is deliberately no `total`. See [Paging](#paging).
+
+## 3. Search
+
+```bash
+curl -G https://api.vaquill.ai/api/v1/in/tribunals/matters/search \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "q=Union of India" \
+  --data-urlencode "tribunal=cat_cis" \
+  --data-urlencode "limit=10"
+```
+
+`q` is required and must be 2 to 200 characters.
+It takes the same `tribunal`, `year`, `decidedFrom`, `decidedTo`, `isJudgment` and `bench` filters as browse, and the same paging.
+
+<Warning>
+  **Search covers title, petitioner and respondent only.**
+  No judgment text exists in this corpus.
+  A matter that does not match your term may still discuss it at length in a document we hold and serve through `/file`.
+  Never conclude that no Indian tribunal has considered an issue because a search came back empty.
+</Warning>
+
+Every search page says what it searched, in fields a client can branch on:
+
+```json
+"meta": {
+  "requestId": "00000000000000000000000000000001",
+  "processingTimeMs": 211.6,
+  "creditsConsumed": 2,
+  "hasMore": true,
+  "nextCursor": "eyJjIjoiQ0FUXzEyMyJ9",
+  "searchScope": "metadata",
+  "searchedFields": ["title", "petitioner", "respondent"]
+}
+```
+
+`caseNumber` is not searched.
+No index supports a partial match on it, so to find a case number you already have, use `caseNumber` on [browse](#filters-and-what-they-match).
+
+## 4. Read one matter
+
+```bash
+curl "https://api.vaquill.ai/api/v1/in/tribunals/matters/cat_cis/CAT_CIS_OA7962024_5dd99505/detail" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+You need both path segments: the forum `code`, then the `caseId` exactly as a list or search returned it.
+`caseId` values are unique within a forum, not across forums.
+A `caseId` usually starts with a forum prefix, but the prefix is a naming habit and the API never reads it. Send the forum separately.
+
+This is the matter's full record: every field of a list row, plus `sourceUrl`, `filedOn` and an `orders` block.
+`sourceUrl` is the forum's own page for the matter, and is null where none is stored, which includes every NCLT matter.
+`filedOn` is covered under [Dates](#dates).
+
+It makes no claim about whether a matter is still good law. This is a record of what a forum published.
+
+## 5. List the orders
+
+```bash
+curl "https://api.vaquill.ai/api/v1/in/tribunals/matters/cat_cis/CAT_CIS_OA7962024_5dd99505/orders" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```json
+{
+  "data": {
+    "status": "listed",
+    "orders": [
+      {
+        "orderDate": "2024-07-18",
+        "dateQuality": "exact",
+        "orderType": "Original Application",
+        "hasFile": true,
+        "itemNo": null,
+        "diaryNumber": null,
+        "pronouncedBy": null
+      }
+    ],
+    "truncated": false
+  },
+  "meta": { "requestId": "00000000000000000000000000000001", "processingTimeMs": 31.0, "creditsConsumed": 1 }
+}
+```
+
+Orders are newest first. When `truncated` is `true`, the list was capped and the oldest orders are the ones left out.
+`itemNo`, `diaryNumber` and `pronouncedBy` are filled for DRT only.
+
+**Read `status` before you read the list.** The three values are different answers.
+
+| `status` | Means | What to do |
+|---|---|---|
+| `listed` | The lookup ran. `orders` is the result, and an empty list is a real answer. | Use the list. |
+| `not_applicable` | This forum publishes no order list. 12 of the 15 forums are in this group. It is a 200, not an error. | Do not retry. Use `/detail` and `/file`. |
+| `unjoinable` | The key needed to find the orders is missing from the matter, so whether orders exist is **unknown**. 2,694 DRT matters are in this group. | Report it as unknown. Never report it as no orders. |
+
+Only three forums keep an order list: `cat_cis`, `drt` and `nclt`.
+`hasOrderList` on `/forums` says which.
+
+There is no route for one order's file.
+`/file` serves the one document held for the matter, in every forum.
+
+## 6. Get the file
+
+```bash
+curl -L "https://api.vaquill.ai/api/v1/in/tribunals/matters/cat_cis/CAT_CIS_OA7962024_5dd99505/file" \
+  -H "Authorization: Bearer vq_key_..." \
+  -o matter.pdf
+```
+
+This route returns PDF bytes, not JSON.
+The download is named after the pair, here `cat_cis_CAT_CIS_OA7962024_5dd99505.pdf`.
+
+**Check `hasFile` on the matter first.**
+If no document is held, you get a 404 `matter_file_unavailable`, and the credit is refunded.
+That error means the matter exists and we hold no file for it. It does not mean the matter is missing.
+
+It is routine in NCLT, where 27,407 of 63,487 matters have no document.
+Across the whole corpus it is 3.5% of matters.
+`files` on `/forums` gives the figure for each forum.
+Do not retry a `matter_file_unavailable`.
+
+`fileSource` says where the document would come from, `archive` or `publisher`. A value of `publisher` does not mean we lack a copy.
+Read `hasFile`, not `fileSource`.
+
+## Paging
+
+`/matters` and `/matters/search` page with a cursor, not an offset.
+Send the `nextCursor` you were given to resume where you stopped.
+
+```bash
+# first call
+curl -G https://api.vaquill.ai/api/v1/in/tribunals/matters \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "tribunal=nclt" \
+  --data-urlencode "limit=50"
+
+# next page
+curl -G https://api.vaquill.ai/api/v1/in/tribunals/matters \
+  -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "tribunal=nclt" \
+  --data-urlencode "limit=50" \
+  --data-urlencode "cursor=<meta.nextCursor from the last call>"
+```
+
+Keep calling while `meta.hasMore` is true.
+`limit` is 1 to 100, and defaults to 25 on browse and 10 on search.
+
+- Keep the cursor byte for byte. Do not build one, edit one or decode one. It is not an offset.
+- A cursor belongs to one query. Change any filter and you need a fresh cursor, or you get a 400 `invalid_cursor`.
+- There is no `total`. Counting every matter on every request would cost more than it tells you. Use `hasMore`, and use `/forums` for per-forum counts.
+
+## Filters and what they match
+
+| Filter | Matches |
+|---|---|
+| `tribunal` | A forum `code` from `/forums`. An unknown code is a 400, never an empty page. |
+| `year` | The stored decision year. A matter can match a `year` and still have `decisionDate: null`. |
+| `decidedFrom`, `decidedTo` | Decision dates, inclusive, as `YYYY-MM-DD`. A bare number is a 422. Before `1800-01-01` is a 400. |
+| `isJudgment` | The forum's own classification. It means different things by forum. See below. |
+| `bench` | The bench exactly as the forum spells it. See below. |
+| `caseNumber` | Browse only. The forum's case number, matched exactly. |
+
+**`bench` is matched exactly, and is usually a slug.**
+Values look like `cat_cis_guwahati` and `nclt_ahmedabad`. DRT and DRAT are the exception, with values such as `DRAT Allahabad`.
+Copy a `bench` from a matter you already hold.
+There is no list of benches, and a composed name such as `Principal Bench` matches nothing. It matched 0 of 813,168 matters when we checked.
+
+**`caseNumber` is an exact filter on browse and is not a search target.**
+Forums punctuate their own numbers, so copy the `caseNumber` from a matter rather than retyping it. CAT CIS writes `O.A./796/2024`, and `OA/796/2024` matches nothing.
+
+**`docType` is informational and is not a filter.**
+It is on every matter and on `/forums`. Sending it as a parameter is a 422 that says so.
+
+**`isJudgment` means different things by forum.**
+In CAT CIS, `false` means an order sheet we hold, and all 181,429 have a document.
+In NCLT, `false` means a case listing with no document.
+It is the forum's classification, and it does not promise that a document decides anything.
+
+An unknown query parameter is a 422 that names the likely one, and it is not charged.
+An ignored filter would otherwise be billed as an unfiltered answer.
+
+## Dates
+
+`decisionDate` is withheld rather than guessed.
+Read `dateQuality` and `dateBasis` before you use a date for anything that counts.
+
+| `dateQuality` | `decisionDate` | Means |
+|---|---|---|
+| `exact` | The date | A real decision date. |
+| `filing_only` | `null` | The stored value was the filing date, so it is withheld. `filedOn` on `/detail` carries it. |
+| `implausible` | `null` | The stored value is before 1800, or is a placeholder such as 1970-01-01. |
+| `missing` | `null` | The forum records no date. |
+
+`dateBasis` says which stored column answered: `decision_date`, `disposal_date`, `date_of_filing` or `none`.
+
+**NCLT is the case to know.**
+For 36.8% of NCLT matters, the forum's decision-date column holds the filing date.
+Serving it as a decision date would overstate how much NCLT decided, so it is withheld and `filedOn` carries the real meaning.
+
+**`/detail` is the authority, and a list row can disagree with it.**
+Our shared list view cannot see an NCLT matter's filing date or disposal date, so a list row serves the stored value as `decision_date`.
+`/detail` reads the forum's own record, so it can withhold that date and report why.
+
+One NCLT matter, as a list row serves it:
+
+```json
+{ "decisionDate": "2024-03-18", "dateQuality": "exact", "dateBasis": "decision_date" }
+```
+
+The same matter, from `/detail`:
+
+```json
+{ "decisionDate": null, "dateQuality": "filing_only", "dateBasis": "date_of_filing", "filedOn": "2024-03-18" }
+```
+
+Both answers are correct for what each route can see.
+Trust `/detail`, and use `dateBasis` to tell which one you hold.
+`filedOn` is filled for NCLT only, and only on `/detail`.
+
+**Do not sort on `scrapedAt`.**
+It is when we collected the record, not when the matter was decided.
+APTEL matters decided in 2011 are all stamped 2026-03-13.
+Browse order is already newest decision first.
+
+## What each call costs
+
+| Route, under `/api/v1/in/tribunals` | Credits |
+|---|---:|
+| `GET /forums` | **0** |
+| `GET /matters` | 1 per page |
+| `GET /matters/search` | 2 per page |
+| `GET /matters/{tribunal}/{caseId}/detail` | 1 |
+| `GET /matters/{tribunal}/{caseId}/orders` | 1 |
+| `GET /matters/{tribunal}/{caseId}/file` | 1 |
+
+An unknown forum, a malformed `caseId`, a contradictory filter and a bad cursor are refused before any charge, so they cost nothing.
+A 404 and a 503 are charged and then refunded. Read `meta.creditsConsumed` for what you were billed.
+
+## Errors
+
+Every error is JSON with the same shape:
+
+```json
+{
+  "detail": "Unknown tribunal 'cat2'. See GET /in/tribunals/forums for the codes.",
+  "code": "unknown_tribunal",
+  "status": 400,
+  "requestId": "00000000000000000000000000000001",
+  "retryable": false,
+  "error": { "code": "unknown_tribunal", "message": "Unknown tribunal 'cat2'. See GET /in/tribunals/forums for the codes." }
+}
+```
+
+Branch on `code`, and quote `requestId` if you write to us.
+A 422 also carries an `errors` array that names each rejected parameter in `loc`.
+
+`retryable` is `true` only for `tribunals_backend_unavailable`.
+A 400 or a 404 here is a settled answer, and retrying it cannot change the result.
+
+| Code | Status | Means | Charged |
+|---|---|---|---|
+| `unknown_tribunal` | 400 | The `tribunal` is not a `code` from `/forums`. | No |
+| `invalid_query` | 400 | A value is malformed or contradicts another, such as `decidedFrom` after `decidedTo`, or a malformed `caseId`. | No |
+| `invalid_cursor` | 400 | The cursor is malformed, or belongs to another query. | No |
+| `validation_error` | 422 | A parameter is malformed, unknown or out of bounds. | No |
+| `unauthorized` | 401 | The key is missing or wrong. | No |
+| `insufficient_credits` | 402 | The balance is too low. | No |
+| `insufficient_scope` | 403 | The key is valid but lacks `cases:read`. | No |
+| `matter_not_found` | 404 | No matter with that `caseId` in that forum. Do not retry. | Refunded |
+| `matter_file_unavailable` | 404 | The matter exists. No document is held. Do not retry. | Refunded |
+| `rate_limited` | 429 | Slow down. `Retry-After` says how long. | No |
+| `tribunals_backend_unavailable` | 503 | A backend failed. Retry. | Refunded |
+
+<CardGroup cols={2}>
+  <Card title="Coverage" href="/api-guide/coverage/india-tribunals">
+    The 15 forums, their size, and the known limits.
+  </Card>
+  <Card title="Authentication" href="/api-guide/authentication">
+    Getting a `vq_key_` credential.
+  </Card>
+</CardGroup>

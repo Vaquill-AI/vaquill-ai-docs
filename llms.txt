@@ -6,8 +6,8 @@ Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization
 
 ## Data coverage
 
-- [Coverage](https://www.vaquill.ai/docs/api-guide/coverage): Which US jurisdictions and corpus types the Vaquill API holds, with measured section counts and refresh cadence
-- [Federal coverage](https://www.vaquill.ai/docs/api-guide/coverage/federal): Every federal corpus the statutes API serves, with refresh cadence, corpusType tokens and per-corpus scope limits
+- [Coverage](https://www.vaquill.ai/docs/api-guide/coverage): Which US jurisdictions and corpus types the Vaquill API covers, with section counts and how often each is updated
+- [Federal coverage](https://www.vaquill.ai/docs/api-guide/coverage/federal): Every federal corpus the statutes API serves, with refresh cadence, corpusType tokens and what each one holds
 - [Treaty coverage](https://www.vaquill.ai/docs/api-guide/coverage/treaties): The two treaty corpus tokens: US_TAX_TREATY for IRS income tax treaties, US_TREATY for treaty text and the Senate treaty record
 - [State and territory coverage](https://www.vaquill.ai/docs/api-guide/coverage/states): Per-jurisdiction coverage of state and territory statutes, regulations, constitutions, court rules, registers and agency guidance
 - [Federal agency guidance sources](https://www.vaquill.ai/docs/api-guide/coverage/agency-guidance): Sub-regulatory federal guidance sources, each filterable with corpusType=AGENCY_GUIDANCE and source
@@ -39,15 +39,15 @@ Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization
 
 - [How search works](https://www.vaquill.ai/docs/api-guide/concepts/search): How hybrid ranking, matchType and filters work, and why search ranks rather than enumerates
 - [Boolean search](https://www.vaquill.ai/docs/api-guide/concepts/boolean-search): Search with AND, OR, NOT, proximity and wildcards using matchType boolean.
-- [Corpus types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): How each corpusType token scopes a search, which tokens need a state, and how source narrows a token further
-- [Jurisdictions and state codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The jurisdictions the API accepts, how state codes and the federal jurisdiction work, and how to see what is actually there
-- [Hierarchy and container names](https://www.vaquill.ai/docs/api-guide/concepts/hierarchy): What a title, chapter, part or article is, which fields carry its name, and how to read breadcrumb and displayPath
+- [Corpus types](https://www.vaquill.ai/docs/api-guide/concepts/corpus-types): What each corpusType token covers, which tokens need a state, and how source narrows a token.
+- [Jurisdictions and state codes](https://www.vaquill.ai/docs/api-guide/concepts/jurisdictions): The jurisdictions the API accepts, how state codes work, and how to see what each one holds.
+- [Hierarchy and container names](https://www.vaquill.ai/docs/api-guide/concepts/hierarchy): What a title, chapter, part or article is, which fields carry its name, and how to read breadcrumb and displayPath.
 - [Section identifiers](https://www.vaquill.ai/docs/api-guide/concepts/section-ids): The actId section identifier, how it behaves over time, and how to go from search to metadata, full text and neighbors
 - [Response fields](https://www.vaquill.ai/docs/api-guide/concepts/response-fields): Which fields a section carries, which corpus each one belongs to, and how to tell 'not applicable' from 'we do not have it'
 - [Response formats](https://www.vaquill.ai/docs/api-guide/concepts/formats): The text formats the body endpoint returns, and the source URL fields that link back to official text
 - [Citation formats](https://www.vaquill.ai/docs/api-guide/concepts/citation-formats): Which citation strings resolve, why the form your state prints is the safest to send, and which forms are refused on purpose.
 - [Pinpoints](https://www.vaquill.ai/docs/api-guide/concepts/pinpoints): Get the text of one subsection, paragraph or clause instead of the whole section, and learn how far to trust it.
-- [Citation resolution quality](https://www.vaquill.ai/docs/api-guide/concepts/citation-quality): How often a citation resolves to the right section, how often to the wrong one, and where coverage is thinner.
+- [Citation resolution quality](https://www.vaquill.ai/docs/api-guide/concepts/citation-quality): How reliably GET and POST /us/statutes/resolve read citations, and which citations are refused on purpose.
 - [Section intelligence](https://www.vaquill.ai/docs/api-guide/concepts/section-intelligence): Four routes about a section you already hold: what cites it, what its terms mean, how other states word it, what changed.
 - [Point-in-time law](https://www.vaquill.ai/docs/api-guide/point-in-time): Get the text of a US provision as it read on a past date.
 - [Status and currency](https://www.vaquill.ai/docs/api-guide/concepts/status-and-currency): Tell whether a section is still good law: actStatus, goodLawStatus, filtering on both, and move pointers.
@@ -55,7 +55,7 @@ Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization
 
 ## Guides
 
-- [Grounding LLMs with Vaquill AI](https://www.vaquill.ai/docs/api-guide/grounding-llms): Why and how to ground model answers in retrieved, authoritative US statutory text
+- [Grounding LLMs with Vaquill AI](https://www.vaquill.ai/docs/api-guide/grounding-llms): How to ground model answers in retrieved US statutory text
 - [Law change alerts](https://www.vaquill.ai/docs/api-guide/alerts): Subscribe to a jurisdiction or corpus and get a webhook or email when it changes, with the exact sections that changed
 - [Pagination](https://www.vaquill.ai/docs/api-guide/pagination): Offset paging and cursor paging, and which endpoints use which
 - [Best practices](https://www.vaquill.ai/docs/api-guide/best-practices): Scoping, matching, caching and retry habits for production use of the API
@@ -83,25 +83,40 @@ Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization
 
 - [Errors and rate limits](https://www.vaquill.ai/docs/api-guide/errors): Status codes, the error body, 400 versus 422 and how to handle rate limits on the Data API
 - [Error code reference](https://www.vaquill.ai/docs/errors/codes): Every machine-readable error code the Data API returns, with its status, retry rule, SDK class and what to do.
-- [FAQ](https://www.vaquill.ai/docs/api-guide/faq): Short answers to the questions integrators ask most, with links to the page that covers each one properly
+- [FAQ](https://www.vaquill.ai/docs/api-guide/faq): Short answers to common integration questions, with links to the page that covers each one.
 - [Data and privacy](https://www.vaquill.ai/docs/api-guide/data-privacy): What the Vaquill API stores about your requests, who processes them, and how to use it with sensitive client matters.
 
-## India guide
+## Legislation
 
-- [India legislation coverage](https://www.vaquill.ai/docs/api-guide/coverage/india): What the India legislation API holds, how deep its amendment and repeal record goes, and its known limits
+- [India legislation coverage](https://www.vaquill.ai/docs/api-guide/coverage/india): What the India legislation API covers, its amendment and repeal data, and the routes you can call.
 - [Legal translation](https://www.vaquill.ai/docs/api-guide/translation): Translate legal text and documents between English and the 22 Eighth Schedule languages. Billed in pages, from a pool of its own.
+
+## Regulatory publications
+
+- [India regulatory publications quickstart](https://www.vaquill.ai/docs/api-guide/india-regulatory-quickstart): Find an Indian regulator's circular, read it, and follow what changes, in five requests
+- [India regulatory publications coverage](https://www.vaquill.ai/docs/api-guide/coverage/india-regulatory): What the India regulatory publications corpus holds: documents issued by Indian regulators and courts, and the routes to read them.
+
+## Case law
+
+- [India case law quickstart](https://www.vaquill.ai/docs/api-guide/india-case-law-quickstart): Find an Indian Supreme Court or High Court judgment, read it, and resolve a citation to it, in six requests
+- [India case law coverage](https://www.vaquill.ai/docs/api-guide/coverage/india-case-law): What the India case law corpus holds: Supreme Court and High Court judgments, the courts covered, and the routes to read them.
+
+## Tribunals
+
+- [India tribunals quickstart](https://www.vaquill.ai/docs/api-guide/india-tribunals-quickstart): Find a matter before an Indian tribunal, read it, check its orders and fetch its document, in six requests
+- [India tribunals coverage](https://www.vaquill.ai/docs/api-guide/coverage/india-tribunals): What the India tribunals corpus holds: matters before 15 Indian forums, the forums covered, and the routes to read them.
 
 ## Integrations
 
-- [Integrations](https://www.vaquill.ai/docs/integrations/index): MCP servers and automation templates that connect Vaquill AI to the tools your team already uses.
+- [Integrations](https://www.vaquill.ai/docs/integrations/index): MCP servers and automation templates that connect Vaquill AI to the tools you already use.
 
 ## MCP servers
 
 - [MCP Servers](https://www.vaquill.ai/docs/integrations/mcp/index): Connect Vaquill AI's US primary-law corpus to Claude, Cursor, VS Code, Windsurf, and any other MCP client.
 - [Vaquill MCP Server](https://www.vaquill.ai/docs/integrations/mcp/vaquill): Read-only US primary law MCP server for Claude, Cursor, VS Code and Windsurf, set up with your Vaquill API key.
-- [Claude Connector](https://www.vaquill.ai/docs/integrations/mcp/claude-connector): Connect US primary law to Claude with a Connect button. OAuth, no API key to paste, and the only path that works in Cowork.
-- [Claude Code Plugin](https://www.vaquill.ai/docs/integrations/mcp/claude-plugin): The primary-law plugin for Claude Code: ten research commands, a US statute research skill, and the Vaquill MCP server in one install.
-- [ChatGPT and Codex](https://www.vaquill.ai/docs/integrations/mcp/chatgpt): Connect US primary law to ChatGPT and Codex over MCP. The standard search and fetch pair, OAuth sign-in, and no API key to paste.
+- [Claude Connector](https://www.vaquill.ai/docs/integrations/mcp/claude-connector): Connect US primary law to Claude with a Connect button. OAuth sign-in, no API key, and the only path that works in Cowork.
+- [Claude Code Plugin](https://www.vaquill.ai/docs/integrations/mcp/claude-plugin): The primary-law plugin for Claude Code: ten research commands, a US statute research skill and the Vaquill MCP server.
+- [ChatGPT and Codex](https://www.vaquill.ai/docs/integrations/mcp/chatgpt): Connect US primary law to ChatGPT and Codex over MCP. Use the search and fetch tools with OAuth sign-in and no API key.
 
 ## Automation
 
@@ -124,4 +139,4 @@ Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization
 ## Optional
 
 - [Changelog](https://www.vaquill.ai/docs/api-guide/changelog): New endpoints, corpora, fixes and behavior changes in the Vaquill Developer API
-- [Roadmap](https://www.vaquill.ai/docs/api-guide/roadmap): What Vaquill has not built yet, what is deliberately out of scope, and how to detect new coverage programmatically
+- [Roadmap](https://www.vaquill.ai/docs/api-guide/roadmap): What Vaquill has not built yet, what is out of scope, and how to detect new coverage programmatically.
