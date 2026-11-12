@@ -30,10 +30,73 @@ A **version** is one observation of a document.
 Regulators sometimes edit a document in place, so one circular can have several versions.
 The changes feed moves on versions.
 
-## Publishers
+## Publishers and sources
 
-Publishers include SEBI, CBIC, CBDT, DGFT, DoT, CCI, PIB, eGazette, Lok Sabha, Rajya Sabha and the Bombay High Court.
+We track **47 publishers** across **273 sources**.
 A new document usually appears within a day of the publisher posting it.
+
+A **publisher** is the body that issued the document. A **source** is one listing on that
+publisher's site, so a single publisher usually has several: SEBI's circulars and its settlement
+orders are different sources, with different document types and their own freshness.
+`publisherId` and `sourceId` filter at those two levels, and `GET /sources` returns every row
+below with its own `documentCount`, `retrievalStatus` and `sourceCheckedAt`.
+
+Counts per publisher are deliberately not listed here. They move whenever a source is added or a
+crawl runs, and a number printed on this page would be wrong without anything failing. Read them
+from `GET /sources`, which is free.
+
+| Publisher | Sources |
+|---|---|
+| SEBI | Acts; Advisory/Guidance; Annual Accounts; Auction Notice under Recovery Proceedings; Circulars; Committee Reports; Debt Offer Document; Draft Offer Documents filed with SEBI; FATF Public Statements; Final Offer Documents filed with ROC; Formats as per SEBI (SAST) Regulations 2011; Gazette Notification; General Orders; Guidance Notes; Guidelines; Informal Guidance; InvIT Private Issues; InvIT Public Issues; InvIT Rights Issues; Letter of Offer; Master Circulars; Municipal Debt Securities Privately Issues; Municipal Debt Securities Public Issues; News Clarifications; Notice For Meeting on Schemes; Notifications under Unlawful Activities Prevention Act, 1967; Open Market Through Stock Exchanges; Orders Of Special Courts; Orders of AO; Orders of Chairperson/Members; Orders of Corporatisation / Demutualisation Scheme; Orders of Courts; Orders of ED / CGM (Quasi-Judicial Authorities); Orders under Regulation 30A of the SEBI (Intermediaries) Regulations, 2008; Press Releases; Public Notices; Publications; REIT Issues; Recovery Proceedings; Red Herring Documents filed with ROC; Regulations; Reports for Public Comments; Reports for Reference; Research; Rights Issues; Rules; SM REIT Issues; Settlement Order; Speeches; Tender Offers; UNSC Sanctions Committee List; and two further listings both labelled Other Documents (`sebi.public-issues-other`, `sebi.takeovers-other`) |
+| CBIC | Central Excise Non Tariff; Central Excise Tariff; Customs Anti Dumping Duty; Customs Circulars; Customs Countervailing Duty; Customs Non Tariff; Customs Safeguards; Customs Tariff; GST Central Tax; GST Central Tax (Rate); GST Circulars; GST Compensation Cess; GST Compensation Cess (Rate); GST Integrated Tax; GST Integrated Tax (Rate); GST Union Territory Tax; GST Union Territory Tax (Rate); Instructions; Orders |
+| IFSCA | AML/CFT/KYC; Act; Annual Reports; Bulletin; Circulars; Committee Reports; FAQs; Guidelines; News; Notifications; Post Events Reports; Press Releases; Public Comments; Public Consultation; Regulations; Research; Rules; Speeches; Tenders |
+| IBBI | Act; By Other Authorities; Circulars; Facilitation; Guidelines; NCLAT Orders (via IBBI); NCLT Orders (via IBBI); Notifications; Orders; Orders (DRAT); Orders (DRTs); Orders (High Courts); Orders (IPA / RVO); Orders (Other Courts); Orders (Supreme Court); Regulations (consolidated); Rules |
+| CCI | Antitrust Orders; Combination Notifications; Combination Orders; Combination Regulations; Consultations; Court Judgments; Notifications: Appellate Tribunal; Notifications: Appointments; Notifications: Commission Founded; Notifications: Enforcement of Sections; Notifications: Exemptions; Notifications: Regional Offices; Penalty Orders (s.43A / s.44); Press Releases; Regulations; Rules |
+| Lok Sabha | Bills; Bulletin Part I; Bulletin Part II; Bulletin Part II (Daily); Committee Press Releases; Confidence Motions; Detailed Demands for Grants; Financial Statements; No-Confidence Motions; Press Releases; Publications and Souvenirs; Questions: Information and Rules; What is New; and two listings both labelled Committee Reports (`lok-sabha.committee-reports`, `lok-sabha.committee-reports-archive`) |
+| NGT | Gazette Notifications (Appointments); General Notices (Archive); Job Openings (Archive); Judgments and Orders for the Principal, Central Zone, Eastern Zone, Southern Zone and Western Zone benches; Office Orders for the Principal, Central Zone, Southern Zone and Western Zone benches; RTI Manual (Archive); Recruitment Results (Archive) |
+| IRDAI | Circulars; Committee Reports; Consolidated Gazette Notified Regulations; Exposure Drafts; Guidelines; Notices; Notifications; Orders; Other Communication; Press Releases; Public Notices; Rules; Warnings and Penalties |
+| PFRDA | Circulars; General Orders; Guidelines; Master Circulars; Notices; Notifications; Regulations; Rules |
+| DPIIT | Acts and Policies; Central Documents; Gazette Notifications; Guidelines; Orders and Notices; Publications; Reports |
+| Bombay HC | Court Notices; District Judiciary; Practice Notes; Recruitment; Registry Notices; Tenders |
+| RBI | Draft Directions (RE-wise); Master Directions; Notifications & Circulars; Press Releases; Publications; Speeches & Media Interactions |
+| Maharashtra GST | CST Notifications; CST Trade Circulars; GST Advance Rulings; MGST Notifications; MGST Trade Circulars |
+| CDSCO | Adverse Drug Reaction Notifications; Circulars; Gazette Notifications; Public Notices |
+| DGFT | Circulars; Notifications; Public Notices; Trade Notices |
+| NCLT | Administrative Notifications; Circulars; Registry Notifications; Roster Orders |
+| TRAI | Consultation Papers; Press Releases; Publications; Regulations & Tariff Orders |
+| CDSL | Arbitration Awards; Communiques; Regulatory Orders Against DP |
+| CERT-In | Advisories; Directions under s.70B; Vulnerability Notes |
+| Delhi HC | Cause Lists; Notifications & Practice Directions; Public Notices |
+| ITAT | Notice Board; RTI Orders and Circulars; Special Bench Orders |
+| MIB | Acts, Policies and Guidelines; Orders and Notices; Other Communications |
+| NCLAT | Circulars and Orders; Daily Cause List; Daily Orders and Judgements |
+| NFRA | Circulars; Orders; Press Releases |
+| NSDL | DP Circulars; Issuer and RTA Circulars; Master Circulars |
+| PIB | All Releases; CCEA Decisions; Cabinet Decisions |
+| Rajya Sabha | Bills; Government Assurances; Questions and Answers |
+| CBDT | Circulars; Notifications |
+| CERC | Draft Regulations; Regulations |
+| EPFO | Circulars; Notices and circulars |
+| Law Commission | Notices; Past Notices |
+| MCA | Circulars; Notifications |
+| MeitY | Central Documents; Documents |
+| MoEFCC | Orders; What's New |
+| NPPA | Archive; Circulars / Orders |
+| Supreme Court | Cause List (Advance, Misc.); Judgments |
+| DEA | Orders and Notices |
+| DGTR | Anti-dumping Investigations |
+| DoT | Central Documents |
+| FIU-IND | Compliance Orders |
+| GST Council | Press Releases |
+| Labour | Central Documents |
+| Legislative | Central Documents |
+| MNRE | Current Notices |
+| Power | Central Documents |
+| TDSAT | Judgments |
+| eGazette | All Central Gazettes |
+
+Some sources share a label within a publisher, so `sourceId` is the identifier to filter and
+store on. `sourceLabel` is for display.
 
 ## Document types
 
