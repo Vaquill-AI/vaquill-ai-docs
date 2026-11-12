@@ -35,15 +35,13 @@ The changes feed moves on versions.
 We track **47 publishers** across **273 sources**.
 A new document usually appears within a day of the publisher posting it.
 
-A **publisher** is the body that issued the document. A **source** is one listing on that
-publisher's site, so a single publisher usually has several: SEBI's circulars and its settlement
-orders are different sources, with different document types and their own freshness.
-`publisherId` and `sourceId` filter at those two levels, and `GET /sources` returns every row
-below with its own `documentCount`, `retrievalStatus` and `sourceCheckedAt`.
+A **publisher** is the body that issued the document.
+A **source** is one listing on that publisher's site, so a single publisher usually has several: SEBI's circulars and its settlement orders are different sources, with different document types and their own freshness.
+`publisherId` and `sourceId` filter at those two levels, and `GET /sources` returns every row below with its own `documentCount`, `retrievalStatus` and `sourceCheckedAt`.
 
-Counts per publisher are deliberately not listed here. They move whenever a source is added or a
-crawl runs, and a number printed on this page would be wrong without anything failing. Read them
-from `GET /sources`, which is free.
+Counts per publisher are deliberately not listed here.
+They move whenever a source is added or a crawl runs, and a number printed on this page would be wrong without anything failing.
+Read them from `GET /sources`, which is free.
 
 | Publisher | Sources |
 |---|---|
@@ -95,8 +93,8 @@ from `GET /sources`, which is free.
 | TDSAT | Judgments |
 | eGazette | All Central Gazettes |
 
-Some sources share a label within a publisher, so `sourceId` is the identifier to filter and
-store on. `sourceLabel` is for display.
+Some sources share a label within a publisher, so `sourceId` is the identifier to filter and store on.
+`sourceLabel` is for display.
 
 ## Document types
 

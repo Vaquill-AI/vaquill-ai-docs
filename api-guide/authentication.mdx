@@ -27,6 +27,78 @@ Keys use the `vq_key_` prefix and are tied to your account.
   </Step>
 </Steps>
 
+## Using an AI agent?
+
+An agent can get its own `vq_key_` key in one call, with no human step first.
+The key comes back at signup and works immediately, with 100 trial credits on it.
+The key and its trial credits stop working after 7 days unless the email is verified.
+Verifying proves the agent can read an email inbox, the same proof a person gives when signing up.
+The key then goes on the Vaquill account for that email, which is created if there is none, and has no expiry.
+Each person also gets one welcome grant: 1,000 free API credits ($10), valid for 90 days.
+No card is required.
+
+1. The agent calls `POST https://api.vaquill.ai/api/v1/agent/signup` with `{"email": "<its own inbox, or its human's email>", "agentName": "Claude Code", "agentVendor": "anthropic", "purpose": "short reason"}`.
+   `agentName` is 1 to 60 characters. `agentVendor` is optional, up to 40. `purpose` is optional, up to 280.
+2. The 201 response carries `apiKey` (starts with `vq_key_`, shown once, so store it), `keyPrefix`, `keyId`, `scopes`, `docsUrl`, `openapiUrl` and `mcpUrl`.
+   The key works immediately.
+   `trial` is `{credits: 100, expiresAt}`: 100 trial credits on the key now, before anyone verifies the email.
+   `trial.credits` is 0 when the daily trial budget is spent (at most 2 trial grants per IP per day), and the key is still issued.
+   The response also carries a secret `claimToken` that starts with `vq_claim_`, `verifyUrl`, `codeEmailed`, `userCode` (like `WDJB-MJHT`), `verificationUri` (`https://app.vaquill.ai/claim`), `tokenUrl`, `interval` (5 seconds), `expiresIn` (604800 seconds, 7 days), `freeCredits` (`{credits: 1000, usd: "10.00", validDays: 90, onePerPerson: true}`) and `instructions`.
+   The agent keeps the `claimToken` private and never shows it to anyone, including its human.
+3. Vaquill emails a 6-digit code to that address.
+   The agent reads the code from the inbox, or asks its human for it, and sends `POST {verifyUrl}` with `{"claimToken": "vq_claim_...", "code": "123456"}`.
+   On 200 the response carries `verified: true`, `keyId`, `keyPrefix`, `scopes`, `claimedVia` and `creditsGranted`.
+   It does not return `apiKey`: the agent keeps using the same key from signup, which is now on the Vaquill account for that email and no longer expires.
+   Verifying adds the 1,000 free credits ($10, 90 days, once per person). These are in addition to the 100 trial credits, not a top-up of them.
+   The code is valid for 7 days, and each signup allows 5 tries.
+   Calling verify again after success answers `verified: true`.
+4. The agent sends the key as `Authorization: Bearer vq_key_...`.
+   `GET /api/v1/credits/balance` is free and shows the remaining balance.
+
+While on the trial, the key cannot create law-change watches (403 `permission_denied`).
+When the trial credits run out, a metered call answers `402 insufficient_credits` with `verifyUrl` and a hint to verify the email.
+
+Errors from `verifyUrl` have a `code`:
+
+| Code | Meaning |
+| --- | --- |
+| `invalid_code` | Wrong code. `detail` says how many tries are left. |
+| `expired_token` | Expired, unknown, out of tries, or the key was revoked. Start over. |
+| `already_handled` | HTTP 409. The human approved at app.vaquill.ai/claim. Confirm with `tokenUrl`. |
+| `agent_key_limit` | HTTP 409. The account has the maximum number of active agent keys. Revoke one first. |
+| `slow_down` | Wait, then retry. |
+
+### Verify in the browser instead
+
+If `codeEmailed` is false or the email does not arrive, the human can verify in the browser instead.
+
+1. The human opens [app.vaquill.ai/claim](https://app.vaquill.ai/claim), signs in or creates an account with that same email, enters `userCode` and approves.
+   `userCode` only works for the account with that email.
+2. The agent sends `POST {tokenUrl}` with `{"claimToken": "vq_claim_..."}` every `interval` seconds until it returns `verified: true`, `keyId`, `keyPrefix`, `scopes` and `claimedVia`.
+   It does not return `apiKey`: the agent keeps using the key from signup.
+
+Until then, the poll error body has a `code`:
+
+| Code | Meaning |
+| --- | --- |
+| `authorization_pending` | The human has not approved yet. Keep polling. |
+| `slow_down` | Wait `retryAfterSeconds`, then poll again. |
+| `access_denied` | The human refused, and the trial key is revoked. Stop. |
+| `expired_token` | Expired, unknown, or the key was revoked. Start over. |
+
+Signup itself can return `400 invalid_request`, `403 email_not_allowed`, `429 rate_limited` (with `retryAfterSeconds`) or `503 agent_signup_disabled`.
+If signup returns `503 agent_signup_disabled`, agent self-signup is not switched on yet.
+Ask your human to create a key at [app.vaquill.ai/developer](https://app.vaquill.ai/developer) and give it to you.
+
+The human can revoke agent keys at any time at [app.vaquill.ai/claim](https://app.vaquill.ai/claim) or in the console.
+Denying at app.vaquill.ai/claim switches the trial key off.
+Vaquill never asks an agent for a password.
+
+The OpenAPI spec is at `https://api.vaquill.ai/external/openapi.json`.
+The MCP server at `https://mcp.vaquill.ai/mcp` supports OAuth sign-in from the Claude and ChatGPT connectors, so you do not have to copy a key.
+Other MCP clients can send the Bearer header instead.
+The agent-facing version of these steps, also available as Markdown, is at [vaquill.ai/agents](https://www.vaquill.ai/agents).
+
 ## Example request
 
 ```bash

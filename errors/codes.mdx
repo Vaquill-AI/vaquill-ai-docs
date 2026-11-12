@@ -55,6 +55,7 @@ The Python SDK (`vaquill`) and the TypeScript SDK use the same class names.
 | [`permission_denied`](#permission_denied) | 403 | No | `PermissionDeniedError` | Permission denied | Change plan, scope or jurisdiction |
 | [`insufficient_scope`](#insufficient_scope) | 403 | No | `PermissionDeniedError` (by status) | Insufficient scope | Use a key with the scope `detail` names |
 | [`insufficient_credits`](#insufficient_credits) | 402 | No | `InsufficientCreditsError` | Insufficient credits | Top up, then resend |
+| [`payment_required`](#payment_required) | 402 | No | `InsufficientCreditsError` (by status) | Payment required | Send an API key, or pay with x402 |
 | [`rate_limited`](#rate_limited) | 429 | Yes | `RateLimitError` | Rate limited | Wait for `Retry-After`, then retry |
 | [`quota_exceeded`](#quota_exceeded) | 429 | No | `RateLimitError` (by status) | Quota exceeded | Free a slot or raise the limit |
 | [`daily_cap_exceeded`](#daily_cap_exceeded) | 429 | No | `DailyCapExceededError` (a `RateLimitError`) | Daily cap exceeded | Retry after the cap resets |
@@ -130,6 +131,12 @@ The key is valid but lacks the scope this route needs.
 
 Your credit balance is too low for this call.
 Top up, then send the request again. `GET /credits/balance` is free.
+
+<a id="payment_required"></a>
+#### payment_required
+
+Only where x402 payments are switched on: the request carried no API key and no usable payment.
+Send your API key, or pay in USDC with x402: the `PAYMENT-REQUIRED` header holds the terms, and `detail` names every way in.
 
 <a id="rate_limited"></a>
 #### rate_limited

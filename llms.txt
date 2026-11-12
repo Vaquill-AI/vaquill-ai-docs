@@ -4,6 +4,10 @@
 
 Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization: Bearer vq_key_...`. Coverage and counts live on the [Coverage](https://www.vaquill.ai/docs/api-guide/coverage) page.
 
+## Get an API key
+
+New accounts get 1,000 free API credits ($10), valid for 90 days. No card required. Sign up at https://app.vaquill.ai/auth/signup, confirm your email, then create a key at https://app.vaquill.ai/developer?tab=api-key (keys start with `vq_key_`, sent as `Authorization: Bearer`). The MCP server at https://mcp.vaquill.ai/mcp supports OAuth sign-in from the Claude and ChatGPT connectors, so no key copy is needed. An agent can also self-sign up: POST https://api.vaquill.ai/api/v1/agent/signup with email, agentName, agentVendor and purpose. The 201 response returns a vq_key_ apiKey that works immediately, with 100 trial credits; the key and its trial credits stop working after 7 days unless the email is verified. To verify, read the 6-digit code emailed to that address (valid 7 days) and POST it with the claimToken to verifyUrl: the same key then moves onto the account for that email with no expiry, and 1,000 free credits are added on top of the trial credits. Or the human approves the returned userCode at https://app.vaquill.ai/claim and the agent polls tokenUrl with the claimToken until it returns verified: true. Neither verify nor tokenUrl returns the key again. If signup returns 503 agent_signup_disabled, ask the human to create a key at https://app.vaquill.ai/developer. Full steps for agents: https://www.vaquill.ai/agents.
+
 ## Data coverage
 
 - [Coverage](https://www.vaquill.ai/docs/api-guide/coverage): Which US jurisdictions and corpus types the Vaquill API covers, with section counts and how often each is updated
