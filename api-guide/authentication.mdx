@@ -86,7 +86,7 @@ Until then, the poll error body has a `code`:
 | `access_denied` | The human refused, and the trial key is revoked. Stop. |
 | `expired_token` | Expired, unknown, or the key was revoked. Start over. |
 
-Signup itself can return `400 invalid_request`, `403 email_not_allowed`, `429 rate_limited` (with `retryAfterSeconds`) or `503 agent_signup_disabled`.
+Signup itself can return `422 validation_error` (a field is missing, malformed or too long; `errors` lists each one), `403 email_not_allowed`, `429 rate_limited` (with `retryAfterSeconds`) or `503 agent_signup_disabled`.
 If signup returns `503 agent_signup_disabled`, agent self-signup is not switched on yet.
 Ask your human to create a key at [app.vaquill.ai/developer](https://app.vaquill.ai/developer) and give it to you.
 
