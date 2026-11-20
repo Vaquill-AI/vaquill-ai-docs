@@ -1,6 +1,6 @@
 ---
 title: "Response formats"
-description: "The text formats the body endpoint returns, and the source URL fields that link back to official text"
+description: "The text formats the body endpoint returns, the tables and images inside them, and the source URL fields that link back to official text"
 ---
 
 The API returns rendered text from the body endpoint, plus links to the original files the publisher hosts.
@@ -12,13 +12,17 @@ Any field may be `null` when the source does not offer that format.
 
 | Field | Contains |
 |---|---|
-| `html` | The whole body as HTML (string or `null`). Use it to display the section with its structure. |
+| `html` | The whole body as HTML (string or `null`). Use it to display the section with its structure, tables and images. |
 | `plain` | The whole body as plain text (string or `null`). |
+| `markdown` | The body as Markdown, with tables and images in place. Returned only for `format=all` or `format=markdown`. See [Tables and images](/api-guide/concepts/tables-and-images). |
 | `content` | The operative text only, without the credit line and notes. USC only. |
 | `sourceCredit` | The publisher's credit line. USC only. |
 | `notes` | The notes the publisher prints after the section. USC only. |
+| `tables` | The tables in the body, in document order (array or `null`). |
+| `figures` | The images in the body (figures, equations, forms), in document order, each with a hosted image URL (array or `null`). |
+| `hasTables`, `hasFigures` | Whether the body contains a table or an image (bool or `null`). |
 | `sourceUrl` | Where the government published this text (string or `null`). |
-| `source` | Our storage identifier for the text. Not a citation. |
+| `source` | Our storage identifier for the text. Not a citation. `r2_render` means the body is a structured rendering that keeps tables and images. |
 | `available` | Whether text was returned (bool). |
 | `note` | An optional note when text is partial or unavailable (string or `null`). |
 | `bodyUnavailable` | `true` when the publisher prints the section as images. Omitted otherwise. |
@@ -48,20 +52,32 @@ Use `content` for the operative text only, `sourceCredit` for the credit line an
 ### Choosing what comes over the wire: `format`
 
 `format` selects which representations are returned.
-All four values cost the same. The choice only changes payload size.
+Every value costs the same. The choice only changes payload size.
 
 | Value | Returns |
 |---|---|
 | `both` | `html` and `plain`. The default. |
+| `all` | `html`, `plain` and `markdown`. |
 | `html` | `html` only. |
+| `markdown` | `markdown` only. A section with no structured rendering returns `plain` instead, with a `note` saying so. |
 | `plain` | `plain` only. |
 | `content` | `content`, `sourceCredit` and `notes` only. USC only. On any other corpus it returns `plain` with a `note`, and `content` is null. |
+
+`tables` and `figures` come back with every value, because they describe the text you received.
+
+`markdown` is opt-in because it is a third full copy of the text.
+Ask for it when you want images and tables as Markdown, for example to feed a model or a Markdown renderer.
 
 Check `content` for null and fall back to `plain` if you are not sure which corpus you have.
 
 ### Citing where the text came from
 
 Cite `sourceUrl`, not `source`. It is null when we hold no official link for the section.
+
+## Tables and images
+
+When `source` is `r2_render`, tables and images stay where the publisher printed them, in `html`, `markdown` and `plain`, and `tables` and `figures` list them.
+See [Tables and images](/api-guide/concepts/tables-and-images) for where they appear, the image fields and the hosted image files.
 
 ## Point-in-time text: `asOf`
 
@@ -75,7 +91,7 @@ Pass `?structured=true` to `GET /us/statutes/section/{actId}/body` for two more 
 
 | Field | Contains |
 |---|---|
-| `markdown` | The body as nested Markdown lists, one level per subsection depth (string or `null`) |
+| `markdown` | The body as nested Markdown lists, one level per subsection depth (string or `null`). This replaces the Markdown with tables and images, and a `note` says so. Leave out `structured` to get that Markdown. |
 | `subsections` | A tree of subsections for pincites (array or `null`) |
 
 Each node in `subsections` has these fields:
