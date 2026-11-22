@@ -2,10 +2,10 @@
 title: "Vaquill MCP Server"
 sidebarTitle: "Vaquill MCP"
 description: "Read-only US primary law MCP server for Claude, Cursor, VS Code and Windsurf, set up with your Vaquill API key."
-keywords: ["vaquill mcp", "legal mcp server", "claude legal mcp", "us law mcp", "usc mcp", "cfr mcp", "cursor legal research", "vs code legal mcp"]
+keywords: ["vaquill mcp", "case law mcp", "legal mcp server", "claude legal mcp", "us law mcp", "usc mcp", "cfr mcp", "cursor legal research", "vs code legal mcp"]
 ---
 
-The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client (Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf) access to the Vaquill AI Developer API. It covers the full US corpus. See [API coverage](/api-guide/coverage). Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
+The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client (Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf) access to the Vaquill AI Developer API. It covers US statutes, regulations, session laws, rulemaking records and case law. See [API coverage](/api-guide/coverage). Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
 
 <Note>
   This page covers the US mount, `https://mcp.vaquill.ai/s/_`. The India mount is described under [India mount](#india-mount).
@@ -224,10 +224,12 @@ claude mcp add --scope user vaquill -e VAQUILL_API_KEY=vq_key_your_key_here \
 
 ## Tools
 
-There is one tool per API operation, plus the `search` and `fetch` pair. Every tool is read-only.
+The US mount lists 53 read-only tools: typed tools over the API, plus the `search` and `fetch` pair.
+Listing them needs no credential.
+The case law tools need a key with the `cases:read` scope. See [Authentication](/api-guide/authentication).
 
 <Warning>
-  Never build an `act_id` by hand. A constructed id usually returns 404. Get it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section identifiers](/api-guide/concepts/section-ids).
+  Never build an `act_id` by hand. A constructed id usually returns 404. Get it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section identifiers](/api-guide/concepts/section-ids). Case, opinion, judge and docket ids work the same way: take them from a search, a list or `resolve_case_citations`.
 </Warning>
 
 | Group | Tool | Description | Credits |
@@ -251,11 +253,38 @@ There is one tool per API operation, plus the `search` and `fetch` pair. Every t
 | Section intelligence | `get_section_cross_state` | At most one comparable provision per other state, most similar first. | 6 |
 | State session laws | `list_session_laws` | One state's session laws (acts as enacted). | 1 per page |
 | State session laws | `get_session_law` | One law's record. | 2 |
+| State session laws | `get_session_law_versions` | Every version of a law's text that we served, newest first. | 1 |
 | State session laws | `get_session_law_body` | The law's text as printed, about 30,000 characters per page. | 6 per page |
 | State session laws | `search_session_laws` | Find laws by what they say. | 4 per page |
 | State session laws | `get_session_laws_batch` | Up to 50 laws by id or citation in one call. | 2 per law, plus 6 per page of text |
 | State session laws | `get_session_law_changes` | A cursor feed of every law served, corrected, withdrawn or merged. | 1 per page |
 | State session laws | `get_section_enactments` | The session laws a publisher's tables print against one code section. | 1 |
+| Rulemaking | `get_rulemaking_coverage` | What the rulemaking store holds, per source, and how fresh it is. | Free |
+| Rulemaking | `get_rulemaking_rin` | Everything held for one RIN, with the quality of each link. | 3 |
+| Rulemaking | `list_rin_agenda` | The Unified Agenda history of one RIN, newest edition first. | 1 per page |
+| Rulemaking | `list_rulemaking_dockets` | Regulations.gov dockets by agency, type, RIN or date. | 1 per page |
+| Rulemaking | `get_rulemaking_docket` | One docket, with its document counts. | 2 |
+| Rulemaking | `list_docket_documents` | The documents of one docket. Metadata only. | 1 per page |
+| Rulemaking | `get_section_rulemaking` | The Federal Register documents behind one CFR section. | 2 |
+| Rulemaking | `get_part_rulemaking` | Federal Register rules, proposals and notices for one CFR part. | 2 |
+| Rulemaking | `list_rulemaking_committee_records` | Judicial Conference Rules Committee records. | 1 per page |
+| Rulemaking | `get_rulemaking_committee_record` | One committee record and a window of its page text. | 2 |
+| Case law | `search_us_cases` | Keyword search over opinion text, one result per case. | 4 per page |
+| Case law | `resolve_case_citations` | Reporter citations to cases, from a list or from pasted text. | 2 per distinct citation |
+| Case law | `list_us_cases` | Decisions by court, state, judge or date, newest first. | 1 per page |
+| Case law | `get_us_case` | One decision: court, dates, parties, citations, judges and opinion ids. | 2 |
+| Case law | `get_us_cases_batch` | Up to 50 decisions by id. | 2 per case served |
+| Case law | `get_us_opinion` | The text of one opinion. | 6 |
+| Case law | `get_us_opinions_batch` | The text of up to 20 opinions. | 6 per opinion served |
+| Case law | `get_case_citations` | The cases a decision cites, or the cases that cite it. | 1 per page |
+| Case law | `get_opinion_citations` | The same citation graph for one opinion. | 1 per page |
+| Case law | `get_case_parentheticals` | How later decisions describe a case in parentheticals. | 1 per page |
+| Case law | `list_us_courts` | Courts, with what we hold per court (`include=coverage`). | Free |
+| Case law | `list_us_judges` | Judges by name or court. | 2 per page |
+| Case law | `get_us_judge` | One judge's positions, education and affiliations. | 2, or 4 with `include=stats` |
+| Case law | `list_us_dockets` | Dockets by court, docket number, caption or filing date. | 2 per page |
+| Case law | `get_us_docket` | One docket and the decisions issued in it. | 2 |
+| Case law | `get_us_docket_entries` | A docket's entries. None are held yet, so every page is empty today. | 1 per page |
 | Aliases | `search` | Single-string search, for clients that require this exact interface. | 4 |
 | Aliases | `fetch` | Single-string fetch by id, URL or citation, same constraint. | 8, plus 2 for a citation |
 
@@ -271,11 +300,20 @@ Prefer the typed tools to the `search` and `fetch` aliases, which cannot take fi
     - `get_us_statute_section_text` supports `format=content` (operative text only, USC), `structured=true` for a subsection tree, and `asOf` for point-in-time.
     - `get_sections_batch` adds a diagnosis for each miss.
     - `resolve_statute_citation` confirms the section against the corpus.
-    - `extract_statute_citations` takes a pasted brief, memo or model answer and resolves each citation in it. Case citations are not extracted. `resolve=false` lists them for free.
+    - `extract_statute_citations` takes a pasted brief, memo or model answer and resolves each citation in it. It does not extract case citations, which go to `resolve_case_citations`. `resolve=false` lists them for free.
+  </Accordion>
+  <Accordion title="Case law details">
+    - Start with `resolve_case_citations` when you have a citation, and `search_us_cases` when you have words.
+    - `get_us_case` returns opinion ids. Read each opinion with `get_us_opinion`, because a dissent is an opinion of its own.
+    - When an opinion has `textFromOcr` set, check a quotation before you rely on it.
+    - Coverage differs by court and year. Call `list_us_courts` with `include=coverage` before treating an empty result as an absence.
+    - See [US case law](/api-guide/case-law) for what is held.
   </Accordion>
   <Accordion title="Refunds and empty results">
     - `list_statute_divisions` is refunded on an empty level.
     - Each section intelligence tool refunds a call it cannot answer, and returns a `note` explaining why. An empty result with a note is explained by the note. Without a note it is a real answer.
+    - An empty page from a rulemaking list is refunded.
+    - An empty page from `search_us_cases`, `list_us_judges` or `list_us_dockets` is charged.
     - An empty page from `list_session_laws` is charged, and so is an empty result from `search_session_laws`.
   </Accordion>
   <Accordion title="Reading session-law bodies">
@@ -382,6 +420,12 @@ Type these to any connected assistant.
 > *"What are the federal penalties for wire fraud under 18 USC 1343?"*
 >
 > *"Pull the operative text of 26 USC 501(c)(3), without the amendment notes."*
+
+**Research case law**
+
+> *"Find state supreme court decisions on the economic loss rule since 2020, and quote the holding of the newest."*
+>
+> *"Who cites 347 U.S. 483, and how do they describe it?"*
 
 **Verify citations**
 
