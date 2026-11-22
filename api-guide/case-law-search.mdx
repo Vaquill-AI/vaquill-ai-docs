@@ -1,0 +1,107 @@
+---
+title: "Searching case law"
+description: "Full-text search over US court opinions: query syntax, filters, sorting and paging"
+---
+
+`POST /us/cases/search` finds decisions by what their opinions say.
+Results come back best match first, one per decision, each with the opinion that matched and up to three passages with their offsets.
+It costs 4 credits per page, and an empty page is charged.
+
+```bash
+curl -X POST "https://api.vaquill.ai/api/v1/us/cases/search" \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query": "\"qualified immunity\" excessive force", "courtIds": ["US_FED_CA9"], "dateFrom": "2010-01-01", "limit": 5}'
+```
+
+```json
+{
+  "results": [
+    {
+      "case": { "caseId": "USCASE_3F9A2B1C4D5E6F708192", "caseName": "...", "decisionDate": "2016-05-12", "citedByCount": 42 },
+      "opinionId": "USOP_3F9A2B1C4D5E6F708192",
+      "score": 14.27,
+      "passages": [
+        { "opinionId": "USOP_3F9A2B1C4D5E6F708192", "text": "...whether the officers are entitled to qualified immunity on the excessive force claim...", "start": 18204, "end": 18704 }
+      ],
+      "leadOpinionId": "USOP_3F9A2B1C4D5E6F708192"
+    }
+  ],
+  "count": 5,
+  "limit": 5,
+  "offset": 0,
+  "hasMore": true,
+  "creditsConsumed": 4
+}
+```
+
+The response is abridged, and `case` is the [case summary](/api-guide/case-law#the-case-record).
+`score` is comparable only within one response.
+Pass `opinionId` to `GET /us/opinions/{opinionId}` to read the opinion.
+
+## Passages
+
+`passages` in the request is 1 to 3 (default 1), at the same price.
+Each hit returns that many passages of the best matching opinion, best first, about 500 characters of plain text each.
+`start` and `end` are character offsets into that opinion's plain text (`GET /us/opinions/{opinionId}?format=text`), so you can highlight the passage.
+They are `null` when a passage could not be located.
+`snippet` is the first passage cut short, kept for older clients.
+
+Each hit also carries `leadOpinionId`, the opinion to read first, which can differ from the `opinionId` that matched best.
+`case.outcome` is the result of the case in one word, as on the [case record](/api-guide/case-law#the-case-record).
+
+## The query
+
+`query` is 1 to 1,000 characters.
+Every word must appear in the opinion (AND).
+Put an exact phrase in double quotes: up to 3 phrases and 50 free words.
+There are no `OR`, `NOT` or wildcard operators, so narrow with a filter or a rarer word.
+To find a decision by its reporter citation, use [`POST /us/cases/resolve`](/api-guide/case-law#finding-a-decision), which is exact and cheaper.
+
+## Filters
+
+All are optional and combine with AND.
+
+| Field | Meaning |
+|---|---|
+| `courtIds` | Only these courts, at most 50. Ids come from `GET /us/courts` |
+| `state` | A two-letter state code |
+| `courtSystem`, `courtLevel` | Only courts of this system or level. See [Courts](/api-guide/case-law-courts-and-judges#courts) for the values |
+| `dateFrom`, `dateTo` | Decision date range, `YYYY-MM-DD`, both ends included. `dateFrom` later than `dateTo` is a `422` |
+| `publicationStatus` | One or more of `published`, `unpublished`, `unknown`, `errata`, `separate`, `in_chambers`, `relating_to` |
+| `judgeId` | Decisions this judge sat on or wrote an opinion in |
+| `caseName`, `docketNumber` | Text the case title or docket number contains, at least 3 characters |
+| `minCitedBy` | Only cases cited by at least this many cases |
+| `sort` | `relevance` (default), `decision_date` (newest first), `decision_date_asc` or `cited_by` |
+| `limit`, `offset` | 1 to 100, default 20, and 0 to 10,000 |
+
+`courtIds`, `state`, `courtSystem` and `courtLevel` together are an intersection.
+Where a decision's date is known only to the month or year, treat a date range as approximate for it.
+
+A sort other than `relevance`, and `minCitedBy`, work on the best matching opinions the search ranks, not on every match in the corpus.
+Narrow the query when the order matters.
+
+A decision kept out of search never appears here, though it can be read by id.
+
+## Paging
+
+Advance `offset` by `limit` until `hasMore` is `false`.
+`count` is the rows on this page, and no total is returned.
+An `offset` above 10,000 is a `422`: refine the query or add a filter.
+
+```python Python
+import os
+import requests
+
+resp = requests.post(
+    "https://api.vaquill.ai/api/v1/us/cases/search",
+    headers={"Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}"},
+    json={"query": "adverse possession", "state": "CA", "dateFrom": "1990-01-01", "dateTo": "1999-12-31"},
+)
+resp.raise_for_status()
+for hit in resp.json()["results"]:
+    print(hit["case"]["caseName"], hit["opinionId"])
+```
+
+A request that fails validation (an empty query, a fourth phrase, an unknown field, a malformed id) is a `422` and is not charged.
+A `503` is refunded.

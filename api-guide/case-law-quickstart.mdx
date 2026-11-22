@@ -1,0 +1,118 @@
+---
+title: "Case law quickstart"
+description: "Resolve a citation, read the decision and its opinion, and follow the citation graph"
+---
+
+This walk resolves a citation, reads the decision, reads an opinion and lists the cases that cite it.
+It costs 11 credits ($0.11).
+
+Create a key in your [dashboard](https://app.vaquill.ai/settings) under **API Keys**.
+See [Authentication](/api-guide/authentication).
+
+```bash
+export VAQUILL_API_KEY="vq_key_..."
+```
+
+<Steps>
+  <Step title="Resolve a citation (2 credits)">
+    <CodeGroup>
+    ```bash cURL
+    curl -X POST https://api.vaquill.ai/api/v1/us/cases/resolve \
+      -H "Authorization: Bearer $VAQUILL_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"citations": ["410 U.S. 113"]}'
+    ```
+
+    ```python Python
+    import os
+    import requests
+
+    API = "https://api.vaquill.ai/api/v1"
+    HEADERS = {"Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}"}
+
+    resp = requests.post(
+        f"{API}/us/cases/resolve", headers=HEADERS, json={"citations": ["410 U.S. 113"]}
+    )
+    resp.raise_for_status()
+    result = resp.json()["results"][0]
+    if result["status"] != "resolved":
+        raise SystemExit(f"not resolved: {result['status']}")
+    case_id = result["case"]["caseId"]
+    ```
+    </CodeGroup>
+
+    Only a `resolved` result has a single `case`.
+    To resolve every citation in a document at once, send `text` instead, as in [Check the citations in a brief](/api-guide/case-law-guide-brief-checker).
+    See [Finding a decision](/api-guide/case-law#finding-a-decision).
+    The cURL steps below read `CASE_ID` and `OPINION_ID` from your shell: set them to the ids you get back.
+  </Step>
+
+  <Step title="Read the decision (2 credits)">
+    <CodeGroup>
+    ```bash cURL
+    curl https://api.vaquill.ai/api/v1/us/cases/$CASE_ID \
+      -H "Authorization: Bearer $VAQUILL_API_KEY"
+    ```
+
+    ```python Python
+    resp = requests.get(f"{API}/us/cases/{case_id}", headers=HEADERS)
+    resp.raise_for_status()
+    case = resp.json()["case"]
+    opinion_id = case["opinions"][0]["opinionId"]
+    ```
+    </CodeGroup>
+
+    `opinions` lists every opinion of the decision with its `kind` and `opinionId`.
+  </Step>
+
+  <Step title="Read an opinion (6 credits)">
+    <CodeGroup>
+    ```bash cURL
+    curl "https://api.vaquill.ai/api/v1/us/opinions/$OPINION_ID?format=text" \
+      -H "Authorization: Bearer $VAQUILL_API_KEY"
+    ```
+
+    ```python Python
+    resp = requests.get(
+        f"{API}/us/opinions/{opinion_id}", headers=HEADERS, params={"format": "text"}
+    )
+    resp.raise_for_status()
+    print(resp.json()["body"][:500])
+    ```
+    </CodeGroup>
+
+    `format` is `html` (default) or `text`.
+    See [Opinion text](/api-guide/case-law-opinions).
+  </Step>
+
+  <Step title="Follow the citation graph (1 credit per page)">
+    <CodeGroup>
+    ```bash cURL
+    curl "https://api.vaquill.ai/api/v1/us/cases/$CASE_ID/citations?direction=cited_by&limit=5" \
+      -H "Authorization: Bearer $VAQUILL_API_KEY"
+    ```
+
+    ```python Python
+    resp = requests.get(
+        f"{API}/us/cases/{case_id}/citations",
+        headers=HEADERS,
+        params={"direction": "cited_by", "limit": 5},
+    )
+    resp.raise_for_status()
+    page = resp.json()
+    for edge in page["results"]:
+        print(edge["mentionCount"], edge["case"]["caseName"])
+    ```
+    </CodeGroup>
+
+    `direction=cites` goes the other way.
+    Page with `limit` and `offset` until `hasMore` is `false`.
+  </Step>
+</Steps>
+
+Read `creditsConsumed` on each response for what the call cost.
+
+## Next
+
+- [US case law](/api-guide/case-law) for the endpoint list, ids and charging rules.
+- [Searching case law](/api-guide/case-law-search) to find decisions by what they say.

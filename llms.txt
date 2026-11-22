@@ -18,6 +18,17 @@ New accounts get 1,000 free API credits ($10), valid for 90 days. No card requir
 - [State session laws](https://www.vaquill.ai/docs/api-guide/session-laws): State session laws as enacted, with dates, veto outcome, sources, text and search
 - [US rulemaking](https://www.vaquill.ai/docs/api-guide/rulemaking): Regulations.gov dockets and documents, Unified Agenda history, OIRA review and CRA links, tied together by the RIN
 
+## US case law
+
+- [US case law](https://www.vaquill.ai/docs/api-guide/case-law): US court decisions with the text of their opinions: search, citation lookup, the citation graph, courts, judges and dockets
+- [Case law quickstart](https://www.vaquill.ai/docs/api-guide/case-law-quickstart): Resolve a citation, read the decision and its opinion, and follow the citation graph
+- [Check the citations in a brief](https://www.vaquill.ai/docs/api-guide/case-law-guide-brief-checker): Find every case citation in a document, match each to its case, and open the opinion behind each one, in one call
+- [Searching case law](https://www.vaquill.ai/docs/api-guide/case-law-search): Full-text search over US court opinions: query syntax, filters, sorting and paging
+- [Opinion text](https://www.vaquill.ai/docs/api-guide/case-law-opinions): Read the text of a US court opinion as html or plain text, with citation links and footnotes
+- [Courts, coverage and judges](https://www.vaquill.ai/docs/api-guide/case-law-courts-and-judges): List the US courts we hold, see what is held per court and year, and read judge profiles and financial disclosures
+- [Dockets and oral arguments](https://www.vaquill.ai/docs/api-guide/case-law-dockets): Read US court docket records and oral argument records
+- [Change feed](https://www.vaquill.ai/docs/api-guide/case-law-change-feed): List the US cases added, changed or removed since a moment, and keep a local copy in step
+
 ## Get started
 
 - [Quickstart](https://www.vaquill.ai/docs/api-guide/quickstart): Search US statutes and fetch a section in a few minutes
@@ -48,7 +59,8 @@ New accounts get 1,000 free API credits ($10), valid for 90 days. No card requir
 - [Hierarchy and container names](https://www.vaquill.ai/docs/api-guide/concepts/hierarchy): What a title, chapter, part or article is, which fields carry its name, and how to read breadcrumb and displayPath.
 - [Section identifiers](https://www.vaquill.ai/docs/api-guide/concepts/section-ids): The actId section identifier, how it behaves over time, and how to go from search to metadata, full text and neighbors
 - [Response fields](https://www.vaquill.ai/docs/api-guide/concepts/response-fields): Which fields a section carries, which corpus each one belongs to, and how to tell 'not applicable' from 'we do not have it'
-- [Response formats](https://www.vaquill.ai/docs/api-guide/concepts/formats): The text formats the body endpoint returns, and the source URL fields that link back to official text
+- [Response formats](https://www.vaquill.ai/docs/api-guide/concepts/formats): The text formats the body endpoint returns, the tables and images inside them, and the source URL fields that link back to official text
+- [Tables and images](https://www.vaquill.ai/docs/api-guide/concepts/tables-and-images): How section bodies carry tables, figures, equations and forms: where they appear, the fields that describe them, and the hosted image files
 - [Citation formats](https://www.vaquill.ai/docs/api-guide/concepts/citation-formats): Which citation strings resolve, why the form your state prints is the safest to send, and which forms are refused on purpose.
 - [Pinpoints](https://www.vaquill.ai/docs/api-guide/concepts/pinpoints): Get the text of one subsection, paragraph or clause instead of the whole section, and learn how far to trust it.
 - [Citation resolution quality](https://www.vaquill.ai/docs/api-guide/concepts/citation-quality): How reliably GET and POST /us/statutes/resolve read citations, and which citations are refused on purpose.

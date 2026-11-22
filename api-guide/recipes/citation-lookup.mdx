@@ -30,7 +30,8 @@ See [Citation formats](/api-guide/concepts/citation-formats) for shared acronyms
   This covers `STATE_AGENCY_GUIDANCE` (state insurance bulletins and circular letters) and `AGENCY_GUIDANCE` (IRS Notices, OCC Bulletins, CFTC staff letters and others).
 </Accordion>
 
-This recipe covers statutes and regulations only. Case law is not part of the Vaquill Developer API.
+This recipe covers statutes and regulations only.
+For case citations such as `410 U.S. 113`, use [`POST /us/cases/resolve`](/api-guide/case-law#finding-a-decision).
 
 **Endpoints:** `GET /us/statutes/resolve` for one citation, `POST /us/statutes/resolve` for a batch.
 

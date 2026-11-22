@@ -53,6 +53,24 @@ Session laws cover the 50 states, DC and Puerto Rico from 1975.
 
 Every section is searchable by meaning and by keyword. Many are also available as HTML, PDF, XML, plain text or DOCX.
 
+## Case law
+
+US court decisions are served by the [case law API](/api-guide/case-law), not through `corpusType`.
+They are a separate corpus with their own ids and endpoints, and they are not part of the section totals above.
+
+| | |
+|---|---|
+| Decisions | 10,172,665 |
+| Opinions | 10,903,543 |
+| Courts with decisions | 2,199 |
+| Judges | 15,797 |
+| Earliest decision | 1658 |
+| Latest decision | 2026-09-29 |
+
+Counts as of 2026-11-22.
+Federal, state, territorial, tribal and military courts are covered.
+Coverage varies by court and year: call `GET /us/courts?include=coverage` (free) for what is held per court, and read [Data limits](/api-guide/case-law#data-limits) for the limits.
+
 ## Federal
 
 Federal law has 16 corpus types, from the US Code, the CFR and the Federal Register to agency guidance, adjudications, the Federal Rules and treaties.

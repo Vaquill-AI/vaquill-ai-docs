@@ -1,0 +1,78 @@
+---
+title: "Opinion text"
+description: "Read the text of a US court opinion as html or plain text, with citation links and footnotes"
+---
+
+A decision has one opinion or several: a majority, a concurrence, a dissent.
+`GET /us/cases/{caseId}` lists them in `opinions`, and `GET /us/opinions/{opinionId}` returns the text of one.
+It costs 6 credits per opinion, and each opinion of a decision is read and charged on its own.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/opinions/USOP_3F9A2B1C4D5E6F708192?format=html" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```json
+{
+  "opinionId": "USOP_3F9A2B1C4D5E6F708192",
+  "caseId": "USCASE_3F9A2B1C4D5E6F708192",
+  "caseName": "Roe v. Wade",
+  "courtId": "US_FED_SCOTUS",
+  "decisionDate": "1973-01-22",
+  "ordinal": 1,
+  "kind": "lead",
+  "isPerCuriam": false,
+  "authorName": "Blackmun",
+  "textFromOcr": false,
+  "bodyUnavailable": false,
+  "format": "html",
+  "body": "<p>...</p>",
+  "creditsConsumed": 6
+}
+```
+
+The response is abridged.
+The whole opinion is in `body`, with no paging.
+A hidden case's opinion is still served by id.
+A withdrawn case answers `410` and is not charged.
+
+## Several opinions in one call
+
+`POST /us/opinions/batch` takes up to 20 distinct `opinionIds` and a `format`, and returns each opinion as above under `results`, in the order sent.
+It costs 6 credits per opinion served.
+An unknown id (or one of a withdrawn case) lands in `notFound`, and an opinion with no text in that format in `bodyUnavailable`.
+Neither is charged.
+One answer holds at most 2,000,000 characters of text.
+Opinions past that are listed in `deferred` and are not charged, so ask for them again in a call of their own.
+
+## Format
+
+`format` is `html` (default) or `text`, the same words either way.
+Use `html` to render the opinion or follow its citations, and `text` to feed a model or an index.
+Any other value is a `422`.
+
+## Citations
+
+A citation to a decision we hold is wrapped in a `cite` element carrying that decision's `caseId`:
+
+```html
+<p>See <cite data-case-id="USCASE_3F9A2B1C4D5E6F708192">383 U.S. 663</cite>, where the Court held that...</p>
+```
+
+Pass `data-case-id` to `GET /us/cases/{caseId}` or `POST /us/cases/batch`.
+A citation to a decision we do not hold is plain text, so a `cite` is a link we can follow, not a guarantee that every citation has one.
+For the same list with mention counts and no parsing, use `GET /us/cases/{caseId}/citations?direction=cites`, or `GET /us/opinions/{opinionId}/citations?direction=cites` for one opinion (1 credit per page).
+
+## Footnotes and page numbers
+
+Footnotes are `aside` elements after the body, each marked in the text by a `sup` link to `#fn1`, `#fn2` and so on.
+In `text` the footnote text follows the body.
+Where the printed reporter's page breaks are known, a star page such as `*232` appears as plain text, so you can check a pinpoint.
+
+## Text from scans
+
+`textFromOcr` is `true` when the text was read from page images and can hold recognition errors.
+`GET /us/cases/{caseId}` carries the same flag per opinion, so you can tell before you pay.
+`bodyUnavailable` is `true` when `body` is empty, either because a `block` quality flag withholds the text or because we hold none in that `format`.
+The rest of the record is still returned and the call is not charged.
+`kind` is one of `combined`, `lead`, `plurality`, `concurrence`, `concurrence_in_part`, `dissent`, `addendum`, `remittitur`, `rehearing`, `on_the_merits`, `on_motion_to_strike`, `trial_court` or `unknown`.

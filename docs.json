@@ -77,6 +77,21 @@
             ]
           },
           {
+            "group": "US case law",
+            "icon": "scale-balanced",
+            "expanded": false,
+            "pages": [
+              "api-guide/case-law",
+              "api-guide/case-law-quickstart",
+              "api-guide/case-law-guide-brief-checker",
+              "api-guide/case-law-search",
+              "api-guide/case-law-opinions",
+              "api-guide/case-law-courts-and-judges",
+              "api-guide/case-law-dockets",
+              "api-guide/case-law-change-feed"
+            ]
+          },
+          {
             "group": "Get started",
             "icon": "rocket",
             "pages": [

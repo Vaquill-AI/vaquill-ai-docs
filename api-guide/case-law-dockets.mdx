@@ -1,0 +1,55 @@
+---
+title: "Dockets and oral arguments"
+description: "Read US court docket records and oral argument records"
+---
+
+A docket is a court's record of one proceeding: its caption, dates and judge.
+We do not hold docket entries, filed documents or recordings yet.
+A decision belongs to a docket, and a docket can hold several decisions and oral arguments.
+
+| Endpoint | What it returns | Credits |
+|---|---|---:|
+| `GET /us/dockets/list` | Dockets, filtered and paged | 2 per page |
+| `GET /us/dockets/{docketId}` | One docket | 2 |
+| `GET /us/dockets/{docketId}/entries` | The docket's entries, in filing order. Empty for every docket today | 1 per page, 2 with `includeDocuments=true` |
+| `GET /us/oral-arguments/list` | Oral arguments, filtered and paged | 1 per page |
+| `GET /us/oral-arguments/{argumentId}` | One oral argument | 2 |
+
+Ids are a prefix and 20 uppercase hex characters: `USDKT_` (docket), `USDE_` (entry) and `USARG_` (oral argument).
+
+## Dockets
+
+`GET /us/dockets/list` returns the newest filing first (`sort=filedAsc` reverses it).
+All filters are optional and combine with AND:
+
+| Parameter | Meaning |
+|---|---|
+| `courtId` | Only this court |
+| `docketNumber` | An exact docket number, such as `1:21-cv-00123` |
+| `name` | Words of the case caption, at least 3 characters |
+| `dateFrom`, `dateTo` | Filing window |
+| `terminated` | `true` for dockets with a termination date, `false` for open ones |
+| `terminatedFrom`, `terminatedTo` | Termination window |
+| `natureOfSuit`, `cause` | Words of that text |
+| `assignedJudgeId`, `jurisdictionBasis`, `appealFromCourtId` | Matching docket fields |
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/dockets/list?courtId=US_FED_CA9&name=Acme&dateFrom=2020-01-01" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+A window with its start after its end is a `422`.
+`GET /us/dockets/{docketId}` adds the assigned judge, nature of suit, `entryCount`, `caseIds` (the decisions made in the docket) and `oralArgumentIds`.
+Party names and docket text are served with personal identifiers masked.
+
+## Entries
+
+`GET /us/dockets/{docketId}/entries` is empty for every docket today.
+An empty page is charged, so do not call it yet, and leave `includeDocuments` off, which adds 1 credit.
+An empty page says nothing about whether anything was filed.
+
+## Oral arguments
+
+`GET /us/oral-arguments/list` takes `courtId`, `docketId` and a `dateFrom` to `dateTo` argument window, newest first.
+Each argument has its docket, court, `dateArgued`, `durationSeconds`, judges and `audioAvailable`.
+We hold no recordings yet, so `audioAvailable` is `false`.

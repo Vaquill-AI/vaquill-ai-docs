@@ -1,0 +1,64 @@
+---
+title: "Check the citations in a brief"
+description: "Find every case citation in a document, match each to its case, and open the opinion behind each one, in one call"
+---
+
+Paste the text of a brief into one `POST /us/cases/resolve` call.
+It finds every case citation, including short forms such as `Id.`, and answers each with the case it cites.
+
+```python Python
+import os
+import requests
+
+API = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}"}
+
+brief = open("brief.txt").read()  # up to 200,000 characters
+resp = requests.post(
+    f"{API}/us/cases/resolve",
+    headers=HEADERS,
+    json={"text": brief},
+)
+resp.raise_for_status()
+data = resp.json()
+
+for r in data["results"]:
+    print(r["start"], r["matched"], r["status"])
+```
+
+## What comes back
+
+`results` has one row per citation found, in reading order.
+Each row has:
+
+- `matched`, and `start` and `end`, the characters `brief[start:end]`, so you can underline it.
+- `form`, `full` or `short`, and `pinpoint` when a page is printed after the citation.
+- `status`: `resolved`, `ambiguous`, `not_found` or `unparsed`, as in [Finding a decision](/api-guide/case-law#finding-a-decision).
+- `case`, the case summary, when `status` is `resolved`.
+
+A short form carries `antecedentIndex`, the `index` of the full citation it repeats.
+`unresolvedShortForms` counts short forms we could not tie to one earlier citation, and they are left out.
+
+## Open the opinion behind each citation
+
+Each resolved `case` has `leadOpinionId`, the opinion to read first.
+Read one with `GET /us/opinions/{leadOpinionId}?format=text`.
+For many, collect the ids and send up to 20 at a time to `POST /us/opinions/batch` with `{"opinionIds": [...], "format": "text"}`.
+Use `start` and `end` in your own text, and `matched` to show the citation next to the opinion.
+
+## What it costs
+
+You pay per distinct citation, however often it repeats or however it is spelled.
+A string that is not a citation is refunded.
+A text with more than 300 distinct citations is a `422`: split it.
+
+A brief with 40 citations in the text, 25 of them distinct, 22 of which resolve:
+
+| Item | Credits |
+|---|---:|
+| 25 distinct citations x 2 | 50 |
+| **The resolve call** | **50** |
+| 22 lead opinions through the batch x 6 (optional) | 132 |
+
+`distinctCitations` and `creditsConsumed` in the response report what was counted.
+Send an `Idempotency-Key` header to make a retry safe.

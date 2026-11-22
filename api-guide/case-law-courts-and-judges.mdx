@@ -1,0 +1,73 @@
+---
+title: "Courts, coverage and judges"
+description: "List the US courts we hold, see what is held per court and year, and read judge profiles and financial disclosures"
+---
+
+Check the courts before you build on them.
+
+| Endpoint | What it returns | Credits |
+|---|---|---:|
+| `GET /us/courts` | Courts, ordered by `courtId`, with `include=coverage` | Free |
+| `GET /us/courts/{courtId}` | One court, with `include=coverage` | Free |
+| `GET /us/judges` | Judges, ordered by name | 2 per page |
+| `GET /us/judges/{judgeId}` | One judge, with case counts on request | 2, or 4 with `include=stats` |
+| `GET /us/judges/{judgeId}/disclosures` | A judge's financial disclosure reports, newest year first | 1 per page |
+
+## Courts
+
+A court id is a readable code such as `US_FED_SCOTUS` or `US_FED_CA9`.
+It is the `courtIds` value for [search](/api-guide/case-law-search) and the `courtId` filter elsewhere.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/courts?state=CA&level=appellate" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+| Parameter | Values |
+|---|---|
+| `state` | A two-letter state code |
+| `level` | `supreme`, `appellate`, `trial`, `bankruptcy`, `bankruptcy_appellate`, `special`, `attorney_general`, `agency`, `other` |
+| `system` | `federal`, `state`, `territorial`, `tribal`, `military` |
+| `isActive` | `true` for courts that still sit |
+| `q` | Words of the name, short name or citation abbreviation |
+
+A single court adds its parent court, website, dates and, where held, its federal filing code (`pacerCourtId`) and Federal Judicial Center code (`fjcCourtId`).
+
+## Coverage
+
+Add `include=coverage` to either courts route, which stays free, to judge how complete a court is before you search it.
+`include=coverage.years` adds the decisions per year.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/courts?level=supreme&include=coverage" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+Each court then carries a `coverage` object with `decisions` held, `firstYear`, `lastYear`, `newestDecisionDate` and `newestAddedAt`.
+Counts can trail the newest additions.
+A year with few decisions inside a court's range can be a gap in what we hold, not a quiet year.
+
+## Judges
+
+`GET /us/judges` takes `name` (words of the name, 2 characters or more), `courtId` (judges who held a position on that court) and `active`, and returns a short record per judge.
+A judge id comes from a case's `panel`, an opinion's `authorJudgeId` or this list.
+
+`GET /us/judges/{judgeId}` returns the name in parts, dates and places of birth and death (each date has a `...Precision` field), `positions`, `education` and `politicalAffiliations`.
+A field we do not hold is `null`, and a list we do not hold is empty.
+
+`include=stats` adds `stats`, counts of the judge's cases: `cases`, `byYear`, `byCourt`, `byRole` (`authored` and `panel`, which overlap) and `byOutcome`.
+It adds 2 credits to the same charge.
+If the count times out, the profile is still served with `stats: null` and only those 2 credits are refunded.
+`byOutcome` counts the [`outcome`](/api-guide/case-law#the-case-record) of each decision, not whether this judge was in the majority.
+
+For a judge's cases use `GET /us/cases/list?judgeId=...`, newest first.
+`judgeRole` is `authored`, `panel` or `any` (default), and it takes `courtId` and a `dateFrom` to `dateTo` window.
+
+## Financial disclosures
+
+Federal judges file disclosure reports.
+Each has `reportYear`, `reportType` and `pageCount`.
+We hold no report files yet, so `fileId` is `null`.
+
+An empty page is charged, so a judge with no reports costs 1 credit.
+An unknown judge or court is a `404` and is not charged.

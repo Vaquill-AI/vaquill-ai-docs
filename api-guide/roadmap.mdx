@@ -39,6 +39,7 @@ Poll it to detect new corpora. New corpora use the same `corpusType` filter, so 
 | Agencies not yet covered | Department of Justice (DOJ) Civil Rights Division | Americans with Disabilities Act guidance. | Planned |
 | Pending federal legislation | Congressional bills (`corpusType=FEDERAL_BILL`) | Bill text is available for the 119th Congress. Status (actions, sponsors, committees) is still to come. | Text available, status planned |
 | Case law pagination | United States Reports | Official star pagination for Supreme Court opinions, so a pin cite such as `576 U.S. 644, 681` is preserved. | Evaluating |
+| Case law completeness | Courts and years not yet held | Early years and smaller courts that [court coverage](/api-guide/case-law-courts-and-judges#coverage) shows as thin or missing. | Ongoing |
 
 Per-source detail for agencies already covered is in [Agency guidance coverage](/api-guide/coverage/agency-guidance). Adjudication bodies already served are in [Federal coverage](/api-guide/coverage/federal).
 
@@ -48,13 +49,14 @@ Per-source detail for agencies already covered is in [Agency guidance coverage](
 
 | Not building | Why |
 |---|---|
-| General case law and court dockets | The corpus is primary law: statutes, regulations, constitutions, court rules and agency material. |
 | GAO and Comptroller General decisions | GAO offers no feed or API and does not permit automated access. |
 | Judge-specific procedural material (standing orders, chambers procedures, individual practice rules) | It has no stable location, citation form or amendment cycle. |
 | Practice notes and practice directions | A Commonwealth instrument with no direct US federal equivalent. |
 | Municipal and county ordinances | No comprehensive public source. |
 | Standards incorporated by reference into the CFR (ASTM, NFPA, ISO) | Published by private standards bodies. |
 | NAIC model law text | A commercially sold publication, not government primary law. Each state's insurance bulletins are in scope under `STATE_AGENCY_GUIDANCE`. |
+
+US case law, dockets, judges and oral arguments are served by the [case law API](/api-guide/case-law).
 
 The corpus carries court rules that a court formally adopts as binding on everyone appearing before it. That covers the Federal Rules, Supreme Court Rules, the state court rules in the [Coverage](/api-guide/coverage) matrix and the federal local rules.
 

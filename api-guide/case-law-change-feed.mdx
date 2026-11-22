@@ -1,0 +1,87 @@
+---
+title: "Change feed"
+description: "List the US cases added, changed or removed since a moment, and keep a local copy in step"
+---
+
+`GET /us/cases/changes` lists the cases added or changed after a moment you choose, oldest first.
+Use it to keep a database, index or cache of case law in step with ours.
+It costs 1 credit per page, and an empty page is charged.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/cases/changes?since=2026-11-01T00:00:00Z&limit=100" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```json
+{
+  "results": [
+    {
+      "caseId": "USCASE_3F9A2B1C4D5E6F708192",
+      "changeType": "upsert",
+      "change": "added",
+      "updatedAt": "2026-11-01T02:14:09Z",
+      "courtId": "US_FED_CA9",
+      "caseName": "...",
+      "decisionDate": "2026-09-18"
+    },
+    { "caseId": "USCASE_0123456789ABCDEF0123", "changeType": "removed", "updatedAt": "2026-11-01T03:00:00Z" }
+  ],
+  "count": 2,
+  "since": "2026-11-01T00:00:00Z",
+  "asOf": "2026-11-21T09:55:00Z",
+  "dataVersion": "2026-11-21.1",
+  "hasMore": true,
+  "nextCursor": "MjAyNi0xMS0wMVQw...",
+  "creditsConsumed": 1
+}
+```
+
+The response is abridged.
+
+| Parameter | Meaning |
+|---|---|
+| `since` | Required. ISO 8601. A value without a time zone is read as UTC |
+| `cursor` | The previous page's `nextCursor`. Omit it on the first page |
+| `courtId` | Only this court |
+| `limit` | 1 to 100, default 20 |
+
+The feed carries ids, not records.
+`changeType` is `upsert` (the case was added or changed, and `change` says which) or `removed`.
+Fetch an `upsert` with `GET /us/cases/{caseId}` or `POST /us/cases/batch`.
+**A `removed` row means we took the case down: delete your copy.**
+It carries only `caseId`, `changeType` and `updatedAt`.
+
+## Following the corpus
+
+Page with `nextCursor` until it is `null`, keeping the same `since` and `courtId` on every `cursor` of one walk.
+A malformed cursor is a `422` and is not charged.
+When `hasMore` is `false`, nothing at or before `asOf` is missing.
+Store `asOf` and use it as the next run's `since`.
+`asOf` trails the present by about five minutes, longer while a long write transaction is open, so a change that commits late is never skipped.
+`dataVersion` names the dataset release the feed comes from.
+
+```python Python
+import os
+import requests
+
+API = "https://api.vaquill.ai/api/v1"
+HEADERS = {"Authorization": f"Bearer {os.environ['VAQUILL_API_KEY']}"}
+
+
+def sync(since: str, handle) -> str:
+    """Call handle(row) for every change after `since`. Returns the `since` for the next run."""
+    cursor = None
+    while True:
+        params = {"since": since, "limit": 100}
+        if cursor:
+            params["cursor"] = cursor
+        page = requests.get(f"{API}/us/cases/changes", headers=HEADERS, params=params).json()
+        for row in page["results"]:
+            handle(row)
+        if not page["hasMore"]:
+            return page["asOf"]
+        cursor = page["nextCursor"]
+```
+
+A walk from an early `since` lists every case we hold, 100 a page.
+Narrow it with `courtId`, and size a court first with the free [coverage](/api-guide/case-law-courts-and-judges#coverage) option on `GET /us/courts`.

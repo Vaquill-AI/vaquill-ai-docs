@@ -1,0 +1,156 @@
+---
+title: "US case law"
+description: "US court decisions with the text of their opinions: search, citation lookup, the citation graph, courts, judges and dockets"
+---
+
+A decision is one case: its court, dates, parties, reporter citations, the judges who sat and the opinions written.
+Each opinion has its own id and its own text.
+Decisions link to the decisions they cite, so you can walk the citation graph both ways.
+
+| Endpoint | What it returns | Credits |
+|---|---|---:|
+| [`POST /us/cases/search`](/api-reference/us-case-law/search-us-court-opinions) | Full-text search over opinions, one result per case. See [Searching case law](/api-guide/case-law-search) | 4 per page |
+| [`POST /us/cases/resolve`](/api-reference/us-case-law/resolve-citations-to-cases) | Reporter citations to cases, from a list (up to 100) or from the text of a brief. See [Check the citations in a brief](/api-guide/case-law-guide-brief-checker) | 2 per distinct citation |
+| [`GET /us/cases/{caseId}`](/api-reference/us-case-law/get-a-us-court-decision) | One decision with its opinion list and panel | 2 |
+| [`POST /us/cases/batch`](/api-reference/us-case-law/get-several-us-court-decisions) | Up to 50 decisions by id | 2 per case served |
+| [`GET /us/opinions/{opinionId}`](/api-reference/us-case-law/get-the-text-of-an-opinion) | The text of one opinion. See [Opinion text](/api-guide/case-law-opinions) | 6 |
+| [`POST /us/opinions/batch`](/api-guide/case-law-opinions#several-opinions-in-one-call) | The text of up to 20 opinions | 6 per opinion served |
+| `GET /us/cases/list` | Decisions by filter (court, state, judge, dates), no text query, newest first | 1 per page |
+| `GET /us/cases/{caseId}/citations` | The decisions a case cites or that cite it (`direction`), most mentioned first | 1 per page |
+| `GET /us/opinions/{opinionId}/citations` | The same graph at opinion level | 1 per page |
+| `GET /us/cases/{caseId}/parentheticals` | How later decisions describe the case in parentheticals | 1 per page |
+| [`GET /us/courts`](/api-reference/us-case-law/list-us-courts), [`/{courtId}`](/api-reference/us-case-law/get-a-us-court) | Courts, with what we hold per court and year (`include=coverage`). See [Courts and judges](/api-guide/case-law-courts-and-judges) | Free |
+| `GET /us/judges`, `/{judgeId}`, `/{judgeId}/disclosures` | Judges, their case counts (`include=stats`) and financial disclosure reports | 1 to 4 |
+| `GET /us/dockets/list`, `/us/dockets/{docketId}`, `/entries`, `/us/oral-arguments/list`, `/us/oral-arguments/{argumentId}` | Dockets and oral arguments. No docket entries are held yet. See [Dockets](/api-guide/case-law-dockets) | 1 to 2 |
+| `GET /us/cases/changes` | Cases added, changed or removed since a moment. See [Change feed](/api-guide/case-law-change-feed) | 1 per page |
+
+Every path is prefixed with `/api/v1`, and every request needs an `Authorization: Bearer vq_key_...` header.
+The key needs the `cases:read` scope, which covers every route here.
+For a first call, see the [quickstart](/api-guide/case-law-quickstart).
+
+## What is held
+
+The newest decision we hold is dated 2026-09-29.
+Coverage differs by court and year, and [Coverage](/api-guide/coverage#case-law) has the totals.
+`GET /us/courts?include=coverage` is free and says, per court, what we hold, from which year to which, and when we last added a decision.
+An empty result for a court that is not listed, or for a year inside its gaps, does not mean no such decision exists.
+
+## Identifiers
+
+An id never changes and is the only thing a route takes to find a record.
+
+| Record | Id |
+|---|---|
+| Decision | `USCASE_` and 20 uppercase hex characters |
+| Opinion | `USOP_` and 20 uppercase hex characters |
+| Judge | `USJDG_` and 20 uppercase hex characters |
+| Court | A readable code, such as `US_FED_SCOTUS` |
+
+Get real ids from a citation lookup or a search.
+A malformed id is a `422` and is not charged.
+
+## Finding a decision
+
+`POST /us/cases/resolve` returns one result per citation, in the order sent:
+
+```bash
+curl -X POST "https://api.vaquill.ai/api/v1/us/cases/resolve" \
+  -H "Authorization: Bearer vq_key_..." \
+  -H "Content-Type: application/json" \
+  -d '{"citations": ["410 U.S. 113", "not a citation"]}'
+```
+
+```json
+{
+  "results": [
+    { "index": 0, "status": "resolved", "case": { "caseId": "USCASE_3F9A2B1C4D5E6F708192", "caseName": "Roe v. Wade" }, "candidates": [] },
+    { "index": 1, "status": "unparsed", "case": null, "candidates": [] }
+  ],
+  "count": 2,
+  "resolved": 1,
+  "creditsConsumed": 2
+}
+```
+
+The response is abridged.
+
+| `status` | Meaning |
+|---|---|
+| `resolved` | One case carries the citation, in `case` |
+| `ambiguous` | Several do. Every candidate is in `candidates` (up to 20) and none is picked |
+| `not_found` | A valid citation that no case we hold carries. Charged |
+| `unparsed` | Not a `volume reporter page` citation. Refunded |
+
+Send `text` instead of `citations` (one of the two, up to 200,000 characters) to find every citation in a document.
+Each result then carries `matched`, `start`, `end`, `form` (`full` or `short`) and `pinpoint`, and a short form such as `Id.` is answered with the case it repeats.
+A citation that repeats is charged once.
+To find the cases cited inside an opinion, read the `cite` elements of its [text](/api-guide/case-law-opinions#citations).
+To search by what a decision says, see [Searching case law](/api-guide/case-law-search).
+
+## The case record
+
+`GET /us/cases/{caseId}` returns the court, dates, parties, `citations`, `citedByCount`, the `panel` of judges (each with a `judgeId`) and `opinions`, the list of its opinions with `opinionId`, `kind`, author and `textFromOcr`.
+Lists such as search results carry a shorter summary without opinions and panel, plus `leadOpinionId`, the opinion to read first.
+Every case row carries `outcome`, one word read from the disposition line the court printed: `affirmed`, `reversed`, `vacated`, `remanded`, `affirmed_in_part`, `reversed_in_part`, `dismissed`, `granted`, `denied` or `other`, and `null` with no disposition.
+It is a reading of that line, not of the opinion.
+Every optional field is `null` when we hold nothing for it.
+`decisionDatePrecision` is `day`, `month` or `year`, so treat a date as approximate when it is not `day`.
+The full field list is in the API reference.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/cases/USCASE_3F9A2B1C4D5E6F708192" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+`POST /us/cases/batch` takes up to 50 distinct `caseIds` and returns the same record for each, in the order sent.
+A duplicate id collapses to one, and an unknown id lands in `notFound` and is not charged.
+More than 50 distinct ids is a `422`.
+
+## Listing by filter
+
+`GET /us/cases/list` lists decisions without a text query, newest first (`sort=decision_date_asc` reverses it), each as a short summary.
+Filters are `courtId` (repeat it, up to 50), `state`, `judgeId` with `judgeRole` (`authored`, `panel` or `any`), `dateFrom`, `dateTo` and `publicationStatus`.
+
+Pass `nextCursor` as `cursor`, with the same filters, until `hasMore` is `false`.
+A reversed window or malformed cursor is a `422` and an unknown `judgeId` a `404`, neither charged.
+
+## The citation graph
+
+`GET /us/cases/{caseId}/citations` returns the decisions the case cites (`direction=cites`) or the decisions that cite it (`direction=cited_by`, the default); the opinion route takes the same parameter.
+Each of the `results` is a case summary with `mentionCount`, highest first.
+
+## Pagination
+
+Search, the citation routes, the courts and judges lists and the docket lists page with `limit` (1 to 100, default 20) and `offset` (0 to 10,000).
+Advance `offset` by `limit` until `hasMore` is `false`.
+`count` is the rows on this page, not a total.
+An `offset` above 10,000 is a `422`: add a filter instead.
+`GET /us/cases/list` and the [change feed](/api-guide/case-law-change-feed) page with a cursor.
+
+## Charging
+
+1 credit is $0.01.
+A page of a list is a charge, including an empty page.
+A `404`, a `410`, a `422`, a `503` and a `500` are not charged, or are refunded.
+A batch charges per case or opinion served.
+
+Send an `Idempotency-Key` header on a charged call to make a retry safe.
+A replay within 24 hours returns the original response with `creditsConsumed` of `0` and the header `Idempotent-Replayed: true`.
+The same key on a different method, path or body is a `422`.
+
+## Hidden and withdrawn cases
+
+A small share of decisions is marked as not to be shown by search engines.
+Search, the citation lists and `GET /us/cases/list` leave them out.
+They are still served by id and by citation, so a missing search result does not mean the case does not exist.
+
+A case we withdrew (privacy, sealed, court order, legal request) answers `410 Gone` with only its `caseId`, and is not charged.
+
+## Data limits
+
+- Text read from page images has `textFromOcr: true` and can hold recognition errors. Check a quotation or number against the original.
+- An opinion can come back with `bodyUnavailable: true` and an empty `body`, and is then not charged. `qualityFlags` on a case or opinion lists the checks it failed.
+- Personal identifiers in party names and docket text are masked.
+
+To report an error in a record, write to [contact@vaquill.ai](mailto:contact@vaquill.ai) with the id.
+Statuses and rate limits are in [Errors and rate limits](/api-guide/errors).
