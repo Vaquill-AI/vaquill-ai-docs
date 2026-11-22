@@ -139,7 +139,8 @@
                 "icon": "scale-balanced",
                 "pages": [
                   "api-guide/case-law",
-                  "api-guide/case-law-search"
+                  "api-guide/case-law-search",
+                  "api-guide/case-law-citator"
                 ]
               },
               {

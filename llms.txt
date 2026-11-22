@@ -70,6 +70,7 @@ New accounts get 1,000 free API credits ($10), valid for 90 days. No card requir
 
 - [US case law](https://www.vaquill.ai/docs/api-guide/case-law): Make your first case law call, and see every endpoint for decisions, opinions, courts, judges and dockets
 - [Search and read cases](https://www.vaquill.ai/docs/api-guide/case-law-search): Search US case law, look up citations, check the citations in a brief and read opinion text
+- [Citator and treatments](https://www.vaquill.ai/docs/api-guide/case-law-citator): Preview of the planned US case citator: good-law flags, treatments and cited statutes. Not live yet.
 
 ## Recipes
 

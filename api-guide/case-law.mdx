@@ -125,6 +125,9 @@ Paths start with `https://api.vaquill.ai/api/v1/us`. Each name links to its para
 
 Docket entries, filed documents and recordings are [not held yet](/api-guide/coverage/case-law#not-held-yet).
 
+**File downloads are not live yet.** `GET /files/{fileId}` returns `404` today.
+It will return a signed link that works for 5 minutes. The planned price is 5 credits.
+
 ### Track changes
 
 | Endpoint | Use it to | Credits |

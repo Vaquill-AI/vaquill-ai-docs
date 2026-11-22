@@ -1,0 +1,110 @@
+---
+title: "Citator and treatments"
+sidebarTitle: "Citator (not live yet)"
+description: "Preview of the planned US case citator: good-law flags, treatments and cited statutes. Not live yet."
+---
+
+<Warning>
+  **The citator is not live yet.** Its endpoints return `404` today, except parentheticals, which works now.
+  Prices, fields and behavior may change before launch.
+</Warning>
+
+The citator will flag whether a case is still good law.
+It will also show the case's history and the later decisions that cite it.
+
+| Endpoint | What it returns | Live today | Credits |
+|---|---|---|---:|
+| `GET /us/cases/{caseId}/treatment` | The flag, the appellate history and a page of citing decisions with their treatment | No | 3 per page |
+| `POST /us/cases/status/batch` | The flag alone for up to 100 cases | No | 1 per case answered |
+| `GET /us/cases/{caseId}/statutes` | The statutes, regulations and rules a case cites | No | 1 per page |
+| `GET /us/cases/{caseId}/parentheticals` | Parentheticals of later decisions that describe the case, best scored first | Yes | 1 per page |
+| `GET /us/statutes/section/{actId}/cases` | The cases that cite one statute section | No | 1 per page |
+
+<Warning>
+  Treatments are automated signals, each with a `confidence`. They are not legal advice.
+  A green flag means no negative signal was found. The case may still be bad law.
+</Warning>
+
+## The flag and the citing decisions
+
+This is the planned request and response. The request returns `404` today.
+
+```bash
+curl "https://api.vaquill.ai/api/v1/us/cases/USCASE_3F9A2B1C4D5E6F708192/treatment?category=negative&limit=10" \
+  -H "Authorization: Bearer vq_key_..."
+```
+
+```json
+{
+  "caseId": "USCASE_3F9A2B1C4D5E6F708192",
+  "citedByCount": 42,
+  "status": {
+    "status": "yellow",
+    "label": "Use with care",
+    "reason": "...",
+    "asOf": "2024-03-18",
+    "negativeCount": 0,
+    "cautionCount": 3,
+    "evidence": { "caseId": "USCASE_0123456789ABCDEF0123", "opinionId": "USOP_0123456789ABCDEF0123", "text": "..." }
+  },
+  "history": [
+    { "direction": "later", "relation": "reversed", "case": { "caseId": "USCASE_0123456789ABCDEF0123" }, "confidence": 0.93, "evidenceText": "..." }
+  ],
+  "results": [
+    {
+      "case": { "caseId": "USCASE_0123456789ABCDEF0123" },
+      "opinionId": "USOP_0123456789ABCDEF0123",
+      "treatment": "distinguished",
+      "category": "caution",
+      "isPartial": false,
+      "confidence": 0.88,
+      "evidenceText": "...",
+      "evidenceOffset": 1204
+    }
+  ],
+  "count": 1,
+  "hasMore": false,
+  "creditsConsumed": 3
+}
+```
+
+The response is abridged.
+
+`status.status` is `red` (no longer good law), `yellow` (use with care) or `green` (no negative signal found).
+For red and yellow, `evidence` names the decision and sentence behind the flag.
+`status` is `null` when the case has not been assessed.
+`citedByCount` is the same figure as on the case record.
+`asOf` is the date of the newest decision the flag considered.
+
+`history` lists decisions in the same litigation.
+`direction` is `later` when a later decision acted on this case and `earlier` when this case acted on the decision shown.
+`relation` is `affirmed`, `reversed`, `vacated`, `remanded`, `modified`, `dismissed` or an `_in_part` form of one of these.
+
+`results` is a page of later decisions that cite the case, negative references first.
+Each `category` and `treatment` pair is one of:
+
+| `category` | `treatment` |
+|---|---|
+| `negative` | `overruled`, `abrogated`, `reversed`, `vacated`, `superseded`, `disapproved` |
+| `caution` | `distinguished`, `criticized`, `questioned`, `limited`, `declined_to_follow` |
+| `neutral` | `followed`, `cited`, `explained`, `relied_on` |
+
+Filter with `category` or `treatment`, and page with `limit` and `offset`.
+`POST /us/cases/status/batch` takes `caseIds` and returns each case's flag.
+Unknown ids are listed in `notFound` and are not charged.
+
+## Statutes
+
+`GET /us/cases/{caseId}/statutes` returns each statute, regulation or rule the case cites.
+Each row has `citation`, `pinpoints`, `mentionCount` and `resolutionStatus` (`resolved`, `ambiguous` or `unresolved`).
+`actId` is the section id for the [statutes API](/api-guide/concepts/section-ids), set only when the citation resolved to exactly one section.
+`subsections` holds the subsection found for each pinpoint, such as `a.1` for `(a)(1)`. It is empty when none is found.
+`resolvedOnly=true` keeps only those.
+
+`GET /us/statutes/section/{actId}/cases` lists the cases that cite one section, newest decision first.
+Each row has `pinpoints`, `subsections`, `mentionCount` and `citationText`.
+`citationText` is the citation as first printed in the case, up to 200 characters. It is not the citing sentence.
+It takes `courtId` and a `dateFrom` to `dateTo` window, and leaves out cases kept out of search.
+
+An empty page is charged.
+An unknown case returns `404` and is refunded. A withdrawn case returns `410` without a charge.

@@ -133,17 +133,16 @@ def rounded(n: int) -> str:
 def held(courts: list[dict]) -> list[str]:
     cov = [c["coverage"] for c in courts if c.get("coverage") and c["coverage"]["decisions"]]
     if not cov:
-        return ["-", "-"]
-    n = sum(c["decisions"] for c in cov)
-    return [rounded(n), max(c["newestDecisionDate"] or "-" for c in cov)]
+        return ["-"]
+    return [rounded(sum(c["decisions"] for c in cov))]
 
 
 def table(head: list[str], rows: list[list[str]], counts: bool, at: int | None = None) -> list[str]:
     at = len(head) if at is None else at
     rule = ["---"] * len(head)
     if counts:
-        head = head[:at] + ["Case records", "Newest decision"] + head[at:]
-        rule = rule[:at] + ["---:", "---"] + rule[at:]
+        head = head[:at] + ["Case records"] + head[at:]
+        rule = rule[:at] + ["---:"] + rule[at:]
     return ["| " + " | ".join(head) + " |", "|" + "|".join(rule) + "|"] + ["| " + " | ".join(r) + " |" for r in rows]
 
 
@@ -157,8 +156,7 @@ def render(courts: list[dict]) -> str:
     def codes(group: list[dict]) -> str:
         return ", ".join(f"`{i}`" for i in sorted(c["courtId"] for c in group)) or "-"
 
-    out = ["## Types of court", "", "Pass the filter to `GET /us/courts` to list the courts of that type."]
-    out += ["A few state trial courts have `level=appellate`, such as the Connecticut Superior Court.", ""]
+    out = ["## Types of court", "", "Pass the filter to `GET /us/courts` to list the courts of that type.", ""]
     rows = []
     for label, system, levels, query in GROUPS:
         group = [c for c in courts if c["system"] == system and (levels is None or c["level"] in levels)]
@@ -175,7 +173,7 @@ def render(courts: list[dict]) -> str:
     out += ["", "## States and territories", "", "Main appeals courts sitting today."]
     out += ["For every court, call `GET /us/courts?state=CA` with the state you need. The list includes federal courts in that state.", ""]
     if counts:
-        out += ["Records and dates cover every state court and body in that jurisdiction.", ""]
+        out += ["Records cover every state court and body in that jurisdiction.", ""]
     rows = []
     for code, label in pairs(STATES):
         mine = [c for c in courts if c.get("stateCode") == code and c["system"] in ("state", "territorial")]

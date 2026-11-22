@@ -11,8 +11,6 @@ description: "US case law totals, the courts covered with their court codes, the
 | Opinions | 10.9M+ |
 | Courts with records | 2,100+ |
 | Judges | 15,000+ |
-| Oldest decision | 1658 |
-| Newest decision | 2026-09-29 |
 
 Totals as of 2026-11-22.
 
@@ -42,117 +40,116 @@ Every court has a `courtId`, such as `US_FED_CA9` or `US_CA_SUPREME`.
 ## Types of court
 
 Pass the filter to `GET /us/courts` to list the courts of that type.
-A few state trial courts have `level=appellate`, such as the Connecticut Superior Court.
 
-| Court type | Filter | Case records | Newest decision |
-|---|---|---:|---|
-| US Supreme Court | `system=federal&level=supreme` | 499,000+ | 2026-09-25 |
-| Federal courts of appeals | `system=federal&level=appellate` | 1.3M+ | 2026-09-29 |
-| Federal district courts | `system=federal&level=trial` | 1.3M+ | 2026-09-29 |
-| Bankruptcy courts | `system=federal&level=bankruptcy` | 74,000+ | 2026-09-28 |
-| Bankruptcy appellate panels | `system=federal&level=bankruptcy_appellate` | 6,800+ | 2026-09-22 |
-| Federal specialty courts | `system=federal&level=special` | 176,000+ | 2026-09-29 |
-| Federal agencies | `system=federal&level=agency` | 39,000+ | 2026-09-29 |
-| US Attorney General | `system=federal&level=attorney_general` | 1,500+ | 2026-09-17 |
-| State high courts | `system=state&level=supreme` | 2.4M+ | 2026-09-29 |
-| State appeals courts | `system=state&level=appellate` | 3.7M+ | 2026-09-29 |
-| State trial courts | `system=state&level=trial` | 264,000+ | 2026-09-25 |
-| State special courts | `system=state&level=special` | 45,000+ | 2026-09-23 |
-| State agencies | `system=state&level=agency` | 12,000+ | 2026-09-17 |
-| State attorneys general | `system=state&level=attorney_general` | 67,000+ | 2026-09-28 |
-| Territorial courts | `system=territorial` | 68,000+ | 2026-09-29 |
-| Tribal courts | `system=tribal` | 2,100+ | 2017-01-20 |
-| Military courts | `system=military` | 25,000+ | 2026-09-29 |
+| Court type | Filter | Case records |
+|---|---|---:|
+| US Supreme Court | `system=federal&level=supreme` | 499,000+ |
+| Federal courts of appeals | `system=federal&level=appellate` | 1.3M+ |
+| Federal district courts | `system=federal&level=trial` | 1.3M+ |
+| Bankruptcy courts | `system=federal&level=bankruptcy` | 74,000+ |
+| Bankruptcy appellate panels | `system=federal&level=bankruptcy_appellate` | 6,800+ |
+| Federal specialty courts | `system=federal&level=special` | 161,000+ |
+| Federal agencies | `system=federal&level=agency` | 39,000+ |
+| US Attorney General | `system=federal&level=attorney_general` | 1,500+ |
+| State high courts | `system=state&level=supreme` | 2.4M+ |
+| State appeals courts | `system=state&level=appellate` | 3.6M+ |
+| State trial courts | `system=state&level=trial` | 369,000+ |
+| State special courts | `system=state&level=special` | 41,000+ |
+| State agencies | `system=state&level=agency` | 9,400+ |
+| State attorneys general | `system=state&level=attorney_general` | 67,000+ |
+| Territorial courts | `system=territorial` | 68,000+ |
+| Tribal courts | `system=tribal` | 2,100+ |
+| Military courts | `system=military` | 25,000+ |
 
 ## Federal courts
 
-| Court | `courtId` | Abbreviation | Case records | Newest decision |
-|---|---|---|---:|---|
-| Supreme Court | `US_FED_SCOTUS` | SCOTUS | 499,000+ | 2026-09-25 |
-| First Circuit | `US_FED_CA1` | 1st Cir. | 41,000+ | 2026-09-29 |
-| Second Circuit | `US_FED_CA2` | 2d Cir. | 110,000+ | 2026-09-29 |
-| Third Circuit | `US_FED_CA3` | 3rd Cir. | 95,000+ | 2026-09-29 |
-| Fourth Circuit | `US_FED_CA4` | 4th Cir. | 174,000+ | 2026-09-28 |
-| Fifth Circuit | `US_FED_CA5` | 5th Cir. | 198,000+ | 2026-09-29 |
-| Sixth Circuit | `US_FED_CA6` | 6th Cir. | 100,000+ | 2026-09-28 |
-| Seventh Circuit | `US_FED_CA7` | 7th Cir. | 86,000+ | 2026-09-28 |
-| Eighth Circuit | `US_FED_CA8` | 8th Cir. | 99,000+ | 2026-09-29 |
-| Ninth Circuit | `US_FED_CA9` | 9th Cir. | 212,000+ | 2026-09-29 |
-| Tenth Circuit | `US_FED_CA10` | 10th Cir. | 67,000+ | 2026-09-29 |
-| Eleventh Circuit | `US_FED_CA11` | 11th Cir. | 91,000+ | 2026-09-29 |
-| D.C. Circuit | `US_FED_CADC` | D.C. Cir. | 43,000+ | 2026-09-29 |
-| Federal Circuit | `US_FED_CAFC` | Fed. Cir. | 55,000+ | 2026-09-29 |
-| Tax Court | `US_FED_TAX` | Tax Ct. | 50,000+ | 2026-09-29 |
-| Court of Federal Claims | `US_FED_USCFC` | Fed. Cl. | 36,000+ | 2026-09-28 |
-| Court of International Trade | `US_FED_CIT` | Ct. Intl. Trade | 7,600+ | 2026-09-23 |
-| Court of Appeals for Veterans Claims | `US_FED_CAVC` | Vet. App. | 2,900+ | 2026-08-24 |
-| Panel on Multidistrict Litigation | `US_FED_JPML` | J.P.M.L. | 2,000+ | 2019-06-05 |
+| Court | `courtId` | Abbreviation | Case records |
+|---|---|---|---:|
+| Supreme Court | `US_FED_SCOTUS` | SCOTUS | 499,000+ |
+| First Circuit | `US_FED_CA1` | 1st Cir. | 41,000+ |
+| Second Circuit | `US_FED_CA2` | 2d Cir. | 110,000+ |
+| Third Circuit | `US_FED_CA3` | 3rd Cir. | 95,000+ |
+| Fourth Circuit | `US_FED_CA4` | 4th Cir. | 174,000+ |
+| Fifth Circuit | `US_FED_CA5` | 5th Cir. | 198,000+ |
+| Sixth Circuit | `US_FED_CA6` | 6th Cir. | 100,000+ |
+| Seventh Circuit | `US_FED_CA7` | 7th Cir. | 86,000+ |
+| Eighth Circuit | `US_FED_CA8` | 8th Cir. | 99,000+ |
+| Ninth Circuit | `US_FED_CA9` | 9th Cir. | 212,000+ |
+| Tenth Circuit | `US_FED_CA10` | 10th Cir. | 67,000+ |
+| Eleventh Circuit | `US_FED_CA11` | 11th Cir. | 91,000+ |
+| D.C. Circuit | `US_FED_CADC` | D.C. Cir. | 43,000+ |
+| Federal Circuit | `US_FED_CAFC` | Fed. Cir. | 55,000+ |
+| Tax Court | `US_FED_TAX` | Tax Ct. | 50,000+ |
+| Court of Federal Claims | `US_FED_USCFC` | Fed. Cl. | 36,000+ |
+| Court of International Trade | `US_FED_CIT` | Ct. Intl. Trade | 7,600+ |
+| Court of Appeals for Veterans Claims | `US_FED_CAVC` | Vet. App. | 2,900+ |
+| Panel on Multidistrict Litigation | `US_FED_JPML` | J.P.M.L. | 2,000+ |
 
 ## States and territories
 
 Main appeals courts sitting today.
 For every court, call `GET /us/courts?state=CA` with the state you need. The list includes federal courts in that state.
 
-Records and dates cover every state court and body in that jurisdiction.
+Records cover every state court and body in that jurisdiction.
 
-| Jurisdiction | `state` | Case records | Newest decision | Highest court | Appeals courts |
-|---|---|---:|---|---|---|
-| Alabama | `AL` | 148,000+ | 2026-09-25 | `US_AL_SUPREME` | `US_AL_CIVIL_APPEALS`, `US_AL_CRIMINAL_APPEALS` |
-| Alaska | `AK` | 11,000+ | 2026-09-25 | `US_AK_SUPREME` | `US_AK_APPEALS` |
-| Arizona | `AZ` | 40,000+ | 2026-09-29 | `US_AZ_SUPREME` | `US_AZ_APPEALS` |
-| Arkansas | `AR` | 76,000+ | 2026-09-23 | `US_AR_SUPREME` | `US_AR_APPEALS` |
-| California | `CA` | 225,000+ | 2026-09-29 | `US_CA_SUPREME` | `US_CA_APPEAL`, `US_CA_APPELLATE_DIVISION_SUPERIOR` |
-| Colorado | `CO` | 55,000+ | 2026-09-28 | `US_CO_SUPREME` | `US_CO_APPEALS` |
-| Connecticut | `CT` | 106,000+ | 2026-09-29 | `US_CT_SUPREME` | `US_CT_APPELLATE` |
-| Delaware | `DE` | 36,000+ | 2026-09-28 | `US_DE_SUPREME` | - |
-| District of Columbia | `DC` | 22,000+ | 2026-09-24 | `US_DC_APPEALS` | - |
-| Florida | `FL` | 441,000+ | 2026-09-29 | `US_FL_SUPREME` | `US_FL_DISTRICT_APPEAL` |
-| Georgia | `GA` | 208,000+ | 2026-09-29 | `US_GA_SUPREME` | `US_GA_APPEALS` |
-| Hawaii | `HI` | 33,000+ | 2026-09-29 | `US_HI_SUPREME` | `US_HI_INTERMEDIATE_APPEALS` |
-| Idaho | `ID` | 28,000+ | 2026-09-29 | `US_ID_SUPREME` | `US_ID_APPEALS` |
-| Illinois | `IL` | 241,000+ | 2026-09-29 | `US_IL_SUPREME` | `US_IL_APPELLATE` |
-| Indiana | `IN` | 121,000+ | 2026-09-29 | `US_IN_SUPREME` | `US_IN_APPEALS` |
-| Iowa | `IA` | 76,000+ | 2026-09-23 | `US_IA_SUPREME` | `US_IA_APPEALS` |
-| Kansas | `KS` | 65,000+ | 2026-09-25 | `US_KS_SUPREME` | `US_KS_APPEALS` |
-| Kentucky | `KY` | 86,000+ | 2026-09-25 | `US_KY_SUPREME` | `US_KY_APPEALS` |
-| Louisiana | `LA` | 351,000+ | 2026-09-29 | `US_LA_SUPREME` | `US_LA_APPEAL` |
-| Maine | `ME` | 35,000+ | 2026-09-22 | `US_ME_SUPREME` | - |
-| Maryland | `MD` | 50,000+ | 2026-09-28 | `US_MD_APPEALS` | `US_MD_SPECIAL_APPEALS` |
-| Massachusetts | `MA` | 97,000+ | 2026-09-29 | `US_MA_SUPREME` | `US_MA_APPEALS` |
-| Michigan | `MI` | 142,000+ | 2026-09-28 | `US_MI_SUPREME` | `US_MI_APPEALS` |
-| Minnesota | `MN` | 61,000+ | 2026-09-02 | `US_MN_SUPREME` | `US_MN_APPEALS` |
-| Mississippi | `MS` | 71,000+ | 2026-09-29 | `US_MS_SUPREME` | `US_MS_APPEALS` |
-| Missouri | `MO` | 148,000+ | 2025-10-15 | `US_MO_SUPREME` | `US_MO_APPEALS` |
-| Montana | `MT` | 54,000+ | 2026-09-29 | `US_MT_SUPREME` | - |
-| Nebraska | `NE` | 48,000+ | 2026-09-29 | `US_NE_SUPREME` | `US_NE_APPEALS` |
-| Nevada | `NV` | 31,000+ | 2026-09-03 | `US_NV_SUPREME` | `US_NV_APPEALS` |
-| New Hampshire | `NH` | 23,000+ | 2026-09-24 | `US_NH_SUPREME` | - |
-| New Jersey | `NJ` | 140,000+ | 2026-09-29 | `US_NJ_SUPREME` | `US_NJ_SUPERIOR_APPELLATE_DIVISION` |
-| New Mexico | `NM` | 30,000+ | 2026-09-24 | `US_NM_SUPREME` | `US_NM_APPEALS` |
-| New York | `NY` | 1.1M+ | 2026-09-29 | `US_NY_APPEALS` | `US_NY_APPELLATE_DIVISION_SUPREME`, `US_NY_APPELLATE_TERMS_SUPREME` |
-| North Carolina | `NC` | 147,000+ | 2026-09-16 | `US_NC_SUPREME` | `US_NC_APPEALS` |
-| North Dakota | `ND` | 21,000+ | 2026-04-09 | `US_ND_SUPREME` | `US_ND_APPEALS` |
-| Ohio | `OH` | 271,000+ | 2026-09-29 | `US_OH_SUPREME` | `US_OH_APPEALS` |
-| Oklahoma | `OK` | 81,000+ | 2026-09-29 | `US_OK_CRIMINAL_APPEALS`, `US_OK_SUPREME` | `US_OK_CIVIL_APPEALS` |
-| Oregon | `OR` | 81,000+ | 2026-09-23 | `US_OR_SUPREME` | `US_OR_APPEALS` |
-| Pennsylvania | `PA` | 355,000+ | 2026-09-29 | `US_PA_SUPREME` | `US_PA_COMMONWEALTH`, `US_PA_SUPERIOR` |
-| Rhode Island | `RI` | 31,000+ | 2026-09-15 | `US_RI_SUPREME` | - |
-| South Carolina | `SC` | 56,000+ | 2026-09-23 | `US_SC_SUPREME` | `US_SC_APPEALS` |
-| South Dakota | `SD` | 18,000+ | 2026-09-23 | `US_SD_SUPREME` | - |
-| Tennessee | `TN` | 90,000+ | 2026-09-23 | `US_TN_SUPREME` | `US_TN_APPEALS`, `US_TN_CRIMINAL_APPEALS` |
-| Texas | `TX` | 635,000+ | 2026-09-28 | `US_TX_CRIMINAL_APPEALS`, `US_TX_SUPREME` | `US_TX_APPEALS` |
-| Utah | `UT` | 26,000+ | 2026-09-24 | `US_UT_SUPREME` | `US_UT_APPEALS` |
-| Vermont | `VT` | 30,000+ | 2026-09-17 | `US_VT_SUPREME` | - |
-| Virginia | `VA` | 62,000+ | 2026-09-29 | `US_VA_SUPREME` | `US_VA_APPEALS` |
-| Washington | `WA` | 137,000+ | 2026-09-29 | `US_WA_SUPREME` | `US_WA_APPEALS` |
-| West Virginia | `WV` | 39,000+ | 2026-09-29 | `US_WV_SUPREME` | `US_WV_INTERMEDIATE_APPEALS` |
-| Wisconsin | `WI` | 64,000+ | 2026-09-29 | `US_WI_SUPREME` | `US_WI_APPEALS` |
-| Wyoming | `WY` | 12,000+ | 2026-09-25 | `US_WY_SUPREME` | - |
-| American Samoa | `AS` | 2,100+ | 2005-12-27 | `US_AS_HIGH` | - |
-| Guam | `GU` | 3,500+ | 2026-09-01 | `US_GU_SUPREME` | - |
-| Northern Mariana Islands | `MP` | Yes | 2026-09-09 | `US_MP_SUPREME_COMMONWEALTH` | - |
-| Puerto Rico | `PR` | 59,000+ | 2026-09-24 | `US_PR_SUPREME` | `US_PR_TRIBUNAL_DE_APELACIONES_DE_APPEALS` |
-| US Virgin Islands | `VI` | 2,300+ | 2026-09-29 | `US_VI_SUPREME` | - |
+| Jurisdiction | `state` | Case records | Highest court | Appeals courts |
+|---|---|---:|---|---|
+| Alabama | `AL` | 148,000+ | `US_AL_SUPREME` | `US_AL_CIVIL_APPEALS`, `US_AL_CRIMINAL_APPEALS` |
+| Alaska | `AK` | 11,000+ | `US_AK_SUPREME` | `US_AK_APPEALS` |
+| Arizona | `AZ` | 40,000+ | `US_AZ_SUPREME` | `US_AZ_APPEALS` |
+| Arkansas | `AR` | 76,000+ | `US_AR_SUPREME` | `US_AR_APPEALS` |
+| California | `CA` | 225,000+ | `US_CA_SUPREME` | `US_CA_APPEAL`, `US_CA_APPELLATE_DIVISION_SUPERIOR` |
+| Colorado | `CO` | 55,000+ | `US_CO_SUPREME` | `US_CO_APPEALS` |
+| Connecticut | `CT` | 106,000+ | `US_CT_SUPREME` | `US_CT_APPELLATE` |
+| Delaware | `DE` | 36,000+ | `US_DE_SUPREME` | - |
+| District of Columbia | `DC` | 22,000+ | `US_DC_APPEALS` | - |
+| Florida | `FL` | 441,000+ | `US_FL_SUPREME` | `US_FL_DISTRICT_APPEAL` |
+| Georgia | `GA` | 208,000+ | `US_GA_SUPREME` | `US_GA_APPEALS` |
+| Hawaii | `HI` | 33,000+ | `US_HI_SUPREME` | `US_HI_INTERMEDIATE_APPEALS` |
+| Idaho | `ID` | 28,000+ | `US_ID_SUPREME` | `US_ID_APPEALS` |
+| Illinois | `IL` | 241,000+ | `US_IL_SUPREME` | `US_IL_APPELLATE` |
+| Indiana | `IN` | 121,000+ | `US_IN_SUPREME` | `US_IN_APPEALS` |
+| Iowa | `IA` | 76,000+ | `US_IA_SUPREME` | `US_IA_APPEALS` |
+| Kansas | `KS` | 65,000+ | `US_KS_SUPREME` | `US_KS_APPEALS` |
+| Kentucky | `KY` | 86,000+ | `US_KY_SUPREME` | `US_KY_APPEALS` |
+| Louisiana | `LA` | 351,000+ | `US_LA_SUPREME` | `US_LA_APPEAL` |
+| Maine | `ME` | 35,000+ | `US_ME_SUPREME` | - |
+| Maryland | `MD` | 50,000+ | `US_MD_APPEALS` | `US_MD_SPECIAL_APPEALS` |
+| Massachusetts | `MA` | 97,000+ | `US_MA_SUPREME` | `US_MA_APPEALS` |
+| Michigan | `MI` | 142,000+ | `US_MI_SUPREME` | `US_MI_APPEALS` |
+| Minnesota | `MN` | 61,000+ | `US_MN_SUPREME` | `US_MN_APPEALS` |
+| Mississippi | `MS` | 71,000+ | `US_MS_SUPREME` | `US_MS_APPEALS` |
+| Missouri | `MO` | 148,000+ | `US_MO_SUPREME` | `US_MO_APPEALS` |
+| Montana | `MT` | 54,000+ | `US_MT_SUPREME` | - |
+| Nebraska | `NE` | 48,000+ | `US_NE_SUPREME` | `US_NE_APPEALS` |
+| Nevada | `NV` | 31,000+ | `US_NV_SUPREME` | `US_NV_APPEALS` |
+| New Hampshire | `NH` | 23,000+ | `US_NH_SUPREME` | - |
+| New Jersey | `NJ` | 140,000+ | `US_NJ_SUPREME` | `US_NJ_SUPERIOR_APPELLATE_DIVISION` |
+| New Mexico | `NM` | 30,000+ | `US_NM_SUPREME` | `US_NM_APPEALS` |
+| New York | `NY` | 1.1M+ | `US_NY_APPEALS` | `US_NY_APPELLATE_DIVISION_SUPREME`, `US_NY_APPELLATE_TERMS_SUPREME` |
+| North Carolina | `NC` | 147,000+ | `US_NC_SUPREME` | `US_NC_APPEALS` |
+| North Dakota | `ND` | 21,000+ | `US_ND_SUPREME` | `US_ND_APPEALS` |
+| Ohio | `OH` | 271,000+ | `US_OH_SUPREME` | `US_OH_APPEALS` |
+| Oklahoma | `OK` | 81,000+ | `US_OK_CRIMINAL_APPEALS`, `US_OK_SUPREME` | `US_OK_CIVIL_APPEALS` |
+| Oregon | `OR` | 81,000+ | `US_OR_SUPREME` | `US_OR_APPEALS` |
+| Pennsylvania | `PA` | 355,000+ | `US_PA_SUPREME` | `US_PA_COMMONWEALTH`, `US_PA_SUPERIOR` |
+| Rhode Island | `RI` | 31,000+ | `US_RI_SUPREME` | - |
+| South Carolina | `SC` | 56,000+ | `US_SC_SUPREME` | `US_SC_APPEALS` |
+| South Dakota | `SD` | 18,000+ | `US_SD_SUPREME` | - |
+| Tennessee | `TN` | 90,000+ | `US_TN_SUPREME` | `US_TN_APPEALS`, `US_TN_CRIMINAL_APPEALS` |
+| Texas | `TX` | 635,000+ | `US_TX_CRIMINAL_APPEALS`, `US_TX_SUPREME` | `US_TX_APPEALS` |
+| Utah | `UT` | 26,000+ | `US_UT_SUPREME` | `US_UT_APPEALS` |
+| Vermont | `VT` | 30,000+ | `US_VT_SUPREME` | - |
+| Virginia | `VA` | 62,000+ | `US_VA_SUPREME` | `US_VA_APPEALS` |
+| Washington | `WA` | 137,000+ | `US_WA_SUPREME` | `US_WA_APPEALS` |
+| West Virginia | `WV` | 39,000+ | `US_WV_SUPREME` | `US_WV_INTERMEDIATE_APPEALS` |
+| Wisconsin | `WI` | 64,000+ | `US_WI_SUPREME` | `US_WI_APPEALS` |
+| Wyoming | `WY` | 12,000+ | `US_WY_SUPREME` | - |
+| American Samoa | `AS` | 2,100+ | `US_AS_HIGH` | - |
+| Guam | `GU` | 3,500+ | `US_GU_SUPREME` | - |
+| Northern Mariana Islands | `MP` | Yes | `US_MP_SUPREME_COMMONWEALTH` | - |
+| Puerto Rico | `PR` | 59,000+ | `US_PR_SUPREME` | `US_PR_TRIBUNAL_DE_APELACIONES_DE_APPEALS` |
+| US Virgin Islands | `VI` | 2,300+ | `US_VI_SUPREME` | - |
 
 {/* END court-tables */}
 
