@@ -63,6 +63,29 @@ Call `GET /us/statutes/section/{actId}/body` for the authoritative text.
 
 </AccordionGroup>
 
+## Case law
+
+<AccordionGroup>
+
+<Accordion title="Does the API cover case law?">
+Yes. Court decisions have their own endpoints under `/us/cases`, `/us/opinions` and `/us/courts`.
+`POST /us/statutes/search` does not return them.
+
+See [Case law](/api-guide/case-law) and [Case law coverage](/api-guide/coverage/case-law).
+</Accordion>
+
+<Accordion title="Can I tell if a case is still good law?">
+No. We do not serve a good-law signal for cases.
+You can [list the cases that cite it](/api-guide/case-law#follow-citations) and read them.
+</Accordion>
+
+<Accordion title="Is case law in the bulk dataset?">
+No. Open US Law does not include case law.
+For bulk delivery, [contact us](mailto:contact@vaquill.ai).
+</Accordion>
+
+</AccordionGroup>
+
 ## Identifiers and structure
 
 <AccordionGroup>

@@ -21,14 +21,14 @@ A **bulk license** is a paid delivery of the corpus under a separate signed agre
 | Cache and persist responses in my own database? | Yes, including permanently, where that store powers your product | Section 21 |
 | Build embeddings, vector indexes or other derived indexes? | Yes, for your own product | Section 21 |
 | Show the legal text to my own end users? | Yes, with a credit unless your plan waives it | Sections 21 and 24 |
-| Keep what I cached from the API if I stop paying? | Yes. No deletion obligation | Section 21 |
+| Keep what I cached from the API if I stop paying? | Yes, for responses cached during a paid term. Ending your plan does not require deletion | Section 21.8 |
 | Keep a bulk license delivery after the contract ends? | No. Delete the compilation within 30 days | Section 21 |
 | Redistribute the statutory text itself? | Yes, without restriction. It is public domain | Not restricted |
-| Resell the structured corpus as a dataset, feed or API? | No, not without a separate signed agreement | Section 21.7 |
+| Resell the structured corpus as a dataset, feed or API? | No, not without a separate signed agreement | Section 21.3 |
 | Ship it under my own brand? | Under a white-label agreement, yes | Section 21.7 |
 | Train a model on it? | Yes, unless the model is a competing legal-data service | Section 21 |
-| Cache, index and show case law from the case law API? | Yes, on the same terms as the rest of the corpus, for your own product | Section 21 |
-| Redistribute the case law corpus or its change feed as a dataset or API? | No, not without a separate signed agreement | Section 21.7 |
+| Cache, index and show case law from the case law API? | Yes, for your own product. See [withdrawn cases](#withdrawn-cases) | Section 21.3 |
+| Redistribute the case law corpus or its change feed as a dataset or API? | No, not without a separate signed agreement | Section 21.3 |
 
 <Accordion title="Why the text is unrestricted">
   Statutory, regulatory and constitutional text is US primary law, and it cannot be copyrighted.
@@ -56,6 +56,15 @@ A **bulk license** is a paid delivery of the corpus under a separate signed agre
 
   </Accordion>
 </AccordionGroup>
+
+## Withdrawn cases
+
+The [change feed](/api-guide/case-law#keep-a-copy-in-sync) marks a case `removed` when we withdraw it or take it out of search.
+
+- To keep a synced copy current, take that case out of it.
+- We recommend that you stop showing it. A withdrawn case can be private, sealed or under a court order.
+
+This is separate from ending your plan, which does not require you to delete what you cached.
 
 ## What you may not do
 
@@ -89,7 +98,8 @@ Attribution is not required for internal use or evaluation.
 
 ## The open dataset
 
-The whole corpus is also published as [Open US Law](/api-guide/bulk-and-sql#license), separate from the paid API:
+[Open US Law](/api-guide/bulk-and-sql#license) is a free dataset, separate from the paid API.
+It holds statutes, regulations, constitutions, court rules and agency materials. It does not include case law.
 
 | Part | License |
 |---|---|

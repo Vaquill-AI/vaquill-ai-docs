@@ -5,11 +5,12 @@ description: "What the Vaquill API stores about your requests, who processes the
 
 This page covers the developer API (`api.vaquill.ai`) and the MCP server, not the Vaquill AI chat product. They are separate systems with separate data handling.
 
-The API returns US primary law: statutes, regulations, court rules and related government sources. It keeps as little of your traffic as possible.
+The API returns US primary law: statutes, regulations, court rules, case law and related government sources. It keeps as little of your traffic as possible.
 
-- **Not stored.** Your query text, request bodies and parameters are never written to a database or log. They stay in memory for the length of the request.
+- **Not logged.** We do not write your search text or request bodies to our logs.
+- **Short-term caches.** Retry responses and search caches are kept for up to 24 hours. See the table below.
 - **Not used for training.** We do not train models on your requests or build datasets from them. The [Data Processing Agreement](https://vaquill.ai/dpa) commits Vaquill AI and its sub-processors to the same.
-- **One sub-processor sees query text.** Voyage AI handles embeddings and re-ranking. No LLM provider receives your requests.
+- **No LLM provider.** Statute search sends query text to Voyage AI for embeddings and re-ranking. Case law search does not.
 
 ## What's stored
 
@@ -18,6 +19,8 @@ The API returns US primary law: statutes, regulations, court rules and related g
 | API key | A SHA-256 hash for authentication, an encrypted copy so the dashboard can show the key again, and a short display prefix like `vq_key_ab12...` | Until you revoke the key |
 | API call log | One row per call: endpoint, HTTP status, response time, credits charged, API key and user agent. No query text, bodies or headers. | Used to report usage per key |
 | Usage counters | Call counts per key, per day, per endpoint | 48 hours |
+| Retry responses | The response to a charged call sent with an `Idempotency-Key`. It can repeat part of your request, such as citations from a brief. The SDKs send this header by default. | 24 hours |
+| Search caches | Query embeddings and ranked results, without the query text | Up to 24 hours |
 | Billing ledger | User ID, credit amount, endpoint label (for example `statutes.search`) and timestamp | Permanent billing record |
 | Law Change Alerts watch | Webhook URL, an encrypted webhook secret used to sign deliveries with `X-Vaquill-Signature`, email address and the board you watch. The secret is never returned by any endpoint. | Until you delete the watch |
 | Webhook delivery attempts | Status code, success or failure, a short error string and attempt number. Not the payload. Shown by `GET /watches/{watchId}/deliveries`. | 90 days |
@@ -29,10 +32,11 @@ Error monitoring runs with personally identifiable information (PII) collection 
 
 | Processor | What it sees | Where |
 |---|---|---|
-| Voyage AI | Query text, to create an embedding and re-rank results | See the register |
-| Our application servers | Query text, in memory only | United States |
+| Voyage AI | Statute search text, to create an embedding and re-rank results | See the register |
+| Our application servers | Requests and responses | See the register |
+| Case law database | Search words and citations | See the register |
 | Cloudflare | Edge traffic, served from the location nearest the caller | Edge locations worldwide |
-| Hosting, database, payments, email, error monitoring | No query text | See the register |
+| Account database, payments, email, error monitoring | No query text | See the register |
 
 The full sub-processor register is available to customers and their counsel at [contact@vaquill.ai](mailto:contact@vaquill.ai).
 We give at least 30 days' notice before adding a sub-processor.
@@ -40,7 +44,18 @@ We give at least 30 days' notice before adding a sub-processor.
 ## Citation extraction
 
 `POST /us/statutes/extract-citations` takes up to 200,000 characters of your text, finds the statute citations in it and looks each one up.
-The text is processed in memory, discarded after the response, and never sent to a third party.
+We do not log the text or send it to an LLM.
+With an `Idempotency-Key`, the response is kept for 24 hours and can contain the citations found in your text.
+
+## Brief checks
+
+`POST /us/cases/resolve` also takes up to 200,000 characters of your text.
+
+- We do not log the text or send it to an LLM.
+- Citations found in it are looked up in the case law database.
+- With an `Idempotency-Key`, the response is kept for 24 hours and can contain those citations.
+
+Remove client names and facts before you send a brief.
 
 The API has no document upload or document storage.
 

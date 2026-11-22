@@ -31,10 +31,13 @@ Keys use the `vq_key_` prefix and are tied to your account.
 
 An agent can get its own `vq_key_` key in one call, with no human step first.
 The key comes back at signup and works immediately, with 100 trial credits on it.
-The key and its trial credits stop working after 7 days unless the email is verified.
+The key stops working 7 days after signup unless the email is verified.
+An expired trial key answers `401` with the error code `agent_trial_expired` and tells the agent to start a new signup (`POST /api/v1/agent/signup`).
 Verifying proves the agent can read an email inbox, the same proof a person gives when signing up.
-The key then goes on the Vaquill account for that email, which is created if there is none, and has no expiry.
-Each person also gets one welcome grant: 1,000 free API credits ($10), valid for 90 days.
+The same key then moves to the Vaquill account for that email, which is created if there is none, and has no expiry.
+Unspent trial credits do not carry over.
+The account gets 1,000 free API credits ($10), valid for 90 days, once per person.
+An account that already received its welcome credits, or already holds credits, gets no new ones.
 No card is required.
 
 1. The agent calls `POST https://api.vaquill.ai/api/v1/agent/signup` with `{"email": "<its own inbox, or its human's email>", "agentName": "Claude Code", "agentVendor": "anthropic", "purpose": "short reason"}`.
@@ -46,17 +49,25 @@ No card is required.
    The response also carries a secret `claimToken` that starts with `vq_claim_`, `verifyUrl`, `codeEmailed`, `userCode` (like `WDJB-MJHT`), `verificationUri` (`https://app.vaquill.ai/claim`), `tokenUrl`, `interval` (5 seconds), `expiresIn` (604800 seconds, 7 days), `freeCredits` (`{credits: 1000, usd: "10.00", validDays: 90, onePerPerson: true}`) and `instructions`.
    The agent keeps the `claimToken` private and never shows it to anyone, including its human.
 3. Vaquill emails a 6-digit code to that address.
+   There is no resend route: to get a new code, the agent signs up again (at most 3 signups per email address per day, 20 per IP per day).
    The agent reads the code from the inbox, or asks its human for it, and sends `POST {verifyUrl}` with `{"claimToken": "vq_claim_...", "code": "123456"}`.
    On 200 the response carries `verified: true`, `keyId`, `keyPrefix`, `scopes`, `claimedVia` and `creditsGranted`.
-   It does not return `apiKey`: the agent keeps using the same key from signup, which is now on the Vaquill account for that email and no longer expires.
-   Verifying adds the 1,000 free credits ($10, 90 days, once per person). These are in addition to the 100 trial credits, not a top-up of them.
+   It does not return `apiKey`: the agent keeps using the same key from signup, which now sits on the Vaquill account for that email and no longer expires.
+   Verifying adds 1,000 free credits ($10, 90 days) to that account, once per person.
+   The unspent trial credits do not carry over.
    The code is valid for 7 days, and each signup allows 5 tries.
-   Calling verify again after success answers `verified: true`.
+   A server error during verify does not use a try.
+   Calling verify again after success answers `verified: true`, and so does verify after the human approved at app.vaquill.ai/claim.
 4. The agent sends the key as `Authorization: Bearer vq_key_...`.
    `GET /api/v1/credits/balance` is free and shows the remaining balance.
 
 While on the trial, the key cannot create law-change watches (403 `permission_denied`).
 When the trial credits run out, a metered call answers `402 insufficient_credits` with `verifyUrl` and a hint to verify the email.
+After verification, when the credits run out the `402` tells the agent to ask its human to top up in the [dashboard](https://www.vaquill.ai/developer).
+An agent cannot buy credits itself.
+
+A trial key, or any key without an API plan, is limited to 30 requests per minute, 500 per hour and 1,000 per day.
+A `429` carries a `Retry-After` header, which the agent should honor.
 
 Errors from `verifyUrl` have a `code`:
 
@@ -64,9 +75,10 @@ Errors from `verifyUrl` have a `code`:
 | --- | --- |
 | `invalid_code` | Wrong code. `detail` says how many tries are left. |
 | `expired_token` | Expired, unknown, out of tries, or the key was revoked. Start over. |
-| `already_handled` | HTTP 409. The human approved at app.vaquill.ai/claim. Confirm with `tokenUrl`. |
+| `already_handled` | HTTP 409. Only when two approvals race. Confirm with `tokenUrl`. |
+| `validation_error` | HTTP 422. The body is invalid, for example a `code` longer than 20 characters. |
+| `rate_limited` | HTTP 429. Honor `Retry-After`. |
 | `agent_key_limit` | HTTP 409. The account has the maximum number of active agent keys. Revoke one first. |
-| `slow_down` | Wait, then retry. |
 
 ### Verify in the browser instead
 
@@ -74,6 +86,7 @@ If `codeEmailed` is false or the email does not arrive, the human can verify in 
 
 1. The human opens [app.vaquill.ai/claim](https://app.vaquill.ai/claim), signs in or creates an account with that same email, enters `userCode` and approves.
    `userCode` only works for the account with that email.
+   A human signed in with a different email gets `email_mismatch` and must sign in with the address the agent used at signup.
 2. The agent sends `POST {tokenUrl}` with `{"claimToken": "vq_claim_..."}` every `interval` seconds until it returns `verified: true`, `keyId`, `keyPrefix`, `scopes` and `claimedVia`.
    It does not return `apiKey`: the agent keeps using the key from signup.
 
@@ -82,9 +95,12 @@ Until then, the poll error body has a `code`:
 | Code | Meaning |
 | --- | --- |
 | `authorization_pending` | The human has not approved yet. Keep polling. |
-| `slow_down` | Wait `retryAfterSeconds`, then poll again. |
+| `slow_down` | Poll less often. Wait longer: the response carries the interval to use (`retryAfterSeconds`). |
 | `access_denied` | The human refused, and the trial key is revoked. Stop. |
 | `expired_token` | Expired, unknown, or the key was revoked. Start over. |
+
+If the agent loses its `claimToken`, it can neither poll nor verify.
+The human can still approve at app.vaquill.ai/claim with the `userCode` if the agent kept it, otherwise the agent signs up again.
 
 Signup itself can return `422 validation_error` (a field is missing, malformed or too long; `errors` lists each one), `403 email_not_allowed`, `429 rate_limited` (with `retryAfterSeconds`) or `503 agent_signup_disabled`.
 If signup returns `503 agent_signup_disabled`, agent self-signup is not switched on yet.

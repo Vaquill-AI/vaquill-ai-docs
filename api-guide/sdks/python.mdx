@@ -71,6 +71,25 @@ Every method also accepts `timeout`, `max_retries`, `idempotency_key` and `heade
 
 Each method is the `operationId` with the namespace noun removed, so `search_statutes` is `statutes.search` and `get_session_law_body` is `session_laws.get_body`.
 
+## Case law
+
+Version 0.2.1 has no case law methods. Use `raw_request`, and set `charged=True` on paid calls.
+
+```python
+from vaquill import Vaquill
+
+client = Vaquill()
+found = client.raw_request(
+    "POST",
+    "/api/v1/us/cases/resolve",
+    json={"citations": ["347 F.3d 1000"]},
+    charged=True,
+).parse()
+print(found["results"][0]["status"])
+```
+
+See [Case law](/api-guide/case-law) for every endpoint.
+
 ## Which calls cost credits
 
 <ChargedCallRule />

@@ -21,8 +21,9 @@ The Vaquill Data API searches and retrieves US primary law:
 - statutory codes for all 50 states, DC and Puerto Rico
 - state and US constitutions and court rules
 - executive orders, Federal Register agency rules and agency guidance
+- [case law](/api-guide/case-law) from federal, state, territorial, tribal and military courts
 
-Every section comes back with a citation, status and currency signals, full text in more than one format, and a link to the official source.
+Every statute or regulation section comes back with a citation, status and currency signals, full text in more than one format, and a link to the official source.
 
 To start, make a first call with the [Quickstart](/api-guide/quickstart) and get a key from [Authentication](/api-guide/authentication).
 To pick a recipe by what you are building, see [Use cases](/api-guide/use-cases).
@@ -43,6 +44,8 @@ Every path is prefixed with `/api/v1`.
 | Batch metadata for up to 50 sections in one call | `POST /us/statutes/sections` |
 | Live coverage: which jurisdictions hold which corpora | `GET /us/statutes/coverage` |
 | State session laws as enacted: list by state and date, search the text, fetch by id or citation, read the text | `GET /us/session-laws/list`, `POST /us/session-laws/search`, `GET /us/session-laws/{sessionLawId}`, `.../body` |
+| Search court opinions, look up case citations and check the citations in a brief | `POST /us/cases/search`, `POST /us/cases/resolve` |
+| Read opinions and follow the cases that cite them | `GET /us/opinions/{opinionId}`, `GET /us/cases/{caseId}/citations` |
 | Subscribe to a jurisdiction or corpus and get a webhook or email when it changes, section by section, with before/after text on amendments | `GET /boards`, `POST /watches`, `GET /watches/{id}/changes`, `.../diff` |
 
 ### What a call costs
@@ -85,11 +88,14 @@ Scope any search with the `corpusType` token. [Corpus types](/api-guide/concepts
 State session laws cover the 50 states, DC and Puerto Rico, from 1975. They are served by `/us/session-laws`, not a `corpusType`.
 See [State session laws](/api-guide/session-laws).
 
+Case law is not a `corpusType`. It has its own endpoints. See [Case law coverage](/api-guide/coverage/case-law).
+
 Coverage expands weekly. Call `GET /us/statutes/coverage` at runtime instead of hardcoding jurisdiction counts.
 
 ## Related
 
 - [Use cases](/api-guide/use-cases): a recipe for grounding AI, citation checks, compliance mapping, chatbots and Law Change Alerts.
 - [Coverage](/api-guide/coverage): the jurisdiction matrix in human-readable form.
+- [Case law](/api-guide/case-law): quickstart, endpoints and prices.
 - [SDKs](/api-guide/sdks/overview): official Python and TypeScript clients, plus a CLI.
 - [Data and privacy](/api-guide/data-privacy): what the API stores about your requests, and for how long.

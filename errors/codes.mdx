@@ -62,12 +62,12 @@ The Python SDK (`vaquill`) and the TypeScript SDK use the same class names.
 | [`validation_error`](#validation_error) | 422 | No | `UnprocessableEntityError` | Validation error | Fix the fields in `errors` |
 | [`invalid_query`](#invalid_query) | 422 | No | `UnprocessableEntityError` | Invalid query | Fix the query named in `detail` |
 | [`invalid_citation_input`](#invalid_citation_input) | 422 | No | `UnprocessableEntityError` | Invalid citation input | Fix the request as `detail` says |
-| [`bad_request`](#bad_request) | 400 | No | By status | Bad request | Read `detail` and change the request |
+| [`bad_request`](#bad_request) | 400, 410 | No | By status | Bad request | Read `detail` and change the request |
 | [`method_not_allowed`](#method_not_allowed) | 405 | No | By status | Method not allowed | Use a method the `Allow` header lists |
 | [`payload_too_large`](#payload_too_large) | 413 | No | By status | Payload too large | Send a smaller body |
 | [`unsupported_media_type`](#unsupported_media_type) | 415 | No | By status | Unsupported media type | Send `Content-Type: application/json` |
 | [`section_not_found`](#section_not_found) | 404 | No | `NotFoundError` | Section not found | Check `reason` and `didYouMean` |
-| [`resource_not_found`](#resource_not_found) | 404 | No | `NotFoundError` | Resource not found | Check the id belongs to your account |
+| [`resource_not_found`](#resource_not_found) | 404 | No | `NotFoundError` | Resource not found | Check the id |
 | [`idempotency_key_reused`](#idempotency_key_reused) | 422 | No | `IdempotencyKeyReusedError` | Idempotency key reused | Use a fresh key |
 | [`idempotency_in_progress`](#idempotency_in_progress) | 409 | Yes | `IdempotencyInProgressError` | Idempotency request in progress | Resend with the same key |
 | [`idempotency_replay_unavailable`](#idempotency_replay_unavailable) | 409 | No | `IdempotencyReplayUnavailableError` | Idempotent replay unavailable | Check your balance, then resend with a new key |
@@ -183,6 +183,7 @@ A citation that parsed but did not resolve is a different case.
 #### bad_request
 
 The request parsed but the API refused it.
+A `410` also carries this code. It means a case was withdrawn, so read the HTTP status too.
 `detail` names the problem. See [400 versus 422](/api-guide/errors#400-versus-422).
 
 <a id="method_not_allowed"></a>
@@ -213,8 +214,8 @@ Use search or the hierarchy browse to find the right identifier.
 <a id="resource_not_found"></a>
 #### resource_not_found
 
-A watch, board, delivery or change with that id does not exist for your account.
-List the resource first to get valid ids.
+Nothing has that id. For a watch, board, delivery or change, it can also belong to another account.
+For case law, get valid ids from search, citation lookup or a list endpoint.
 
 ### Idempotency and conflict
 
@@ -233,7 +234,7 @@ Wait briefly and resend the same request with the same key.
 <a id="idempotency_replay_unavailable"></a>
 #### idempotency_replay_unavailable
 
-The original request completed, but its response was too large to replay. You were not charged again.
+The original request completed, but its response was too large to replay or was not kept under your retention setting. You were not charged again.
 Check your balance with `GET /credits/balance`. To get the data again, send a new request with a new key.
 
 <a id="conflict"></a>

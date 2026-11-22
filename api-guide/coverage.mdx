@@ -26,6 +26,9 @@ curl https://api.vaquill.ai/api/v1/us/statutes/coverage \
   <Card title="Agency guidance" href="/api-guide/coverage/agency-guidance">
     **97K+ documents** from 53 named federal sources, each filterable with `source`.
   </Card>
+  <Card title="Case law" href="/api-guide/coverage/case-law">
+    **10.1M+ case records** from federal, state, territorial, tribal and military courts.
+  </Card>
   <Card title="State session laws" href="/api-guide/session-laws">
     Session laws for the 50 states, DC and Puerto Rico, from 1975, as enacted.
   </Card>
@@ -55,21 +58,8 @@ Every section is searchable by meaning and by keyword. Many are also available a
 
 ## Case law
 
-US court decisions are served by the [case law API](/api-guide/case-law), not through `corpusType`.
-They are a separate corpus with their own ids and endpoints, and they are not part of the section totals above.
-
-| | |
-|---|---|
-| Decisions | 10,172,665 |
-| Opinions | 10,903,543 |
-| Courts with decisions | 2,199 |
-| Judges | 15,797 |
-| Earliest decision | 1658 |
-| Latest decision | 2026-09-29 |
-
-Counts as of 2026-11-22.
-Federal, state, territorial, tribal and military courts are covered.
-Coverage varies by court and year: call `GET /us/courts?include=coverage` (free) for what is held per court, and read [Data limits](/api-guide/case-law#data-limits) for the limits.
+US case law has **10.1M+ case records and 10.9M+ opinions**. It has its own endpoints and is not part of the section totals above.
+See [Case law coverage](/api-guide/coverage/case-law) for totals, court codes and citation formats.
 
 ## Federal
 

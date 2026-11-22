@@ -20,6 +20,7 @@ We refuse these, or answer and set `matchLevel` so you can tell, instead of gues
 | Several sections cited together | Answered with the first section and a `matchLevel` |
 | A string that fits more than one law | Refused. Pass `state` |
 | Law we do not hold | Refused |
+| A case citation | Refused. Use [case citation lookup](/api-guide/case-law-search#look-up-citations) |
 | Something that is not a citation to U.S. primary law | Refused |
 
 A bare rule-set abbreviation that several states print (`CR 56`, `RAP 2.5`) is refused unless you pass `state`.

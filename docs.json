@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Vaquill AI",
-  "description": "US primary law as a developer API. The US Code, the CFR, the Federal Register, state and territory statute codes, state regulations, constitutions and court rules, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
+  "description": "US primary law as a developer API. The US Code, the CFR, the Federal Register, state and territory statute codes, state regulations, constitutions, court rules and case law, with Bluebook citation resolution and point-in-time retrieval over REST, MCP and SQL.",
   "colors": {
     "primary": "#6E3730",
     "light": "#8C4A3F",
@@ -73,22 +73,8 @@
               "api-guide/coverage/states",
               "api-guide/coverage/agency-guidance",
               "api-guide/session-laws",
-              "api-guide/rulemaking"
-            ]
-          },
-          {
-            "group": "US case law",
-            "icon": "scale-balanced",
-            "expanded": false,
-            "pages": [
-              "api-guide/case-law",
-              "api-guide/case-law-quickstart",
-              "api-guide/case-law-guide-brief-checker",
-              "api-guide/case-law-search",
-              "api-guide/case-law-opinions",
-              "api-guide/case-law-courts-and-judges",
-              "api-guide/case-law-dockets",
-              "api-guide/case-law-change-feed"
+              "api-guide/rulemaking",
+              "api-guide/coverage/case-law"
             ]
           },
           {
@@ -148,6 +134,14 @@
             "group": "Guides",
             "icon": "lightbulb",
             "pages": [
+              {
+                "group": "Case law",
+                "icon": "scale-balanced",
+                "pages": [
+                  "api-guide/case-law",
+                  "api-guide/case-law-search"
+                ]
+              },
               {
                 "group": "Recipes",
                 "icon": "flask",
@@ -454,6 +448,30 @@
     ]
   },
   "redirects": [
+    {
+      "source": "/api-guide/case-law-quickstart",
+      "destination": "/api-guide/case-law"
+    },
+    {
+      "source": "/api-guide/case-law-guide-brief-checker",
+      "destination": "/api-guide/case-law-search"
+    },
+    {
+      "source": "/api-guide/case-law-opinions",
+      "destination": "/api-guide/case-law-search"
+    },
+    {
+      "source": "/api-guide/case-law-courts-and-judges",
+      "destination": "/api-guide/coverage/case-law"
+    },
+    {
+      "source": "/api-guide/case-law-dockets",
+      "destination": "/api-guide/case-law"
+    },
+    {
+      "source": "/api-guide/case-law-change-feed",
+      "destination": "/api-guide/case-law"
+    },
     {
       "source": "/guides/tools/canned-responses",
       "destination": "/api-guide/overview"

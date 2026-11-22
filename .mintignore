@@ -16,4 +16,12 @@ integrations/chatbots/
 integrations/widgets/
 integrations/browser/
 
+# Unpublished 2026-11-22, merged into three case law pages (redirected in docs.json).
+api-guide/case-law-quickstart.mdx
+api-guide/case-law-guide-brief-checker.mdx
+api-guide/case-law-opinions.mdx
+api-guide/case-law-courts-and-judges.mdx
+api-guide/case-law-dockets.mdx
+api-guide/case-law-change-feed.mdx
+
 # Do NOT ignore snippets/: published pages import from it.

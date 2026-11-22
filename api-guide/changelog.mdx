@@ -29,15 +29,13 @@ The documented routes are under `/us/statutes/`.
 
 <Update label="2026-11-22" description="US case law API" tags={["Endpoint", "Corpus"]}>
 
-A new API serves US court decisions, opinions, courts, judges, dockets, oral arguments and financial disclosures.
-See [US case law](/api-guide/case-law) and the [case law quickstart](/api-guide/case-law-quickstart).
+A new API serves US court decisions and opinions. See [US case law](/api-guide/case-law) and [coverage](/api-guide/coverage/case-law).
 
-- **Decisions and opinions:** `POST /us/cases/search`, `POST /us/cases/resolve`, `GET /us/cases/{caseId}`, `POST /us/cases/batch`, `GET /us/opinions/{opinionId}`, and `GET /us/cases/{caseId}/citations` (`direction=cites` or `cited_by`).
-- **Search:** every word must appear, and an exact phrase goes in double quotes. See [Searching case law](/api-guide/case-law-search).
-- **Courts and judges:** `GET /us/courts`, the free per-court coverage on `GET /us/courts?include=coverage`, `GET /us/judges/{judgeId}` and judge disclosures. See [Courts, coverage and judges](/api-guide/case-law-courts-and-judges).
-- **Dockets and oral arguments:** the records only. Docket entries, documents and recordings are not held yet. See [Dockets and oral arguments](/api-guide/case-law-dockets).
-- **Change feed:** `GET /us/cases/changes`. See [Change feed](/api-guide/case-law-change-feed).
-- **Scope and pricing:** the key scope is `cases:read`. Prices run from free (coverage) to 6 credits (opinion text).
+- **Find and read:** search, citation lookup, brief checking and opinion text. See [Search and read cases](/api-guide/case-law-search).
+- **Follow citations:** citing and cited cases, for a case or one opinion, and parentheticals.
+- **Courts and people:** courts, judges and financial disclosure records.
+- **Court records:** dockets and oral argument records. Entries, documents and recordings are not held yet.
+- **Stay current:** a change feed of cases added, changed or removed.
 
 </Update>
 

@@ -4,7 +4,7 @@ description: "Sub-regulatory federal guidance sources, each filterable with corp
 ---
 
 Sub-regulatory federal guidance: what an agency says its own rules mean, short of a regulation.
-**53 named sources across 26 agencies.**
+**97,000+ documents from 53 named sources across 26 agencies.**
 All sit behind the single `corpusType=AGENCY_GUIDANCE` token.
 Narrow to one with `source`.
 
@@ -15,9 +15,7 @@ Narrow to one with `source`.
 State insurance and financial bulletins are a different corpus: see the [state coverage matrix](/api-guide/coverage/states).
 
 <Note>
-  The counts below cover the 53 named sources (87,082 documents).
-  The token's own total is in the [federal coverage table](/api-guide/coverage/federal).
-  `GET /us/statutes/coverage` returns the live total and the list of sources, and wins where this page differs.
+  `GET /us/statutes/coverage` returns the live list of sources.
   An invalid `source` returns the full list with each code's name.
 </Note>
 
@@ -26,61 +24,61 @@ State insurance and financial bulletins are a different corpus: see the [state c
 Grouped by agency.
 Sources marked **[note]** have a caveat in [Source notes](#source-notes).
 
-| Source | `source` | Documents | Range | Cite as |
-|---|---|---:|---|---|
-| SSA Rulings | `ssa_ruling` | 1,116 | | |
-| IRS Revenue Procedures | `irs_rev_proc` | 378 | 2015-present | |
-| IRS Revenue Rulings | `irs_rev_rul` | 248 | 2015-present | |
-| IRS Notices | `irs_notice` | 769 | 2015-present | |
-| IRS Announcements | `irs_announcement` | 83 | 2015-present | |
-| IRS Written Determinations **[note]** | `irs_written_determination` | 35,485 | 1999-2026 | `PLR 200007023`, `TAM 200011005`, `CCA 199930030` |
-| Internal Revenue Manual **[note]** | `irs_irm` | 1,778 | Current | `IRM 4.10.3` |
-| DOJ and FTC Merger Guidelines | `merger_guidelines` | 1 | 2023 | |
-| DOJ Antitrust Leniency Policy | `doj_leniency` | 1 | | |
-| DOJ Antitrust Business Review Letters **[note]** | `doj_business_review` | 215 | 1991-2021 | `DOJ Antitrust Div. Business Review Letter No. 20-7` |
-| DOJ Justice Manual | `doj_justice_manual` | 1,555 | | `Justice Manual § 9-27.420` |
-| FTC Advisory Opinions **[note]** | `ftc_advisory_opinion` | 430 | 1982-2024 | |
-| FTC Policy Statements | `ftc_policy_statement` | 60 | 1967-2026 | |
-| FTC HSR Premerger Interpretations **[note]** | `ftc_hsr_interpretation` | 4,591 | 1978-2025 | |
-| FTC Advocacy Filings **[note]** | `ftc_advocacy_filing` | 861 | 1985-2026 | |
-| Copyright Office Circulars | `copyright_circular` | 58 | | |
-| Copyright Office Compendium (Third) **[note]** | `copyright_compendium` | 5,920 | 3 editions, 2014-2021 | `Compendium (Third) § 313.2` |
-| CMS Medicare Internet-Only Manuals **[note]** | `cms_iom` | 11,100 | 2000-2026 | `Medicare Claims Processing Manual (Pub. 100-04), Ch. 12 § 20.1` |
-| USCIS Policy Manual | `uscis_policy_manual` | 460 | 12 volumes | `USCIS Policy Manual, Vol. 12, Pt. D, Ch. 3` |
-| USPTO MPEP | `mpep` | 2,727 | 29 chapters | `MPEP § 2106` |
-| USPTO TMEP | `tmep` | 2,114 | 19 chapters | `TMEP § 1207.01` |
-| DOL WHD Opinion and Ruling Letters **[note]** | `whd_opinion_letter` | 594 | 1993-2026 | `WHD Opinion Letter FLSA2020-13` |
-| DOL WHD Field Operations Handbook **[note]** | `whd_foh` | 1,500 | 1966-2025 | `FOH 31c05` |
-| EEOC Enforcement and Policy Guidance **[note]** | `eeoc_guidance` | 179 | 1970-2024 | `EEOC-NVTA-2001-1` |
-| DFARS Procurement Guidance (PGI) | `dfars_pgi` | 397 | 47 Parts | `PGI 225.370` |
-| NLRB General Counsel Memoranda | `nlrb_gc_memo` | 301 | 1973-present | `NLRB General Counsel Memorandum GC 22-04` |
-| NLRB Division of Advice Memoranda | `nlrb_advice_memo` | 340 | Rolling 10-year window | |
-| CFTC Staff Letters | `cftc_staff_letter` | 947 | 2008-present | `CFTC Letter No. 26-17` |
-| Federal Reserve SR and CA Letters | `frb_sr_letter` | 344 | Since 1990 | `SR 21-4 / CA 21-2` |
-| OCC Bulletins | `occ_bulletin` | 617 | Since 1994 | |
-| OCC Interpretive Letters | `occ_interpretive_letter` | 449 | 1996-present | `OCC Interpretive Letter No. 1188` |
-| FDIC Financial Institution Letters | `fdic_fil` | 2,327 | Since 1994 | |
-| FinCEN Administrative Rulings | `fincen_ruling` | 85 | Since 1988 | `FinCEN Ruling FIN-2009-R001` |
-| FinCEN Guidance | `fincen_guidance` | 129 | | |
-| FinCEN BOI FAQs **[note]** | `fincen_boi_faq` | 122 | Issued 2023-2024 | `FinCEN BOI FAQ C.2` |
-| FinCEN BOI Rulemaking Q&As **[note]** | `fincen_boi_rule_qa` | 22 | 2025-2026 | |
-| FinCEN Small Entity Compliance Guide **[note]** | `fincen_boi_compliance_guide` | 1 | v1.4, March 2025 | |
-| FinCEN AML Act 2020 material | `fincen_amla_material` | 13 | 2021-2026 | |
-| OFAC Sanctions FAQs **[note]** | `ofac_faq` | 1,404 | Revisions since 2023-03-22 | `OFAC FAQ 401` |
-| CPSC OGC Advisory Opinions | `cpsc_advisory_opinion` | 305 | 1973-2012, archive | |
-| CPSC Small Entity Compliance Guides | `cpsc_secg` | 34 | | |
-| BIS Advisory Opinions (EAR) | `bis_advisory_opinion` | 39 | 2003-2023 | |
-| DDTC Commodity Jurisdiction Determinations | `ddtc_commodity_jurisdiction` | 5,903 | 2010-present | |
-| DDTC Policy Guidance | `ddtc_guidance` | 9 | | |
-| FCC Declaratory Rulings | `fcc_declaratory_ruling` | 174 | | |
-| FERC Policy Statements | `ferc_policy_statement` | 82 | Since 1996 | `___ FERC ¶ _____` (bound-volume Reports form) |
-| DOE Appliance Standards Guidance | `doe_appliance_guidance` | 60 | | |
-| HHS OCR HIPAA Guidance | `hhs_ocr_hipaa_guidance` | 44 | | |
-| HHS OCR HIPAA FAQs | `hhs_ocr_hipaa_faq` | 444 | | |
-| HHS OCR Resolution Agreements and CMPs | `hhs_ocr_resolution_agreement` | 146 | | |
-| CFPB Consumer Financial Protection Circulars | `cfpb_circular` | 16 | Since 2022 | `Circular 2023-01` |
-| CFPB Supervisory Guidance | `cfpb_supervisory_guidance` | 95 | Since 2011 | |
-| Reference figures (assembled, not agency text) **[note]** | `administrative_guidance` | 10 | Current | |
+| Source | `source` | Range | Cite as |
+|---|---|---|---|
+| SSA Rulings | `ssa_ruling` | | |
+| IRS Revenue Procedures | `irs_rev_proc` | 2015-present | |
+| IRS Revenue Rulings | `irs_rev_rul` | 2015-present | |
+| IRS Notices | `irs_notice` | 2015-present | |
+| IRS Announcements | `irs_announcement` | 2015-present | |
+| IRS Written Determinations **[note]** | `irs_written_determination` | 1999-2026 | `PLR 200007023`, `TAM 200011005`, `CCA 199930030` |
+| Internal Revenue Manual **[note]** | `irs_irm` | Current | `IRM 4.10.3` |
+| DOJ and FTC Merger Guidelines | `merger_guidelines` | 2023 | |
+| DOJ Antitrust Leniency Policy | `doj_leniency` | | |
+| DOJ Antitrust Business Review Letters **[note]** | `doj_business_review` | 1991-2021 | `DOJ Antitrust Div. Business Review Letter No. 20-7` |
+| DOJ Justice Manual | `doj_justice_manual` | | `Justice Manual § 9-27.420` |
+| FTC Advisory Opinions **[note]** | `ftc_advisory_opinion` | 1982-2024 | |
+| FTC Policy Statements | `ftc_policy_statement` | 1967-2026 | |
+| FTC HSR Premerger Interpretations **[note]** | `ftc_hsr_interpretation` | 1978-2025 | |
+| FTC Advocacy Filings **[note]** | `ftc_advocacy_filing` | 1985-2026 | |
+| Copyright Office Circulars | `copyright_circular` | | |
+| Copyright Office Compendium (Third) **[note]** | `copyright_compendium` | 3 editions, 2014-2021 | `Compendium (Third) § 313.2` |
+| CMS Medicare Internet-Only Manuals **[note]** | `cms_iom` | 2000-2026 | `Medicare Claims Processing Manual (Pub. 100-04), Ch. 12 § 20.1` |
+| USCIS Policy Manual | `uscis_policy_manual` | 12 volumes | `USCIS Policy Manual, Vol. 12, Pt. D, Ch. 3` |
+| USPTO MPEP | `mpep` | 29 chapters | `MPEP § 2106` |
+| USPTO TMEP | `tmep` | 19 chapters | `TMEP § 1207.01` |
+| DOL WHD Opinion and Ruling Letters **[note]** | `whd_opinion_letter` | 1993-2026 | `WHD Opinion Letter FLSA2020-13` |
+| DOL WHD Field Operations Handbook **[note]** | `whd_foh` | 1966-2025 | `FOH 31c05` |
+| EEOC Enforcement and Policy Guidance **[note]** | `eeoc_guidance` | 1970-2024 | `EEOC-NVTA-2001-1` |
+| DFARS Procurement Guidance (PGI) | `dfars_pgi` | 47 Parts | `PGI 225.370` |
+| NLRB General Counsel Memoranda | `nlrb_gc_memo` | 1973-present | `NLRB General Counsel Memorandum GC 22-04` |
+| NLRB Division of Advice Memoranda | `nlrb_advice_memo` | Rolling 10-year window | |
+| CFTC Staff Letters | `cftc_staff_letter` | 2008-present | `CFTC Letter No. 26-17` |
+| Federal Reserve SR and CA Letters | `frb_sr_letter` | Since 1990 | `SR 21-4 / CA 21-2` |
+| OCC Bulletins | `occ_bulletin` | Since 1994 | |
+| OCC Interpretive Letters | `occ_interpretive_letter` | 1996-present | `OCC Interpretive Letter No. 1188` |
+| FDIC Financial Institution Letters | `fdic_fil` | Since 1994 | |
+| FinCEN Administrative Rulings | `fincen_ruling` | Since 1988 | `FinCEN Ruling FIN-2009-R001` |
+| FinCEN Guidance | `fincen_guidance` | | |
+| FinCEN BOI FAQs **[note]** | `fincen_boi_faq` | Issued 2023-2024 | `FinCEN BOI FAQ C.2` |
+| FinCEN BOI Rulemaking Q&As **[note]** | `fincen_boi_rule_qa` | 2025-2026 | |
+| FinCEN Small Entity Compliance Guide **[note]** | `fincen_boi_compliance_guide` | v1.4, March 2025 | |
+| FinCEN AML Act 2020 material | `fincen_amla_material` | 2021-2026 | |
+| OFAC Sanctions FAQs **[note]** | `ofac_faq` | Revisions since 2023-03-22 | `OFAC FAQ 401` |
+| CPSC OGC Advisory Opinions | `cpsc_advisory_opinion` | 1973-2012, archive | |
+| CPSC Small Entity Compliance Guides | `cpsc_secg` | | |
+| BIS Advisory Opinions (EAR) | `bis_advisory_opinion` | 2003-2023 | |
+| DDTC Commodity Jurisdiction Determinations | `ddtc_commodity_jurisdiction` | 2010-present | |
+| DDTC Policy Guidance | `ddtc_guidance` | | |
+| FCC Declaratory Rulings | `fcc_declaratory_ruling` | | |
+| FERC Policy Statements | `ferc_policy_statement` | Since 1996 | `___ FERC ¶ _____` (bound-volume Reports form) |
+| DOE Appliance Standards Guidance | `doe_appliance_guidance` | | |
+| HHS OCR HIPAA Guidance | `hhs_ocr_hipaa_guidance` | | |
+| HHS OCR HIPAA FAQs | `hhs_ocr_hipaa_faq` | | |
+| HHS OCR Resolution Agreements and CMPs | `hhs_ocr_resolution_agreement` | | |
+| CFPB Consumer Financial Protection Circulars | `cfpb_circular` | Since 2022 | `Circular 2023-01` |
+| CFPB Supervisory Guidance | `cfpb_supervisory_guidance` | Since 2011 | |
+| Reference figures (assembled, not agency text) **[note]** | `administrative_guidance` | Current | |
 
 ## goodLawStatus by source
 
@@ -186,7 +184,7 @@ See [status and currency](/api-guide/concepts/status-and-currency).
   Disregard any statement in them that US companies or US persons must report BOI.
 
   For the current position use `fincen_boi_rule_qa`.
-  Its 10 interim-rule Q&As are `superseded` and excluded from good-law retrieval.
+  Its interim-rule Q&As are `superseded` and excluded from good-law retrieval.
 </Accordion>
 
 </AccordionGroup>

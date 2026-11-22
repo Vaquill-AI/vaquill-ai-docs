@@ -23,6 +23,7 @@ Any field may be `null` when the source does not offer that format.
 | `hasTables`, `hasFigures` | Whether the body contains a table or an image (bool or `null`). |
 | `sourceUrl` | Where the government published this text (string or `null`). |
 | `source` | Our storage identifier for the text. Not a citation. `r2_render` means the body is a structured rendering that keeps tables and images. |
+| `layout` | The line-break layout of the returned text: `reflowed` or `source`. |
 | `available` | Whether text was returned (bool). |
 | `note` | An optional note when text is partial or unavailable (string or `null`). |
 | `bodyUnavailable` | `true` when the publisher prints the section as images. Omitted otherwise. |
@@ -62,6 +63,7 @@ Every value costs the same. The choice only changes payload size.
 | `markdown` | `markdown` only. A section with no structured rendering returns `plain` instead, with a `note` saying so. |
 | `plain` | `plain` only. |
 | `content` | `content`, `sourceCredit` and `notes` only. USC only. On any other corpus it returns `plain` with a `note`, and `content` is null. |
+| `operative` | `content` and `sourceCredit` only, the smallest payload. USC only, with the same fallback as `content`. |
 
 `tables` and `figures` come back with every value, because they describe the text you received.
 

@@ -6,7 +6,7 @@ description: "Per-jurisdiction coverage of state and territory statutes, regulat
 import GoodLawUnknown from '/snippets/good-law-unknown.mdx';
 
 State and territory law for 50 states, DC, Puerto Rico, Guam, the Northern Mariana Islands, the US Virgin Islands and American Samoa.
-One matrix holds every per-jurisdiction count.
+One matrix shows what is held for each jurisdiction.
 Pair a `corpusType` filter with `state`:
 
 ```json
@@ -17,77 +17,77 @@ Pass a list to `state` to search several jurisdictions in one call.
 
 ## Per-jurisdiction matrix
 
-Counts as of 2026-11-07, sorted by statute volume.
+Statutes and Regs are section counts as of 2026-11-07, sorted by statute volume.
+**Yes** means the corpus is held, and a dash means it is not.
 [`GET /us/statutes/coverage`](/api-guide/coverage) returns the live figures.
-A dash means the corpus is not held for that jurisdiction.
 Statutes include past editions kept for point-in-time lookups. `statusBreakdown.superseded` in the coverage response gives the split.
 Each column is a `corpusType` filter: Statutes is `STATE`, Regs is `REGULATION`, Const. is `STATE_CONSTITUTION`, Court rules is `STATE_RULES`, Registers is `STATE_REGISTER` and State agency guidance is `STATE_AGENCY_GUIDANCE`.
 Federal agency guidance (`AGENCY_GUIDANCE`) is on [Federal agency guidance sources](/api-guide/coverage/agency-guidance).
 
 | Jurisdiction | Statutes | Regs | Const. | Court rules | Registers | State agency guidance |
 |---|---|---|---|---|---|---|
-| Minnesota | 223,018 | 15,401 | 138 | 958 | 1,397 | 35 |
-| California | 161,441 | 74,782 | 372 | 4,307 | 5,127 | 467 |
-| Texas | 123,205 | 43,516 | 503 | 1,456 | - | 1,285 |
-| Colorado | 93,623 | 1,155 | 399 | 1,194 [2] | - | - |
-| South Dakota | 86,471 | 29,177 | 270 | 155 | 7,719 | 27 |
-| Indiana | 84,131 | 37,583 | 196 | 879 | - | 282 |
-| Florida | 82,789 | 28,929 | 217 | 1,669 | 15,683 | 100 |
-| Montana | 82,438 | 28,278 | 169 | 435 | 27 | 149 |
-| Wisconsin | 76,428 | 20,576 | 175 | 395 | 5 | 233 |
-| Illinois | 73,330 | 59,937 | 146 | 1,120 | - | 162 |
-| Oregon | 71,629 | 40,975 | 388 | 788 | - | 104 [6] |
-| New Jersey | 56,359 | 53,393 | 205 | 1,686 | 247 | 524 [6] |
-| Washington | 56,035 | 51,277 | 273 | 1,433 | 6,033 | 25 |
-| Oklahoma | 55,377 | 66,258 | 463 | 2,116 [3] | 129 | 143 |
-| Louisiana | 52,395 | 26,784 | 338 | 481 | - | - |
-| Nevada | 50,089 | 30,978 | 233 | 1,779 | 3 | 200 |
-| Alabama | 49,372 | 18,905 | 381 | 870 | 1,651 | 209 |
-| Pennsylvania | 48,005 | 50,343 | 204 | 4,887 | 60,471 | - |
-| Michigan | 44,456 | 22,156 | 282 | 1,041 | - | 154 |
-| North Carolina | 41,811 | 45,834 | 155 | 495 | 11 | 118 |
-| Maryland | 41,256 | 29,461 | 305 | 1,510 | 536 | 680 |
-| New York | 40,297 | 52,491 | 204 | 1,149 | 23,839 | 1,200 |
-| Iowa | 40,159 | 27,597 | 190 | 1,295 | 24,477 | 83 |
-| Puerto Rico (territory) | 39,399 | 108,483 | 102 | 1,578 | - | 1,643 |
-| Arkansas | 39,361 | 28,261 | 619 | 774 | - | 361 |
-| Utah | 37,923 | 19,950 | 189 | 920 | 39 | 169 |
-| Nebraska | 36,743 | 13,647 | 251 | 734 | - | 120 |
-| Tennessee | 34,755 | 11,625 | 152 | 629 | - | 173 |
-| Georgia | 34,673 | 19,826 | 287 | 1,315 | - | 67 |
-| Virginia | 34,045 | 22,445 | 133 | 422 | 1,558 | 89 |
-| Ohio | 33,772 | 19,503 | 265 | 1,457 | - | 111 |
-| Missouri | 33,215 | 13,122 | 427 | 1,536 | 1,161 | 108 |
-| South Carolina | 32,170 | 6,220 | 232 | 632 | - | 323 |
-| Rhode Island | 32,134 | 1,227 | 118 | 1,033 | - | 135 |
-| New Mexico | 31,370 | 43,609 | 267 | 3,462 | 768 | 276 |
-| New Hampshire | 30,945 | 39,393 | 156 | 972 | - | 178 |
-| Mississippi | 30,846 | 41,763 | 322 | 800 | - | 243 |
-| Massachusetts | 30,463 | 25,865 | 295 | 1,183 | 7 | 417 |
-| Kansas | 30,277 | 18,884 | 213 | 437 | 25 | 79 |
-| North Dakota | 29,364 | 14,344 | 203 | 2,262 | - | 236 |
-| West Virginia | 28,902 | 25,930 | 209 | 1,211 | - | 175 |
-| Connecticut | 28,540 | 18,022 | 158 | 1,724 | - | 371 |
-| Maine | 27,805 | 2,287 | 153 | 722 | - | 229 |
-| Kentucky | 27,027 | 10,975 | 274 | 1,427 | 1,109 | 233 |
-| Vermont | 26,702 | 1,102 | 98 | 833 [1] | - | 216 [6] |
-| Arizona | 25,755 | 23,099 | 330 | 2,211 | - | 235 [6] |
-| District of Columbia (territory) | 24,229 | 27,798 | - [7] | 1,404 | - | 27 |
-| Delaware | 23,557 | 9,375 | 216 | 1,392 | - | 301 |
-| Idaho | 22,983 | 8,993 | 239 | 983 | - | 75 |
-| Hawaii | 22,413 | 28,616 | 171 | 1,259 | - | 172 |
-| Wyoming | 21,113 | 18,418 | 316 | 1,020 | - | 62 |
-| Alaska | 18,097 | 25,717 | 238 | 763 | - | 398 |
-| Guam (territory) | 17,848 | 5,956 | - [7] | 633 | - | - |
-| Virgin Islands (territory) | 12,936 | 181 | - [7] | 900 | - | - |
-| Northern Mariana Islands (territory) | 7,006 | 11,904 | 147 | 735 | 1,828 | - |
-| American Samoa (territory) | 3,576 | 2,490 | 71 | 470 | - | - |
+| Minnesota | 223,018 | 15,401 | Yes | Yes | Yes | Yes |
+| California | 161,441 | 74,782 | Yes | Yes | Yes | Yes |
+| Texas | 123,205 | 43,516 | Yes | Yes | - | Yes |
+| Colorado | 93,623 | 1,155 | Yes | Yes [2] | - | - |
+| South Dakota | 86,471 | 29,177 | Yes | Yes | Yes | Yes |
+| Indiana | 84,131 | 37,583 | Yes | Yes | - | Yes |
+| Florida | 82,789 | 28,929 | Yes | Yes | Yes | Yes |
+| Montana | 82,438 | 28,278 | Yes | Yes | Yes | Yes |
+| Wisconsin | 76,428 | 20,576 | Yes | Yes | Yes | Yes |
+| Illinois | 73,330 | 59,937 | Yes | Yes | - | Yes |
+| Oregon | 71,629 | 40,975 | Yes | Yes | - | Yes [6] |
+| New Jersey | 56,359 | 53,393 | Yes | Yes | Yes | Yes [6] |
+| Washington | 56,035 | 51,277 | Yes | Yes | Yes | Yes |
+| Oklahoma | 55,377 | 66,258 | Yes | Yes [3] | Yes | Yes |
+| Louisiana | 52,395 | 26,784 | Yes | Yes | - | - |
+| Nevada | 50,089 | 30,978 | Yes | Yes | Yes | Yes |
+| Alabama | 49,372 | 18,905 | Yes | Yes | Yes | Yes |
+| Pennsylvania | 48,005 | 50,343 | Yes | Yes | Yes | - |
+| Michigan | 44,456 | 22,156 | Yes | Yes | - | Yes |
+| North Carolina | 41,811 | 45,834 | Yes | Yes | Yes | Yes |
+| Maryland | 41,256 | 29,461 | Yes | Yes | Yes | Yes |
+| New York | 40,297 | 52,491 | Yes | Yes | Yes | Yes |
+| Iowa | 40,159 | 27,597 | Yes | Yes | Yes | Yes |
+| Puerto Rico (territory) | 39,399 | 108,483 | Yes | Yes | - | Yes |
+| Arkansas | 39,361 | 28,261 | Yes | Yes | - | Yes |
+| Utah | 37,923 | 19,950 | Yes | Yes | Yes | Yes |
+| Nebraska | 36,743 | 13,647 | Yes | Yes | - | Yes |
+| Tennessee | 34,755 | 11,625 | Yes | Yes | - | Yes |
+| Georgia | 34,673 | 19,826 | Yes | Yes | - | Yes |
+| Virginia | 34,045 | 22,445 | Yes | Yes | Yes | Yes |
+| Ohio | 33,772 | 19,503 | Yes | Yes | - | Yes |
+| Missouri | 33,215 | 13,122 | Yes | Yes | Yes | Yes |
+| South Carolina | 32,170 | 6,220 | Yes | Yes | - | Yes |
+| Rhode Island | 32,134 | 1,227 | Yes | Yes | - | Yes |
+| New Mexico | 31,370 | 43,609 | Yes | Yes | Yes | Yes |
+| New Hampshire | 30,945 | 39,393 | Yes | Yes | - | Yes |
+| Mississippi | 30,846 | 41,763 | Yes | Yes | - | Yes |
+| Massachusetts | 30,463 | 25,865 | Yes | Yes | Yes | Yes |
+| Kansas | 30,277 | 18,884 | Yes | Yes | Yes | Yes |
+| North Dakota | 29,364 | 14,344 | Yes | Yes | - | Yes |
+| West Virginia | 28,902 | 25,930 | Yes | Yes | - | Yes |
+| Connecticut | 28,540 | 18,022 | Yes | Yes | - | Yes |
+| Maine | 27,805 | 2,287 | Yes | Yes | - | Yes |
+| Kentucky | 27,027 | 10,975 | Yes | Yes | Yes | Yes |
+| Vermont | 26,702 | 1,102 | Yes | Yes [1] | - | Yes [6] |
+| Arizona | 25,755 | 23,099 | Yes | Yes | - | Yes [6] |
+| District of Columbia (territory) | 24,229 | 27,798 | - [7] | Yes | - | Yes |
+| Delaware | 23,557 | 9,375 | Yes | Yes | - | Yes |
+| Idaho | 22,983 | 8,993 | Yes | Yes | - | Yes |
+| Hawaii | 22,413 | 28,616 | Yes | Yes | - | Yes |
+| Wyoming | 21,113 | 18,418 | Yes | Yes | - | Yes |
+| Alaska | 18,097 | 25,717 | Yes | Yes | - | Yes |
+| Guam (territory) | 17,848 | 5,956 | - [7] | Yes | - | - |
+| Virgin Islands (territory) | 12,936 | 181 | - [7] | Yes | - | - |
+| Northern Mariana Islands (territory) | 7,006 | 11,904 | Yes | Yes | Yes | - |
+| American Samoa (territory) | 3,576 | 2,490 | Yes | Yes | - | - |
 | **Total** | **2,642,636** | **1,504,702** | **13,057** | **69,931** | **153,850** | **13,402** |
 
 Markers:
 
 - [1], [2], [3] Vermont, Colorado and Oklahoma court rules are sourced differently. See [Sourcing notes](#sourcing-notes).
-- [6] Arizona, Oregon, New Jersey and Vermont: the count includes financial-regulator bulletins (`source=state_financial_bulletin`).
+- [6] Arizona, Oregon, New Jersey and Vermont: also includes financial-regulator bulletins (`source=state_financial_bulletin`).
 - [7] Guam, DC and the Virgin Islands have no constitution of their own. Their organic law is federal.
 
 State session laws are in the [session laws](/api-guide/session-laws) corpus, sessions 1975 to 2026.
@@ -224,55 +224,55 @@ Where a jurisdiction has more than one series, the `series` field carries the pu
 
 Florida opinions from 1913 to 1991 are citation and metadata only, marked `textAvailability: "metadata_only"`. Filter on that field to include or exclude them.
 
-<Accordion title="Opinions and range by state">
+<Accordion title="Date range by state">
 
-| State | Opinions | Range |
-|---|---:|---|
-| Florida | 20,966 | 1913-2026 |
-| Alabama | 11,930 | 1979-2026 |
-| Arkansas | 10,322 | 1984-2026 |
-| Indiana | 9,760 | 1906-2026 |
-| Missouri | 8,449 | 1962-2026 |
-| North Dakota | 5,562 | 1942-2026 |
-| Washington | 4,430 | 1949-2026 |
-| Texas | 4,017 | 1983-2026 |
-| Louisiana | 3,720 | 1991-2025 |
-| Montana | 3,527 | vols. 15-44 |
-| Oklahoma | 3,052 | 1975-2026 |
-| Michigan | 2,680 | - |
-| Tennessee | 2,651 | 2000-2026 |
-| California | 1,967 | 1977-2026 |
-| South Dakota | 1,652 | 1968-2025 |
-| Virginia | 1,605 | - |
-| Illinois | 1,453 | 1971-2025 |
-| Ohio | 1,407 | 1993-2026 |
-| Nebraska | 1,191 | 1990-2026 |
-| North Carolina | 1,108 | 1976-2010 |
-| Delaware | 851 | 1995-2026 |
-| Maine | 833 | 1978-2024 |
-| Kentucky | 692 | 1992-2026 |
-| Pennsylvania | 653 | 1957-1992 |
-| Connecticut | 626 | 1990-2025 |
-| Maryland | 601 | 1993-2025 |
-| New York | 536 | 1995-2023 |
-| Alaska | 532 | 1986-2026 |
-| Massachusetts | 529 | 1968-1993 |
-| Mississippi | 528 | 2020-2026 |
-| Georgia | 525 | 1992-2026 |
-| West Virginia | 152 | 2007-2026 |
-| Idaho | 152 | 1985-2026 |
-| Arizona | 147 | 1999-2026 |
-| Oregon | 114 | 1997-2025 |
-| Colorado | 109 | 1994-2026 |
-| Puerto Rico | 81 | 2003-2010 |
-| Minnesota | 77 | 1993-2025 |
-| Hawaii | 66 | 1993-2023 |
-| Kansas | 58 | 2023-2026 |
-| Nevada | 41 | 2017-2026 |
-| District of Columbia | 37 | 1982-2026 |
-| Wyoming | 17 | 2000-2018 |
-| New Jersey | 16 | 1985-2017 |
-| Vermont | 16 | 2000-2025 |
+| State | Range |
+|---|---|
+| Alabama | 1979-2026 |
+| Alaska | 1986-2026 |
+| Arizona | 1999-2026 |
+| Arkansas | 1984-2026 |
+| California | 1977-2026 |
+| Colorado | 1994-2026 |
+| Connecticut | 1990-2025 |
+| Delaware | 1995-2026 |
+| District of Columbia | 1982-2026 |
+| Florida | 1913-2026 |
+| Georgia | 1992-2026 |
+| Hawaii | 1993-2023 |
+| Idaho | 1985-2026 |
+| Illinois | 1971-2025 |
+| Indiana | 1906-2026 |
+| Kansas | 2023-2026 |
+| Kentucky | 1992-2026 |
+| Louisiana | 1991-2025 |
+| Maine | 1978-2024 |
+| Maryland | 1993-2025 |
+| Massachusetts | 1968-1993 |
+| Michigan | - |
+| Minnesota | 1993-2025 |
+| Mississippi | 2020-2026 |
+| Missouri | 1962-2026 |
+| Montana | vols. 15-44 |
+| Nebraska | 1990-2026 |
+| Nevada | 2017-2026 |
+| New Jersey | 1985-2017 |
+| New York | 1995-2023 |
+| North Carolina | 1976-2010 |
+| North Dakota | 1942-2026 |
+| Ohio | 1993-2026 |
+| Oklahoma | 1975-2026 |
+| Oregon | 1997-2025 |
+| Pennsylvania | 1957-1992 |
+| Puerto Rico | 2003-2010 |
+| South Dakota | 1968-2025 |
+| Tennessee | 2000-2026 |
+| Texas | 1983-2026 |
+| Vermont | 2000-2025 |
+| Virginia | - |
+| Washington | 1949-2026 |
+| West Virginia | 2007-2026 |
+| Wyoming | 2000-2018 |
 
 Puerto Rico opinions are in Spanish, with `language_code` `es`.
 Iowa is not served.

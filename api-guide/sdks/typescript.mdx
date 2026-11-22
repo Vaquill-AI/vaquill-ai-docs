@@ -79,8 +79,26 @@ Path parameters are positional arguments. Query and body fields keep the camelCa
 | `pricing` | none | `get` | none |
 
 Each method maps to one `operationId`, so `search_statutes` is `statutes.search` and `get_section_body` is `statutes.getSectionBody`.
-Some rulemaking docket routes have no method yet. The [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) lists them.
+Case law, rulemaking and agent signup routes have no method yet. The [SDKs overview](/api-guide/sdks/overview#which-calls-cost-credits) lists them.
 `client.pricing.get()` returns the live price list.
+
+## Case law
+
+Version 0.2.1 has no case law methods. Use `rawRequest`, and set `charged: true` on paid calls.
+
+```typescript
+import { Vaquill } from "@vaquill-ai/sdk";
+
+const client = new Vaquill();
+const found = await client.rawRequest<{ results: { status: string }[] }>(
+  "POST",
+  "/api/v1/us/cases/resolve",
+  { body: { citations: ["347 F.3d 1000"] }, charged: true },
+);
+console.log(found.results[0]?.status);
+```
+
+See [Case law](/api-guide/case-law) for every endpoint.
 
 ## Spend guard
 

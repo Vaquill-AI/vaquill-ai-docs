@@ -27,7 +27,7 @@ All SDKs are MIT licensed.
 The data you retrieve is covered by separate terms. See [Rights and licensing](/api-guide/rights-and-licensing).
 
 <Note>
-  The SDKs cover the US document only. For India, use the separate OpenAPI document directly.
+  The SDKs cover the US document only. For case law, use `raw_request` or `rawRequest`, shown on the [Python](/api-guide/sdks/python#case-law) and [TypeScript](/api-guide/sdks/typescript#case-law) pages. For India, use the separate OpenAPI document directly.
 </Note>
 
 ## Authentication
@@ -61,7 +61,7 @@ Every method also takes per-call `timeout`, `max_retries` / `maxRetries`, `heade
 
 <ChargedCallRule />
 
-That is 30 of the 42 operations in the US document, and every SDK applies the same rule.
+Every SDK applies the same rule.
 The table lists the 25 charged and 11 free operations that have a method in the Python and TypeScript clients, by `operationId`.
 The method name is the `operationId` with the namespace noun removed, so `search_statutes` is `statutes.search`, and `get_session_law_body` is `session_laws.get_body` in Python and `sessionLaws.getBody` in TypeScript.
 
@@ -76,7 +76,12 @@ The `iter_*` / `*All` paging helpers and the batch helpers are charged when the 
 `extract_statute_citations` costs 0 credits when `resolve` is false.
 
 <Accordion title="Operations without an SDK method">
-  Six of the 42 operations have no method in the Python, TypeScript or Go clients: `list_rulemaking_dockets`, `list_rulemaking_documents`, `get_rulemaking_docket`, `get_rulemaking_by_rin` and `get_rin_agenda_history` are charged, and `get_rulemaking_coverage` is free.
+  The published Python, TypeScript and Go clients have no method for these:
+
+  - **Case law:** all operations. Only `list_courts` and `get_court` are free.
+  - **Rulemaking:** all 8 operations. Only `get_rulemaking_coverage` is free.
+  - **Agent signup:** all 3 operations, all free.
+
   Call them with `raw_request` / `rawRequest`, marking the charged ones, or with plain HTTP.
 </Accordion>
 

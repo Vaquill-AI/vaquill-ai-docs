@@ -6,7 +6,7 @@ Base URL: https://api.vaquill.ai. Authenticate every request with `Authorization
 
 ## Get an API key
 
-New accounts get 1,000 free API credits ($10), valid for 90 days. No card required. Sign up at https://app.vaquill.ai/auth/signup, confirm your email, then create a key at https://app.vaquill.ai/developer?tab=api-key (keys start with `vq_key_`, sent as `Authorization: Bearer`). The MCP server at https://mcp.vaquill.ai/mcp supports OAuth sign-in from the Claude and ChatGPT connectors, so no key copy is needed. An agent can also self-sign up: POST https://api.vaquill.ai/api/v1/agent/signup with email, agentName, agentVendor and purpose. The 201 response returns a vq_key_ apiKey that works immediately, with 100 trial credits; the key and its trial credits stop working after 7 days unless the email is verified. To verify, read the 6-digit code emailed to that address (valid 7 days) and POST it with the claimToken to verifyUrl: the same key then moves onto the account for that email with no expiry, and 1,000 free credits are added on top of the trial credits. Or the human approves the returned userCode at https://app.vaquill.ai/claim and the agent polls tokenUrl with the claimToken until it returns verified: true. Neither verify nor tokenUrl returns the key again. If signup returns 503 agent_signup_disabled, ask the human to create a key at https://app.vaquill.ai/developer. Full steps for agents: https://www.vaquill.ai/agents.
+New accounts get 1,000 free API credits ($10), valid for 90 days. No card required. Sign up at https://app.vaquill.ai/auth/signup, confirm your email, then create a key at https://app.vaquill.ai/developer?tab=api-key (keys start with `vq_key_`, sent as `Authorization: Bearer`). The MCP server at https://mcp.vaquill.ai/mcp supports OAuth sign-in from the Claude and ChatGPT connectors, so no key copy is needed. An agent can also self-sign up: POST https://api.vaquill.ai/api/v1/agent/signup with email, agentName, agentVendor and purpose. The 201 response returns a vq_key_ apiKey that works immediately, with 100 trial credits; the key stops working 7 days after signup unless the email is verified (an expired trial key answers 401 agent_trial_expired: sign up again). To verify, read the 6-digit code emailed to that address (valid 7 days, 5 tries per signup) and POST it with the claimToken to verifyUrl: the same key then moves onto the account for that email with no expiry. Unspent trial credits do not carry over; the account gets 1,000 free credits, once per person, and none if it already received its welcome credits or already holds credits. There is no resend route: to get a new code, sign up again (at most 3 signups per email per day, 20 per IP per day). Or the human approves the returned userCode at https://app.vaquill.ai/claim and the agent polls tokenUrl with the claimToken until it returns verified: true. Neither verify nor tokenUrl returns the key again. A trial key, or any key without an API plan, is limited to 30 requests per minute, 500 per hour and 1,000 per day. After verification, when credits run out the 402 tells the agent to ask its human to top up at https://www.vaquill.ai/developer; an agent cannot buy credits itself. If signup returns 503 agent_signup_disabled, ask the human to create a key at https://app.vaquill.ai/developer. Full steps for agents: https://www.vaquill.ai/agents.
 
 ## Data coverage
 
@@ -17,17 +17,7 @@ New accounts get 1,000 free API credits ($10), valid for 90 days. No card requir
 - [Federal agency guidance sources](https://www.vaquill.ai/docs/api-guide/coverage/agency-guidance): Sub-regulatory federal guidance sources, each filterable with corpusType=AGENCY_GUIDANCE and source
 - [State session laws](https://www.vaquill.ai/docs/api-guide/session-laws): State session laws as enacted, with dates, veto outcome, sources, text and search
 - [US rulemaking](https://www.vaquill.ai/docs/api-guide/rulemaking): Regulations.gov dockets and documents, Unified Agenda history, OIRA review and CRA links, tied together by the RIN
-
-## US case law
-
-- [US case law](https://www.vaquill.ai/docs/api-guide/case-law): US court decisions with the text of their opinions: search, citation lookup, the citation graph, courts, judges and dockets
-- [Case law quickstart](https://www.vaquill.ai/docs/api-guide/case-law-quickstart): Resolve a citation, read the decision and its opinion, and follow the citation graph
-- [Check the citations in a brief](https://www.vaquill.ai/docs/api-guide/case-law-guide-brief-checker): Find every case citation in a document, match each to its case, and open the opinion behind each one, in one call
-- [Searching case law](https://www.vaquill.ai/docs/api-guide/case-law-search): Full-text search over US court opinions: query syntax, filters, sorting and paging
-- [Opinion text](https://www.vaquill.ai/docs/api-guide/case-law-opinions): Read the text of a US court opinion as html or plain text, with citation links and footnotes
-- [Courts, coverage and judges](https://www.vaquill.ai/docs/api-guide/case-law-courts-and-judges): List the US courts we hold, see what is held per court and year, and read judge profiles and financial disclosures
-- [Dockets and oral arguments](https://www.vaquill.ai/docs/api-guide/case-law-dockets): Read US court docket records and oral argument records
-- [Change feed](https://www.vaquill.ai/docs/api-guide/case-law-change-feed): List the US cases added, changed or removed since a moment, and keep a local copy in step
+- [Case law coverage](https://www.vaquill.ai/docs/api-guide/coverage/case-law): US case law totals, the courts covered with their court codes, the citation formats accepted, and what is not held yet
 
 ## Get started
 
@@ -75,6 +65,11 @@ New accounts get 1,000 free API credits ($10), valid for 90 days. No card requir
 - [Law change alerts](https://www.vaquill.ai/docs/api-guide/alerts): Subscribe to a jurisdiction or corpus and get a webhook or email when it changes, with the exact sections that changed
 - [Pagination](https://www.vaquill.ai/docs/api-guide/pagination): Offset paging and cursor paging, and which endpoints use which
 - [Best practices](https://www.vaquill.ai/docs/api-guide/best-practices): Scoping, matching, caching and retry habits for production use of the API
+
+## Case law
+
+- [US case law](https://www.vaquill.ai/docs/api-guide/case-law): Make your first case law call, and see every endpoint for decisions, opinions, courts, judges and dockets
+- [Search and read cases](https://www.vaquill.ai/docs/api-guide/case-law-search): Search US case law, look up citations, check the citations in a brief and read opinion text
 
 ## Recipes
 

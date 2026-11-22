@@ -5,7 +5,7 @@ description: "Offset paging and cursor paging, and which endpoints use which"
 
 import FreeRateLimited from '/snippets/free-rate-limited.mdx';
 
-Nine endpoints take a `limit`, and they page in two different models.
+Endpoints that take a `limit` page in two different models.
 
 **Offset paging** walks a fixed window with `limit` and `offset` and stops when `hasMore` is `false`.
 Use it for a ranked or ordered list that is not changing while you read it.
@@ -24,6 +24,13 @@ Use it for change history, where new rows land while you page and an offset woul
 | `GET /us/statutes/section/{actId}/cited-by` | offset, resume with `nextOffset` | `offset` 0 to 5,000. A page past the end is empty and not charged | 25 | 100 |
 | `GET /us/statutes/section/{actId}/cross-state` | `limit` only | Top N by relevance, no page two | 5 | 25 |
 | `GET /us/statutes/section/{actId}/related` | `limit` only | Top N by relevance, no page two | 3 | 10 |
+
+Case law pages this way:
+
+| Endpoint | Model | How to continue |
+|---|---|---|
+| `GET /us/cases/list`, `GET /us/cases/changes` | cursor | Pass `nextCursor` as `cursor` while `hasMore` is `true` |
+| Other case law lists and search | offset | Raise `offset` while `hasMore` is `true`, up to 10,000 |
 
 `cross-state` and `related` have no page two, so raise `limit` to its maximum if you want the whole set.
 
