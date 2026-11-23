@@ -1,11 +1,11 @@
 ---
 title: "Gemini Enterprise"
 sidebarTitle: "Gemini Enterprise"
-description: "Steps for a Gemini Enterprise admin to connect Vaquill AI over MCP: US case law, statutes and regulations, with OAuth sign-in and read-only tools."
-keywords: ["gemini enterprise mcp", "gemini enterprise custom mcp server", "gemini enterprise connector legal", "us case law gemini", "us statutes gemini", "vaquill gemini"]
+description: "Steps for a Gemini Enterprise admin to connect Vaquill AI over MCP: US statutes, regulations and case law, with OAuth sign-in and read-only tools."
+keywords: ["gemini enterprise mcp", "gemini enterprise custom mcp server", "gemini enterprise connector legal", "us statutes gemini", "us case law gemini", "vaquill gemini"]
 ---
 
-Vaquill AI is a legal data lab for AI. Its MCP server gives Gemini Enterprise US case law and US statutes and regulations, with an official source link on every statute section. It uses Streamable HTTP and OAuth 2.1, and each user signs in with their own Vaquill AI account.
+Vaquill AI is a legal data lab for AI. Its MCP server gives Gemini Enterprise US statutes and regulations, each section linked to its official source, and US case law. It uses Streamable HTTP and OAuth 2.1, and each user signs in with their own Vaquill AI account.
 
 ## Connection values
 
@@ -60,7 +60,7 @@ Google's [custom MCP server setup page](https://docs.cloud.google.com/gemini/ent
     Click **Verify Auth** and sign in with a Vaquill AI account, then **Continue**.
   </Step>
   <Step title="Describe and create the data store">
-    A short description helps Gemini decide when to call it, for example "US case law, statutes and regulations with official source links". Choose the multi-region, name the data connector, and click **Create**. Wait for the state to change from Creating to Active.
+    A short description helps Gemini decide when to call it, for example "US statutes, regulations and case law with official source links". Choose the multi-region, name the data connector, and click **Create**. Wait for the state to change from Creating to Active.
   </Step>
   <Step title="Enable the actions">
     Open the data store, click **Actions**, then **Reload custom actions**. Select the tools to enable and click **Enable actions**. Google enables none by default and allows up to 100. Vaquill AI exposes 52.
@@ -81,8 +81,8 @@ Google's setup page says action calls need user confirmation unless the tool car
 
 | Area | Coverage | Main tools |
 | --- | --- | --- |
-| Case law | 10.1M+ cases, 10.9M+ opinions with full text, 2,100+ courts (federal, state, territorial, tribal, military), 15,000+ judges | `search_us_cases`, `get_us_case`, `get_us_opinion`, `resolve_case_citations`, `get_case_citations`, `get_us_judge` |
 | Statutes and regulations | 6M+ sections across federal law, all 50 states, DC and territories: US Code, CFR, Federal Register, state codes, regulations, constitutions, court rules, session laws, federal rulemaking | `search_us_statutes`, `get_us_statute_section_text`, `resolve_statute_citation`, `extract_statute_citations`, `get_section_cross_state` |
+| Case law | 11.2M+ cases, 12M+ opinions with full text, 2,200+ courts (federal, state, territorial, tribal, military), 15,000+ judges | `search_us_cases`, `get_us_case`, `get_us_opinion`, `resolve_case_citations`, `get_case_citations`, `get_us_judge` |
 | Generic | Research clients that look for a search and fetch pair | `search`, `fetch` |
 
 See [API coverage](/api-guide/coverage) for the full corpus list.

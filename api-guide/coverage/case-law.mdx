@@ -3,16 +3,16 @@ title: "Case law coverage"
 description: "US case law totals, the courts covered with their court codes, the citation formats accepted, and what is not held yet"
 ---
 
-**10.1M+ case records and 10.9M+ opinions**, from federal, state, territorial, tribal and military courts.
+**11.2M+ cases and 12M+ opinions**, from federal, state, territorial, tribal and military courts, agencies and attorneys general.
 
 | What | Held |
 |---|---:|
-| Case records | 10.1M+ |
-| Opinions | 10.9M+ |
-| Courts with records | 2,100+ |
+| Case records | 11.2M+ |
+| Opinions | 12M+ |
+| Courts with records | 2,200+ |
 | Judges | 15,000+ |
 
-Totals as of 2026-11-22.
+Totals as of November 23, 2026.
 
 A case record usually means one decision. Some decisions have more than one record, so counts are rounded down and can include repeats.
 
@@ -153,6 +153,121 @@ Records cover every state court and body in that jurisdiction.
 
 {/* END court-tables */}
 
+## Being added in November 2026
+
+These sources are being added to the case law corpus in November 2026.
+Their courts are already listed in `GET /us/courts`, and a court shows no `decisions` in `coverage` until its load finishes.
+The totals above do not include them yet.
+As each source finishes loading, its court moves into the tables above.
+
+### Tribal courts
+
+- 32 tribal appellate courts from the Northwest Intertribal Court System.
+- Fort Peck Court of Appeals.
+- Cherokee Nation.
+- Oneida.
+
+Tribal courts have `system=tribal`.
+
+### Federal agencies and boards
+
+- Department of Energy Office of Hearings and Appeals.
+- Department of Housing and Urban Development Office of Hearings and Appeals.
+- Federal Aviation Administration civil penalty appeals.
+- Postal Service Board of Contract Appeals, 1986 on, about 640 decisions.
+- Securities and Exchange Commission.
+- National Mediation Board.
+- Federal Election Commission.
+- US Coast Guard.
+
+Agency boards have `level=agency`.
+
+### State agencies and tax tribunals
+
+- California Railroad Commission, 1911 to 1946.
+- District of Columbia Contract Appeals Board.
+- Illinois Workers' Compensation Commission.
+- Michigan Tax Tribunal.
+- Utah Tax Commission.
+- Arizona Tax Court.
+- Massachusetts Appellate Tax Board.
+- West Virginia Public Employees Grievance Board, 1994 to 2021, about 6,800 decisions.
+- Washington Department of Revenue.
+
+### Attorney general opinions
+
+- State attorneys general: Virginia, Wyoming, South Carolina, Michigan and New Mexico.
+- Official Opinions of the Attorneys General of the United States, 1791 to 1982.
+
+These courts have `level=attorney_general`.
+Attorney general opinions are persuasive authority, not binding law.
+
+### Trial court opinions
+
+- Fairfax County Circuit Court opinion letters, 2021 on, 181 letters.
+
+Figures are approximate and describe what was collected, not what is served.
+
+## Coming soon
+
+These sources are collected and being prepared for loading.
+They are not searchable yet, and the totals above do not include them.
+Figures are approximate and describe what was collected, not what is served.
+When a source loads, its court appears in `GET /us/courts` with a `coverage` count and moves into the tables above.
+
+### Federal agencies and boards
+
+| Source | `courtId` | Years | Collected, approx. |
+|---|---|---|---:|
+| Federal Energy Regulatory Commission, orders | `US_FED_FERC` | 1980 on | 379,000 |
+| Surface Transportation Board | `US_FED_SURFACE_TRANSPORTATION_BOARD` | 1996 on | 25,000 |
+| US International Trade Commission, publications | `US_FED_USITC` | 1961 on | 3,600 |
+| Foreign Claims Settlement Commission | `US_FED_FCSC` | 1954 on | 12,700 |
+| Board for Correction of Naval Records | `US_FED_NAVY_BCNR` | 1998 on | 60,000 |
+| Naval Discharge Review Board | `US_FED_NAVY_NDRB` | 1998 on | 37,000 |
+| Federal Maritime Commission, reported volumes | `US_FED_FMC` | 1919 to 2024 | 36 volumes |
+
+The Federal Maritime Commission reports are held as whole volumes first.
+They are not split into single decisions.
+
+### State agencies and boards
+
+| Source | `courtId` | Years | Collected, approx. |
+|---|---|---|---:|
+| New York Unemployment Insurance Appeal Board | `US_NY_UNEMPLOYMENT_INSURANCE_APPEAL_BOARD` | 2008 on | 54,000 |
+| Indiana Board of Tax Review | `US_IN_BOARD_OF_TAX_REVIEW` | 2002 on | 6,100 |
+| North Carolina Office of Administrative Hearings | `US_NC_OAH` | 2001 on | 7,000 |
+| South Carolina Administrative Law Court | `US_SC_ADMINISTRATIVE_LAW_COURT` | 1994 on | 16,000 |
+| Wisconsin Employment Relations Commission | `US_WI_EMPLOYMENT_RELATIONS_COMMISSION` | 1960s on | 12,000 |
+
+The Wisconsin figure includes the former Personnel Commission.
+
+### Trial court opinions
+
+| Source | `courtId` | Years | Collected, approx. |
+|---|---|---|---:|
+| Connecticut Superior Court, memoranda of decision | `US_CT_SUPERIOR` | Current weeks only | 570 now |
+
+Connecticut posts recent memoranda and then removes them.
+We collect them as they appear, so coverage starts from the first collection and grows each week.
+
+### Territorial and tribal reporters
+
+We plan to add reported decisions from the Puerto Rico, Virgin Islands, Guam, Northern Mariana Islands and American Samoa reporters, from the Navajo Nation reporter and from the American Tribal Law reporter.
+About 55,000 reported decisions were collected, from 1894 to 2017.
+Many of these courts are already in the tables above.
+The new records fill gaps, so expect the existing totals for these courts to rise by less than this figure.
+
+### Agency letter rulings
+
+| Source | `courtId` | Years | Collected, approx. |
+|---|---|---|---:|
+| Texas Attorney General, open records letter rulings | `US_TX_AG_OPEN_RECORDS_RULINGS` | 2015 to 2023 first | 300,000 |
+
+These are letter rulings issued by the Attorney General under the Texas Public Information Act.
+They are agency rulings, not court decisions.
+They will carry `system=state` and `level=agency`, and you can filter them out with `level`.
+
 ## Citation formats
 
 [Citation lookup](/api-guide/case-law-search#look-up-citations) reads `volume reporter page`.
@@ -176,6 +291,7 @@ In a list of citations, write a hyphenated citation with spaces: `2019 Ohio 1234
 - Docket entries and filed documents.
 - Oral argument recordings.
 - Financial disclosure files. The report records are held.
+- Sources listed under [Being added in November 2026](#being-added-in-november-2026) and [Coming soon](#coming-soon), until they load.
 
 <CardGroup cols={2}>
   <Card title="Case law API" href="/api-guide/case-law">

@@ -31,6 +31,9 @@ curl "https://api.vaquill.ai/api/v1/us/courts?state=CA&level=appellate" \
 | `isActive` | `true` for courts that still sit |
 | `q` | Words of the name, short name or citation abbreviation |
 
+Tribal courts have `system=tribal`.
+Agency boards have `level=agency`, and attorney general opinions have `level=attorney_general`, in both the federal and state systems.
+
 A single court adds its parent court, website, dates and, where held, its federal filing code (`pacerCourtId`) and Federal Judicial Center code (`fjcCourtId`).
 
 ## Coverage
@@ -44,6 +47,8 @@ curl "https://api.vaquill.ai/api/v1/us/courts?level=supreme&include=coverage" \
 ```
 
 Each court then carries a `coverage` object with `decisions` held, `firstYear`, `lastYear`, `newestDecisionDate` and `newestAddedAt`.
+A court can be listed before its decisions are loaded, and then shows no `decisions` in `coverage`.
+The sources being added in November 2026 are listed under [Being added in November 2026](/api-guide/coverage/case-law#being-added-in-november-2026), and sources collected for later are under [Coming soon](/api-guide/coverage/case-law#coming-soon).
 Counts can trail the newest additions.
 A year with few decisions inside a court's range can be a gap in what we hold, not a quiet year.
 

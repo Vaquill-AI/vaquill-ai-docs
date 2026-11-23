@@ -16,6 +16,8 @@ Poll it to detect new corpora. New corpora use the same `corpusType` filter, so 
 | On demand | Added if customers ask for it. |
 | Evaluating | Under consideration. |
 | Not planned | No current plan. |
+| Being added | Collected and being added in November 2026. |
+| Coming | Collected and being prepared for loading. |
 
 | Area | Source | What it adds | Status |
 |---|---|---|---|
@@ -29,7 +31,19 @@ Poll it to detect new corpora. New corpora use the same `corpusType` filter, so 
 | Administrative adjudication | DOL OALJ, ARB and BRB | Decisions of the Office of Administrative Law Judges, the Administrative Review Board and the Benefits Review Board. | Planned |
 | Administrative adjudication | FDIC, OCC and Federal Reserve | Enforcement actions and consent orders. | Planned |
 | Administrative adjudication | SEC ALJ initial decisions | A separate series from the Commission opinions already served. | Planned |
-| Administrative adjudication | OSHRC, FMSHRC, FERC, CFTC reparations, US Tax Court, ASBCA and CBCA, EPA Environmental Appeals Board, HHS Departmental Appeals Board | Decisions of each body. | On demand |
+| Administrative adjudication | OSHRC, FMSHRC, CFTC reparations, ASBCA and CBCA, EPA Environmental Appeals Board, HHS Departmental Appeals Board | Decisions of each body. | On demand |
+| Administrative adjudication | Federal boards: Department of Energy Office of Hearings and Appeals, HUD Office of Hearings and Appeals, FAA civil penalty appeals, Postal Service Board of Contract Appeals, SEC, National Mediation Board, Federal Election Commission, US Coast Guard | Decisions of each body, in the case law API. Being added in November 2026. | Being added |
+| Administrative adjudication | State agencies and tax tribunals: California Railroad Commission (1911 to 1946), DC Contract Appeals Board, Illinois Workers' Compensation Commission, Michigan Tax Tribunal, Utah Tax Commission, Arizona Tax Court, Massachusetts Appellate Tax Board, West Virginia Public Employees Grievance Board, Washington Department of Revenue | Decisions of each body, in the case law API. Being added in November 2026. | Being added |
+| Case law completeness | Tribal courts: 32 tribal appellate courts from the Northwest Intertribal Court System, Fort Peck, Cherokee Nation, Oneida | Tribal court decisions. Being added in November 2026. | Being added |
+| Case law completeness | State attorney general opinions: Virginia, Wyoming, South Carolina, Michigan, New Mexico, and the US Attorneys General 1791 to 1982 | Opinions of each Attorney General, in the case law API. Being added in November 2026. | Being added |
+| Case law completeness | Fairfax County Circuit Court opinion letters | Trial court opinion letters. Being added in November 2026. | Being added |
+| Administrative adjudication | FERC orders | Commission orders, delegated orders and ALJ initial decisions. Collected, loading next. | Coming |
+| Administrative adjudication | Surface Transportation Board, US International Trade Commission, Foreign Claims Settlement Commission, Federal Maritime Commission | Decisions and reports of each body. Collected, loading next. | Coming |
+| Administrative adjudication | Navy Board for Correction of Naval Records and Naval Discharge Review Board | Board decisions. Collected, loading next. | Coming |
+| Administrative adjudication | State boards: New York unemployment insurance appeals, Indiana tax review, North Carolina and South Carolina administrative hearings, Wisconsin employment relations | Board decisions and orders. Collected, loading next. | Coming |
+| Case law completeness | Connecticut Superior Court memoranda | Trial court memoranda of decision from a court that posts few of them. Collected, loading next. | Coming |
+| Case law completeness | Territorial and tribal reporters | Reported decisions for Puerto Rico, the Virgin Islands, Guam, the Northern Mariana Islands, American Samoa, the Navajo Nation and other tribal courts. Collected, loading next. | Coming |
+| Agency guidance | Texas Attorney General open records letter rulings | Agency letter rulings under the Public Information Act. They are not court decisions. Collected, loading next. | Coming |
 | Federal regulatory dockets | regulations.gov | Rulemaking dockets, documents and public comments. | Planned |
 | Federal regulatory dockets | FCC ECFS | Telecom proceeding filings. | Planned |
 | Federal regulatory dockets | SEC EDGAR comment letters | SEC staff comment letters (`UPLOAD`) and filer correspondence (`CORRESP`). | Planned |
@@ -42,6 +56,7 @@ Poll it to detect new corpora. New corpora use the same `corpusType` filter, so 
 | Case law completeness | Courts and years not yet held | Early years and smaller courts that [court coverage](/api-guide/coverage/case-law) shows as thin or missing. | Ongoing |
 
 Per-source detail for agencies already covered is in [Agency guidance coverage](/api-guide/coverage/agency-guidance). Adjudication bodies already served are in [Federal coverage](/api-guide/coverage/federal).
+Case-law sources being added are listed under [Being added in November 2026](/api-guide/coverage/case-law#being-added-in-november-2026) and [Coming soon](/api-guide/coverage/case-law#coming-soon).
 
 `FEDERAL_BILL` text is labelled proposed and is excluded from unscoped searches, browse and totals. Enacted text is served under `corpusType=SESSION_LAW` and, once codified, `corpusType=USC`.
 
