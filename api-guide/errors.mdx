@@ -52,7 +52,7 @@ A `422` from a rule that spans several fields (`chapter` without `titleNumber`, 
 | `404` Not Found | [`section_not_found`](/errors/codes#section_not_found), [`resource_not_found`](/errors/codes#resource_not_found) | The resource does not exist. A session-law or section miss is `section_not_found` |
 | `405` Method Not Allowed | [`method_not_allowed`](/errors/codes#method_not_allowed) | The path exists but not for this method. The `Allow` header lists the right ones |
 | `409` Conflict | [`conflict`](/errors/codes#conflict), [`idempotency_in_progress`](/errors/codes#idempotency_in_progress), [`idempotency_replay_unavailable`](/errors/codes#idempotency_replay_unavailable) | You already hold this watch. See [409 on watches](#409-on-watches) |
-| `410` Gone | [`bad_request`](/errors/codes#bad_request) | A withdrawn case. Not charged. Branch on the status, and do not retry |
+| `410` Gone | [`resource_gone`](/errors/codes#resource_gone) | A withdrawn case. Not charged. Branch on the status, and do not retry |
 | `413` Payload Too Large | [`payload_too_large`](/errors/codes#payload_too_large) | The request body is over the limit |
 | `415` Unsupported Media Type | [`unsupported_media_type`](/errors/codes#unsupported_media_type) | Send `Content-Type: application/json` |
 | `422` Unprocessable Entity | [`validation_error`](/errors/codes#validation_error), [`invalid_query`](/errors/codes#invalid_query), [`invalid_citation_input`](/errors/codes#invalid_citation_input), [`idempotency_key_reused`](/errors/codes#idempotency_key_reused) | Set `Content-Type: application/json` and fix the field named in `errors[].loc`. A malformed [Boolean expression](/api-guide/concepts/boolean-search#errors) is also a `422`, and is not charged |

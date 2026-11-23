@@ -43,7 +43,9 @@ It costs 6 credits per opinion served.
 An unknown id (or one of a withdrawn case) lands in `notFound`, and an opinion with no text in that format in `bodyUnavailable`.
 Neither is charged.
 One answer holds at most 2,000,000 characters of text.
-Opinions past that are listed in `deferred` and are not charged, so ask for them again in a call of their own.
+`deferred` lists the first opinion that did not fit and every present id after it, and none of them are charged.
+The first opinion is always served.
+Resume from the first deferred id, in a call of its own.
 
 ## Format
 

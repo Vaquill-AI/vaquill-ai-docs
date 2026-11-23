@@ -226,7 +226,7 @@ claude mcp add --scope user vaquill -e VAQUILL_API_KEY=vq_key_your_key_here \
 
 The US mount lists 52 read-only tools: typed tools over the API, plus the `search` and `fetch` pair.
 Listing them needs no credential.
-The case law tools need a key with the `cases:read` scope. See [Authentication](/api-guide/authentication).
+The case law tools work with any API key you create.
 
 <Warning>
   Never build an `act_id` by hand. A constructed id usually returns 404. Get it from `search_us_statutes`, `resolve_statute_citation` or `list_statute_divisions`. See [Section identifiers](/api-guide/concepts/section-ids). Case, opinion, judge and docket ids work the same way: take them from a search, a list or `resolve_case_citations`.

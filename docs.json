@@ -365,23 +365,31 @@
         "items": [
           {
             "label": "About",
-            "href": "https://vaquill.ai/about"
+            "href": "https://www.vaquill.ai/about"
+          },
+          {
+            "label": "Customers",
+            "href": "https://www.vaquill.ai/customer"
           },
           {
             "label": "Contact",
-            "href": "https://vaquill.ai/contact"
+            "href": "https://www.vaquill.ai/contact"
           },
           {
             "label": "Data Sources & Credits",
-            "href": "https://vaquill.ai/partners"
+            "href": "https://www.vaquill.ai/partners"
+          },
+          {
+            "label": "Legal Aid & Nonprofits",
+            "href": "https://www.vaquill.ai/legal-aid"
           },
           {
             "label": "Blog",
-            "href": "https://vaquill.ai/blog"
+            "href": "https://www.vaquill.ai/blog"
           },
           {
             "label": "Engineering",
-            "href": "https://vaquill.ai/engineering"
+            "href": "https://www.vaquill.ai/engineering"
           }
         ]
       },
@@ -389,20 +397,64 @@
         "header": "Developers",
         "items": [
           {
-            "label": "Data API",
-            "href": "https://vaquill.ai/legal-api"
+            "label": "Statutes API",
+            "href": "https://www.vaquill.ai/legal-api"
+          },
+          {
+            "label": "Case Law API",
+            "href": "https://www.vaquill.ai/case-law-api"
+          },
+          {
+            "label": "White Label",
+            "href": "https://www.vaquill.ai/white-label"
           },
           {
             "label": "MCP Servers",
-            "href": "https://vaquill.ai/mcp"
+            "href": "https://www.vaquill.ai/mcp"
+          },
+          {
+            "label": "For AI Agents",
+            "href": "https://www.vaquill.ai/agents"
+          },
+          {
+            "label": "SDKs",
+            "href": "/api-guide/sdks/overview"
+          },
+          {
+            "label": "Claude Code Plugin",
+            "href": "https://www.vaquill.ai/claude-plugin"
+          },
+          {
+            "label": "API Playground",
+            "href": "https://www.vaquill.ai/playground"
+          },
+          {
+            "label": "Affiliate Program",
+            "href": "https://www.vaquill.ai/affiliates"
+          },
+          {
+            "label": "Law Change Alerts",
+            "href": "https://www.vaquill.ai/alerts"
           },
           {
             "label": "API Reference",
             "href": "/api-reference/us-statutes/search-us-statutes-constitutions-court-rules-and-executive-actions"
           },
           {
+            "label": "Changelog",
+            "href": "/api-guide/changelog"
+          },
+          {
+            "label": "Status",
+            "href": "https://status.vaquill.ai/"
+          },
+          {
             "label": "Open US Law Dataset",
-            "href": "https://vaquill.ai/open-us-law"
+            "href": "https://www.vaquill.ai/open-us-law"
+          },
+          {
+            "label": "Open US Law (GitHub)",
+            "href": "https://github.com/Vaquill-AI/open-us-law"
           }
         ]
       },
@@ -411,39 +463,47 @@
         "items": [
           {
             "label": "Privacy Policy",
-            "href": "https://vaquill.ai/privacy"
+            "href": "https://www.vaquill.ai/privacy"
           },
           {
             "label": "Terms of Service",
-            "href": "https://vaquill.ai/terms"
+            "href": "https://www.vaquill.ai/terms"
           },
           {
             "label": "DPA",
-            "href": "https://vaquill.ai/dpa"
+            "href": "https://www.vaquill.ai/dpa"
+          },
+          {
+            "label": "Service Levels",
+            "href": "https://www.vaquill.ai/sla"
           },
           {
             "label": "Cookie Policy",
-            "href": "https://vaquill.ai/cookies"
+            "href": "https://www.vaquill.ai/cookies"
           },
           {
             "label": "Refund Policy",
-            "href": "https://vaquill.ai/refund-policy"
+            "href": "https://www.vaquill.ai/refund-policy"
           },
           {
             "label": "Delete My Data",
-            "href": "https://vaquill.ai/delete-data"
+            "href": "https://www.vaquill.ai/delete-data"
           },
           {
             "label": "Security",
-            "href": "https://vaquill.ai/security"
+            "href": "https://www.vaquill.ai/security"
+          },
+          {
+            "label": "Trust and Procurement",
+            "href": "https://www.vaquill.ai/trust"
           },
           {
             "label": "Accessibility",
-            "href": "https://vaquill.ai/accessibility"
+            "href": "https://www.vaquill.ai/accessibility"
           },
           {
             "label": "Do Not Sell or Share My Personal Information",
-            "href": "https://vaquill.ai/privacy#do-not-sell"
+            "href": "https://www.vaquill.ai/privacy#do-not-sell"
           }
         ]
       }
