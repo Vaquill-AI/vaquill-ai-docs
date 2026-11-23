@@ -1,0 +1,113 @@
+---
+title: "Gemini Enterprise"
+sidebarTitle: "Gemini Enterprise"
+description: "Steps for a Gemini Enterprise admin to connect Vaquill AI over MCP: US case law, statutes and regulations, with OAuth sign-in and read-only tools."
+keywords: ["gemini enterprise mcp", "gemini enterprise custom mcp server", "gemini enterprise connector legal", "us case law gemini", "us statutes gemini", "vaquill gemini"]
+---
+
+Vaquill AI is a legal data lab for AI. Its MCP server gives Gemini Enterprise US case law and US statutes and regulations, with an official source link on every statute section. It uses Streamable HTTP and OAuth 2.1, and each user signs in with their own Vaquill AI account.
+
+## Connection values
+
+| Setting | Value |
+| --- | --- |
+| MCP Server URL | `https://mcp.vaquill.ai/mcp` |
+| Transport | Streamable HTTP (no SSE) |
+| Authorization URL | `https://mcp.vaquill.ai/authorize` |
+| Token URL | `https://mcp.vaquill.ai/token` |
+| Scopes | `offline_access` |
+| PKCE | S256, required |
+| Dynamic client registration | `https://mcp.vaquill.ai/register` |
+| Redirect URI | `https://vertexaisearch.cloud.google.com/oauth-redirect` |
+
+## Before you start
+
+Google's [custom MCP server setup page](https://docs.cloud.google.com/gemini/enterprise/docs/connectors/custom-mcp-server/set-up-custom-mcp-server) lists the prerequisites:
+
+- Your organization policy must allow creating a custom MCP data store, and must allow the server, authorization and token domains. All three Vaquill URLs share one domain, `mcp.vaquill.ai`. Under project enforcement or VPC Service Controls, also add `custom_mcp` to the allowed data sources.
+- You need the Discovery Engine Editor role (`roles/discoveryengine.editor`).
+
+## Connect
+
+<Steps>
+  <Step title="Register Gemini Enterprise as a client">
+    Vaquill AI supports dynamic client registration. Run this once and copy `client_id` from the response:
+
+    ```bash
+    curl -X POST https://mcp.vaquill.ai/register \
+      -H "Content-Type: application/json" \
+      -d '{
+        "client_name": "Gemini Enterprise",
+        "redirect_uris": ["https://vertexaisearch.cloud.google.com/oauth-redirect"],
+        "grant_types": ["authorization_code", "refresh_token"],
+        "response_types": ["code"],
+        "token_endpoint_auth_method": "none"
+      }'
+    ```
+  </Step>
+  <Step title="Add a custom MCP server">
+    In the Google Cloud console, open **Gemini Enterprise** and select your app. Go to **Connected Data Stores**, then **New data store**. Search for **Custom MCP Server** and click **Add MCP server**.
+  </Step>
+  <Step title="Enter the OAuth settings">
+    Under **Authentication settings**, choose **OAuth 2.0** and enter the values from the table above.
+
+    - **Client ID**: the `client_id` from step 1.
+    - **Client Secret**: Google requires a value, and Vaquill AI registers Gemini as a public client, so enter a placeholder such as `none`.
+    - **Authorization URL Parameters**: leave empty.
+    - **Enable PKCE Support**: select it.
+    - **Use HTTP Basic Authentication**: clear it.
+
+    Click **Verify Auth** and sign in with a Vaquill AI account, then **Continue**.
+  </Step>
+  <Step title="Describe and create the data store">
+    A short description helps Gemini decide when to call it, for example "US case law, statutes and regulations with official source links". Choose the multi-region, name the data connector, and click **Create**. Wait for the state to change from Creating to Active.
+  </Step>
+  <Step title="Enable the actions">
+    Open the data store, click **Actions**, then **Reload custom actions**. Select the tools to enable and click **Enable actions**. Google enables none by default and allows up to 100. Vaquill AI exposes 52.
+  </Step>
+</Steps>
+
+## When listed in the connector catalog
+
+When Vaquill AI is listed as a Gemini Enterprise connector, an admin can add it from the same **Connected Data Stores** flow without entering the values above. It is not listed yet. Use the steps above until it is.
+
+## What users see
+
+Each user authorizes the connector once with their own Vaquill AI account, using email and password or Google. Usage is metered in credits on that account, and new accounts include free credits.
+
+Google's setup page says action calls need user confirmation unless the tool carries a `readOnlyHint` annotation. All 52 Vaquill AI tools carry it. None creates, changes or deletes anything.
+
+## What it covers
+
+| Area | Coverage | Main tools |
+| --- | --- | --- |
+| Case law | 10.1M+ cases, 10.9M+ opinions with full text, 2,100+ courts (federal, state, territorial, tribal, military), 15,000+ judges | `search_us_cases`, `get_us_case`, `get_us_opinion`, `resolve_case_citations`, `get_case_citations`, `get_us_judge` |
+| Statutes and regulations | 6M+ sections across federal law, all 50 states, DC and territories: US Code, CFR, Federal Register, state codes, regulations, constitutions, court rules, session laws, federal rulemaking | `search_us_statutes`, `get_us_statute_section_text`, `resolve_statute_citation`, `extract_statute_citations`, `get_section_cross_state` |
+| Generic | Research clients that look for a search and fetch pair | `search`, `fetch` |
+
+See [API coverage](/api-guide/coverage) for the full corpus list.
+
+## Verify it works
+
+A successful Verify Auth does not prove the tools run. Ask one real question and check that Gemini calls a Vaquill AI tool:
+
+> "Resolve 42 U.S.C. 1983 and show its text"
+
+> "What is the statute of limitations for breach of a written contract in California, New York and Florida?"
+
+> "Find the Supreme Court decision at 410 U.S. 113 and list the cases that cite it most"
+
+## Troubleshooting
+
+| Symptom | Fix |
+| --- | --- |
+| Verify Auth returns `invalid_client` | Use the `client_id` from step 1, select PKCE and clear HTTP Basic Authentication |
+| Redirect URI mismatch | Register again with the Gemini redirect URI exactly as shown above |
+| Data store creation is blocked | Check the organization policy and the allowed domains |
+| No tools appear | Click **Reload custom actions**, then **Enable actions** |
+| 402 on every call | The account is out of credits. Top up in the console |
+| 429 | Rate limited. Honor `Retry-After` |
+
+## Support
+
+Questions, a broken call or a credit top-up: [vaquill.ai/support](https://www.vaquill.ai/support).
