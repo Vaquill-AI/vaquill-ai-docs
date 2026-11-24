@@ -91,6 +91,7 @@ Markers:
 - [7] Guam, DC and the Virgin Islands have no constitution of their own. Their organic law is federal.
 
 State session laws are in the [session laws](/api-guide/session-laws) corpus, sessions 1975 to 2026.
+More state session laws are being added. See the [roadmap](/api-guide/roadmap).
 
 ### The territories
 
@@ -117,6 +118,8 @@ The Virgin Islands Code is an unofficial copy, so `sourceUrl` is null and `licen
 Thirty-eight trial courts publish local rules.
 They are served under `corpusType=STATE_RULES` with the county or district in the `actId`, so one county's Rule 6.5 is never another's.
 Reserved or repealed numbers say so in `actStatus`.
+More county and local trial-court rules are being added.
+The courts listed below are the ones held today. See the [roadmap](/api-guide/roadmap).
 
 <Accordion title="Courts held and citation forms">
 
@@ -187,6 +190,7 @@ Register items never outrank the rule they concern in search.
 Search them with `{"corpusType": "STATE_REGISTER", "state": "pa"}`.
 
 Held today: **153,850 items across 24 jurisdictions**.
+Earlier years of registers already served are being added. See the [roadmap](/api-guide/roadmap).
 
 A register citation also resolves when a codified rule's history note cites it.
 See [Register citations](/api-guide/concepts/citation-formats#register-citations).
@@ -219,6 +223,21 @@ Query it with `corpusType=STATE_AG_OPINION` and `state`.
   Montana and Ohio opinions carry no issue date, so they cannot answer an `asOf` query.
   Find them by citation, volume or search.
 </Warning>
+
+More opinions are being added for some jurisdictions. See the [roadmap](/api-guide/roadmap).
+
+## Being added
+
+Four state categories have a `corpusType` token but are not held yet:
+
+- `JURY_INSTRUCTION`: pattern civil and criminal jury instruction sets.
+- `ETHICS_OPINION`: formal opinions of bar associations and judicial ethics committees. Persuasive, not binding.
+- `STATE_EXECUTIVE_ORDER`: orders issued by a governor.
+- `MUNICIPAL_CODE`: codes of ordinances as codified by a city or county.
+
+They are being added, so a search on one of them can return no results until its data is loaded, and they are not in the matrix above.
+Send `corpusType` plus `state`, as with the other state tokens.
+See [Corpus types](/api-guide/concepts/corpus-types) and the [roadmap](/api-guide/roadmap).
 
 Where a jurisdiction has more than one series, the `series` field carries the publisher's label, for example Washington `AGO` and `AGLO`, California `OP`, `CV`, `CR` and `SO`, and Georgia Official and Unofficial.
 

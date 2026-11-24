@@ -66,6 +66,7 @@ See [Case law coverage](/api-guide/coverage/case-law) for totals, court codes, c
 Federal law has 16 corpus types, from the US Code, the CFR and the Federal Register to agency guidance, adjudications, the Federal Rules and treaties.
 The [federal page](/api-guide/coverage/federal) lists each one. [Treaty coverage](/api-guide/coverage/treaties) covers the two treaty tokens.
 Bill text of the 119th Congress is available as the opt-in `FEDERAL_BILL` token and is not part of any total.
+More district and bankruptcy court local rules are being added under `FEDERAL_LOCAL_RULES`. See the [roadmap](/api-guide/roadmap).
 
 Agency guidance has **53 named sources across 26 agencies** under `corpusType=AGENCY_GUIDANCE`. Narrow it with `source`.
 See the [source registry](/api-guide/coverage/agency-guidance).
@@ -73,6 +74,13 @@ See the [source registry](/api-guide/coverage/agency-guidance).
 ## State corpora
 
 Per-jurisdiction counts for all 56 are in the [matrix](/api-guide/coverage/states).
+
+### Being added
+
+Four state categories are being added: jury instructions (`JURY_INSTRUCTION`), ethics opinions (`ETHICS_OPINION`), state executive orders (`STATE_EXECUTIVE_ORDER`) and municipal codes (`MUNICIPAL_CODE`).
+They are not in the counts on this page, and a search on one of these tokens can return no results until its data is loaded.
+More county and local court rules, state session laws, register notices and attorney general opinions are also being added.
+See the [roadmap](/api-guide/roadmap) for status.
 
 ### State administrative registers
 

@@ -148,6 +148,7 @@ The verdict depends on the publisher, because only a publisher that records a re
 | `STATE_AGENCY_GUIDANCE`, `state_insurance_bulletin` | `good_law` |
 | `STATE_AGENCY_GUIDANCE`, `state_financial_bulletin` | `unknown` |
 | `STATE_AG_OPINION` | `unknown` |
+| `JURY_INSTRUCTION`, `ETHICS_OPINION`, `STATE_EXECUTIVE_ORDER`, `MUNICIPAL_CODE` | `unknown` |
 | `AGENCY_ADJUDICATION`, every source except CFPB | `unknown` |
 | `ftc_administrative_decision`, `ftc_hsr_interpretation`, `ftc_advocacy_filing` | `unknown` |
 | CFPB enforcement actions | A real verdict. `actStatus` is `in_force` or `terminated`. |
@@ -155,6 +156,15 @@ The verdict depends on the publisher, because only a publisher that records a re
 Filter on `source` if you need one behavior or the other.
 
 <AccordionGroup>
+
+<Accordion title="Jury instructions, ethics opinions, executive orders and municipal codes">
+These four state corpora are served as `unknown`, because no publisher of them records a retirement in a way we can read.
+A pattern jury instruction is model text that a court may or may not adopt, so it is not law on its own.
+An ethics opinion is persuasive authority, not binding law.
+A governor's order can be rescinded by a later order without the earlier text changing.
+A city or county posts its code online, and the posted copy can trail an amendment the council has already adopted.
+Check the issuing body for the current text before you rely on any of them.
+</Accordion>
 
 <Accordion title="State AG opinions and agency adjudications">
 An AG opinion or an adjudication is superseded by a later decision, not amended. Almost no publisher records that, so we serve the text as issued and make no claim that it is still good law.

@@ -16,7 +16,7 @@ Poll it to detect new corpora. New corpora use the same `corpusType` filter, so 
 | On demand | Added if customers ask for it. |
 | Evaluating | Under consideration. |
 | Not planned | No current plan. |
-| Being added | Collected and being added in November 2026. |
+| Being added | Being added in November 2026. |
 | Coming | Collected and being prepared for loading. |
 
 | Area | Source | What it adds | Status |
@@ -25,7 +25,6 @@ Poll it to detect new corpora. New corpora use the same `corpusType` filter, so 
 | Existing coverage | State statutes (`STATE`): Pennsylvania | Unconsolidated statutes beyond 35 P.S. ch. 780. | Planned |
 | Point-in-time federal law | List of Sections Affected (LSA), monthly, 1997 to 2026 | A month-by-month map from a CFR section to the change that affected it. | Planned |
 | Point-in-time federal law | FAR and DFARS class deviation text | Model deviation text that 48 C.F.R. does not yet reflect. | Planned |
-| Federal court rules | Federal local rules | District court local rules and local bankruptcy rules not yet held. | Planned |
 | Tax | Chief Counsel Advice | Written determinations issued by IRS Chief Counsel to field offices. | Planned |
 | Tax | Private Letter Rulings | Taxpayer-specific rulings on a proposed transaction. | Planned |
 | Administrative adjudication | DOL OALJ, ARB and BRB | Decisions of the Office of Administrative Law Judges, the Administrative Review Board and the Benefits Review Board. | Planned |
@@ -37,6 +36,16 @@ Poll it to detect new corpora. New corpora use the same `corpusType` filter, so 
 | Case law completeness | Tribal courts: 32 tribal appellate courts from the Northwest Intertribal Court System, Fort Peck, Cherokee Nation, Oneida | Tribal court decisions. Being added in November 2026. | Being added |
 | Case law completeness | State attorney general opinions: Virginia, Wyoming, South Carolina, Michigan, New Mexico, and the US Attorneys General 1791 to 1982 | Opinions of each Attorney General, in the case law API. Being added in November 2026. | Being added |
 | Case law completeness | Fairfax County Circuit Court opinion letters | Trial court opinion letters. Being added in November 2026. | Being added |
+| New categories | Jury instructions (`JURY_INSTRUCTION`) | Pattern civil and criminal jury instruction sets, by state. Being added in November 2026. | Being added |
+| New categories | Ethics opinions (`ETHICS_OPINION`) | Formal opinions of bar associations and judicial ethics committees. They are persuasive, not binding. Being added in November 2026. | Being added |
+| New categories | State executive orders (`STATE_EXECUTIVE_ORDER`) | Orders issued by a governor, separate from federal `EXECUTIVE_ACTION`. Being added in November 2026. | Being added |
+| New categories | Municipal codes (`MUNICIPAL_CODE`) | Codes of ordinances as codified by a city or county, from sites the city or county runs itself. Being added in November 2026. | Being added |
+| State court rules | County and local trial-court rules | More county, district and circuit trial-court local rules under `STATE_RULES`. Being added in November 2026. | Being added |
+| Federal court rules | District court local rules | District court local rules not yet held, under `FEDERAL_LOCAL_RULES`. Being added in November 2026. | Being added |
+| Federal court rules | Bankruptcy court local rules | Local rules of the bankruptcy courts, under `FEDERAL_LOCAL_RULES`. Being added in November 2026. | Being added |
+| State session laws | Earlier years and gaps in state session laws | Session laws for states and years the [session laws](/api-guide/session-laws) corpus does not yet hold. Being added in November 2026. | Being added |
+| State registers | Earlier years of state registers | Earlier issues of registers already served under `STATE_REGISTER`. Being added in November 2026. | Being added |
+| State attorney general opinions | More opinions | Further opinions for jurisdictions already served under `STATE_AG_OPINION`. Being added in November 2026. | Being added |
 | Administrative adjudication | FERC orders | Commission orders, delegated orders and ALJ initial decisions. Collected, loading next. | Coming |
 | Administrative adjudication | Surface Transportation Board, US International Trade Commission, Foreign Claims Settlement Commission, Federal Maritime Commission | Decisions and reports of each body. Collected, loading next. | Coming |
 | Administrative adjudication | Navy Board for Correction of Naval Records and Naval Discharge Review Board | Board decisions. Collected, loading next. | Coming |
@@ -56,6 +65,8 @@ Poll it to detect new corpora. New corpora use the same `corpusType` filter, so 
 | Case law completeness | Courts and years not yet held | Early years and smaller courts that [court coverage](/api-guide/coverage/case-law) shows as thin or missing. | Ongoing |
 
 Per-source detail for agencies already covered is in [Agency guidance coverage](/api-guide/coverage/agency-guidance). Adjudication bodies already served are in [Federal coverage](/api-guide/coverage/federal).
+The new `corpusType` tokens (`JURY_INSTRUCTION`, `ETHICS_OPINION`, `STATE_EXECUTIVE_ORDER` and `MUNICIPAL_CODE`) are described on [Corpus types](/api-guide/concepts/corpus-types).
+Until a category is loaded, a search on its token can return no results.
 Case-law sources being added are listed under [Being added in November 2026](/api-guide/coverage/case-law#being-added-in-november-2026) and [Coming soon](/api-guide/coverage/case-law#coming-soon).
 
 `FEDERAL_BILL` text is labelled proposed and is excluded from unscoped searches, browse and totals. Enacted text is served under `corpusType=SESSION_LAW` and, once codified, `corpusType=USC`.
@@ -67,7 +78,7 @@ Case-law sources being added are listed under [Being added in November 2026](/ap
 | GAO and Comptroller General decisions | GAO offers no feed or API and does not permit automated access. |
 | Judge-specific procedural material (standing orders, chambers procedures, individual practice rules) | It has no stable location, citation form or amendment cycle. |
 | Practice notes and practice directions | A Commonwealth instrument with no direct US federal equivalent. |
-| Municipal and county ordinances | No comprehensive public source. |
+| City and county codes published only through commercial code platforms | Not ingested. Codes a city or county publishes on its own site are being added under `MUNICIPAL_CODE`. |
 | Standards incorporated by reference into the CFR (ASTM, NFPA, ISO) | Published by private standards bodies. |
 | NAIC model law text | A commercially sold publication, not government primary law. Each state's insurance bulletins are in scope under `STATE_AGENCY_GUIDANCE`. |
 

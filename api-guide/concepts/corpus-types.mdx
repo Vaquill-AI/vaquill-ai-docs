@@ -59,6 +59,16 @@ The Source codes column lists the values each token accepts in the `source` filt
 | `STATE_AG_OPINION` | State | State Attorney General opinions. Persuasive authority, not binding law | `state_ag_opinion` |
 | `STATE_CONSTITUTION` | State | State constitutions | - |
 | `STATE_REGISTER` | State | State register notices: proposed, adopted and emergency rules as printed. Not codified law | - |
+| `JURY_INSTRUCTION` | State | Pattern civil and criminal jury instruction sets. Rows are being added, and a search can return no results until they are loaded | - |
+| `ETHICS_OPINION` | State | Formal opinions of bar associations and judicial ethics committees. Persuasive, not binding. Rows are being added, and a search can return no results until they are loaded | - |
+| `STATE_EXECUTIVE_ORDER` | State | Orders issued by a governor. Federal orders are under `EXECUTIVE_ACTION`. Rows are being added, and a search can return no results until they are loaded | - |
+| `MUNICIPAL_CODE` | State | Codes of ordinances as codified by a city or county. Rows are being added, and a search can return no results until they are loaded | - |
+
+`JURY_INSTRUCTION`, `ETHICS_OPINION`, `STATE_EXECUTIVE_ORDER` and `MUNICIPAL_CODE` are new tokens.
+Like the other state tokens, each takes `corpusType` plus `state`.
+Their data is being added, so check `GET /us/statutes/coverage` to see which jurisdictions hold rows under a token before you depend on it.
+More court rules, session laws and register notices are also being added under tokens that already exist.
+See the [roadmap](/api-guide/roadmap) for what is being added.
 
 You can walk the tokens with `browsable: true` in the coverage legend using `/us/statutes/divisions`: `USC`, `CFR`, `STATE`, `REGULATION`, `STATE_RULES`, `CONSTITUTION`, `STATE_CONSTITUTION` and `FEDERAL_RULES`.
 
