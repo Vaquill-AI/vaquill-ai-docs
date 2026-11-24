@@ -115,7 +115,7 @@ The Virgin Islands Code is an unofficial copy, so `sourceUrl` is null and `licen
 
 ## Court rules from county and district trial courts
 
-Thirty-eight trial courts publish local rules.
+Eighty trial courts publish local rules.
 They are served under `corpusType=STATE_RULES` with the county or district in the `actId`, so one county's Rule 6.5 is never another's.
 Reserved or repealed numbers say so in `actStatus`.
 More county and local trial-court rules are being added.
@@ -126,7 +126,7 @@ The courts listed below are the ones held today. See the [roadmap](/api-guide/ro
 | State | Courts |
 |---|---|
 | Arizona | the Superior Courts of Apache, Cochise, Coconino, Gila, Graham, Greenlee, La Paz, Maricopa, Mohave, Navajo, Pima, Pinal, Santa Cruz, Yavapai and Yuma Counties |
-| California | the Superior Courts of Los Angeles, San Diego, Orange, Santa Clara, San Francisco, Alameda, Sacramento and Riverside Counties |
+| California | the Superior Courts of 50 counties: Los Angeles, San Diego, Orange, Santa Clara, San Francisco, Alameda, Sacramento, Riverside, Alpine, Amador, Butte, Calaveras, Contra Costa, Del Norte, El Dorado, Fresno, Glenn, Humboldt, Imperial, Inyo, Kern, Kings, Lake, Marin, Mariposa, Modoc, Mono, Monterey, Napa, Nevada, Placer, Plumas, San Benito, San Bernardino, San Joaquin, San Luis Obispo, San Mateo, Santa Barbara, Santa Cruz, Shasta, Siskiyou, Solano, Sonoma, Stanislaus, Trinity, Tulare, Tuolumne, Ventura, Yolo and Yuba |
 | Illinois | the Circuit Courts of Cook County, the 17th Circuit (Winnebago) and the 19th Circuit (Lake) |
 | Pennsylvania | the Courts of Common Pleas of Philadelphia, Allegheny, Lancaster and Bucks Counties |
 | Texas | the Harris County district courts and county courts at law, and the Travis County and Bexar County district courts |
@@ -142,12 +142,17 @@ These resolve through `/us/statutes/resolve`:
 | `Cook Cnty. Cir. Ct. R. 2.1` | `SRULES_IL_COOK_R2_1` |
 | `LRSF 16.15` | `SRULES_CA_SANFRANCISCO_LR16_15` |
 | `Cal. Super. Ct. L.A. Cnty. Local R. 3.4` | `SRULES_CA_LASC_LR3_4` |
+| `Cal. Super. Ct. Alpine Cnty. Local R. 1.1` | `SRULES_CA_ALPINE_LR1_1` |
+| `Cal. Super. Ct. Contra Costa Cnty. Local R. 3.101` | `SRULES_CA_CONTRACOSTA_LR3_101` |
 | `Phila. R.J.A. 4008` | `SRULES_PA_PHILA_RJA_R4008` |
 | `KCLCMR 7` | `SRULES_WA_KING_LCMR_R7` |
 | `Travis Cnty. Dist. Ct. Loc. R. 2.11` | `SRULES_TX_TRAVIS_LR2_11` |
 | `Harris Cnty. Civ. Trial Div. R. 3.1` | `SRULES_TX_HARRIS_CIV_R3_1` |
 | `Cuyahoga C.P. Loc.R. 24.0` | `SRULES_OH_CUYAHOGA_R24_0` |
 | `Ariz. Local R. Prac. Super. Ct. (Maricopa) 2.8` | `SRULES_AZ_MARICOPA_R2_8` |
+
+A California county citation must carry the court word (`Super. Ct.` or `Superior Court`).
+`Lake Cnty. R. 1.1` alone is never guessed, because it could be a rule of another state's county.
 
 More forms are in [citation formats](/api-guide/concepts/citation-formats).
 

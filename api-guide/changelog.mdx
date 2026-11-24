@@ -27,6 +27,20 @@ The documented routes are under `/us/statutes/`.
   See [SDKs](/api-guide/sdks/overview).
 - To be told when the law changes, not when the API changes, use [Law change alerts](/api-guide/alerts).
 
+<Update label="2026-11-24" description="California county court rules" tags={["Corpus"]}>
+
+Local rules of 42 more California county superior courts are served under `corpusType=STATE_RULES` with `state=ca`.
+That is 7,389 rules, taking California to 50 county courts and the trial courts held to 80.
+The county is in the `actId`, for example `SRULES_CA_ALPINE_LR1_1`, so one county's Rule 1.1 is never another's.
+Citations such as `Cal. Super. Ct. Alpine Cnty. Local R. 1.1` and `Contra Costa Super. Ct. Local Rule 3.101` resolve through `/us/statutes/resolve`.
+A citation must name the county and carry `Super. Ct.` or `Superior Court`, so Lake County, California is never confused with Lake County, Illinois.
+Each rule carries the county's own PDF as `sourceUrl`, and `sourceNote` names the edition the Judicial Council index lists.
+
+Eight California counties are not held yet and are being added: Colusa, Lassen, Madera, Mendocino, Merced, Sierra, Sutter and Tehama.
+See [Court rules from county and district trial courts](/api-guide/coverage/states#court-rules-from-county-and-district-trial-courts).
+
+</Update>
+
 <Update label="2026-11-24" description="Four new corpus types, being populated" tags={["Corpus"]}>
 
 Four new `corpusType` tokens were added.
