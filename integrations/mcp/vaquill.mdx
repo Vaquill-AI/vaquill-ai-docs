@@ -356,8 +356,11 @@ Supreme Court and High Court judgments, and tribunal matters. The same
 
 <Note>
   **This address changed on 2026-11-26.** India used to be a path on the US
-  host, `https://mcp.vaquill.ai/in/mcp`. That URL no longer answers. Update any
-  saved connector to `https://in-mcp.vaquill.ai/mcp`.
+  host, `https://mcp.vaquill.ai/in/mcp` (and `https://mcp.vaquill.ai/in/s/{key}`).
+  That address stopped working on 2026-11-26. Remove a connector saved against
+  it and add `https://in-mcp.vaquill.ai/mcp` instead, which also lets you sign
+  in with your account. Regulatory tools are on their own server,
+  [reg-mcp](#regulatory-server).
 
   The move is what makes OAuth possible. Sign-in discovery is defined to live at
   the root of a host, so a corpus served from a sub-path could only ever take an
@@ -504,7 +507,7 @@ The US endpoint `https://mcp.vaquill.ai/mcp` uses OAuth 2.1 by default. The clie
 Clients that cannot run OAuth use your Vaquill API key. Three options, in priority order:
 
 1. **Bearer header** (remote): `Authorization: Bearer vq_key_...`
-2. **Path token** (remote): `https://mcp.vaquill.ai/s/vq_key_...`. Use this when your client cannot send custom headers.
+2. **Path token** (remote): `https://mcp.vaquill.ai/s/vq_key_...`. Deprecated, though it still works. Use it only when your client cannot send custom headers.
 3. **Environment variable** (local): `VAQUILL_API_KEY=vq_key_...` for `uvx` / stdio launches.
 
 Keys are scoped per workspace and can be revoked from the [dashboard](https://app.vaquill.ai/settings). See [Authentication](/api-guide/authentication) for rotation.

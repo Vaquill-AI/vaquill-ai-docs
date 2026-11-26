@@ -9,6 +9,22 @@ The [Model Context Protocol](https://modelcontextprotocol.io) lets AI assistants
 
 You can use it as a Claude connector, as a Claude Code plugin, or as a key-based server for any other MCP client. All three reach the same tools.
 
+## Which server do I add?
+
+Vaquill runs three separate MCP servers. Add each one you need as its own connector.
+
+| What you need | Server URL | How to authenticate |
+| --- | --- | --- |
+| [US primary law and case law](/integrations/mcp/vaquill#quickstart) | `https://mcp.vaquill.ai/mcp` | Sign in with a Vaquill account, or send `Authorization: Bearer vq_key_...` |
+| [India primary law and case law](/integrations/mcp/vaquill#india-server): Central and State Acts, court judgments, tribunal records | `https://in-mcp.vaquill.ai/mcp` | Sign in with a Vaquill account, or send an API key as a bearer token |
+| [India regulatory publications](/integrations/mcp/vaquill#regulatory-server): circulars, notifications and orders from regulators such as SEBI and RBI | `https://reg-mcp.vaquill.ai/mcp` | Sign in with a Vaquill account, or send an API key with the `reg:read` permission as a bearer token |
+
+- You sign in once per server. The same API key and credit balance work on all three.
+- Only the US server is listed in the Claude and ChatGPT directories. Add the India and regulatory servers as a custom connector by URL, for example **Settings > Connectors > Add custom connector** on claude.ai.
+- Each server also accepts the key in the URL path, such as `https://in-mcp.vaquill.ai/s/vq_key_...`. On the US server that form still works but is deprecated, so send the key as a bearer header instead.
+
+The rest of this page covers the US server.
+
 <CardGroup cols={1}>
   <Card title="Claude Connector" href="/integrations/mcp/claude-connector">
     Start here if you use Claude. Add US primary law to claude.ai, Claude Desktop, Claude Code or Cowork with OAuth. No key needed. It is the only option that works in Cowork. Also listed in the [Claude Connectors Directory](https://claude.ai/directory/vaquill-ai-primary-law).

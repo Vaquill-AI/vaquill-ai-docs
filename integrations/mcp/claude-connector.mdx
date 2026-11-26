@@ -70,13 +70,16 @@ The India corpus has its own server at `https://in-mcp.vaquill.ai/mcp`, and
 Indian regulatory publications are a third at
 `https://reg-mcp.vaquill.ai/mcp`. Both support the same account sign-in as this
 connector, and also accept an API key as a bearer token. Each host is its own
-connector: add it separately, and you sign in once per host.
+connector: add it separately, and you sign in once per host. Unlike this
+connector, neither is in the Claude Connectors Directory, so add each one with
+**Add custom connector** and its URL.
 
 India moved to its own host on 2026-11-26. It used to be a path on this origin,
 `https://mcp.vaquill.ai/in/mcp`, where sign-in could never work: OAuth discovery
 (RFC 9728) is served from a host's root, so a corpus on a sub-path cannot
-advertise the `resource` identifier a client checks. **That URL no longer
-answers.** Update any saved connector to `https://in-mcp.vaquill.ai/mcp`.
+advertise the `resource` identifier a client checks. **That address stopped
+working on 2026-11-26.** Remove a connector saved with it and add
+`https://in-mcp.vaquill.ai/mcp`, which also gives you sign-in.
 See [Vaquill MCP](/integrations/mcp/vaquill#india-server) for setup, and
 [MCP servers](/integrations/mcp) for every corpus and its host.
 
