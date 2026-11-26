@@ -151,11 +151,10 @@ Records cover every state court and body in that jurisdiction.
 
 {/* END court-tables */}
 
-## Added in November 2026
+## Agencies, boards and other sources
 
-These sources were added after the case law API launched on November 22, 2026.
-They are searchable now, and their records are in the totals and tables above.
-Over 230 courts, agencies and boards were added, and many courts already held gained records.
+Besides the courts above, the case law API holds decisions of federal and state agencies and boards, attorney general opinions and tribal courts.
+Their records are in the totals and tables above.
 Figures are rounded down.
 
 ### Federal agencies and boards
@@ -183,10 +182,10 @@ Figures are rounded down.
 | Federal Labor Relations Authority | `US_FED_FLRA` | 1979 on | 10,000+ |
 | HHS Departmental Appeals Board | `US_FED_HHS_DAB` | 1974 on | 10,000+ |
 
-Also added: the Securities and Exchange Commission, Federal Trade Commission, Occupational Safety and Health Review Commission, Civilian Board of Contract Appeals, Federal Power Commission, Interstate Commerce Commission, Indian Claims Commission, US International Trade Commission, Foreign Claims Settlement Commission, Federal Mine Safety and Health Review Commission, National Transportation Safety Board, Nuclear Regulatory Commission, National Mediation Board, the Department of Energy and HUD hearing offices, the EPA judges and appeals board, the Coast Guard, and the FAA civil penalty decisions.
+Also held: the Securities and Exchange Commission, Federal Trade Commission, Occupational Safety and Health Review Commission, Civilian Board of Contract Appeals, Federal Power Commission, Interstate Commerce Commission, Indian Claims Commission, US International Trade Commission, Foreign Claims Settlement Commission, Federal Mine Safety and Health Review Commission, National Transportation Safety Board, Nuclear Regulatory Commission, National Mediation Board, the Department of Energy and HUD hearing offices, the EPA judges and appeals board, the Coast Guard, and the FAA civil penalty decisions.
 List them all with `GET /us/courts?system=federal&level=agency`.
 
-The Board of Veterans' Appeals (`US_FED_BVA`) grew from about 5,700 decisions to 1.6M+.
+The Board of Veterans' Appeals (`US_FED_BVA`) has 1.6M+ decisions.
 
 ### State agencies and boards
 
@@ -209,7 +208,7 @@ The Board of Veterans' Appeals (`US_FED_BVA`) grew from about 5,700 decisions to
 | New York Unemployment Insurance Appeal Board | `US_NY_UNEMPLOYMENT_INSURANCE_APPEAL_BOARD` | 2008 to 2015 | 18,000+ |
 | New York State Tax Commission | `US_NY_STATE_TAX_COMMISSION` | 1965 to 1997 | 16,000+ |
 
-Also added: public utility commissions, workers' compensation boards, tax tribunals, labor relations boards, open records and ethics bodies, and administrative hearing offices across most states.
+Also held: public utility commissions, workers' compensation boards, tax tribunals, labor relations boards, open records and ethics bodies, and administrative hearing offices across most states.
 List a state's agencies with `GET /us/courts?state=NY&system=state&level=agency`.
 
 The Texas open records rulings are letter rulings under the Texas Public Information Act, not court decisions.
@@ -227,16 +226,13 @@ Attorney general opinions are persuasive authority, not binding law.
 
 ### Tribal courts
 
-About 35 tribal courts were added, most of them tribal courts of appeals in the Pacific Northwest, with the Mississippi Band of Choctaw Indians, Nottawaseppi Huron Band of the Potawatomi and Salt River Pima-Maricopa courts.
-Records were also added for tribal courts already held, among them Fort Peck, Cherokee Nation, Oneida, Colville, Ho-Chunk, Hopi, Grand Ronde, Navajo Nation and Little Traverse Bay Bands.
+Tribal courts held include the tribal courts of appeals in the Pacific Northwest, the Mississippi Band of Choctaw Indians, Nottawaseppi Huron Band of the Potawatomi, Salt River Pima-Maricopa, Fort Peck, Cherokee Nation, Oneida, Colville, Ho-Chunk, Hopi, Grand Ronde, Navajo Nation and Little Traverse Bay Bands courts.
 Tribal courts have `system=tribal`.
 
-### Courts already held that gained records
+### Reporters and collection notes
 
-- Federal district courts grew from 1.3M+ to 6.2M+ records, and bankruptcy courts from 74,000+ to 191,000+.
-- State appeals courts grew from 3.6M+ to 4.6M+.
-- Reported decisions from the territorial and tribal reporters filled gaps in Puerto Rico, Guam, the Northern Mariana Islands, the Virgin Islands and American Samoa.
-- Connecticut Superior Court memoranda of decision are collected every week, because the court removes them after a few weeks. That coverage grows from the first collection.
+- Reported decisions from the territorial and tribal reporters cover Puerto Rico, Guam, the Northern Mariana Islands, the Virgin Islands and American Samoa.
+- Connecticut Superior Court memoranda of decision are collected every week, because the court removes them after a few weeks.
 
 ## Citation formats
 
