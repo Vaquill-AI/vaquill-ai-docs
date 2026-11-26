@@ -27,6 +27,23 @@ The documented routes are under `/us/statutes/`.
   See [SDKs](/api-guide/sdks/overview).
 - To be told when the law changes, not when the API changes, use [Law change alerts](/api-guide/alerts).
 
+<Update label="2026-11-26" description="Case law: 20M+ cases, 230+ new courts and agencies" tags={["Corpus"]}>
+
+The case law API now holds 20M+ cases and 20M+ opinions from 2,400+ courts and bodies.
+More than 230 courts, agencies and boards were added since launch, and courts already held gained records.
+
+- **Federal agencies and boards:** FERC orders (286,000+), the USCIS Administrative Appeals Office (163,000+), the Patent Trial and Appeal Board (132,000+), the Army, Navy and Air Force correction and discharge review boards, the NLRB, EEOC federal sector appeals, the Department of Labor judges and boards, the Surface Transportation Board, the SEC, FTC, FEC and more.
+  The Board of Veterans' Appeals grew to 1.6M+ decisions.
+- **State agencies and boards:** the Illinois Property Tax Appeal Board (413,000+), Texas Attorney General open records letter rulings (279,000+), public utility commissions, workers' compensation boards, tax tribunals, labor relations boards and open records bodies across most states.
+- **Attorney general opinions:** South Carolina, New Mexico, Kentucky, Michigan, Virginia and about 20 more states, and the Opinions of the Attorneys General of the United States from 1792.
+- **Tribal courts:** about 35 new tribal courts, most of them tribal courts of appeals in the Pacific Northwest.
+- **Courts already held:** federal district courts grew to 6.2M+ records, bankruptcy courts to 191,000+ and state appeals courts to 4.6M+. Territorial reporters filled gaps for Puerto Rico, Guam, the Northern Mariana Islands, the Virgin Islands and American Samoa.
+
+Agencies have `level=agency`, so you can include or leave them out of a search with the `level` filter.
+See [Added in November 2026](/api-guide/coverage/case-law#added-in-november-2026) for each source's `courtId` and years.
+
+</Update>
+
 <Update label="2026-11-24" description="California county court rules" tags={["Corpus"]}>
 
 Local rules of 42 more California county superior courts are served under `corpusType=STATE_RULES` with `state=ca`.
