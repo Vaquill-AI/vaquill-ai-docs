@@ -66,7 +66,19 @@ The connector uses the same credit balance as any other key.
 
 The connector serves the US corpus. See [API coverage](/api-guide/coverage) for what it holds.
 
-The India corpus is not available over OAuth. It is served at `https://mcp.vaquill.ai/in/mcp` and needs a `vq_key_` API key in an `Authorization` header. See [Vaquill MCP](/integrations/mcp/vaquill#india-mount) for setup.
+The India corpus has its own server at `https://in-mcp.vaquill.ai/mcp`, and
+Indian regulatory publications are a third at
+`https://reg-mcp.vaquill.ai/mcp`. Both support the same account sign-in as this
+connector, and also accept an API key as a bearer token. Each host is its own
+connector: add it separately, and you sign in once per host.
+
+India moved to its own host on 2026-11-26. It used to be a path on this origin,
+`https://mcp.vaquill.ai/in/mcp`, where sign-in could never work: OAuth discovery
+(RFC 9728) is served from a host's root, so a corpus on a sub-path cannot
+advertise the `resource` identifier a client checks. **That URL no longer
+answers.** Update any saved connector to `https://in-mcp.vaquill.ai/mcp`.
+See [Vaquill MCP](/integrations/mcp/vaquill#india-server) for setup, and
+[MCP servers](/integrations/mcp) for every corpus and its host.
 
 ## Which one should I use
 

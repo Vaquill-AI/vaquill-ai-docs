@@ -8,7 +8,7 @@ keywords: ["vaquill mcp", "case law mcp", "legal mcp server", "claude legal mcp"
 The Vaquill MCP server gives any [Model Context Protocol](https://modelcontextprotocol.io) client (Claude.ai, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf) access to the Vaquill AI Developer API. It covers US statutes, regulations, session laws, rulemaking records and case law. See [API coverage](/api-guide/coverage). Source: [github.com/Vaquill-AI/vaquill-mcp](https://github.com/Vaquill-AI/vaquill-mcp).
 
 <Note>
-  This page covers the US mount, `https://mcp.vaquill.ai/s/_`. The India mount is described under [India mount](#india-mount).
+  This page covers the US server, `https://mcp.vaquill.ai/mcp`. India is a separate host, described under [India server](#india-server), and Indian regulatory publications are a third, under [Regulatory server](#regulatory-server).
 </Note>
 
 <CardGroup cols={3}>
@@ -339,28 +339,159 @@ The server also publishes MCP resources and prompts. Clients that support them g
 
 **Prompts**: `good_law_check`, `fifty_state_survey`, `whats_changed`, `cite_check`.
 
-## India mount
+## India server
 
-India is a separate mount with its own tools, resource and prompts. A US connection never exposes India tools, and the reverse. Connect only the mount you need.
+India is a separate server on its own host, with its own tools, resources and
+prompts. A US connection never exposes India tools, and the reverse. Connect
+only the server you need.
 
-<Accordion title="India mount: URL, tools, prompts and resource">
-  `https://mcp.vaquill.ai/in/s/_` serves Indian legislation. The same `vq_key_` works on both mounts. The main tools:
+```
+https://in-mcp.vaquill.ai/mcp              sign in with your account, or send an API key as a bearer
+https://in-mcp.vaquill.ai/s/vq_key_...     key in the path
+```
+
+It serves three corpora of Indian primary law: central and state legislation,
+Supreme Court and High Court judgments, and tribunal matters. The same
+`vq_key_` works here and on the US server, against one shared credit balance.
+
+<Note>
+  **This address changed on 2026-11-26.** India used to be a path on the US
+  host, `https://mcp.vaquill.ai/in/mcp`. That URL no longer answers. Update any
+  saved connector to `https://in-mcp.vaquill.ai/mcp`.
+
+  The move is what makes OAuth possible. Sign-in discovery is defined to live at
+  the root of a host, so a corpus served from a sub-path could only ever take an
+  API key. On its own host, India supports both.
+</Note>
+
+Two things are deliberately NOT here:
+
+- **Regulatory publications** are on their own server, [reg-mcp](#regulatory-server)
+  (circulars, orders, notices and press releases). They are administrative
+  material rather than binding authority, and they were previously published in
+  both places under two different tool names.
+- **Translation** is REST only, not MCP. See the
+  [translation API](/api-guide/india-translation-quickstart). Its tools were a
+  third of this catalogue's token cost while having no bearing on what the law
+  says.
+
+The server publishes 40 tools, listed below by corpus. Costs are appended to
+each tool's description at startup from the live pricing table, so
+`get_pricing_in` is the authority rather than this page.
+
+<Accordion title="Legislation: acts, sections, amendments and citations">
+  | Tool | Description | Credits |
+  |------|-------------|---------|
+  | `search_acts` | Search Central and State Acts plus the principal regulators' instruments, down to the section. | 2 |
+  | `list_acts` | Browse enactments by jurisdiction, regulator, year and status. | 1 |
+  | `list_act_filters` | The filter vocabulary the corpus actually holds, with counts. | Free |
+  | `get_act_text` | Source links for one enactment: plain text, PDF and HTML. | 3 |
+  | `get_act_structure` | An act's table of contents. | 2 |
+  | `get_act_status` | Publisher status, served status and repeal claim, as three separate fields. | 1 |
+  | `get_act_versions` | Every state of an act's text the corpus sync recorded. | 1 |
+  | `get_act_section` | Metadata for one provision, without its wording. | 2 |
+  | `get_act_section_body` | The publisher's full text for one provision. | 3 |
+  | `get_act_amendments` | Amendment history: substitutions, insertions, omissions. | 5 |
+  | `get_section_history` | Recorded amendments to one provision, with effective dates. | 2 |
+  | `india_act_definitions` | Defined terms and the provisions that define them. | 2 |
+  | `india_act_cited_by` | Provisions elsewhere in the corpus that name this act. | 2 |
+  | `india_act_subordinate` | Rules, regulations and notifications made under an act. | 2 |
+  | `india_section_references` | Outbound citations from one provision. | 2 |
+  | `resolve_india_citation` | The provision named by a citation, such as `s.302 IPC`. | 2 |
+  | `resolve_india_citations_batch` | The same resolver over up to 50 distinct citations. | 2 each |
+  | `get_corresponding_provisions` | Map a repealed criminal code to its 2023 successor: IPC to BNS, CrPC to BNSS. | 1 |
+  | `get_coverage` | Corpus counts by jurisdiction, regulator and status, plus coverage depth. | Free |
+  | `get_changes` | The act-level change feed of the weekly corpus sync. | 1 |
+</Accordion>
+
+<Accordion title="Case law: Supreme Court and High Court judgments">
+  | Tool | Description | Credits |
+  |------|-------------|---------|
+  | `search_india_cases` | Search judgments by meaning and by words. | 2 |
+  | `list_india_cases` | Browse judgments by court and decision date. | 1 |
+  | `list_india_courts` | The canonical court registry, with per-court holdings. | Free |
+  | `get_india_case_detail` | One judgment's case-level record. | 1 |
+  | `get_india_case_body` | The judgment's full text. | 3 |
+  | `get_india_case_file` | The archived source document, as an attachment. | 1 |
+  | `get_india_similar_cases` | Judgments semantically closest to this one. | 2 |
+  | `resolve_india_case` | A case id, SCR citation or case number to the judgment it names. | 2 |
+  | `resolve_india_cases_batch` | The same resolver over up to 100 distinct inputs. | 2 each |
+</Accordion>
+
+<Accordion title="Tribunals: matters before 15 forums">
+  <Warning>
+    These tools search **metadata**, not judgment text. No extracted text exists
+    anywhere in this corpus, so a matter whose title, petitioner or respondent
+    does not contain your term will not be found, whatever its order says.
+  </Warning>
 
   | Tool | Description | Credits |
   |------|-------------|---------|
-  | `search_acts` | Semantic search across Indian central and state enactments. | 2 |
-  | `list_acts` | Browse acts to discover identifiers. | 1 |
-  | `list_act_filters` | The filter vocabulary available for the two above. | Free |
-  | `get_act_text` | Full text of an act or provision. | 3 |
-  | `get_act_amendments` | Amendment history: substitutions, insertions, omissions. | 5 |
-  | `get_corresponding_provisions` | Map a provision in a repealed code to its successor. | 1 |
-
-  Plus the `search` and `fetch` aliases.
-
-  **Resource**: `vaquill://in/filters` lists the available act filters.
-
-  **Prompts**: `old_code_citation`, `indian_provision_check`.
+  | `list_india_tribunal_forums` | The fifteen forums, with record counts and date spans. Call it first: it carries the `code` every other route takes. | Free |
+  | `search_india_tribunal_matters` | Matters whose title, petitioner or respondent contains your term. | 2 per page |
+  | `list_india_tribunal_matters` | Matters by forum, bench, year, date or exact case number. | 1 per page |
+  | `get_india_tribunal_matter` | Everything held about one matter. The authority on `decisionDate`. | 1 |
+  | `list_india_tribunal_matter_orders` | The orders recorded against one matter. Only three forums keep an order list. | 1 |
+  | `get_india_tribunal_matter_file` | The matter's document, as an attachment. | 1 |
+  | `get_india_tribunal_order_file` | One order's own document, as an attachment. | 1 |
 </Accordion>
+
+<Accordion title="Billing, coverage and aliases">
+  | Tool | Description | Cost |
+  |------|-------------|------|
+  | `get_pricing_in` | Per-endpoint credit costs for the India surface. | Free |
+  | `get_india_credit_balance` | The account-wide credit balance, shared with the US API. | Free |
+  | `get_coverage` | What the India corpus holds and how current each part is. | Free |
+  | `get_changes` | What has changed in the corpus, as a feed. | 1 |
+  | `search` | Single-string search, for clients that require this exact interface. | 2 |
+  | `fetch` | Single-string fetch by id, URL or citation. | 3 |
+
+  Prefer the typed tools to `search` and `fetch`, which cannot take filters.
+</Accordion>
+
+**Resources**: `vaquill://guide` (how to use the corpus), `vaquill://in/filters`
+(the act filter vocabulary) and `vaquill://pricing` (live credit pricing).
+
+**Prompts**: `old_code_citation` answers an IPC or CrPC citation under the 2023
+code that replaced it. `indian_provision_check` finds and verifies what Indian
+law says on a point, with the amendment caveat stated correctly.
+
+## Regulatory server
+
+Indian regulatory publications are served from their own host:
+
+```
+https://reg-mcp.vaquill.ai/mcp             sign in with your account, or send an API key as a bearer
+https://reg-mcp.vaquill.ai/s/vq_key_...    key in the path
+```
+
+This is the corpus the regulatory tracker feeds: circulars, orders, notices and
+press releases from named Indian regulators (SEBI, RBI, MCA, IRDAI, TRAI, DGFT
+and others), captured with their original files and a change history. It is
+administrative and persuasive material, not binding authority, which is why it
+is a separate connection from Indian primary law.
+
+Seven tools, and the same `vq_key_` as every other Vaquill server. Five read the
+corpus. The last two are account tools, the same ones the India server offers, so
+you can check your balance and the price of a workflow without switching
+connections:
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `get_regulatory_coverage` | What the corpus covers and how fresh each source is. Read it before trusting an empty result anywhere else. | Free |
+| `search_regulatory_documents` | One route for searching and listing, with scope filters. | 1 |
+| `get_regulatory_document` | One document, with its body, capture history or diff on request. | 1 |
+| `get_regulatory_document_file` | The publisher's original file as archived. | 1 |
+| `list_regulatory_changes` | An append-only feed: new, rechanged or retracted. | 1 |
+| `get_india_credit_balance` | Your remaining credits. | Free |
+| `get_pricing_in` | Credit-to-price conversion and per-endpoint costs for the India API, billed in US dollars. No authentication is required. | Free |
+
+<Note>
+  Until 2026-11-26 the five corpus tools were published twice: here, and again on the
+  India mount under different names (`list_regulatory_documents` for what is
+  now `search_regulatory_documents`). The duplicates are gone. If you were
+  calling them on the India connection, move to this host.
+</Note>
 
 ## Authentication
 
