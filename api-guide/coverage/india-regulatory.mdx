@@ -119,7 +119,7 @@ The Credits column is a snapshot. The live pricing matrix is authoritative.
 | `GET /documents` | 1 | Search and filter documents across every publisher. |
 | `GET /documents/{id}/detail` | 1 | One document: its metadata, and optionally its text, versions or diff. |
 | `GET /documents/{id}/file` | 1 | The archived file as bytes. |
-| `GET /changes` | 1 | What changed, newest first, as a resumable feed. |
+| `GET /changes` | 1 | What changed, as a resumable feed: newest first by default, or oldest first with `direction=forward` to follow it. |
 
 Full request and response shapes are in the India API Reference tab, generated from the [India OpenAPI document](https://api.vaquill.ai/in/openapi.json).
 
@@ -128,6 +128,8 @@ Full request and response shapes are in the India API Reference tab, generated f
 Both list routes page with a cursor, not an offset.
 Send the `nextCursor` you were given to resume where you stopped.
 `hasMore` tells you whether to continue.
+
+The changes feed is different when you follow it: read it with `direction=forward` and resume from the `cursor` of the last item you handled, because `nextCursor` is `null` once you reach the newest change. The [quickstart](/api-guide/india-regulatory-quickstart) shows the two calls.
 
 `total` has three states:
 

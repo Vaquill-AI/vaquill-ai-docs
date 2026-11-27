@@ -378,7 +378,7 @@ Two things are deliberately NOT here:
   third of this catalogue's token cost while having no bearing on what the law
   says.
 
-The server publishes 40 tools, listed below by corpus. Costs are appended to
+The server publishes 33 tools, listed below by corpus. Costs are appended to
 each tool's description at startup from the live pricing table, so
 `get_pricing_in` is the authority rather than this page.
 
@@ -387,24 +387,20 @@ each tool's description at startup from the live pricing table, so
   |------|-------------|---------|
   | `search_acts` | Search Central and State Acts plus the principal regulators' instruments, down to the section. | 2 |
   | `list_acts` | Browse enactments by jurisdiction, regulator, year and status. | 1 |
-  | `list_act_filters` | The filter vocabulary the corpus actually holds, with counts. | Free |
-  | `get_act_text` | Source links for one enactment: plain text, PDF and HTML. | 3 |
   | `get_act_structure` | An act's table of contents. | 2 |
-  | `get_act_status` | Publisher status, served status and repeal claim, as three separate fields. | 1 |
+  | `india_act_record` | One act's record: what it is, whether it is still law as three separate statements, links to its text, and counts. | 1 |
   | `get_act_versions` | Every state of an act's text the corpus sync recorded. | 1 |
-  | `get_act_section` | Metadata for one provision, without its wording. | 2 |
+  | `get_act_section` | Metadata for one provision, without its wording. `include` adds its recorded amendments and the provisions it cites. | 2 |
   | `get_act_section_body` | The publisher's full text for one provision. | 3 |
   | `get_act_amendments` | Amendment history: substitutions, insertions, omissions. | 5 |
-  | `get_section_history` | Recorded amendments to one provision, with effective dates. | 2 |
   | `india_act_definitions` | Defined terms and the provisions that define them. | 2 |
   | `india_act_cited_by` | Provisions elsewhere in the corpus that name this act. | 2 |
   | `india_act_subordinate` | Rules, regulations and notifications made under an act. | 2 |
-  | `india_section_references` | Outbound citations from one provision. | 2 |
   | `resolve_india_citation` | The provision named by a citation, such as `s.302 IPC`. | 2 |
   | `resolve_india_citations_batch` | The same resolver over up to 50 distinct citations. | 2 each |
-  | `get_corresponding_provisions` | Map a repealed criminal code to its 2023 successor: IPC to BNS, CrPC to BNSS. | 1 |
-  | `get_coverage` | Corpus counts by jurisdiction, regulator and status, plus coverage depth. | Free |
-  | `get_changes` | The act-level change feed of the weekly corpus sync. | 1 |
+  | `get_corresponding_provisions` | Map a repealed criminal code to its 2023 successor: IPC to BNS, CrPC to BNSS. Filter by old or new section. | 1 |
+  | `get_coverage` | Corpus counts by jurisdiction, regulator and status, plus coverage depth. `include=filters` adds the filter vocabulary with counts. | Free |
+  | `get_changes` | The act-level change feed of the weekly corpus sync. `actId` narrows it to one act. | 1 |
 </Accordion>
 
 <Accordion title="Case law: Supreme Court and High Court judgments">
@@ -415,7 +411,6 @@ each tool's description at startup from the live pricing table, so
   | `list_india_courts` | The canonical court registry, with per-court holdings. | Free |
   | `get_india_case_detail` | One judgment's case-level record. | 1 |
   | `get_india_case_body` | The judgment's full text. | 3 |
-  | `get_india_case_file` | The archived source document, as an attachment. | 1 |
   | `get_india_similar_cases` | Judgments semantically closest to this one. | 2 |
   | `resolve_india_case` | A case id, SCR citation or case number to the judgment it names. | 2 |
   | `resolve_india_cases_batch` | The same resolver over up to 100 distinct inputs. | 2 each |
@@ -435,8 +430,6 @@ each tool's description at startup from the live pricing table, so
   | `list_india_tribunal_matters` | Matters by forum, bench, year, date or exact case number. | 1 per page |
   | `get_india_tribunal_matter` | Everything held about one matter. The authority on `decisionDate`. | 1 |
   | `list_india_tribunal_matter_orders` | The orders recorded against one matter. Only three forums keep an order list. | 1 |
-  | `get_india_tribunal_matter_file` | The matter's document, as an attachment. | 1 |
-  | `get_india_tribunal_order_file` | One order's own document, as an attachment. | 1 |
 </Accordion>
 
 <Accordion title="Billing, coverage and aliases">
@@ -451,6 +444,9 @@ each tool's description at startup from the live pricing table, so
 
   Prefer the typed tools to `search` and `fetch`, which cannot take filters.
 </Accordion>
+
+Source PDFs are not tools on this server, because a tool result cannot carry a PDF.
+Records say `hasFile`, and the REST `/file` routes return the document.
 
 **Resources**: `vaquill://guide` (how to use the corpus), `vaquill://in/filters`
 (the act filter vocabulary) and `vaquill://pricing` (live credit pricing).

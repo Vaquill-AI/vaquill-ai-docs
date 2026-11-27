@@ -78,21 +78,25 @@ Do not retry the 404. Do retry the 502.
 
 ## 5. Follow what changes
 
-The feed is resumable. Store the cursor and send it back to get what you have not seen.
+The feed has two reading orders. Without `direction` it reads backwards, newest change first, which suits "what happened recently". To follow the feed and never miss a change, read it forwards and keep your place with the cursor of the last item you handled.
 
 ```bash
-# first call
+# first call: start from a moment, oldest change first
 curl -G https://api.vaquill.ai/api/v1/in/reg/changes \
   -H "Authorization: Bearer vq_key_..." \
+  --data-urlencode "since=2026-11-20T00:00:00Z" \
+  --data-urlencode "direction=forward" \
   --data-urlencode "limit=50"
 
-# later: resume from where you stopped
+# every later call: resume after the last item you handled
 curl -G https://api.vaquill.ai/api/v1/in/reg/changes \
   -H "Authorization: Bearer vq_key_..." \
-  --data-urlencode "cursor=<nextCursor from the last call>"
+  --data-urlencode "cursor=<cursor of the last item you handled>" \
+  --data-urlencode "direction=forward"
 ```
 
-Keep calling while `hasMore` is true.
+Every item carries its own `cursor`. Store the cursor of the last item you processed, not `nextCursor`: in forward order `nextCursor` is `null` once you reach the newest change, and an empty page leaves your stored cursor as it was.
+Send `since` on the first call only. A request with both `since` and `cursor` is refused with a 400.
 Do not poll with a date filter instead, because a date window misses documents that arrive late or change quietly.
 
 <Warning>

@@ -36,7 +36,7 @@ Passage counts on `GET /acts/coverage` count retrieval chunks, not sections.
 | `regulatory` | Instruments issued by a statutory regulator (SEBI, RBI, MCA, TRAI, IRDAI and others). The `department` filter narrows within this. |
 
 `repealed` and `spent` are also accepted as `category` values. They select acts the publisher records as repealed or spent in any jurisdiction.
-`GET /acts/filters` returns the live filter values with counts, free.
+`GET /acts/coverage?include=filters` returns the live filter values with counts, free.
 
 Subordinate instruments are rules, regulations, notifications and orders made under a parent act.
 Include or exclude them with the `isSubordinate` filter on search.
@@ -110,7 +110,7 @@ Amendment history exists only for some acts.
 Amendments are not applied to the served text, so there is no point-in-time text and no `asOf` parameter.
 An empty event list can mean we have no record, so check the `coverage` block in the response.
 
-`GET /acts/{actId}/status` returns three separate statements:
+`GET /acts/{actId}` returns one act's record. Its standing is three separate statements:
 
 | Field | What it is |
 |---|---|
@@ -119,6 +119,12 @@ An empty event list can mean we have no record, so check the `coverage` block in
 | `repealClaim` | The repeal record, including `commencementVerified`. |
 
 `goodLawStatus` is `unknown` when a repeal claim is unverified or when `statusConflict` is `true`.
+
+The same record carries `links` to the act's text, PDF and HTML, and `counts` of its sections and of the subordinate instruments made under it.
+A `subordinateCount` of `null` means the count could not be made. It never stands in for zero.
+
+For one provision, add `include=history` to `GET /acts/{actId}/sections/{n}`.
+`section.history` lists the amendments recorded against it, up to 100 events, with an exact `total` and `hasMore`.
 
 ## Known limits
 
@@ -137,24 +143,25 @@ The Credits column is a snapshot. The live pricing matrix is authoritative.
 
 | Route, under `/api/v1/in/acts` | Credits | What it answers |
 |---|---:|---|
-| `GET /coverage` | **0** | What the corpus holds, by jurisdiction, regulator and status. |
-| `GET /filters` | **0** | The live filter values with counts. |
+| `GET /coverage` | **0** | What the corpus holds, by jurisdiction, regulator and status. Add `include=filters` for the live filter values with counts. |
 | `POST /search` | 2 | Search Central, State and regulator legislation down to the section. |
 | `GET /list` | 1 | Browse enactments by jurisdiction, regulator, year and status. |
-| `GET /{actId}/status` | 1 | Whether an enactment is still law, as three separate statements. |
-| `GET /corresponding-provisions/{actCode}` | 1 | IPC to BNS and CrPC to BNSS section mapping. |
+| `GET /{actId}` | 1 | One enactment's record: what it is, whether it is still law as three separate statements, links to its text, and counts. |
+| `GET /corresponding-provisions/{actCode}` | 1 | IPC to BNS and CrPC to BNSS section mapping. Narrow it with `section` (the old code) or `newSection` (the new one). |
 | `GET /{actId}/structure` | 2 | The act's table of contents. |
-| `GET /{actId}/sections/{n}` | 2 | One provision: its citation, its place in the act, and what it refers to. |
-| `GET /{actId}/sections/{n}/history` | 2 | Every amendment recorded against one provision. |
-| `GET /{actId}/text` | 3 | The source text URLs for one enactment. |
+| `GET /{actId}/sections/{n}` | 2 | One provision: its citation, its place in the act, and what it refers to. Add `include=history,references` for its recorded amendments and the resolved acts and sections it cites, at no extra cost. |
 | `GET /{actId}/sections/{n}/body` | 3 | The full text for one provision. Refunded when the text cannot be reproduced. |
 | `GET /{actId}/amendments` | 5 | The amendment history recorded for a whole enactment. |
 | `GET /resolve` | 2 | Resolve a citation string (`u/s 302 IPC`, `Art. 21 Constitution`) to provisions. |
 | `POST /resolve` | 2 each | The same, in batch. An unresolvable citation is refunded. |
-| `GET /{actId}/sections/{n}/references` | 2 | The acts and sections one provision cites. |
 | `GET /{actId}/cited-by` | 2 | Provisions elsewhere in the corpus that cite this act. |
 | `GET /{actId}/subordinate` | 2 | Rules, regulations and notifications recorded under this act. |
 | `GET /{actId}/definitions` | 2 | Defined terms in the act, and the provisions that define them. |
+
+Five older routes still answer at their old prices and are marked deprecated: `GET /filters`, `GET /{actId}/status`, `GET /{actId}/text`, `GET /{actId}/sections/{n}/history` and `GET /{actId}/sections/{n}/references`.
+Each names its replacement in the API reference. They are no longer MCP tools.
+
+One act's change events are on `GET /api/v1/in/changes?actId=`.
 
 A filter value outside the published vocabulary returns 422 and costs nothing.
 The response names the parameter and the accepted values.
